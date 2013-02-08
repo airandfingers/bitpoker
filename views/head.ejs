@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title><%= title %></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+
+        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+        <link rel="stylesheet" href="/css/normalize.css">
+        <link rel="stylesheet" href="/css/header.css" />
+        <link rel="stylesheet" href="/css/main.css">
+        <script src="/js/vendor/modernizr-2.6.2.min.js"></script>
+    </head>
+    <body>
+  <!-- Prompt IE 6 users to install Chrome Frame. Remove this if you support IE 6.
+       chromium.org/developers/how-tos/chrome-frame-getting-started -->
+  <!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
+    <header>
+        <div class="navbar">
+            <ul>
+                <%
+                var pages = [
+                    { name: 'lobby', href: '/' },
+                    { name: 'games', 
+                      href: '#', 
+                      dropdown: [
+                        { name: '1', href: '/game/1' },
+                        { name: '2', href: '/game/2' },
+                      ],
+                    }
+                ],
+                    i,
+                    j,
+                    len,
+                    len2,
+                    page_name,
+                    page_href,
+                    page_dropdown,
+                    subpage_name,
+                    subpage_href;
+
+                for (i = 0, len = pages.length; i < len; i++) {
+                    page_name = pages[i].name;
+                    page_href = pages[i].href;
+                    page_dropdown = pages[i].dropdown;
+                %>
+                    <li>
+                        <a href="<%= page_href %>">
+                            <%= page_name.toUpperCase() %>
+                        </a>
+                       <!--write nested ul for dropdowns-->
+                        <% if (page_dropdown !== undefined ) { %>
+                          <ul>
+                          <% for (j=0, len2 = page_dropdown.length; j < len2; j++) {
+                            subpage_name = page_dropdown[j].name;
+                            subpage_href = page_dropdown[j].href;
+                            %>
+                            <li>
+                              <a href="<%= subpage_href %>">
+                                  <%= subpage_name %>
+                              </a>
+                            </li>
+                          <% } %>  
+                          </ul>
+                        <% } %>
+                    </li>
+                <% } %>
+                <li class="right">
+                  <% if (locals.username) { %>
+                    <a href="/logout">LOGOUT</a>
+                  <% } else { %>
+                    <a href="/login">LOGIN</a>
+                  <% } %>
+                </li>
+                <li class="right">
+                  <% if (locals.username) { %>
+                    <%= locals.username.toUpperCase() %>    
+                  <% } else { %>
+                    <a href="/register">REGISTER</a>
+                  <% } %>
+                </li>
+            </ul>
+        </div>
+    </header>
