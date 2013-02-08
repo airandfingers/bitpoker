@@ -1,0 +1,33 @@
+{
+  "name": "bitpoker",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "connect-flash": "latest",
+    "ejs": "latest",
+    "express": "latest",
+    "connect-mongo": "0.2.0",
+    "mime": "latest",
+    "mongoose": "latest",
+    "passport": "latest",
+    "passport-local": "latest",
+    "socket.io": "latest",
+    "underscore": "latest",
+    "underscore.string": "latest",
+    "connect": "~2.7.2",
+    "cookie": "0.0.5"
+  },
+  "subdomain": "rpwm-server",
+  "domains": [],
+  "scripts": {
+    "start": "app.js"
+  },
+  "engines": {
+    "node": "0.8.x"
+  },
+  "devDependencies": {
+    "chai": "~1.4.2",
+    "mocha": "~1.8.1",
+    "supertest": "~0.5.1"
+  }
+}
