@@ -16,6 +16,8 @@ var socket = io.connect(window.location.origin, {
       '<span><%= message %></span>' +
     '</p>';
 
+$chat_message.focus();
+
 socket.on('syn ack', function () {
   console.log('Syn Ack received.');
   socket.emit('ack');
@@ -50,7 +52,7 @@ $chat_form.submit(function(e) {
 });
 
 $(document).on('keydown', function(e) {
-  if ($chat_sender.is(':focus') || $chat_message.is(':focus')) {
+  if ($(':focus').is('input')) {
       //don't focus $chat_message if the user's typing in a text field
       return;
   }
