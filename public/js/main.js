@@ -9,7 +9,6 @@ var socket = io.connect(window.location.origin, {
   , $chat_form = $('#chat_form')
   , $chat_sender = $('#chat_sender')
   , $chat_message = $('#chat_message')
-  , $chat_room = $('#chat_room')
   , chat_message_template = 
     '<p id="new_message">' +
       '<strong><%= sender %> : </strong>' +
@@ -17,13 +16,6 @@ var socket = io.connect(window.location.origin, {
     '</p>';
 
 $chat_message.focus();
-
-socket.on('syn ack', function () {
-  console.log('Syn Ack received.');
-  socket.emit('ack');
-  // Join the room specific to this page
-  socket.emit('joinRoom', { room: $chat_room.val() });
-});
 
 socket.on('chatMessage', function(data) {
   console.log('chatMessage message received: ', data);
@@ -44,7 +36,6 @@ $chat_form.submit(function(e) {
   var data = {
     sender: $chat_sender.val()
   , message: $chat_message.val()
-  , room: $chat_room.val()
   };
   $chat_message.val('');
   console.log('Emitting message', 'chatMessage', data);

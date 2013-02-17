@@ -1,7 +1,8 @@
 module.exports = function (server, session_settings) {
   var io = require('socket.io').listen(server)
     , parseSignedCookies = require('connect').utils.parseSignedCookies
-    , cookieParse = require( 'cookie' ).parse;
+    , cookieParse = require( 'cookie' ).parse
+    , rooms = require('./modules/rooms');
 
   // Configure Socket.IO
   io.enable('browser client minification');  // send minified client
@@ -26,12 +27,17 @@ module.exports = function (server, session_settings) {
       data.sessionID = data.cookie[session_settings.sid_name];
       session_settings.store.get(data.sessionID, function (err, session) {
         if (err || !session) {
-          console.log('get returns', err, session);
+          console.error('get returns', err, session);
           // if we cannot grab a session, turn down the connection
-          accept('Error', false);
+          accept(err.message, false);
         } else {
           // save the session data and accept the connection
           data.session = session;
+          // parse the referer URL to determine which room this socket wants to join
+          var host = data.headers.host
+            , referer = data.headers.referer
+            , url = referer.slice(referer.indexOf(host) + host.length + 1);
+          data.room_id = url;
           accept(null, true);
         }
       });
@@ -46,20 +52,27 @@ module.exports = function (server, session_settings) {
 
   io.sockets.on('connection', function(socket) {
     //console.log('A socket with sessionID ' + socket.handshake.sessionID + ' connected!');
-    socket.emit('syn ack');
+    socket.user_id = socket.handshake.session.passport.user;
 
-    socket.on('ack', function () {
-      console.log('Ack received.');
-    });
-
-    socket.on('joinRoom', function(data) {
-      console.log('joinRoom message received:', data);
-      socket.join(data.room);
-    })
+    var room_id = socket.handshake.room_id;
+    if (room_id) {
+      socket.join(room_id);
+      socket.room_id = room_id;
+      var room = rooms.getRoom(room_id);
+      if (room instanceof rooms.Room) {
+        room.join(socket.user_id);
+      }
+      else {
+        console.error('no room with room_id', room_id);
+      }
+    }
+    else {
+      console.error('socket without room_id!');
+    }
 
     socket.on('chatMessage', function(data) {
       console.log('Emitting message', 'chatMessage', data);
-      io.sockets.in(data.room).emit('chatMessage', data);
+      io.sockets.in(socket.room_id).emit('chatMessage', data);
     });
   });
 };

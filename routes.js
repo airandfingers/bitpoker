@@ -1,7 +1,8 @@
 module.exports = function (app) {
-  var User = require('./modules/user'),
-      passport = require('passport'),
-      auth = require('./modules/auth');
+  var User = require('./modules/user')
+    , passport = require('passport')
+    , auth = require('./modules/auth')
+    , tables = require('./modules/tables');
 
   app.get('/login', function (req, res) {
     //console.log("GET /login called!");
@@ -39,10 +40,10 @@ module.exports = function (app) {
 
   //bobby's attempt at sending register the new information
   app.post('/register', function (req, res, next) {
-    var username = req.body.username,
-        password = req.body.password,
-        password_confirm = req.body.password2,
-        target = req.body.next || '/';
+    var username = req.body.username
+      , password = req.body.password
+      , password_confirm = req.body.password2
+      , target = req.body.next || '/';
 
     if (password === password_confirm) {
       new User({
@@ -77,15 +78,22 @@ module.exports = function (app) {
     res.redirect('/');
   });
 
-  app.get('/', function(req, res) {
+  app.get('/lobby', function(req, res) {
     res.render('lobby', {});
   });
 
-  app.get('/game/:id', auth.ensureAuthenticated, function(req, res) {
-    var game_id = req.params.id;
-    res.render('game', {
-      game_id: game_id
-    });
+  app.get('/table_:id', auth.ensureAuthenticated, function(req, res, next) {
+    var game_id = req.params.id
+      , table = tables.getTable(game_id);
+
+    if (table instanceof tables.Table) {
+      res.render('game', {
+        game_id: game_id
+      });
+    }
+    else {
+      next('No table with ID ' + game_id);
+    }
   });
 
   //Handle all other cases with a 404

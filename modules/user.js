@@ -11,8 +11,8 @@ module.exports = (function() {
     });
 
   UserSchema.statics.authenticate = function(username, password, cb) {
-    var model = this,
-        shasum = crypto.createHash('sha1');
+    var model = this
+      , shasum = crypto.createHash('sha1');
     shasum.update(password);
     shasum = shasum.digest('hex');
     // look for a matching username/password combination
@@ -26,21 +26,21 @@ module.exports = (function() {
   };
 
   UserSchema.pre('save', function(next) {
-    var user = this,
-        shasum = crypto.createHash('sha1');
+    var user = this
+      , shasum = crypto.createHash('sha1');
     shasum.update(user.password);
     shasum = shasum.digest('hex');
     user.password = shasum;
 
     User.findOne({username : user.username}, function(err, result) {
-        if (err) {
-            next(err);
-        } else if(result) {
-            user.invalidate("username", "username must be unique");
-            next(new Error("username already exists!"));
-        } else {
-            next();
-        }
+      if (err) {
+          next(err);
+      } else if (result) {
+          user.invalidate('username', 'username must be unique');
+          next(new Error('username already exists!'));
+      } else {
+          next();
+      }
     });
   });
 
