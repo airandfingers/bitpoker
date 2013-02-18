@@ -5,18 +5,38 @@ module.exports = (function () {
   //See rooms.js
   //$.populateTypes();
 
-  var Table = $.Class('Table', {/*instance properties*/}, {
-    //instance methods
-    /*join: function(user) {
-      console.log('User wants to join ', this.id, user);
-    }*/
+  var STATUSES = {
+    INITIALIZING: 'initializing'
+  , WAITING: 'waiting'
+  , GAME_IN_PROGRESS: 'game_in_progress'
+  , CLOSING: 'closing'
+  }
+    , Table = $.Class('Table', {
+    //instance properties
+    players: []
+  , seats: {}
+  , status: STATUSES.INITIALIZING
+  , 
   });
 
   Table.extends(Room, false);
 
+  Table.implements({
+    //instance methods
+    __construct: function(obj) {
+      console.log('Table constructor called!', obj);
+      this.parent();
+      Room.rooms[this.id] = this;
+    }
+  /*, join: function(user) {
+      console.log('User wants to join ' + this.id + ':', user);
+    }*/
+  });
+
   Object.merge(Table, {
     //class properties
-    NUM_TABLES: 2
+    STATUSES: STATUSES
+  , NUM_TABLES: 2
   , TABLE_PREFIX: 'table_'
   });
 

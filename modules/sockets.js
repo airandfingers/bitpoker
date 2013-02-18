@@ -1,9 +1,10 @@
-module.exports = function (server, session_settings) {
-  var io = require('socket.io').listen(server)
+module.exports = (function () {
+  var app = require('../app')
+    , session_settings = app.session_settings
+    , io = require('socket.io').listen(app.server)
     , parseSignedCookies = require('connect').utils.parseSignedCookies
     , cookieParse = require( 'cookie' ).parse
-    , Room = require('./modules/rooms')
-    , $ = require('node-class');
+    , Room = require('./rooms');
 
   // Configure Socket.IO
   io.enable('browser client minification');  // send minified client
@@ -55,25 +56,14 @@ module.exports = function (server, session_settings) {
     //console.log('A socket with sessionID ' + socket.handshake.sessionID + ' connected!');
     socket.user_id = socket.handshake.session.passport.user;
 
-    var room_id = socket.handshake.room_id;
-    if (room_id) {
-      socket.join(room_id);
-      socket.room_id = room_id;
-      var room = Room.getRoom(room_id);
-      if ($.instanceof(room, 'Room')) {
-        room.join(socket.user_id);
-      }
-      else {
-        console.error('no room with room_id', room_id);
-      }
+    var room = Room.getRoom(socket.handshake.room_id);
+    if (room !== undefined) {
+      room.emit('join', socket);
     }
     else {
-      console.error('socket without room_id!');
+      console.error('no room with room_id', room_id);
     }
-
-    socket.on('chatMessage', function(data) {
-      console.log('Emitting message', 'chatMessage', data);
-      io.sockets.in(socket.room_id).emit('chatMessage', data);
-    });
   });
-};
+
+  return io;
+})();

@@ -32,6 +32,12 @@ var express = require('express')
   , sid_name: 'express.sid'
   };
 
+module.exports = {
+  app: app
+, server: server
+, session_settings: session_settings
+};
+
 // Set some Express settings
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
@@ -77,10 +83,10 @@ app.configure('production', function() {
 });
 
 // Define routes that the app responds to
-require('./routes')(app);
+require('./routes');
 
 // Define Socket.IO messaging
-require('./sockets')(server, session_settings);
+require('./modules/sockets');
 
 //tell this server to listen on port X.
 //thus, this server is accessible at the URL:

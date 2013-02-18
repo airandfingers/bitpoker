@@ -1,8 +1,9 @@
-module.exports = function (app) {
-  var User = require('./modules/user')
+module.exports = (function () {
+  var app = require('./app').app
+    , User = require('./modules/user')
     , passport = require('passport')
     , auth = require('./modules/auth')
-    , tables = require('./modules/tables');
+    , Table = require('./modules/tables');
 
   app.get('/login', function (req, res) {
     //console.log("GET /login called!");
@@ -82,17 +83,17 @@ module.exports = function (app) {
     res.render('lobby', {});
   });
 
-  app.get('/table_:id', auth.ensureAuthenticated, function(req, res, next) {
-    var game_id = req.params.id
-      , table = tables.getTable(game_id);
+  app.get('/' + Table.TABLE_PREFIX + ':id', auth.ensureAuthenticated, function(req, res, next) {
+    var table_id = req.params.id
+      , table = Table.getTable(table_id);
 
-    if (table instanceof tables.Table) {
-      res.render('game', {
-        game_id: game_id
+    if (table) {
+      res.render('table', {
+        table_id: table_id
       });
     }
     else {
-      next('No table with ID ' + game_id);
+      next('No table with ID ' + table_id);
     }
   });
 
@@ -104,4 +105,4 @@ module.exports = function (app) {
   app.all('*', function(req, res) {
     res.redirect('/404.html');
   });
-};
+})();

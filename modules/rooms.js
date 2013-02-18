@@ -1,5 +1,6 @@
 module.exports = (function () {
-  var $ = require('node-class');
+  var $ = require('node-class')
+    , io;
   
   /*Extend built-in types with the following methods:
   RegExp.escape       - RegExpEscape; // escape the string so it can be used inside a regex as literal
@@ -16,23 +17,65 @@ module.exports = (function () {
   var Room = $.Class('Room', {
       //instance properties
       id: null
+    , sockets: null
   });
+
+  Room.extends($.Events, true);
 
   Room.implements({
     //instance methods
     __construct: function(obj) {
-      //console.log('constructor called!', obj);
-      Room.rooms[this.id] = this;
+      var self = this;
+      console.log('Room constructor called!', obj);
+      self.parent();
+      Room.rooms[self.id] = self;
+      $.ObjectEach(Room.events, function(function_name, event_name) {
+        self.on(event_name, function() {
+          //console.log(event_name + ' event triggered on ' + self.id + ' with ', arguments);
+          self[function_name].apply(self, arguments);
+        });
+      });
     }
-  , join: function(user) {
-      console.log('User wants to join ' + this.id + ':', user);
+  , join: function(socket) {
+      var self = this;
+      //console.log('Socket joining ' + self.id + ':', socket.user_id);
+      socket.join(self.id);
+      socket.room_id = self.id;
+
+      $.ObjectEach(Room.messages, function(function_name, message_name) {
+        socket.on(message_name, function() {
+          //console.log(message_name + ' message sent to ' + self.id +
+          //            ' from ' + socket.user_id + ' with ', arguments);
+          if (function_name === 'broadcast') {
+            //add the message_name to the arguments list
+            var argsArray = [].slice.apply(arguments);
+            argsArray.unshift(message_name);
+            self.broadcast.apply(self, argsArray);
+          }
+          else {
+            self[function_name].apply(self, arguments);
+          }
+        });
+      });
     }
-  })
+  , broadcast: function(message_name) {
+      io = io ||  require('./sockets');
+      console.log(this.id, 'broadcasting message', arguments);
+      this.sockets = io.sockets.in(this.id)
+      this.sockets.emit.apply(this.sockets, arguments);
+    }
+  });
 
   Object.merge(Room, {
     //class properties
     ROOMS: ['lobby']
   , rooms: {}
+  , events: {
+    join: 'join'
+  }
+  , messages: {
+    chatMessage: 'broadcast'
+  }
   });
 
   Room.static({
