@@ -1,33 +1,43 @@
 module.exports = (function () {
-  var Class = require('node-class').Class
-    , rooms = require('./rooms')
-    , Room = rooms.Room;
+  var $ = require('node-class')
+    , Room = require('./rooms');
+  
+  //See rooms.js
+  //$.populateTypes();
 
-  var NUM_TABLES = 2
-    , TABLE_PREFIX = 'table_';
-
-  var Table = Class('Table', {});
+  var Table = $.Class('Table', {/*instance properties*/}, {
+    //instance methods
+    /*join: function(user) {
+      console.log('User wants to join ', this.id, user);
+    }*/
+  });
 
   Table.extends(Room, false);
 
-  Table.implements({
-    join: function(user) {
-      console.log('User wants to join table', this.id, user);
+  Object.merge(Table, {
+    //class properties
+    NUM_TABLES: 2
+  , TABLE_PREFIX: 'table_'
+  });
+
+  Table.static({
+    //class methods
+    setup: function() {
+      for (var i = 1; i <= Table.NUM_TABLES; i++) {
+        //console.log('creating', i);
+        new Table({
+          id: Table.TABLE_PREFIX + i
+        });
+      }
     }
-  })
-
-  for (var i = 1; i <= NUM_TABLES; i++) {
-    //console.log('creating', i);
-    new Table({
-      id: TABLE_PREFIX + i
-    });
-  }
-
-  return {
-    Table: Table
   , getTable: function(table_id) {
       //console.log('getting', table_id);
-      return rooms.getRoom(TABLE_PREFIX + table_id);
+      return Room.getRoom(Table.TABLE_PREFIX + table_id);
     }
-  }
+  , 
+  });
+
+  Table.setup();
+
+  return Table;
 })();

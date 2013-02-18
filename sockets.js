@@ -2,7 +2,8 @@ module.exports = function (server, session_settings) {
   var io = require('socket.io').listen(server)
     , parseSignedCookies = require('connect').utils.parseSignedCookies
     , cookieParse = require( 'cookie' ).parse
-    , rooms = require('./modules/rooms');
+    , Room = require('./modules/rooms')
+    , $ = require('node-class');
 
   // Configure Socket.IO
   io.enable('browser client minification');  // send minified client
@@ -58,8 +59,8 @@ module.exports = function (server, session_settings) {
     if (room_id) {
       socket.join(room_id);
       socket.room_id = room_id;
-      var room = rooms.getRoom(room_id);
-      if (room instanceof rooms.Room) {
+      var room = Room.getRoom(room_id);
+      if ($.instanceof(room, 'Room')) {
         room.join(socket.user_id);
       }
       else {
