@@ -12,7 +12,7 @@ module.exports = (function () {
   Array.append        - ArrayAppend; //append ar2 to ar, return a cloned one
   Array.insertAt      - ArrayInsertAt; // insert in given position
   */
-  $.populateTypes();
+  //$.populateTypes();
 
   var Room = $.Class('Room', {
       //instance properties
@@ -66,7 +66,7 @@ module.exports = (function () {
     }
   });
 
-  Object.merge(Room, {
+  $.ObjectMerge(Room, {
     //class properties
     ROOMS: ['lobby']
   , rooms: {}

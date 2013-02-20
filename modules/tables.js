@@ -33,7 +33,7 @@ module.exports = (function () {
     }*/
   });
 
-  Object.merge(Table, {
+  $.ObjectMerge(Table, {
     //class properties
     STATUSES: STATUSES
   , NUM_TABLES: 2
