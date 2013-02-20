@@ -1,6 +1,5 @@
 var db_config = require('./db.config') //connection information for users-db
   , mongoose = require('mongoose') //MongoDB abstraction layer
-  , express = require('express')
   , MongoStore = require('connect-mongodb') //used as our session store
   , mongodb = require('mongodb');
 
