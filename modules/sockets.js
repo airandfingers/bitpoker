@@ -20,7 +20,9 @@ module.exports = (function () {
   ]);
   io.set('close timeout', 30);
 
-  io.set('authorization', function (data, accept) {
+  io.set('authorization', function (data, cb) {
+    var error = null
+      , authorized = false;
     // check if there's a cookie header
     if (data.headers.cookie) {
       //console.log('data: ', data);
@@ -28,10 +30,10 @@ module.exports = (function () {
       data.cookie = parseSignedCookies( cookieParse( decodeURIComponent( data.headers.cookie ) ), session_settings.secret );
       data.sessionID = data.cookie[session_settings.sid_name];
       session_settings.store.get(data.sessionID, function (err, session) {
-        if (err || !session) {
-          console.error('get returns', err, session);
-          // if we cannot grab a session, turn down the connection
-          accept(err.message, false);
+        if ( err ) {
+            error = 'Error while looking up session: ' + err
+        } else if ( ! session ) {
+            error = 'No session found with session ID: ' + data.sessionID;
         } else {
           // save the session data and accept the connection
           data.session = session;
@@ -40,16 +42,17 @@ module.exports = (function () {
             , referer = data.headers.referer
             , url = referer.slice(referer.indexOf(host) + host.length + 1);
           data.room_id = url;
-          accept(null, true);
+          // accept (or reject) the incoming connection
+          authorized = true;
         }
+        cb(error, authorized);
       });
     } else {
       // if there isn't, turn down the connection with a message
       // and leave the function.
-      return accept('No cookie transmitted.', false);
+      error = 'No cookie transmitted.';
+      cb(error, authorized);
     }
-    // accept the incoming connection
-    accept(null, true);
   });
 
   io.sockets.on('connection', function(socket) {

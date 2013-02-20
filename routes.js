@@ -5,6 +5,8 @@ module.exports = (function () {
     , auth = require('./modules/auth')
     , Table = require('./modules/tables');
 
+  var base_page = '/lobby';
+
   app.get('/login', function (req, res) {
     //console.log("GET /login called!");
     //Show the login form.
@@ -35,7 +37,7 @@ module.exports = (function () {
       res.redirect(target);
     }
     else {
-      res.redirect('/');
+      res.redirect(base_page);
     }
   });
 
@@ -76,7 +78,7 @@ module.exports = (function () {
     //console.log("GET /logout called!");
     //End this user's session.
     req.logout();
-    res.redirect('/');
+    res.redirect(base_page);
   });
 
   app.get('/lobby', function(req, res) {
