@@ -64,7 +64,7 @@ header {
     overflow: visible;
     left:auto;
 }
-
+/* I can't remember what this was for, so I'm commenting it out, as it's breaking the temporary bitcoin info page h3
 h3 {
     font-size: 1em;
     color: #efefff;
@@ -72,6 +72,7 @@ h3 {
     margin: 0px auto 0 auto;
     margin-bottom: 20px;
 }
+*/
 
 #login, #register {
     width: 200px;

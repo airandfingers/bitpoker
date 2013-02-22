@@ -29,30 +29,38 @@ module.exports = (function () {
       // if there is, parse the cookie
       data.cookie = parseSignedCookies( cookieParse( decodeURIComponent( data.headers.cookie ) ), session_settings.secret );
       data.sessionID = data.cookie[session_settings.sid_name];
-      session_settings.store.get(data.sessionID, function (err, session) {
-        if ( err ) {
-            error = 'Error while looking up session: ' + err
-        } else if ( ! session ) {
-            error = 'No session found with session ID: ' + data.sessionID;
-        } else {
-          // save the session data and accept the connection
-          data.session = session;
-          // parse the referer URL to determine which room this socket wants to join
-          var host = data.headers.host
-            , referer = data.headers.referer
-            , url = referer.slice(referer.indexOf(host) + host.length + 1);
-          data.room_id = url;
-          // accept (or reject) the incoming connection
-          authorized = true;
-        }
+      if (session_settings.store.getCollection() === null) {
+        error = 'Session store isn\'t ready yet.';
         cb(error, authorized);
-      });
+      }
+      else {
+        session_settings.store.get(data.sessionID, onSessionLookup);
+      }        
     } else {
       // if there isn't, turn down the connection with a message
       // and leave the function.
       error = 'No cookie transmitted.';
       cb(error, authorized);
     }
+
+    function onSessionLookup(err, session) {
+      if (err) {
+          error = 'Error while looking up session: ' + err
+      } else if (! session) {
+          error = 'No session found with session ID: ' + data.sessionID;
+      } else {
+        // save the session data and accept the connection
+        data.session = session;
+        // parse the referer URL to determine which room this socket wants to join
+        var host = data.headers.host
+          , referer = data.headers.referer
+          , url = referer.slice(referer.indexOf(host) + host.length + 1);
+        data.room_id = url;
+        // accept (or reject) the incoming connection
+        authorized = true;
+      }
+      cb(error, authorized);
+    };
   });
 
   io.sockets.on('connection', function(socket) {

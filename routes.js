@@ -8,12 +8,13 @@ module.exports = (function () {
   var base_page = '/lobby';
 
   //These app.get functions will display their respective ejs page.
-  app.get('/account', function(req, res) {
+  app.get('/account', auth.ensureAuthenticated, function(req, res) {
     res.render('account', {
       message: req.flash('error'),
       next: req.query.next,
       title: 'Account', 
     });
+    res.render('account', {username: req.user.username});
   });
 
     app.get('/bitcoin_info', function(req, res) {
@@ -24,6 +25,16 @@ module.exports = (function () {
     });
   });
 
+    //home and index link to the same page
+    app.get('/home', function(req, res) {
+    res.render('index', {
+      message: req.flash('error'),
+      next: req.query.next,
+      title: 'Homepage', 
+    });
+  });
+
+    //home and index link to the same page
     app.get('/index', function(req, res) {
     res.render('index', {
       message: req.flash('error'),
