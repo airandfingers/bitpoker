@@ -4,7 +4,7 @@ module.exports = (function () {
     , io = require('socket.io').listen(app.server)
     , parseSignedCookies = require('connect').utils.parseSignedCookies
     , cookieParse = require( 'cookie' ).parse
-    , Room = require('./rooms');
+    , Room = require('./rooms').Model;
 
   // Configure Socket.IO
   io.enable('browser client minification');  // send minified client
@@ -59,9 +59,10 @@ module.exports = (function () {
     //console.log('A socket with sessionID ' + socket.handshake.sessionID + ' connected!');
     socket.user_id = socket.handshake.session.passport.user;
 
-    var room = Room.getRoom(socket.handshake.room_id);
+    var room_id = socket.handshake.room_id //socket.handshake = data object from authorization handler, above
+      , room = Room.getRoom(room_id);
     if (room !== undefined) {
-      room.emit('join', socket);
+      room.join(socket);
     }
     else {
       console.error('no room with room_id', room_id);

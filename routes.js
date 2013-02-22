@@ -3,7 +3,7 @@ module.exports = (function () {
     , User = require('./modules/user')
     , passport = require('passport')
     , auth = require('./modules/auth')
-    , Table = require('./modules/tables');
+    , Table = require('./modules/tables').Model;
 
   var base_page = '/lobby';
 
