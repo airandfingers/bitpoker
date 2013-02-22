@@ -7,13 +7,54 @@ module.exports = (function () {
 
   var base_page = '/lobby';
 
+  //These app.get functions will display their respective ejs page.
+  app.get('/account', function(req, res) {
+    res.render('account', {
+      message: req.flash('error'),
+      next: req.query.next,
+      title: 'Account', 
+    });
+  });
+
+    app.get('/bitcoin_info', function(req, res) {
+    res.render('bitcoin_info', {
+      message: req.flash('error'),
+      next: req.query.next,
+      title: 'bitcoin_info', 
+    });
+  });
+
+    app.get('/index', function(req, res) {
+    res.render('index', {
+      message: req.flash('error'),
+      next: req.query.next,
+      title: 'Homepage', 
+    });
+  });
+
+  app.get('/legal_info', function (req, res) {
+    res.render('legal_info', {
+      message: req.flash('error'),
+      next: req.query.next,
+      title: 'legal_info',
+    });
+  })
+
   app.get('/login', function (req, res) {
     //console.log("GET /login called!");
     //Show the login form.
     res.render('login', {
       message: req.flash('error'),
       next: req.query.next,
-      title: 'Bitcoin Poker Login'
+      title: 'Bitcoin Poker Login',
+    });
+  });
+
+  app.get('/promo', function (req, res) {
+    res.render('promo', {
+      message: req.flash('error'),
+      next: req.query.next,
+      title: 'promo',
     });
   });
 
@@ -24,6 +65,15 @@ module.exports = (function () {
       title: 'Ready to play?', 
     });
   });
+
+  app.get('/site_info', function(req, res) {
+    res.render('site_info', {
+      message: req.flash('error'),
+      next: req.query.next,
+      title: 'site_info', 
+    });
+  });
+
 
   app.post('/login',
            passport.authenticate('local', 
