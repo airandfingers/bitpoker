@@ -10,43 +10,33 @@ module.exports = (function () {
   //These app.get functions will display their respective ejs page.
   app.get('/account', auth.ensureAuthenticated, function(req, res) {
     res.render('account', {
-      message: req.flash('error'),
-      next: req.query.next,
       title: 'Account', 
+      username: req.user.username,      
     });
-    res.render('account', {username: req.user.username});
   });
 
-    app.get('/bitcoin_info', function(req, res) {
+  app.get('/bitcoin_info', function(req, res) {
     res.render('bitcoin_info', {
-      message: req.flash('error'),
-      next: req.query.next,
       title: 'bitcoin_info', 
     });
   });
 
     //home and index link to the same page
-    app.get('/home', function(req, res) {
+  app.get('/home', function(req, res) {
     res.render('index', {
-      message: req.flash('error'),
-      next: req.query.next,
       title: 'Homepage', 
     });
   });
 
     //home and index link to the same page
-    app.get('/index', function(req, res) {
+  app.get('/index', function(req, res) {
     res.render('index', {
-      message: req.flash('error'),
-      next: req.query.next,
       title: 'Homepage', 
     });
   });
 
   app.get('/legal_info', function (req, res) {
     res.render('legal_info', {
-      message: req.flash('error'),
-      next: req.query.next,
       title: 'legal_info',
     });
   })
@@ -63,8 +53,6 @@ module.exports = (function () {
 
   app.get('/promo', function (req, res) {
     res.render('promo', {
-      message: req.flash('error'),
-      next: req.query.next,
       title: 'promo',
     });
   });
@@ -79,8 +67,6 @@ module.exports = (function () {
 
   app.get('/site_info', function(req, res) {
     res.render('site_info', {
-      message: req.flash('error'),
-      next: req.query.next,
       title: 'site_info', 
     });
   });
