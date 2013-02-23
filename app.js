@@ -27,7 +27,7 @@ var express = require('express')
   , EXPRESS_PORT = 9000
 // Define some session-related settings
   , session_settings = {
-    store: require( './modules/db' ).session_store
+    store: require('./models/db').session_store
   , secret: 'All1N0rGoH0M3'
   , sid_name: 'express.sid'
   };
@@ -86,7 +86,7 @@ app.configure('production', function() {
 require('./routes');
 
 // Define Socket.IO messaging
-require('./modules/sockets');
+require('./sockets');
 
 //tell this server to listen on port X.
 //thus, this server is accessible at the URL:

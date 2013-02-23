@@ -1,10 +1,11 @@
 module.exports = (function () {
-  var app = require('../app')
+  var app = require('./app')
     , session_settings = app.session_settings
     , io = require('socket.io').listen(app.server)
     , parseSignedCookies = require('connect').utils.parseSignedCookies
-    , cookieParse = require( 'cookie' ).parse
-    , Room = require('./rooms').Model;
+    , cookieParse = require('cookie').parse
+
+    , _ = require('underscore');
 
   // Configure Socket.IO
   io.enable('browser client minification');  // send minified client
@@ -20,6 +21,7 @@ module.exports = (function () {
   ]);
   io.set('close timeout', 30);
 
+  //authorization handler - 
   io.set('authorization', function (data, cb) {
     var error = null
       , authorized = false;
@@ -51,10 +53,11 @@ module.exports = (function () {
       } else {
         // save the session data and accept the connection
         data.session = session;
-        // parse the referer URL to determine which room this socket wants to join
+        // parse the referer URL to determine which site this socket originates from
         var host = data.headers.host
           , referer = data.headers.referer
-          , url = referer.slice(referer.indexOf(host) + host.length + 1);
+          , url = referer.slice(referer.indexOf(host) + host.length + 1); // get everything after
+                                                                    //[protocol]://[host]:[port]/
         data.room_id = url;
         // accept (or reject) the incoming connection
         authorized = true;
@@ -63,19 +66,33 @@ module.exports = (function () {
     };
   });
 
-  io.sockets.on('connection', function(socket) {
-    //console.log('A socket with sessionID ' + socket.handshake.sessionID + ' connected!');
-    socket.user_id = socket.handshake.session.passport.user;
-
-    var room_id = socket.handshake.room_id //socket.handshake = data object from authorization handler, above
-      , room = Room.getRoom(room_id);
-    if (room !== undefined) {
-      room.join(socket);
-    }
-    else {
-      console.error('no room with room_id', room_id);
-    }
-  });
+  io.bindMessageHandlers = function(socket, messages) {
+    var self = this;
+    if (! _.isObject(self)) { console.error('no context object given!'); return; }
+    var handler_name, handler;
+    _.each(messages, function(how_to_handle, message_name) {
+      handler_name = how_to_handle.handler;
+      handler = self[handler_name];
+      if (! _.isFunction(handler)) {
+        console.error('context object has no function', handler_name);
+        return;
+      }
+      socket.on(message_name, function() {
+        console.log(/*self,*/'received', message_name, 'message'); /*'from', socket.user_id,*/
+        if (how_to_handle.pass_message_name !== true) {
+          //console.log('calling instance\'s', handler_name, 'with', arguments);
+          handler.apply(self, arguments);
+        }
+        else {
+          //add message_name to front of arguments list
+          var argsArray = [].slice.apply(arguments);
+          argsArray.unshift(message_name);
+          //console.log('calling instance\'s', handler_name, 'with', argsArray);
+          handler.apply(self, argsArray);
+        }
+      });
+    });
+  }
 
   return io;
 })();

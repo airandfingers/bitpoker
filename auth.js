@@ -1,5 +1,5 @@
 module.exports = (function () {
-  var User = require('./user')
+  var User = require('./models/user')
     , passport = require('passport')
     , LocalStrategy = require('passport-local').Strategy;
 

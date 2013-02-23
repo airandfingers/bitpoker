@@ -1,9 +1,9 @@
 module.exports = (function () {
   var app = require('./app').app
-    , User = require('./modules/user')
+    , User = require('./models/user')
     , passport = require('passport')
-    , auth = require('./modules/auth')
-    , Table = require('./modules/tables').Model;
+    , auth = require('./auth')
+    , Table = require('./models/table');
 
   var base_page = '/lobby';
 
