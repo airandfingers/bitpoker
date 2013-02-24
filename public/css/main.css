@@ -107,7 +107,7 @@ html {
     min-width: 100%;
     min-height: 100%;
 
-    font-family: arial, sans-serif;
+    font-family: futura, arial, sans-serif;
 }
 
 #welcome {
@@ -148,6 +148,39 @@ html {
     width: 50%;
 }
 
+#users {
+    margin: 10%;
+    border: 5px dashed black;
+    width: 50%;
+}
+
+#users > ul {
+    list-style-type: none;
+    margin: 1%;
+    padding: 0;
+
+}
+
+#users > ul > li:nth-child(2n+1) {
+    background: -moz-linear-gradient(left,  rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(0,0,0,0.65)), color-stop(100%,rgba(0,0,0,0))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(left,  rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(left,  rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(left,  rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%); /* IE10+ */
+    background: linear-gradient(to right,  rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a6000000', endColorstr='#00000000',GradientType=1 ); /* IE6-9 */
+}
+
+#users > ul > li:nth-child(2n) {
+    background: -moz-linear-gradient(left,  rgba(125,185,232,0) 0%, rgba(30,87,153,1) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(125,185,232,0)), color-stop(100%,rgba(30,87,153,1))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(left,  rgba(125,185,232,0) 0%,rgba(30,87,153,1) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(left,  rgba(125,185,232,0) 0%,rgba(30,87,153,1) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(left,  rgba(125,185,232,0) 0%,rgba(30,87,153,1) 100%); /* IE10+ */
+    background: linear-gradient(to right,  rgba(125,185,232,0) 0%,rgba(30,87,153,1) 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#007db9e8', endColorstr='#1e5799',GradientType=1 ); /* IE6-9 */
+
+}
 /* ==========================================================================
    Helper classes
    ========================================================================== */
