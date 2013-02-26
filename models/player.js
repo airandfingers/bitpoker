@@ -15,8 +15,10 @@ module.exports = (function () {
      *   gets compiled into one or more models */
     , PlayerSchema = new Schema({
     // instance properties
-      // this room's name and location
-      room_id : String 
+      table: { type: ObjectId, ref: 'Table' }
+    , socket: Schema.Types.Mixed
+    , username: String
+    , chips: Number
     });
 
   var static_properties = {
@@ -56,6 +58,10 @@ module.exports = (function () {
     sockets.emit.apply(sockets, arguments);
   };
 
+  PlayerSchema.methods.toObject = function() {
+    return { username: this.username, chips: this.chips };
+  };
+
   /* the model - a fancy constructor compiled from the schema:
    *   a function that creates a new document
    *   has static methods and properties attached to it
@@ -66,21 +72,6 @@ module.exports = (function () {
   _.extend(Player, static_properties);
 
   Player.setup();
-
-  //listen for incoming socket connections
-  io.sockets.on('connection', function(socket) {
-    //console.log('A socket with sessionID ' + socket.handshake.sessionID + ' connected!');
-    socket.user_id = socket.handshake.session.passport.user;
-
-    var room_id = socket.handshake.room_id //socket.handshake = data object from authorization handler
-      , room = Player.getPlayer(room_id);
-    if (room !== undefined) {
-      room.join(socket);
-    }
-    else {
-      console.error('no room with room_id', room_id);
-    }
-  });
 
   return Player;
 })();

@@ -15,6 +15,8 @@ module.exports = (function () {
     // instance properties
       // this room's name and location
       room_id : String 
+      // handlers to call when a socket joins this room
+    , joinHandlers : { type: [], default: [] }
     });
 
   var static_properties = {
@@ -26,6 +28,7 @@ module.exports = (function () {
     // message-to-handler map, { message_name: instance_method_name }
   , messages: {
       chatMessage: { handler: 'broadcast', pass_message_name: true }
+    , fold: { handler: 'broadcast' }
     }
   };
 
@@ -52,13 +55,26 @@ module.exports = (function () {
 
   // instance methods - document.method()
   RoomSchema.methods.join = function(socket) {
-    var self = this;
-    //console.log('Socket joining ' + self.room_id + ':', socket.user_id);
-    socket.join(self.room_id);
-    socket.room_id = self.room_id;
+    //console.log('Socket joining ' + this.room_id + ':', socket.user_id);
+    socket.join(this.room_id);
+    socket.room_id = this.room_id;
 
     // attach handlers for messages as defined in Room.messages
-    io.bindMessageHandlers.call(self, socket, static_properties.messages);
+    io.bindMessageHandlers.call(this, socket, static_properties.messages);
+
+    // call any joinHandlers that have been set for this room
+    _.each(this.joinHandlers, function(handler, i) {
+      handler(socket);
+    });
+  };
+
+  RoomSchema.methods.setJoinHandler = function(handler) {
+    if (! _.isFunction(handler)) {
+      console.error('setJoinHandler called with', handler);
+    }
+    else {
+      this.joinHandlers.push(handler);
+    }
   };
 
   RoomSchema.methods.broadcast = function(message_name) {
