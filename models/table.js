@@ -114,7 +114,6 @@ module.exports = (function () {
   };
 
   TableSchema.methods.seatPlayer = function(socket, seat_num) {
-    console.log('seatPlayer called');
     var player = this.players[socket.user_id].toObject();
     this.seats[seat_num] = player;
     socket.broadcast.emit('player_sits', player, seat_num, false);
@@ -122,7 +121,6 @@ module.exports = (function () {
   };
 
   TableSchema.methods.unseatPlayer = function(socket, seat_num) {
-    console.log('unseatPlayer called');
     var player = this.players[socket.user_id].toObject();
     this.seats[seat_num] = null;
     socket.broadcast.emit('player_stands', player, seat_num, false);

@@ -1,15 +1,23 @@
 module.exports = (function() {
-  var mongoose = require('mongoose') //MongoDB abstraction layer
-    , crypto = require('crypto')
-    , db = require('./db')
-    , Schema = mongoose.Schema
-    , ObjectId = Schema.ObjectId
+  var mongoose = require('mongoose') // MongoDB abstraction layer
+    , Schema = mongoose.Schema // Mongoose Schema constructor
+    , ObjectId = Schema.ObjectId // Mongoose ObjectId type
 
-    , UserSchema = new Schema({
-      username        : String //the user's username
-    , password        : String //the user's password, hashed with SHA-1
-    });
+    , crypto = require('crypto') // encryption utility library
+    
+    , db = require('./db'); // make sure db is connected
 
+  /* the schema - defines the "shape" of the documents:
+   *   gets compiled into one or more models */
+  var UserSchema = new Schema({
+  // instance properties - document.field_name
+    //the user's username
+    username        : String
+    //the user's password, hashed with SHA-1
+  , password        : String
+  });
+
+  // static methods - Model.method()
   UserSchema.statics.authenticate = function(username, password, cb) {
     var model = this
       , shasum = crypto.createHash('sha1');
@@ -25,13 +33,16 @@ module.exports = (function() {
     });
   };
 
+  // gets called before a document is saved
   UserSchema.pre('save', function(next) {
     var user = this
+    // encrypt the user's password
       , shasum = crypto.createHash('sha1');
     shasum.update(user.password);
     shasum = shasum.digest('hex');
     user.password = shasum;
 
+    // check to make sure that the username is unique
     User.findOne({username : user.username}, function(err, result) {
       if (err) {
           next(err);
@@ -44,6 +55,10 @@ module.exports = (function() {
     });
   });
 
+  /* the model - a fancy constructor compiled from the schema:
+   *   a function that creates a new document
+   *   has static methods and properties attached to it
+   *   gets exported by this module */
   var User = mongoose.model('User', UserSchema);
 
   return User;
