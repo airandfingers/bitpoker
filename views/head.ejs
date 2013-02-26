@@ -26,14 +26,20 @@
             <ul>
                 <%
                 var pages = [
-                    { name: 'lobby', href: '/' },
-                    { name: 'games', 
+                    { name: 'bitcoin', href: '/index' },                  
+                    { name: 'lobby', href: '/lobby' },
+                    { name: 'tables', 
                       href: '#', 
                       dropdown: [
-                        { name: '1', href: '/game/1' },
-                        { name: '2', href: '/game/2' },
+                        { name: '1', href: '/table_1' },
+                        { name: '2', href: '/table_2' },
                       ],
-                    }
+                    },
+                    { name: 'account', href: '/account' },
+                    { name: 'bitcoin_info', href: '/bitcoin_info' },
+                    { name: 'site_info', href: '/site_info' },
+                    { name: 'legal_info', href: '/legal_info' },
+                    { name: 'promotions', href: '/promo' }                      
                 ],
                     i,
                     j,
@@ -71,20 +77,61 @@
                         <% } %>
                     </li>
                 <% } %>
-                <li class="right">
-                  <% if (locals.username) { %>
-                    <a href="/logout">LOGOUT</a>
-                  <% } else { %>
-                    <a href="/login">LOGIN</a>
-                  <% } %>
-                </li>
-                <li class="right">
-                  <% if (locals.username) { %>
-                    <%= locals.username.toUpperCase() %>    
-                  <% } else { %>
-                    <a href="/register">REGISTER</a>
-                  <% } %>
-                </li>
+                    <!-- REGISTER dropdown Link -->
+                    <li class="right">
+                      <% if (locals.username) { %>
+                        <%= locals.username.toUpperCase() %>    
+                      <% } else { %>
+                        <a href="#" id="register_trigger">REGISTER</a>
+                      <% } %>
+                    </li>
+                    <% if (! locals.username) { %>                    
+                    <div id="register" class="dropdown_form">
+                      <form action="/register" method="post">
+                          <div class="username">
+                              <label>Username:</label>
+                              <input type="text" name="username" placeholder="username" autofocus /><br/>
+                          </div>
+                          <div class="password">
+                              <label>Password:</label>
+                              <input type="password" name="password" placeholder="password" />
+                          </div>
+                          <div class="password">
+                              <label>Confirm Password:</label>
+                              <input type="password" name="password2" placeholder="re-type password" />
+                          </div>
+                          <div class="submit_button">
+                              <input type="submit" value="Log In" class="button"/>
+                          </div>
+                      </form>
+                    </div>
+                    <% } %>
+
+                    <!--Login or Logout Link-->
+                    <li class="right">
+                        <% if (locals.username) { %>
+                          <a href="/logout">LOGOUT</a>
+                        <% } else { %>
+                          <a href="#" id="login_trigger">LOGIN</a>
+                        <% } %>
+                    </li>
+                    <% if (! locals.username) { %>
+                    <div id="login" class="dropdown_form">
+                      <form action="/login" method="post">
+                        <div class="username">
+                          <label>Username:</label>
+                          <input type="text" name="username" placeholder="username" autofocus /><br/>
+                        </div>
+                        <div class="password">
+                          <label>Password:</label>
+                          <input type="password" name="password" placeholder="password" />
+                        </div>
+                        <div class="submit_button">
+                          <input type="submit" value="Login" class="button" />
+                        </div>
+                      </form>
+                    </div>                          
+                        <% } %>
             </ul>
         </div>
     </header>

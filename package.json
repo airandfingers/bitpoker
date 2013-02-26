@@ -6,8 +6,9 @@
     "connect-flash": "latest",
     "ejs": "latest",
     "express": "latest",
-    "connect-mongo": "0.2.0",
+    "connect-mongodb": "latest",
     "mime": "latest",
+    "mongodb": "latest",
     "mongoose": "latest",
     "passport": "latest",
     "passport-local": "latest",
@@ -15,7 +16,9 @@
     "underscore": "latest",
     "underscore.string": "latest",
     "connect": "~2.7.2",
-    "cookie": "0.0.5"
+    "cookie": "0.0.5",
+    "poker-evaluator": "0.0.4",
+    "node-class": "0.0.24"
   },
   "subdomain": "rpwm-server",
   "domains": [],

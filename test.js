@@ -2,10 +2,10 @@
 var crypto = require('crypto')
   , _ = require('underscore')
 //test boilerplate
-  , tu = require('./modules/test_utils')
+  , tu = require('./test_utils')
 //modules being tested
   , app = require('./app')
-  , User = require('./modules/user');
+  , User = require('./models/user');
 
 describe('bootstrap', function() {
 

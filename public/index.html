@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>20. Fundamentals of JavaScript Closure</title>
+  <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jquery/jquery-1.7.1.min.js"></script>
+  <script type="text/javascript" src="pokertable.js"></script>
+  
+
+
+
+</head>
+<body>
+    <form id="tableVariables">
+        table name: <input type="text" id="table name"><br>
+currency: <input type="text"  id="currency"><br>
+max buyin (in BB's): <input type="text" id="maxBuyIn"><br>
+        min buyin (in BB's): <input type="text" id="minBuyIn"><br>
+        seats at table: <input type="text" id="seats"><br>
+        BB: <input type="text" id="bb"><br>
+        SB: <input type="text" id="sb"><br>
+        ante: <input type="text" id="ante"><br>
+       </form>
+    <form id="maxBetType">
+     <input type="radio" name="maxBetType" value="NL">NL<br>
+     <input type="radio" name="maxBetType" value="limit">limit<br>
+     <input type="radio" name="maxBetType" value="PL">PL<br>
+        </form>
+    <form>
+     <input type="button" id ="submit"  value="Create Poker Table!">
+    </form>
+
+ 
+        <form id="playerInfo">
+    <input type="button" id="seat0" value="player 0" disabled ="disabled">
+            <input type="button" id="p0chips" value="0" disabled ="disabled">
+    <input type="button" id="seat1" value="player 1" disabled ="disabled">
+            <input type="button" id="p1chips" value="0" disabled ="disabled">
+    <input type="button" id="seat2" value="player 2" disabled ="disabled">
+            <input type="button" id="p2chips" value="0" disabled ="disabled">
+    <input type="button" id="seat3" value="player 3" disabled ="disabled">
+            <input type="button" id="p3chips" value="0" disabled ="disabled">
+    <input type="button" id="seat4" value="player 4" disabled ="disabled">
+             <input type="button" id="p4chips" value="0" disabled ="disabled">
+    <input type="button" id="seat5" value="player 5" disabled ="disabled">
+            <input type="button" id="p5chips" value="0" disabled ="disabled">
+    <input type="button" id="seat6" value="player 6" disabled ="disabled">
+             <input type="button" id="p6chips" value="0" disabled ="disabled">
+    <input type="button" id="seat7" value="player 7" disabled ="disabled">
+            <input type="button" id="p7chips" value="0" disabled ="disabled">
+    <input type="button" id="seat8" value="player 8" disabled ="disabled">
+            <input type="button" id="p8chips" value="0" disabled ="disabled">
+    <input type="button" id="seat9" value="player 9" disabled ="disabled">
+            <input type="button" id="p9chips" value="0" disabled ="disabled">
+             </form>
+    <br>
+
+  <form id="boardInfo">
+    <input type="button" id="community" value="" disabled ="disabled">
+      <input type="button" id="pot" value="" disabled ="disabled">
+      <input type="button" id="maxRaise" value="" disabled ="disabled">
+      <input type="button" id="deal" value="deal!" >
+      </form>
+
+<!--
+  <h1 id="seat0">player 0</h1><h1 id = p0chips>chips: </h1>
+  <h1 id="seat1">player 1</h1><h1 id = p1chips>chips: </h1>
+  <h1 id="seat2">player 2</h1><h1 id = p2chips>chips: </h1>
+  <h1 id="seat3">player 3</h1><h1 id = p3chips>chips: </h1>
+  <h1 id="seat4">player 4</h1><h1 id = p4chips>chips: </h1>
+  <h1 id="seat5">player 5</h1><h1 id = p5chips>chips: </h1>
+  <h1 id="seat6">player 6</h1><h1 id = p6chips>chips: </h1>
+  <h1 id="seat7">player 7</h1><h1 id = p7chips>chips: </h1>
+  <h1 id="seat8">player 8</h1><h1 id = p8chips>chips: </h1>
+  <h1 id="seat9">player 9</h1><h1 id = p9chips>chips: </h1>
+
+
+
+  <h1 id="pot">pot size: </h1><h1 id = p9chips>max raise to: </h1>
+
+-->
+
+
+
+
+    <br>
+    <br>
+    <br>
+    <br>
+    <form>
+    <input type="button" id="reset" value="click to reset everything"
+          </form>
+
+</body>
+</html>

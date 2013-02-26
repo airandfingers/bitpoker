@@ -1,5 +1,5 @@
 module.exports = (function () {
-  var User = require('./user')
+  var User = require('./models/user')
     , passport = require('passport')
     , LocalStrategy = require('passport-local').Strategy;
 
@@ -33,7 +33,7 @@ module.exports = (function () {
 
   passport.deserializeUser(function(id, done) {
     //console.log("deserializeUser called!");
-    User.findById(id, function(err, result) {
+    User.findById(id, 'username', function(err, result) {
       if (err) { return done(err); }
       if (! result) {
         return done(null, false, {message: 'Unknown id!'});

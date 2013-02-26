@@ -1,7 +1,11 @@
-module.exports = function (server, session_settings) {
-  var io = require('socket.io').listen(server)
+module.exports = (function () {
+  var app = require('./app')
+    , session_settings = app.session_settings
+    , io = require('socket.io').listen(app.server)
     , parseSignedCookies = require('connect').utils.parseSignedCookies
-    , cookieParse = require( 'cookie' ).parse;
+    , cookieParse = require('cookie').parse
+
+    , _ = require('underscore');
 
   // Configure Socket.IO
   io.enable('browser client minification');  // send minified client
@@ -17,49 +21,78 @@ module.exports = function (server, session_settings) {
   ]);
   io.set('close timeout', 30);
 
-  io.set('authorization', function (data, accept) {
+  //authorization handler - 
+  io.set('authorization', function (data, cb) {
+    var error = null
+      , authorized = false;
     // check if there's a cookie header
     if (data.headers.cookie) {
       //console.log('data: ', data);
       // if there is, parse the cookie
       data.cookie = parseSignedCookies( cookieParse( decodeURIComponent( data.headers.cookie ) ), session_settings.secret );
       data.sessionID = data.cookie[session_settings.sid_name];
-      session_settings.store.get(data.sessionID, function (err, session) {
-        if (err || !session) {
-          console.log('get returns', err, session);
-          // if we cannot grab a session, turn down the connection
-          accept('Error', false);
-        } else {
-          // save the session data and accept the connection
-          data.session = session;
-          accept(null, true);
-        }
-      });
+      if (session_settings.store.getCollection() === null) {
+        error = 'Session store isn\'t ready yet.';
+        cb(error, authorized);
+      }
+      else {
+        session_settings.store.get(data.sessionID, onSessionLookup);
+      }        
     } else {
       // if there isn't, turn down the connection with a message
       // and leave the function.
-      return accept('No cookie transmitted.', false);
+      error = 'No cookie transmitted.';
+      cb(error, authorized);
     }
-    // accept the incoming connection
-    accept(null, true);
+
+    function onSessionLookup(err, session) {
+      if (err) {
+          error = 'Error while looking up session: ' + err
+      } else if (! session) {
+          error = 'No session found with session ID: ' + data.sessionID;
+      } else {
+        // save the session data and accept the connection
+        data.session = session;
+        // parse the referer URL to determine which site this socket originates from
+        var host = data.headers.host
+          , referer = data.headers.referer
+          , url = referer.slice(referer.indexOf(host) + host.length + 1); // get everything after
+                                                                    //[protocol]://[host]:[port]/
+        data.room_id = url;
+        // accept (or reject) the incoming connection
+        authorized = true;
+      }
+      cb(error, authorized);
+    };
   });
 
-  io.sockets.on('connection', function(socket) {
-    //console.log('A socket with sessionID ' + socket.handshake.sessionID + ' connected!');
-    socket.emit('syn ack');
-
-    socket.on('ack', function () {
-      console.log('Ack received.');
+  io.bindMessageHandlers = function(socket, messages) {
+    var self = this;
+    if (! _.isObject(self)) { console.error('no context object given!'); return; }
+    var handler_name, handler;
+    _.each(messages, function(how_to_handle, message_name) {
+      handler_name = how_to_handle.handler;
+      handler = self[handler_name];
+      if (! _.isFunction(handler)) {
+        console.error('context object has no function', handler_name);
+        return;
+      }
+      socket.on(message_name, function() {
+        console.log(/*self,*/'received', message_name, 'message'); /*'from', socket.user_id,*/
+        if (how_to_handle.pass_message_name !== true) {
+          //console.log('calling instance\'s', handler_name, 'with', arguments);
+          handler.apply(self, arguments);
+        }
+        else {
+          //add message_name to front of arguments list
+          var argsArray = [].slice.apply(arguments);
+          argsArray.unshift(message_name);
+          //console.log('calling instance\'s', handler_name, 'with', argsArray);
+          handler.apply(self, argsArray);
+        }
+      });
     });
+  }
 
-    socket.on('joinRoom', function(data) {
-      console.log('joinRoom message received:', data);
-      socket.join(data.room);
-    })
-
-    socket.on('chatMessage', function(data) {
-      console.log('Emitting message', 'chatMessage', data);
-      io.sockets.in(data.room).emit('chatMessage', data);
-    });
-  });
-};
+  return io;
+})();

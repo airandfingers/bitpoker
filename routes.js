@@ -1,7 +1,45 @@
-module.exports = function (app) {
-  var User = require('./modules/user'),
-      passport = require('passport'),
-      auth = require('./modules/auth');
+module.exports = (function () {
+  var app = require('./app').app
+    , User = require('./models/user')
+    , passport = require('passport')
+    , auth = require('./auth')
+    , Table = require('./models/table');
+
+  var base_page = '/lobby';
+
+  //These app.get functions will display their respective ejs page.
+  app.get('/account', auth.ensureAuthenticated, function(req, res) {
+    res.render('account', {
+      title: 'Account', 
+      username: req.user.username,      
+    });
+  });
+
+  app.get('/bitcoin_info', function(req, res) {
+    res.render('bitcoin_info', {
+      title: 'bitcoin_info', 
+    });
+  });
+
+    //home and index link to the same page
+  app.get('/home', function(req, res) {
+    res.render('index', {
+      title: 'Homepage', 
+    });
+  });
+
+    //home and index link to the same page
+  app.get('/index', function(req, res) {
+    res.render('index', {
+      title: 'Homepage', 
+    });
+  });
+
+  app.get('/legal_info', function (req, res) {
+    res.render('legal_info', {
+      title: 'legal_info',
+    });
+  })
 
   app.get('/login', function (req, res) {
     //console.log("GET /login called!");
@@ -9,7 +47,13 @@ module.exports = function (app) {
     res.render('login', {
       message: req.flash('error'),
       next: req.query.next,
-      title: 'Bitcoin Poker Login'
+      title: 'Bitcoin Poker Login',
+    });
+  });
+
+  app.get('/promo', function (req, res) {
+    res.render('promo', {
+      title: 'promo',
     });
   });
 
@@ -20,6 +64,13 @@ module.exports = function (app) {
       title: 'Ready to play?', 
     });
   });
+
+  app.get('/site_info', function(req, res) {
+    res.render('site_info', {
+      title: 'site_info', 
+    });
+  });
+
 
   app.post('/login',
            passport.authenticate('local', 
@@ -33,16 +84,16 @@ module.exports = function (app) {
       res.redirect(target);
     }
     else {
-      res.redirect('/');
+      res.redirect(base_page);
     }
   });
 
   //bobby's attempt at sending register the new information
   app.post('/register', function (req, res, next) {
-    var username = req.body.username,
-        password = req.body.password,
-        password_confirm = req.body.password2,
-        target = req.body.next || '/';
+    var username = req.body.username
+      , password = req.body.password
+      , password_confirm = req.body.password2
+      , target = req.body.next || '/';
 
     if (password === password_confirm) {
       new User({
@@ -74,18 +125,25 @@ module.exports = function (app) {
     //console.log("GET /logout called!");
     //End this user's session.
     req.logout();
-    res.redirect('/');
+    res.redirect(base_page);
   });
 
-  app.get('/', function(req, res) {
+  app.get('/lobby', function(req, res) {
     res.render('lobby', {});
   });
 
-  app.get('/game/:id', auth.ensureAuthenticated, function(req, res) {
-    var game_id = req.params.id;
-    res.render('game', {
-      game_id: game_id
-    });
+  app.get('/' + Table.TABLE_PREFIX + ':id', auth.ensureAuthenticated, function(req, res, next) {
+    var table_id = req.params.id
+      , table = Table.getTable(table_id);
+
+    if (table) {
+      res.render('table', {
+        table_id: table_id
+      });
+    }
+    else {
+      next('No table with ID ' + table_id);
+    }
   });
 
   //Handle all other cases with a 404
@@ -96,4 +154,4 @@ module.exports = function (app) {
   app.all('*', function(req, res) {
     res.redirect('/404.html');
   });
-};
+})();
