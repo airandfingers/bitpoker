@@ -10,6 +10,8 @@ module.exports = (function () {
     , db = require('./db') // make sure db is connected
 
     , Room = require('./room')
+    , User = require('./user')
+    , Player = require('./player');
 
   var static_properties = {
   // static properties (attached below) - Model.property_name
@@ -22,8 +24,10 @@ module.exports = (function () {
     }
   , NUM_TABLES: 2
   , TABLE_PREFIX: 'table_'
+  , MIN_PLAYERS: 2
   , messages: {
-      sit: { handler: 'seatPlayer' }
+      sit: { handler: 'seatPlayer', pass_socket: true }
+    , stand: { handler: 'unseatPlayer', pass_socket: true }
     }
   };
 
@@ -34,14 +38,14 @@ module.exports = (function () {
     // uniquely identifies this table
     table_id: String
     // the corresponding room
-  , room    : { type: ObjectId, ref: 'Room' }
+  , room    : { type: Schema.Types.Mixed }
     // [Player]
-  , players : { type: [ObjectId], default: [] }
+  , players : { type: Schema.Types.Mixed, default: {} }
     // {seat_num: Player}
   , seats   : { type: Schema.Types.Mixed, default: {} }
     // current status
   , status  : { type: String, default: static_properties.STATUSES.INITIALIZING }
-  });
+  }, { discriminatorkey: 'game' });
 
   // static methods - Model.method()
   TableSchema.statics.setup = function() {
@@ -56,10 +60,16 @@ module.exports = (function () {
     console.log('creating table', spec.table_id);
     var room = Room.createRoom({
       room_id: Table.TABLE_PREFIX + spec.table_id
+    })
+      , table = new Table(_.extend(spec, { room: room }));
+
+    room.setJoinHandler(function(socket) {
+      table.join(socket);
     });
-    return new Table(_.extend(spec, {
-      room: room
-    }));
+
+    table.setStatus(static_properties.STATUSES.WAITING);
+
+    return table;
   };
 
   TableSchema.statics.getTable = function(table_id) {
@@ -68,12 +78,55 @@ module.exports = (function () {
   };
 
   // instance methods - document.method()
-  TableSchema.methods.join = function(socket) {
-    io.bindMessageHandlers.call(self, socket, static_properties.messages);
+  TableSchema.methods.setStatus = function(status) {
+    if (! _.contains(static_properties.STATUSES, status)) {
+      console.error('setStatus called with', status);
+    }
+    else {
+      this.status = status;
+    }
   };
 
-  TableSchema.methods.seatPlayer = function(player, seat_num) {
+  TableSchema.methods.join = function(socket) {
+    var self = this
+      , user_id = socket.user_id;
+    User.findById(user_id, 'username', function(err, user) {
+      if (err) { return done(err); }
+      if (! user) {
+        console.error( 'No user found with id', user_id, '!' );
+      }
+      else {
+        var player = Player.createPlayer({
+          table: self
+        , socket: socket
+        , username: user.username
+        , chips: 1000
+        });
+        self.players[user_id] = player;
+
+        if (self.players.length > 2) {
+          //self.round = Round.createRound
+        }
+      }
+    });
+
+    io.bindMessageHandlers.call(this, socket, static_properties.messages);
+  };
+
+  TableSchema.methods.seatPlayer = function(socket, seat_num) {
+    console.log('seatPlayer called');
+    var player = this.players[socket.user_id].toObject();
     this.seats[seat_num] = player;
+    socket.broadcast.emit('player_sits', player, seat_num, false);
+    socket.emit('player_sits', player, seat_num, true);
+  };
+
+  TableSchema.methods.unseatPlayer = function(socket, seat_num) {
+    console.log('unseatPlayer called');
+    var player = this.players[socket.user_id].toObject();
+    this.seats[seat_num] = null;
+    socket.broadcast.emit('player_stands', player, seat_num, false);
+    socket.emit('player_stands', player, seat_num, true);
   };
 
   /* the model - a fancy constructor compiled from the schema:
