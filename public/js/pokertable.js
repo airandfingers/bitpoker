@@ -8,15 +8,18 @@
 
             table: {},
             pot:{},
-            fold: {},
-            call: {},
-            bet: {},
-            raise: {},
-            check: {},
+            fold: {messages:[]},
+            call: {messages:[]},
+            bet: {messages:[]},
+            raise: {messages:[]},
+            check: {messages:[]},
             bottom: {},
             seats: [{ card0: {}, card1: {} }, { card0: {}, card1: {} }, { card0: {}, card1: {} }, { card0: {}, card1: {} }, { card0: {}, card1: {} }, { card0: {}, card1: {} }, { card0: {}, card1: {} }, { card0: {}, card1: {} }, { card0: {}, card1: {} }, { card0: {}, card1: {}}],
             community: [{}, {}, {}, {}, {}]
         }
+    }
+    for (i=0;i<holdemCanvas.images.seats.length;i=i+1){
+        holdemCanvas.images.seats[i].messages = []
     }
     holdemCanvas.context = holdemCanvas.canvas.getContext('2d')
    holdemCanvas.context.textBaseline = 'bottom'
@@ -149,15 +152,21 @@
 
 holdemCanvas.images.defaultMessages = function(){
     
-    holdemCanvas.images.bet.message = 'bet'
-     holdemCanvas.images.call.message = 'call'
-      holdemCanvas.images.check.message = 'check'
-       holdemCanvas.images.raise.message = 'raise'
-        holdemCanvas.images.fold.message = 'fold'
-      /*  for(i=0;i<holdemCanvas.seats.length;i=i+1){
-         holdemCanvas.images.seats[i].message = 'sit',i
+    holdemCanvas.images.bet.messages[0] = 'act'
+    holdemCanvas.images.bet.messages[1] = 'bet'
+    holdemCanvas.images.call.messages[0] = 'act'
+     holdemCanvas.images.call.messages[1] = 'call'
+     holdemCanvas.images.check.messages[0] = 'act'
+      holdemCanvas.images.check.messages[1] = 'check'
+      holdemCanvas.images.raise.messages[0] = 'act'
+       holdemCanvas.images.raise.messages[1] = 'raise'
+       holdemCanvas.images.fold.messages[0] = 'act'
+        holdemCanvas.images.fold.messages[1] = 'fold'
+      for(i=0;i<holdemCanvas.images.seats.length;i=i+1){
+         holdemCanvas.images.seats[i].messages[0] = 'sit'
+         holdemCanvas.images.seats[i].messages[1] = i
          }
-         */
+         
 }
 
     //call holdemCanvas.images.defaultPositions() to set positions to default of 690x480 table
@@ -335,7 +344,7 @@ holdemCanvas.images.defaultMessages = function(){
 
      holdemCanvas.images.playerStands = function(seatNumber){
         
-        holdemCanvas.images.seats[seatNumber].image.src = holdemCanvas.images.sources.emptySeat
+        holdemCanvas.images.seats[seatNumber].image.src = holdemCanvas.images.sources.blankSeat
         holdemCanvas.images.displayImage(holdemCanvas.images.seats[seatNumber])
 
     }
@@ -470,11 +479,11 @@ holdemCanvas.images.defaultMessages = function(){
 
    holdemCanvas.images.activateButton =  function (parentOfImageObject){
     $(document).mousedown(function(e) {
-
-    if((e.pageX >=parentOfImageObject.position.x && e.pageX <= parentOfImageObject.position.x + parentOfImageObject.size.x) &&
-       (e.pageY >=parentOfImageObject.position.y && e.pageY <= parentOfImageObject.position.y + parentOfImageObject.size.y))
-        //socket.emit(parentOfImageObject.message);
-        alert(parentOfImageObject.message)
+    if((e.offsetX >=parentOfImageObject.position.x && e.offsetX <= parentOfImageObject.position.x + parentOfImageObject.size.x) &&
+       (e.offsetY >=parentOfImageObject.position.y && e.offsetY <= parentOfImageObject.position.y + parentOfImageObject.size.y)) {
+        console.log(socket, parentOfImageObject.messages);
+        socket.emit.apply(socket, parentOfImageObject.messages);
+    }
 });
 }
 
@@ -535,21 +544,27 @@ holdemCanvas.images.defaultMessages = function(){
      holdemCanvas.images.displayFaceUpCard(hand_cards[2],holdemCanvas.images.seats[userSeatNumber])
 });
 
-
+*/
 //player sits, checks if player is the user
-       socket.on('player_sits', function(player, seat_num){
+       socket.on('player_sits', function(player, seat_num, is_you){
+        console.log('player_sits', player, seat_num, is_you);
         holdemCanvas.images.playerSits(seat_num, player, 0)
         if(is_you){
             holdemCanvas.userSeatNumber = seat_num
-});
+}});
+
+
 
 //player stands, checks if player is the user
-       socket.on('player_stands', function(player, seat_num){
-        holdemCanvas.images.playerSits(seat_num, player, 0)
+       socket.on('player_stands', function(player, seat_num, is_you){
+        console.log('player_stands', player, seat_num, is_you);
+        holdemCanvas.images.seats[seat_num].image.src = holdemCanvas.images.sources.seat
+                 holdemCanvas.images.displayImage(holdemCanvas.images.seats[seat_num])
+        holdemCanvas.images.activateButton(holdemCanvas.images.seats[seat_num])
         if(is_you){
             delete holdemCanvas.userSeatNumber
-});
-    
+}});
+ /*   
 //round ends, all hole cards are shown
        socket.on('player_stands', function(winner, hands){
         holdemCanvas.images.playerSits(seat_num, player, 0)
@@ -575,8 +590,13 @@ holdemCanvas.images.defaultMessages = function(){
        holdemCanvas.images.defaultSizes()
        holdemCanvas.images.defaultMessages()
        holdemCanvas.images.activateButton(holdemCanvas.images.fold)
+       jQuery.each(holdemCanvas.images.seats,function(i,seat) {
+        holdemCanvas.images.displayImage(seat)
+        holdemCanvas.images.activateButton(seat)
+       })
        holdemCanvas.userSeatNumber = 5
        holdemCanvas.images.displayHoleCards('ac','ad')
+       holdemCanvas.images.displayImage(holdemCanvas.images.fold)
        holdemCanvas.images.playerSits(1,'walter',400)
     }
                   )

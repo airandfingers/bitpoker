@@ -69,24 +69,25 @@ module.exports = (function () {
   io.bindMessageHandlers = function(socket, messages) {
     var self = this;
     if (! _.isObject(self)) { console.error('no context object given!'); return; }
-    var handler_name, handler;
     _.each(messages, function(how_to_handle, message_name) {
-      handler_name = how_to_handle.handler;
-      handler = self[handler_name];
+      var handler_name = how_to_handle.handler
+        , handler = self[handler_name];
+      console.log('About to bind handler for', message_name, handler_name, handler);
       if (! _.isFunction(handler)) {
         console.error('context object has no function', handler_name);
         return;
       }
       socket.on(message_name, function() {
         console.log(/*self,*/'received', message_name, 'message'); /*'from', socket.user_id,*/
-        if (how_to_handle.pass_message_name !== true) {
+        if (how_to_handle.pass_message_name !== true && how_to_handle.pass_socket !== true) {
           //console.log('calling instance\'s', handler_name, 'with', arguments);
           handler.apply(self, arguments);
         }
         else {
-          //add message_name to front of arguments list
-          var argsArray = [].slice.apply(arguments);
-          argsArray.unshift(message_name);
+          //add socket or message_name to front of arguments list
+          var arg_to_add = how_to_handle.pass_socket ? socket : message_name
+            , argsArray = [].slice.apply(arguments);
+          argsArray.unshift(arg_to_add);
           //console.log('calling instance\'s', handler_name, 'with', argsArray);
           handler.apply(self, argsArray);
         }
