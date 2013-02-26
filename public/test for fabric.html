@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    
+<head>
+    <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jquery/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" src="/fabricjs/0.9.15.min.js"></script>
+   </head>
+    </html>
+    
+       <canvas id="c" width="690" height="480"></canvas>
+           
+   
+       
+<script type = 'text/javascript'>
+    $(window).load(function(){
+   var  canvas = new fabric.Canvas('c');
+ position = {
+     left:100,
+     top:100
+ }
+    test = function () {
+      
+        var imgElement = new Image()
+        imgElement.src = 'check.jpg'
+
+        imgInstance = new fabric.Image(imgElement, position)
+        }
+        test()
+        //canvas.add(imgInstance);
+        })
+
+</script>
+    
+</html>
