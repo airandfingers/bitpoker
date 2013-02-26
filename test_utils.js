@@ -9,7 +9,7 @@ module.exports = (function() {
     , chai = require('chai')
     , should = chai.should()
   //get test user/password information
-    , db = require('./db')
+    , db = require('./models/db')
     , test_user = db.TEST_USER
     , test_password = db.TEST_PASSWORD;
 

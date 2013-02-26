@@ -62,7 +62,6 @@ describe('routes', function() {
 
   app_tester.testGet('/asdf', {
     type: 'text'
-  , redirect: '/404.html'
   });
 });
 
