@@ -21,7 +21,13 @@ module.exports = (function () {
     });
   });
 
-    //home and index link to the same page
+    //home, index and "/" link to the same page
+   app.get('/', function(req, res) {
+    res.render('index', {
+      title: 'Homepage', 
+    });
+  });
+
   app.get('/home', function(req, res) {
     res.render('index', {
       title: 'Homepage', 
@@ -152,6 +158,6 @@ module.exports = (function () {
   //      otherwise, this route will catch all incoming requests,
   //      including requests for static files that exist.
   app.all('*', function(req, res) {
-    res.redirect('/404.html');
+    res.render('404', {title: 'pagey not foundy'});
   });
 })();
