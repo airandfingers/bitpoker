@@ -29,6 +29,7 @@ module.exports = (function () {
       sit: { handler: 'seatPlayer', pass_socket: true }
     , stand: { handler: 'unseatPlayer', pass_socket: true }
     }
+  , tables: {}
   };
 
   /* the schema - defines the "shape" of the documents:
@@ -37,6 +38,8 @@ module.exports = (function () {
   // instance properties - document.field_name
     // uniquely identifies this table
     table_id: String
+    // readable name for this table (Table.TABLE_PREFIX + table_id)
+  , name: String
     // the corresponding room
   , room    : { type: Schema.Types.Mixed }
     // [Player]
@@ -58,10 +61,15 @@ module.exports = (function () {
 
   TableSchema.statics.createTable = function(spec) {
     console.log('creating table', spec.table_id);
-    var room = Room.createRoom({
-      room_id: Table.TABLE_PREFIX + spec.table_id
+    var table_id = spec.table_id
+      , name = Table.TABLE_PREFIX + table_id
+      , room = Room.createRoom({
+      room_id: name
     })
-      , table = new Table(_.extend(spec, { room: room }));
+      , table = new Table(_.extend(spec, {
+          room: room,
+          name: name
+    }));
 
     room.setJoinHandler(function(socket) {
       table.join(socket);
@@ -69,17 +77,24 @@ module.exports = (function () {
 
     table.setStatus(static_properties.STATUSES.WAITING);
 
+    Table.tables[name] = table;
+
     return table;
   };
 
   TableSchema.statics.getTable = function(table_id) {
     // console.log('getting', table_id);
-    return Room.getRoom(Table.TABLE_PREFIX + table_id);
+    return Table.tables[Table.TABLE_PREFIX + table_id];
+  };
+
+  TableSchema.statics.getTableNames = function() {
+    // console.log('getting tables');
+    return _.keys(Table.tables);
   };
 
   // instance methods - document.method()
   TableSchema.methods.setStatus = function(status) {
-    if (! _.contains(static_properties.STATUSES, status)) {
+    if (! _.contains(Table.STATUSES, status)) {
       console.error('setStatus called with', status);
     }
     else {
@@ -110,7 +125,7 @@ module.exports = (function () {
       }
     });
 
-    io.bindMessageHandlers.call(this, socket, static_properties.messages);
+    io.bindMessageHandlers.call(this, socket, Table.messages);
   };
 
   TableSchema.methods.seatPlayer = function(socket, seat_num) {

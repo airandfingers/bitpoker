@@ -33,6 +33,12 @@ module.exports = (function() {
     });
   };
 
+  // instance methods - document.method()
+  // example method
+  UserSchema.methods.sayName = function() {
+    console.log(this.username);
+  };
+
   // gets called before a document is saved
   UserSchema.pre('save', function(next) {
     var user = this

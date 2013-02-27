@@ -1,7 +1,13 @@
 <div>
-    <ul>
-    <li>
-    Stub tables list Table 4000
-    </li>
-    </ul>
+  <ul>
+    <% for (var i = 0, len = table_names.length; i < len; i++) {
+    var table_name = table_names[i]; %>
+      <li>
+        <a href="/<%= table_name %>"
+           onClick="return popup(this, '<%= table_name %>')">
+           <%= table_name %>
+        </a>
+      </li>
+    <% }; %>
+  </ul>
 </div>

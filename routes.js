@@ -10,8 +10,8 @@ module.exports = (function () {
   //These app.get functions will display their respective ejs page.
   app.get('/account', auth.ensureAuthenticated, function(req, res) {
     res.render('account', {
-      title: 'Account', 
-      username: req.user.username,      
+      title: 'Account',
+      username: req.user.username,
     });
   });
 
@@ -102,10 +102,12 @@ module.exports = (function () {
       , target = req.body.next || '/';
 
     if (password === password_confirm) {
-      new User({
+      var user = new User({
         username: username,
         password: password
-      }).save(function(err, result) {
+      });
+      user.sayName();
+      user.save(function(err, result) {
         if (err) {
           req.flash('error', err.message);
           res.redirect('/register?next=' + target);
@@ -135,7 +137,8 @@ module.exports = (function () {
   });
 
   app.get('/lobby', function(req, res) {
-    res.render('lobby', {});
+    var table_names = Table.getTableNames();
+    res.render('lobby', { table_names: table_names });
   });
 
   app.get('/' + Table.TABLE_PREFIX + ':id', auth.ensureAuthenticated, function(req, res, next) {
