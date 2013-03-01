@@ -62,10 +62,8 @@ module.exports = (function () {
     // attach handlers for messages as defined in Room.messages
     io.bindMessageHandlers.call(this, socket, static_properties.messages);
 
-    // call any joinHandlers that have been set for this room
-    _.each(this.joinHandlers, function(handler, i) {
-      handler(socket);
-    });
+    // notify anyone interested (the corresponding table)
+    this.emit('socket_join', socket);
   };
 
   RoomSchema.methods.setJoinHandler = function(handler) {
