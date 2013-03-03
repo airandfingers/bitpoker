@@ -147,7 +147,8 @@ module.exports = (function () {
 
     if (table) {
       res.render('table', {
-        table_id: table_id
+        table_id: table_id,
+        hide_navbar: true,
       });
     }
     else {
