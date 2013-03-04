@@ -6,7 +6,7 @@ module.exports = (function () {
     , Table = require('./models/table');
 
   var base_page = '/lobby';
-
+  
   //These app.get functions will display their respective ejs page.
   app.get('/account', auth.ensureAuthenticated, function(req, res) {
     res.render('account', {
