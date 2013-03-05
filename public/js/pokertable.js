@@ -618,120 +618,31 @@ holdemCanvas.images.defaultMessages = function(){
     }
 });
 }
-
-    jQuery(window).load(function ()
-    {
-       holdemCanvas.images.setBackground()
+jQuery(document).ready(function(){
+    
+    holdemCanvas.images.setBackground()
       
         holdemCanvas.images.defaultImages()
           holdemCanvas.images.defaultPositions()
        
        holdemCanvas.images.defaultSizes()
        holdemCanvas.images.defaultMessages()
-      // holdemCanvas.images.activateButton(holdemCanvas.images.fold)
-       //jQuery.each(holdemCanvas.images.seats,function(i,seat) {
-      //  holdemCanvas.images.displayImage(seat)
-       // holdemCanvas.images.activateButton(seat)
-       //})
+
+})
+
+    jQuery(window).load(function ()
+    {
+       
        holdemCanvas.images.displayAll()
        holdemCanvas.images.displayAllCommunity(['2c','3c','4c','5c','6c'])
        holdemCanvas.userSeatNumber = 7
        holdemCanvas.images.displayHoleCards('ac','ad')
        holdemCanvas.images.displayImage(holdemCanvas.images.fold)
        holdemCanvas.images.playerSits(1,'walter',400)
-        holdemCanvas.images.activateButton (['fold'],holdemCanvas.images.fold)
-        holdemCanvas.images.activateButton (['check'],holdemCanvas.images.check)
-        holdemCanvas.images.activateButton (['raise'],holdemCanvas.images.raise)
-       
+       holdemCanvas.images.activateButton (['fold'],holdemCanvas.images.fold)
+       holdemCanvas.images.activateButton (['check'],holdemCanvas.images.check)
+       holdemCanvas.images.activateButton (['raise'],holdemCanvas.images.raise)
+       for (var i = 0;i<holdemCanvas.images.seats.length;i=i+1){
+       holdemCanvas.images.activateButton (['sit',i],holdemCanvas.images.seats[i])}
 
     })
-
-
-
-                      //cards should be in string format
-  /*  holdemCanvas.gameState.updateCommunity = function (hiddenCard0, hiddenCard1, card2, card3, card4, startingCardInBase0, endingCardInBase0)
-    {
-
-        if ((cards[0] || cards[1] || cards[2] || cards[3] || cards[4]) != string) { alert('card names must be in string format'); return 'invalid card' }
-
-        var asdf = [hiddenCard0, hiddenCard1, card2, card3, car4]
-
-        for (var i = 0; i <= endingCardinBase0 - startingCardInBase0; i = i + 1)
-        {
-
-            if (asdf[i] != null) { holdemCanvas.gameState.community[i + startingCardInBase0] = asdf[i] }
-
-        }
-    }
-*/
-
-
-/*    holdemCanvas.images.displayCurrentTableState=function(){
-        
-        holdemCanvas.images.displayImage(holdemCanvas.images.table)
-        holdemCanvas.images.displayAllCommunity(['2c','3c','4c','5c','6c'])
-        holdemCanvas.context.fillText(pot_size,holdemCanvas.images.pot.position.x,holdemCanvas.images.pot.position.y)
-        
-        if (to_act === userSeatNumber){
-             holdemCanvas.images.displayImage(holdemCanvas.images.fold)
-             if(call){
-                 holdemCanvas.images.displayImage(holdemCanvas.images.call)
-                 holdemCanvas.images.activateButton((holdemCanvas.images.call))
-             }
-             else{
-                 holdemCanvas.images.displayImage(holdemCanvas.images.call.check)
-                 holdemCanvas.images.activateButton(holdemCanvas.images.check)}
-                 if(bet){
-                 holdemCanvas.images.displayImage(holdemCanvas.images.bet)
-                 holdemCanvas.images.activateButton((holdemCanvas.images.bet))
-             }
-             else{
-                 holdemCanvas.images.displayImage(holdemCanvas.images.call.raise)
-                 holdemCanvas.images.activateButton(holdemCanvas.images.raise)}
-
-        }
-
-        
-
-         for (i = 0; i < holdemCanvas.images.seats.length; i = i + 1)
-        {
-            if(player)
-            {
-            holdemCanvas.images.playerSits(i,player,num_chips)
-        }
-        else(holdemCanvas.images.displayImage(holdemCanvas.images.seats[i]))
-
-        if(user && dealtin){
-            holdemCanvas.images.displayShownCard(hiddenCard0, holdemCanvas.images.seats[i].hiddenCard0)
-            holdemCanvas.images.displayShownCard(hiddenCard1, holdemCanvas.images.seats[i].hiddenCard1)}
-        else if(dealtin){
-            holdemCanvas.images.displayImage(holdemCanvas.images.seats[i]).hiddenCard0
-            holdemCanvas.images.displayImage(holdemCanvas.images.seats[i]).hiddenCard1
-            }
-            
-            
-    }
-    holdemCanvas.images.displayCommunity = function (startingCardInBase0, endingCardinBase0)
-    {
-
-        for (var i = startingCardInBase0; i <= endingCardinBase0; i = i + 1)
-        {
-
-            if (holdemCanvas.gameState.community[i] === '' || holdemCanvas.gameState.community[i] === null)
-            {
-                return i
-            }
-
-            holdemCanvas.images.displayImage(holdemCanvas.images.community[i])
-            var asdf = new createjs.Text(playerName+'\n'+chips,"10px Arial", "#666")
-               asdf.x = holdemCanvas.gameState.community[i].image.x
-            asdf.y = holdemCanvas.gameState.community[i].image.y
-            asdf.maxWidth = holdemCanvas.gameState.community[i].size.x
-
-            holdemCanvas.stage.addChild(asdfholdemCanvas.gameState.community[i], holdemCanvas.images.community[i].position.x, holdemCanvas.images.community[i].position.y)
-             
-        }
-           holdemCanvas.stage.update()
-    }
-
-    */
