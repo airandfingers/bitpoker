@@ -596,18 +596,6 @@ holdemCanvas.images.defaultMessages = function(){
         
     }
 
-/*
-   holdemCanvas.images.activateButton =  function (parentOfImageObject){
-    $(document).mousedown(function(e) {
-    if((e.offsetX >=parentOfImageObject.position.x && e.offsetX <= parentOfImageObject.position.x + parentOfImageObject.size.x) &&
-       (e.offsetY >=parentOfImageObject.position.y && e.offsetY <= parentOfImageObject.position.y + parentOfImageObject.size.y)) {
-        console.log(socket, parentOfImageObject.messages);
-        socket.emit.apply(socket, parentOfImageObject.messages);
-    }
-});
-}
-
-*/
 
    holdemCanvas.images.activateButton =  function (messages, parentOfImageObject){
     $(document).mousedown(function(e) {
