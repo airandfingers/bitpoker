@@ -72,7 +72,6 @@ module.exports = (function () {
     _.each(messages, function(how_to_handle, message_name) {
       var handler_name = how_to_handle.handler
         , handler = self[handler_name];
-      console.log('About to bind handler for', message_name, handler_name, handler);
       if (! _.isFunction(handler)) {
         console.error('context object has no function', handler_name);
         return;

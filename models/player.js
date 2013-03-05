@@ -1,5 +1,3 @@
-/* This is a template for defining a class
-   as a Mongoose Schema and Model. */
 module.exports = (function () {
   var mongoose = require('mongoose') // MongoDB abstraction layer
     , Schema = mongoose.Schema // Mongoose Schema constructor

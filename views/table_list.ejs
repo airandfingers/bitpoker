@@ -1,0 +1,14 @@
+<div id="table_list">
+  <h3>Tables</h3>
+  <ul>
+    <% for (var i = 0, len = table_names.length; i < len; i++) {
+    var table_name = table_names[i]; %>
+      <li>
+        <a href="/<%= table_name %>"
+           onClick="return popup(this, '<%= table_name %>')">
+           <%= table_name %>
+        </a>
+      </li>
+    <% }; %>
+  </ul>
+</div>

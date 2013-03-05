@@ -1,5 +1,6 @@
 <% var title = 'Welcome to Bitcoin Poker!'; %>
 <% include head %>
+    <div id="container">
         <h1 id="welcome">
             Hello Bitcoin Poker world! You are in the lobby.
         </h1>
@@ -17,7 +18,15 @@
             </form>
         </div>
 
-        <!--display list of users-->
+        <!--displays list of tables-->
+        <% include table_list %>
+
+        <!--displays list of users-->
         <% include users %>
-                
+
+    </div> <!-- container-->        
+        <% include plugins %>
+        <script src="/js/chat.js"></script>
+        <script src="http://code.createjs.com/easeljs-0.6.0.min.js"></script>
+        <script src="js/pokertable.js"></script>
 <% include foot %>
