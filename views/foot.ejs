@@ -1,18 +1,16 @@
-        <!-- This is supposed to enable popup windows http://www.htmlcodetutorial.com/linking/linking_famsupp_72.html -->
-        <SCRIPT TYPE="text/javascript">
-        <!--
-        function popup(mylink, windowname) {
-          if (! window.focus) return true;
-          var href;
-          if (typeof(mylink) === 'string')
-             href = mylink;
-          else
-             href = mylink.href;
-          window.open(href, windowname, 'width=800,height=600,left=200,top=200,location=no,toolbar=no,menubar=no,titlebar=no,directories=no,scrollbars=yes');
-          return false;
-        }
-        //-->
-        </SCRIPT>
+        <!-- Function to open a popup window http://www.htmlcodetutorial.com/linking/linking_famsupp_72.html -->
+        <script>
+          function popup(mylink, windowname) {
+            if (! window.focus) return true;
+            var href;
+            if (typeof(mylink) === 'string')
+               href = mylink;
+            else
+               href = mylink.href;
+            window.open(href, windowname, 'width=800,height=600,left=200,top=200,location=no,toolbar=no,menubar=no,titlebar=no,directories=no,scrollbars=yes');
+            return false;
+          }
+        </script>
 
         <!-- Navbar script (for dropdown animation) -->
         <script>

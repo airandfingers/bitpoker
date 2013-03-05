@@ -1,0 +1,56 @@
+<!DOCTYPE HTML>
+ <canvas id="canvas" width="690" height="480" style='z-index : 0'></canvas>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<title></title>
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script src="http://code.createjs.com/easeljs-0.6.0.min.js"></script>
+   
+
+<script>
+
+  
+        canvas = document.getElementById("canvas");
+	stage = new createjs.Stage(canvas);
+	context = canvas.getContext('2d')
+
+    hello = function(){
+    asdf = new Image()
+    asdf.src = 'img/table.jpg'
+    image = new createjs.Bitmap(asdf)
+    image.x = 300
+    image.y = 330
+    asdf.src = 'img/check.jpg'
+         }
+    jQuery(window).load(function ()
+    {
+ 
+	
+   
+   // asdf.onload = function(){
+       hello()
+         stage.addChild(image)
+ stage.update()
+    })
+
+ //   context.fillText('asdfasdfasdfasdfasdfad',100,100)
+    
+     
+  //  text = new createjs.Text("Text rendered on the canvas", "36px Arial", "#666");
+//	text.x = 100;
+//	text.y = 100;
+ //   text.maxWidth = 200;
+//	stage.addChild(text)
+  //  stage.update()
+
+    
+
+</script>
+</head>
+    
+    </html>
+
+
+
