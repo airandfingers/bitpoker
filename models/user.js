@@ -15,6 +15,10 @@ module.exports = (function() {
     username        : String
     //the user's password, hashed with SHA-1
   , password        : String
+    //added 3/3/13
+  , email           : {type: String, trim: true}
+  , maobucks        : Number
+  , registration_date: {type: Date, default: Date.now}
   });
 
   // static methods - Model.method()

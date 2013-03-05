@@ -12,6 +12,7 @@ module.exports = (function () {
     res.render('account', {
       title: 'Account',
       username: req.user.username,
+      registration_date: req.user.registration_date,
     });
   });
 
@@ -104,7 +105,7 @@ module.exports = (function () {
     if (password === password_confirm) {
       var user = new User({
         username: username,
-        password: password
+        password: password,
       });
       user.sayName();
       user.save(function(err, result) {
@@ -114,7 +115,7 @@ module.exports = (function () {
         }
         else {
           // Registration successful. Redirect.
-          console.log('registration successful!');
+          console.log('registration successful on' + user.registration_date + ' !');
           req.flash('error', 'Please log in with your new username and password.');
           res.redirect('/login');
           /*req.url = req.originalUrl = '/login';
