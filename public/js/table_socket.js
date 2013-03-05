@@ -1,4 +1,5 @@
-  
+
+      
    holdemCanvas.images.activateButton =  function (messages, parentOfImageObject){
     $(document).mousedown(function(e) {
     if((e.offsetX >=parentOfImageObject.bitmap.x && e.offsetX <= parentOfImageObject.bitmap.x + parentOfImageObject.size.x) &&
@@ -126,7 +127,7 @@
      holdemCanvas.images.displayFaceUpCard(hand_cards[2],holdemCanvas.images.seats[userSeatNumber])
 });
 
-*/
+
 //player sits, checks if player is the user
        socket.on('player_sits', function(player, seat_num, is_you){
         console.log('player_sits', player, seat_num, is_you);
@@ -175,7 +176,7 @@
         }
   );
 
-
+  
 
 
 //player adds chips to his stack
