@@ -185,7 +185,7 @@
         holdemCanvas.images.displayPot(pot)
 
         //display seats
-         for (var i in seats { 
+         for (var i in seats) { 
          holdemCanvas.images.playerSits(i,seats[i].player,seats[i].player.chips)}
 
         //display cards
