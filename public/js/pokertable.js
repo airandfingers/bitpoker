@@ -1,32 +1,25 @@
     //default canvas size is 690x480
     //all numbers are in base 0, including variable names and documentation
     //seat position 0 is top middle and proceeds clockwise
-
-    holdemCanvas = {
-        canvas: document.getElementById('canvas'),
-        stage : new createjs.Stage(canvas),
-        images: {
-
-            pot:{},
-            fold: {messages:[]},
-            call: {messages:[]},
-            bet: {messages:[]},
-            raise: {messages:[]},
-            check: {messages:[]},
-            seats: [],
-            community: [{}, {}, {}, {}, {}],
-            leftSideButtons:[]
-        }
-    }
-   
-
-    //call holdemCanvas.images.defaultImages() to set names of images to default
-    //seats are empty, hole cards are set to face down cards
-    //image positions must have been loaded first! holdemCanvas.images.defaultPositions()
-    //WILL NOT DISPLAY
-    holdemCanvas.images.defaultImages = function (){
-
-        holdemCanvas.images.sources = {
+   // var holdemCanvas = new Table(10)
+    function Table (maxSeats) {
+        this.canvas = document.getElementById('canvas'),
+        this.stage = new createjs.Stage(canvas),
+        this.stage.mouseEventsEnabled = true
+        this.stage.enableMouseOver()
+       // this.canvas.addEventListener("mouseup", this.filler, false)
+  //this.filler=function(){console.log('initial')}
+  self = this
+  self.asdf = function(event){
+      console.log(event)
+      //stage.removeChildAt(event.target.id)
+  }
+        this.gameState = {}
+        this.gameState.secondsToAct
+        this.gameState.seatNumberToAct
+        this.images = {}
+       
+          this.images.sources = {
             call: 'img/call.jpg',
             check: 'img/check.jpg',
             raise: 'img/raise.jpg',
@@ -38,509 +31,285 @@
             community: 'img/card_back.jpg',
             fold: 'img/fold.jpg',
             sideButton :'img/side_button.jpg'
+            }
+
+            this.images.pot = {}
+            this.images.fold = {messages:[]}
+            this.images.call = {messages:[]}
+            this.images.bet = {messages:[]}
+            this.images.raise = {messages:[]}
+            this.images.check = {messages:[]}
+            this.images.community = [{}, {}, {}, {}, {}]
+
+            //side buttons
+            this.images.leftSideButtons=[]
+            this.images.rightSideButtons=[]
+             for (var i = 0;i<3;i=i+1){
+        this.images.leftSideButtons[i] = {}
+        this.images.rightSideButtons[i] = {}
+        }
+
+        //seats
+            this.images.seats=[]
+            for (var i = 0;i<maxSeats;i=i+1){
+        this.images.seats[i] = {}
+        this.images.seats[i].seat = {}
+        this.images.seats[i].bet={}
+        this.images.seats[i].messages = []
+        this.images.seats[i].hiddenCard0={}
+        this.images.seats[i].hiddenCard1={}
+        this.images.seats[i].shownCard0={}
+        this.images.seats[i].shownCard1={}
+        
         }
        
-         for (var i = 0;i<3;i=i+1){
-        holdemCanvas.images.leftSideButtons[i] = {}
-
-    }
-
-         for (var i = 0;i<10;i=i+1){
-        holdemCanvas.images.seats[i] = {}
-        holdemCanvas.images.seats[i].bet={}
-        holdemCanvas.images.seats[i].hiddenCard0={}
-        holdemCanvas.images.seats[i].hiddenCard1={}
-        holdemCanvas.images.seats[i].shownCard0={}
-        holdemCanvas.images.seats[i].shownCard1={}
-    }
-    for (var i=0;i<holdemCanvas.images.seats.length;i=i+1){
-        holdemCanvas.images.seats[i].messages = []
-    }
-
-        //action buttons
-        holdemCanvas.images.fold.image = new Image()
-        holdemCanvas.images.fold.image.src = holdemCanvas.images.sources.fold
-        holdemCanvas.images.fold.bitmap = new createjs.Bitmap(holdemCanvas.images.fold.image)
-        
-        holdemCanvas.images.call.image = new Image
-        holdemCanvas.images.call.image.src = holdemCanvas.images.sources.call
-        holdemCanvas.images.call.bitmap = new createjs.Bitmap(holdemCanvas.images.call.image)
- 
-        holdemCanvas.images.check.image = new Image()
-        holdemCanvas.images.check.image.src =  holdemCanvas.images.sources.check
-         holdemCanvas.images.check.bitmap = new createjs.Bitmap( holdemCanvas.images.check.image)
-
-        holdemCanvas.images.raise.image = new Image()
-        holdemCanvas.images.raise.image.src =  holdemCanvas.images.sources.raise
-        holdemCanvas.images.raise.bitmap = new createjs.Bitmap(holdemCanvas.images.raise.image)
-        
-        holdemCanvas.images.bet.image = new Image()
-        holdemCanvas.images.bet.image.src =  holdemCanvas.images.sources.bet
-        holdemCanvas.images.bet.bitmap = new createjs.Bitmap(holdemCanvas.images.bet.image)
-
-         //seats and corresponding hole cards
-        for (var i = 0; i < holdemCanvas.images.seats.length; i = i + 1){
-
-            holdemCanvas.images.seats[i].image = new Image()
-            holdemCanvas.images.seats[i].image.src = holdemCanvas.images.sources.blankSeat
-            holdemCanvas.images.seats[i].bitmap = new createjs.Bitmap(holdemCanvas.images.seats[i].image)
-
-            holdemCanvas.images.seats[i].hiddenCard0.image = new Image()
-            holdemCanvas.images.seats[i].hiddenCard1.image = new Image()
-            holdemCanvas.images.seats[i].hiddenCard0.image.src = holdemCanvas.images.sources.hiddenCard
-            holdemCanvas.images.seats[i].hiddenCard1.image.src = holdemCanvas.images.sources.hiddenCard
-
-            holdemCanvas.images.seats[i].hiddenCard0.bitmap = new createjs.Bitmap(holdemCanvas.images.seats[i].hiddenCard0.image)
-            holdemCanvas.images.seats[i].hiddenCard1.bitmap = new createjs.Bitmap(holdemCanvas.images.seats[i].hiddenCard1.image)
-
-            holdemCanvas.images.seats[i].shownCard0.image = new Image()
-            holdemCanvas.images.seats[i].shownCard1.image = new Image()
-            holdemCanvas.images.seats[i].shownCard0.src = holdemCanvas.images.sources.shownCard
-            holdemCanvas.images.seats[i].shownCard1.src = holdemCanvas.images.sources.shownCard
-
-            holdemCanvas.images.seats[i].shownCard0.bitmap = new createjs.Bitmap(holdemCanvas.images.seats[i].shownCard0.image)
-            holdemCanvas.images.seats[i].shownCard1.bitmap = new createjs.Bitmap(holdemCanvas.images.seats[i].shownCard1.image)
-
-        }
-
-        for (var i = 0; i < 3; i = i + 1){
-         holdemCanvas.images.leftSideButtons[i].image = new Image()
-         holdemCanvas.images.leftSideButtons[i].image.src = holdemCanvas.images.sources.sideButton
-         holdemCanvas.images.leftSideButtons[i].bitmap = new createjs.Bitmap(holdemCanvas.images.leftSideButtons[i].image)
-         }
-        //community cards
-        for (var i = 0; i < 5; i = i + 1){
-
-            holdemCanvas.images.community[i].image = new Image()
-            holdemCanvas.images.community[i].image.src = holdemCanvas.images.sources.shownCard
-             holdemCanvas.images.community[i].bitmap = new createjs.Bitmap(holdemCanvas.images.community[i].image)
-
-        }
-    }
-      
-       holdemCanvas.images.defaultPositions = function ()
-    {
-
-        holdemCanvas.images.pot.position = {
-            x:290,
-            y:138
-
-        }
-
-        holdemCanvas.images.leftSideButtons[0].position = {
-            
-            x:7.5,
-            y:412
-        }
-
-                holdemCanvas.images.leftSideButtons[1].position = {
-            
-            x:7.5,
-            y:433
-        }
-
-        holdemCanvas.images.leftSideButtons[2].position = {
-            
-            x:7.5,
-            y:454
-        }
-
-
-        //initial position of bottom section (buttons, options, etc) of poker table
-
-        //seat position starts at 0, which is top middle (and proceeds clockwise), initial seat positions
-        holdemCanvas.images.seats[0].position = {
-            x: 300,
-            y: 77
-        }
-        holdemCanvas.images.seats[1].position = {
-            x: 440,
-            y: 77
-        }
-        holdemCanvas.images.seats[2].position = {
-            x: 573,
-            y: 153
-        }
-        holdemCanvas.images.seats[3].position = {
-            x: 573,
-            y: 301
-        }
-        holdemCanvas.images.seats[4].position = {
-            x: 440,
-            y: 371
-        }
-        holdemCanvas.images.seats[5].position = {
-            x: 300,
-            y: 371
-        }
-        holdemCanvas.images.seats[6].position = {
-            x: 170,
-            y: 371
-        }
-        holdemCanvas.images.seats[7].position = {
-            x: 27,
-            y: 301
-        }
-        holdemCanvas.images.seats[8].position = {
-            x: 27,
-            y: 153
-        }
-        holdemCanvas.images.seats[9].position = {
-            x: 170,
-            y: 77
-        }
-
-        //initial positions of player's chips entering pot
-        holdemCanvas.images.seats[0].bet.position = {
-            x: 345,
-            y: 121
-        }
-        holdemCanvas.images.seats[1].bet.position = {
-            x: 475,
-            y: 121
-        }
-        holdemCanvas.images.seats[2].bet.position = {
-            x: 553,
-            y: 153
-        }
-        holdemCanvas.images.seats[3].bet.position = {
-            x: 553,
-            y: 227
-        }
-        holdemCanvas.images.seats[4].bet.position = {
-            x: 475,
-            y: 291
-        }
-        holdemCanvas.images.seats[5].bet.position = {
-            x: 345,
-            y: 291
-        }
-        holdemCanvas.images.seats[6].bet.position = {
-            x: 215,
-            y: 291
-        }
-        holdemCanvas.images.seats[7].bet.position = {
-            x: 137,
-            y: 153
-        }
-        holdemCanvas.images.seats[8].bet.position = {
-            x: 215,
-            y: 291
-        }
-        holdemCanvas.images.seats[9].bet.position = {
-            x: 215,
-            y: 121
-        }
-        //set initial positions of action buttons
-        holdemCanvas.images.fold.position = {
-            x: 205,
-            y: 419
-        }
-        holdemCanvas.images.call.position = {
-            x: 305,
-            y: 419
-        }
-      holdemCanvas.images.check.position = {
-            x: 305,
-            y: 419
-            }
-   
-        holdemCanvas.images.raise.position = {
-            x: 405,
-            y: 419
-        }
-
-        holdemCanvas.images.bet.position = {
-            x: 405,
-            y: 419
-       }
-
-        //set initial positions of community cards
-        holdemCanvas.images.community[0].position = {
-            x: 222,
-            y: 169
-        }
-
-        holdemCanvas.images.community[1].position = {
-            x: 272,
-            y: 169
-        }
-
-        holdemCanvas.images.community[2].position = {
-            x: 322,
-            y: 169
-        }
-
-        holdemCanvas.images.community[3].position = {
-            x: 372,
-            y: 169
-        }
-
-        holdemCanvas.images.community[4].position = {
-            x: 422,
-            y: 169
-        }
-
-        //set intial positions of hole cards for seats at table
-        for (var i = 0; i < holdemCanvas.images.seats.length; i = i + 1)
-        {
-            holdemCanvas.images.seats[i].hiddenCard0.position = {
-                x: holdemCanvas.images.seats[i].position.x - 1,
-                y: holdemCanvas.images.seats[i].position.y - 68
-            }
-            holdemCanvas.images.seats[i].hiddenCard1.position = {
-                x: holdemCanvas.images.seats[i].position.x + 45,
-                y: holdemCanvas.images.seats[i].position.y + -68
-            }
-            holdemCanvas.images.seats[i].shownCard0.position= {
-                x: holdemCanvas.images.seats[i].position.x - 1,
-                y: holdemCanvas.images.seats[i].position.y - 68
-            }
-            holdemCanvas.images.seats[i].shownCard1.position = {
-                x: holdemCanvas.images.seats[i].position.x + 45,
-                y: holdemCanvas.images.seats[i].position.y + -68
-            }
-        }
-
-
-        //set x and y of easel.js bitmap object
-         for (var i in holdemCanvas.images)
-        {
-            if (typeof holdemCanvas.images[i] === 'object')
-            {
-                if (holdemCanvas.images[i].bitmap)
-                {
-                    holdemCanvas.images[i].bitmap.x = holdemCanvas.images[i].position.x
-                    holdemCanvas.images[i].bitmap.y = holdemCanvas.images[i].position.y
-                }
-            }
-            }
-
-                for(var i = 0;i<holdemCanvas.images.community.length;i=i+1){
-                    holdemCanvas.images.community[i].bitmap.x = holdemCanvas.images.community[i].position.x
-                    holdemCanvas.images.community[i].bitmap.y = holdemCanvas.images.community[i].position.y
-                    }
-                    for(var i = 0; i<holdemCanvas.images.seats.length;i=i+1){
-                        holdemCanvas.images.seats[i].bitmap.x = holdemCanvas.images.seats[i].position.x
-                        holdemCanvas.images.seats[i].bitmap.y =  holdemCanvas.images.seats[i].position.y
-
-                       holdemCanvas.images.seats[i].hiddenCard0.bitmap.x = holdemCanvas.images.seats[i].hiddenCard0.position.x
-                       holdemCanvas.images.seats[i].hiddenCard1.bitmap.x = holdemCanvas.images.seats[i].hiddenCard1.position.x
-                       holdemCanvas.images.seats[i].shownCard0.bitmap.x =holdemCanvas.images.seats[i].shownCard0.position.x
-                      holdemCanvas.images.seats[i].shownCard1.bitmap.x = holdemCanvas.images.seats[i].shownCard1.position.x
-
-                      holdemCanvas.images.seats[i].hiddenCard0.bitmap.y =  holdemCanvas.images.seats[i].hiddenCard0.position.y
-                      holdemCanvas.images.seats[i].hiddenCard1.bitmap.y = holdemCanvas.images.seats[i].hiddenCard1.position.y
-                      holdemCanvas.images.seats[i].shownCard0.bitmap.y = holdemCanvas.images.seats[i].shownCard0.position.y
-                      holdemCanvas.images.seats[i].shownCard1.bitmap.y = holdemCanvas.images.seats[i].shownCard1.position.y
-                      }
-
-                       for (var i = 0;i<holdemCanvas.images.leftSideButtons.length;i=i+1) {
-                if (holdemCanvas.images.leftSideButtons[i].bitmap)
-                {
-                    holdemCanvas.images.leftSideButtons[i].bitmap.x = holdemCanvas.images.leftSideButtons[i].position.x
-                    holdemCanvas.images.leftSideButtons[i].bitmap.y = holdemCanvas.images.leftSideButtons[i].position.y
-                }
-            }
-    }
-
-
-    holdemCanvas.images.defaultSizes = function(){
-        
-
-            holdemCanvas.images.pot.size = {
-            x: 110,
-            y: 24
-        }
-
-        for(var i = 0;i<3;i++){
-holdemCanvas.images.leftSideButtons[i].size = {
-            x: 185,
-            y: 16
-        }
-        }
-        //size of action buttons
-        holdemCanvas.images.fold.size = {
-            x: 80,
-            y: 25
-        } 
-        
-        holdemCanvas.images.check.size = {
-            x: 80,
-            y: 25
-        }
-        holdemCanvas.images.raise.size = {
-            x: 80,
-            y: 25
-        }
-        holdemCanvas.images.bet.size = {
-            x: 80,
-            y: 25
-        }
-        holdemCanvas.images.call.size = {
-            x: 80,
-            y: 25
-        }
-
-        //size of seats and cards
-        for (i = 0; i < holdemCanvas.images.seats.length; i = i + 1){
-            holdemCanvas.images.seats[i].size = {
-            x: 90,
-            y: 33
-            }
-            holdemCanvas.images.seats[i].hiddenCard0.size = {
-                x: 48,
-                y: 60
-            }
-             holdemCanvas.images.seats[i].hiddenCard1.size = {
-                x: 48,
-                y: 60
-            }
-            holdemCanvas.images.seats[i].shownCard0.size = {
-                x: 48,
-                y: 60
-            }
-            holdemCanvas.images.seats[i].shownCard1.size = {
-                x: 48,
-                y: 60
-            }
-        }
-
-        for (i = 0; i < holdemCanvas.images.community.length; i = i + 1)
-        {
-            holdemCanvas.images.community[i].size = {
-           x: 48,
-            y: 60
-            }
-            }
           
+//start constructors
+this.images.Item = function (x,y,width,height){
+     this.position = {}
+this.position.x = x
+this.position.y = y
+this.size = {}
+this.size.x = width
+this.size.y = height
+            }
 
-    }
+ this.images.itemAsBitmap = function (parentOfImageObject,imageSource){
 
-    //does not update a player's stack size
-    holdemCanvas.images.playerPutsChipsInPot=function(seatNumber,chips){
-        
-        if(holdemCanvas.stage.contains(holdemCanvas.images.seats[seatNumber].bet.text)){
-        holdemCanvas.stage.removeChild(holdemCanvas.images.seats[seatNumber].text)}
-           holdemCanvas.images.seats[seatNumber].bet.text = new createjs.Text(chips,"15px Arial", "#100D08")
-           holdemCanvas.images.seats[seatNumber].bet.text.x = holdemCanvas.images.seats[seatNumber].bet.position.x
-            holdemCanvas.images.seats[seatNumber].bet.text.y = holdemCanvas.images.seats[seatNumber].bet.position.y
-         holdemCanvas.images.seats[seatNumber].bet.text.textAlign = 'left'
-            holdemCanvas.images.seats[seatNumber].text.bet.textBaseline = 'top'
-          holdemCanvas.images.seats[seatNumber].text.bet.maxWidth = holdemCanvas.images.seats[seatNumber].bet.size.x
-           holdemCanvas.stage.addChild(holdemCanvas.images.seats[seatNumber].bet.text)
-           holdemCanvas.stage.update()
-
-    }
-
-    holdemCanvas.images.setBackground = function(){
-        
-        jQuery('#body').css("background", "url('img/table_background.jpg') no-repeat")
-
-    }
-
-holdemCanvas.images.defaultMessages = function(){
+    var tempImage= new Image()
+    tempImage.src = imageSource
+    parentOfImageObject.image = new createjs.Bitmap(tempImage)
+    parentOfImageObject.image.x = parentOfImageObject.position.x
+    parentOfImageObject.image.y = parentOfImageObject.position.y
+            }
     
-    holdemCanvas.images.bet.messages[0] = 'act'
-    holdemCanvas.images.bet.messages[1] = 'bet'
-    holdemCanvas.images.call.messages[0] = 'act'
-     holdemCanvas.images.call.messages[1] = 'call'
-     holdemCanvas.images.check.messages[0] = 'act'
-      holdemCanvas.images.check.messages[1] = 'check'
-      holdemCanvas.images.raise.messages[0] = 'act'
-       holdemCanvas.images.raise.messages[1] = 'raise'
-       holdemCanvas.images.fold.messages[0] = 'act'
-        holdemCanvas.images.fold.messages[1] = 'fold'
-      for(i=0;i<holdemCanvas.images.seats.length;i=i+1){
-         holdemCanvas.images.seats[i].messages[0] = 'sit'
-         holdemCanvas.images.seats[i].messages[1] = i
+             this.images.itemAsRectangle = function (parentOfImageObject,color){
+ parentOfImageObject.image = new createjs.Shape();
+parentOfImageObject.image.graphics.beginFill(color).drawRect(parentOfImageObject.position.x, parentOfImageObject.position.y, parentOfImageObject.size.x, parentOfImageObject.size.y);
+
+            }
+
+            //for example: (parentOfImageObject, fold, "13px Arial", "#100D08")
+            this.images.addItemText = function(parentOfImageObject,text,sizeAndFont,color){
+                
+                parentOfImageObject.text = new createjs.Text(text, sizeAndFont, color)
+parentOfImageObject.text.x=parentOfImageObject.position.x + parentOfImageObject.size.x/2
+parentOfImageObject.text.y=parentOfImageObject.position.y
+parentOfImageObject.text.baseline = 'top'
+parentOfImageObject.text.textAlign = 'center'
+parentOfImageObject.text.maxWidth = parentOfImageObject.size.x
+
+            }
+
+            //end constructors
+            
+//-----------functions below this line ---------------------
+  this.images.setDefaultPositions = function (){
+
+            var cardWidth = 46
+            var cardHeight = 62
+            var sideButtonWidth = 185
+            var sideButtonHeight = 16
+            var actionButtonWidth = 80
+            var actionButtonHeight = 25
+            var seatWidth = 90
+            var seatHeight = 33
+
+            //initial positions and sizes of graphics of the poker table
+            this.pot = new this.Item(290,138,110,24)
+
+            //side buttons
+            this.leftSideButtons[0].button = new this.Item(7.5,412,sideButtonWidth,sideButtonHeight)
+            this.leftSideButtons[1].button = new this.Item(7.5,433,sideButtonWidth,sideButtonHeight)
+            this.leftSideButtons[2].button = new this.Item(7.5,454,sideButtonWidth,sideButtonHeight)
+             this.rightSideButtons[0].button = new this.Item(497.5,412,sideButtonWidth,sideButtonHeight)
+            this.rightSideButtons[1].button = new this.Item(497.5,433,sideButtonWidth,sideButtonHeight)
+            this.rightSideButtons[2].button = new this.Item(497.5,454,sideButtonWidth,sideButtonHeight)
+
+            //seats
+           this.seats[0].seat = new this.Item(300,371,seatWidth,seatHeight)
+           this.seats[1].seat = new this.Item(170,371,seatWidth,seatHeight)
+           this.seats[2].seat = new this.Item(27,301,seatWidth,seatHeight)
+           this.seats[3].seat = new this.Item(27,153,seatWidth,seatHeight)
+           this.seats[4].seat = new this.Item(170,77,seatWidth,seatHeight)
+           this.seats[5].seat = new this.Item(300,77,seatWidth,seatHeight)
+           this.seats[6].seat = new this.Item(430,77,seatWidth,seatHeight)
+            this.seats[7].seat = new this.Item(573,153,seatWidth,seatHeight)
+             this.seats[8].seat = new this.Item(573,301,seatWidth,seatHeight)
+     this.seats[9].seat = new this.Item(430,371,seatWidth,seatHeight)
+     //corresponding hole cards
+        for (var i = 0; i < this.seats.length; i = i + 1){
+            this.seats[i].hiddenCard0 = new this.Item(this.seats[i].seat.position.x - 1, this.seats[i].seat.position.y - 68, cardWidth, cardHeight)
+            this.seats[i].hiddenCard1 = new this.Item(this.seats[i].seat.position.x + 45, this.seats[i].seat.position.y - 68, cardWidth, cardHeight)
+
+            this.seats[i].shownCard0 = new this.Item(this.seats[i].seat.position.x - 1, this.seats[i].seat.position.y - 68, cardWidth, cardHeight)
+            this.seats[i].shownCard1 = new this.Item(this.seats[i].seat.position.x + 45, this.seats[i].seat.position.y - 68, cardWidth, cardHeight)
+          }
+
+     // initial positions of player's chips entering pot
+     this.seats[0].bet = new this.Item(345,291,20,10)
+      this.seats[1].bet = new this.Item(215,291,20,10)
+      this.seats[2].bet = new this.Item(137,153,20,10)
+      this.seats[3].bet = new this.Item(215,291,20,10)
+      this.seats[4].bet = new this.Item(215,121,20,10)
+      this.seats[5].bet = new this.Item(345,121,20,10)
+      this.seats[6].bet = new this.Item(475,121,20,10)
+      this.seats[7].bet = new this.Item(553,153,20,10)
+      this.seats[8].bet = new this.Item(553,227,20,10)
+      this.seats[9].bet = new this.Item(475,291,20,10)
+
+        // initial positions of action buttons
+      this.fold = new this.Item(205,419,actionButtonWidth,actionButtonHeight)
+      this.call = new this.Item(305,419,actionButtonWidth,actionButtonHeight)
+      this.check = new this.Item(305,419,actionButtonWidth,actionButtonHeight)
+      this.raise = new this.Item(405,419,actionButtonWidth,actionButtonHeight)
+      this.bet = new this.Item(405,419,actionButtonWidth,actionButtonHeight)
+      
+        //set initial positions of community cards
+        this.community[0] = new this.Item(222,169,cardWidth, cardHeight)
+        this.community[1] = new this.Item(272,169,cardWidth, cardHeight)
+        this.community[2] = new this.Item(322,169,cardWidth, cardHeight)
+        this.community[3] = new this.Item(372,169,cardWidth, cardHeight)
+        this.community[4] = new this.Item(422,169,cardWidth, cardHeight)
+      }
+
+
+    this.images.setDefaultImages = function (){
+        
+        //pot ****no image yet****
+        //this.itemAsBitmap(this.pot, this.sources.pot)
+
+        //side buttons
+        for (var i = 0; i < 3; i = i + 1){
+            this.itemAsRectangle(this.leftSideButtons[i].button, "#000000")
+            this.itemAsRectangle(this.rightSideButtons[i].button, "#000000")
          }
          
-}
-
-    //call holdemCanvas.images.defaultPositions() to set positions to default of 690x480 table
-    //WILL NOT DISPLAY
- 
-    //rotates positions of players seats and their hole cards n times clockwise
-    holdemCanvas.images.rotateSeats = function (n)
-    {
-
-    }
-
-    holdemCanvas.images.displaySideButton = function (buttonText,parentOfImageObject){
-
-           if( holdemCanvas.stage.contains(parentOfImageObject.bitmap)){holdemCanvas.stage.removeChild(parentOfImageObject.bitmap)}
-           if( holdemCanvas.stage.contains(parentOfImageObject.text)){holdemCanvas.stage.removeChild(parentOfImageObject.text)}
-            parentOfImageObject.text = new createjs.Text(buttonText, "12px Arial", "#100D08")
-
-            parentOfImageObject.text.x = parentOfImageObject.bitmap.x+parentOfImageObject.size.x/2
-            parentOfImageObject.text.y = parentOfImageObject.bitmap.y
-               parentOfImageObject.text.textAlign ='center'
-    parentOfImageObject.text.textBaseline ='top'
-           parentOfImageObject.text.maxWidth = parentOfImageObject.size.x
-           holdemCanvas.stage.addChild(parentOfImageObject.bitmap)
-            holdemCanvas.stage.addChild(parentOfImageObject.text)
-            holdemCanvas.stage.update()
-    }
-
-    holdemCanvas.images.displayShownCard = function (cardText,parentOfImageObject){
-
-            holdemCanvas.stage.addChild(parentOfImageObject.bitmap)
-            parentOfImageObject.text = new createjs.Text(cardText, "13px Arial", "#100D08")
-            parentOfImageObject.text.x = parentOfImageObject.bitmap.x
-            parentOfImageObject.text.y = parentOfImageObject.bitmap.y
-           parentOfImageObject.text.maxWidth = parentOfImageObject.size.x
-            holdemCanvas.stage.addChild(parentOfImageObject.text)
-            holdemCanvas.stage.update()
-    }
-
-    holdemCanvas.images.displayPot = function (potSize){
-   if(holdemCanvas.stage.contains(holdemCanvas.images.pot.text)){holdemCanvas.stage.removeChild(holdemCanvas.images.pot.text)}
-   holdemCanvas.images.pot.text = new createjs.Text(ptSize,"14px Arial", "#100D08")
-    holdemCanvas.images.pot.text.x = holdemCanvas.images.pot.position.x + holdemCanvas.images.pot.size.x/2
-     holdemCanvas.images.pot.text.y  = holdemCanvas.images.pot.position.y
-
-   holdemCanvas.images.pot.text.textAlign ='center'
-   holdemCanvas.images.pot.text.textBaseline ='top'
-   holdemCanvas.images.pot.text.maxWidth = holdemCanvas.images.pot.size
-   holdemCanvas.stage.addChild(holdemCanvas.images.pot.text)
-           holdemCanvas.stage.update()
-    }
-
-    holdemCanvas.images.playerSits = function(seatNumber, playerName, chips){
-        if(holdemCanvas.stage.contains(holdemCanvas.images.seats[seatNumber].text)){
-        holdemCanvas.stage.removeChild(holdemCanvas.images.seats[seatNumber].text)}
-           var asdf = playerName + '\n'+chips
-           holdemCanvas.images.seats[seatNumber].text = new createjs.Text(asdf,"15px Arial", "#100D08")
-           holdemCanvas.images.seats[seatNumber].text.x = holdemCanvas.images.seats[seatNumber].bitmap.x+holdemCanvas.images.seats[seatNumber].size.x/2
-            holdemCanvas.images.seats[seatNumber].text.y = holdemCanvas.images.seats[seatNumber].bitmap.y
-         holdemCanvas.images.seats[seatNumber].text.textAlign = 'center'
-            holdemCanvas.images.seats[seatNumber].text.textBaseline = 'top'
-          holdemCanvas.images.seats[seatNumber].text.maxWidth = holdemCanvas.images.seats[seatNumber].size.x
-           holdemCanvas.stage.addChild(holdemCanvas.images.seats[seatNumber].text)
-           holdemCanvas.stage.update()
-
-    }
-
-     holdemCanvas.images.playerStands = function(seatNumber){
+         //seats and corresponding hole cards
+        for (var i = 0; i < this.seats.length; i = i + 1){
+            this.itemAsRectangle(this.seats[i].seat, "#000000")
+            this.itemAsBitmap(this.seats[i].hiddenCard0, this.sources.hiddenCard)
+            this.itemAsBitmap(this.seats[i].hiddenCard1, this.sources.hiddenCard)
+            this.itemAsRectangle(this.seats[i].shownCard0, "#00FFFF")
+            this.itemAsRectangle(this.seats[i].shownCard1, "#00FFFF")
+            
+          this.seats[i].seat.image.onMouseOver = self.asdf
+        }
         
-        holdemCanvas.images.displayImage(holdemCanvas.images.seats[seatNumber])
+        //action buttons
+        this.itemAsBitmap(this.fold, this.sources.fold)
+        this.itemAsBitmap(this.call, this.sources.call)
+        this.itemAsBitmap(this.check, this.sources.check)
+        this.itemAsBitmap(this.raise, this.sources.raise)
+        this.itemAsBitmap(this.bet, this.sources.bet)
+            
+        //community cards
+        for (var i = 0; i < 5; i = i + 1){
+ this.itemAsRectangle(this.community[i], "#00FFFF")
+ }
+    }
+
+this.images.defaultMessages = function(){
+    /*
+    this.bet.messages[0] = 'act'
+    this.bet.messages[1] = 'bet'
+    this.call.messages[0] = 'act'
+     this.call.messages[1] = 'call'
+     this.check.messages[0] = 'act'
+      this.check.messages[1] = 'check'
+      this.raise.messages[0] = 'act'
+       this.raise.messages[1] = 'raise'
+       this.fold.messages[0] = 'act'
+        this.fold.messages[1] = 'fold'
+      for(i=0;i<this.seats.length;i=i+1){
+         this.seats[i].seat.messages[0] = 'sit'
+         this.seats[i].seat.messages[1] = i
+         }   
+         */   
+}
+ 
+        this.setBackground = function(){     
+        jQuery('#body').css("background", "url('img/table_background.jpg') no-repeat")
+    }
+
+    this.initialize = function(){
+        this.setBackground()
+        this.images.setDefaultPositions()
+       this.images.setDefaultImages()
+      this.images.defaultMessages()
+    }
+     
+
+    //does not update a player's stack size
+    this.playerPutsChipsInPot=function(seatNumber,chips){
+        
+        if(this.stage.contains(this.images.seats[seatNumber].bet.text)){this.stage.removeChild(this.images.seats[seatNumber].bet.text)}
+         this.images.addItemText(this.images.seats[seatNumber].bet,chips, "15px Arial", "#FFFFFF")
+           this.stage.addChild(this.images.seats[seatNumber].bet.text)
+           this.stage.update()
 
     }
 
-    holdemCanvas.images.displayHoleCards = function (card0,card1){
+    this.removeAllBets  = function(){
+    for (i=0;i<holdemCanvas.images.seats.length;i=i+1){if(holdemCanvas.stage.contains(holdemCanvas.images.seats[i].bet.text)){holdemCanvas.stage.removeChild(holdemCanvas.images.seats[i].bet.text)}}
+    this.stage.update()
+    }
+    //rotates positions of players seats and their hole cards n times clockwise
+    this.images.rotateSeats = function (n){
+
+    }
+    
+    this.displaySideButton = function (buttonText,parentOfImageObject){
+
+           if(!this.stage.contains(parentOfImageObject.image)){this.stage.addChild(parentOfImageObject.image)}
+           if(this.stage.contains(parentOfImageObject.text)){this.stage.removeChild(parentOfImageObject.text)}
+           this.images.addItemText(parentOfImageObject, buttonText,"12px Arial", "#100D08")
+            this.stage.addChild(parentOfImageObject.text)
+            this.stage.update()
+    }
+
+    this.displayShownCard = function (cardText,parentOfImageObject){
+        if (!this.stage.contains(parentOfImageObject.image)){this.stage.addChild(parentOfImageObject.image)}
+        if (this.stage.contains(parentOfImageObject.text)){this.stage.removeChild(parentOfImageObject.image)}
+        this.images.addItemText(parentOfImageObject, cardText,"13px Arial", "#100D08")
+            this.stage.addChild(parentOfImageObject.text)
+            this.stage.update()
+    }
+
+    this.displayPot = function (potSize){
+   if(this.stage.contains(this.pot.text)){this.stage.removeChild(this.pot.text)}
+   this.images.addItemText(this.images.pot, potSize,"14px Arial", "#100D08")
+   this.stage.addChild(this.pot.text)
+           this.stage.update()
+    }
+
+    this.playerSits = function(seatNumber, playerName, chips){
+        if (!this.stage.contains(this.images.seats[seatNumber].seat.image)){this.stage.addChild(this.images.seats[seatNumber].seat.image)}
+        if(this.stage.contains(this.images.seats[seatNumber].seat.text)){this.stage.removeChild(this.images.seats[seatNumber].seat.text)}
+        this.images.addItemText(this.images.seats[seatNumber].seat, playerName+'\n'+chips,"14px Arial", "#FFFFFF")
+           this.stage.addChild(this.images.seats[seatNumber].seat.text)
+           this.stage.update()
+
+    }
+
+     this.playerStands = function(seatNumber){
+        this.stage.removeChild(this.images.seats[seatNumber].seat.text)
+        this.stage.update()
+    }
+
+    this.displayHoleCards = function (card0,card1){
 
        //check for and remove face down card images
-         if(holdemCanvas.stage.contains(holdemCanvas.images.seats[holdemCanvas.userSeatNumber].hiddenCard0.bitmap)){
-            holdemCanvas.stage.removeChild(holdemCanvas.images.seats[holdemCanvas.userSeatNumber].hiddenCard0.bitmap)
-            holdemCanvas.stage.removeChild(holdemCanvas.images.seats[holdemCanvas.userSeatNumber].hiddenCard1.bitmap)
+         if(this.stage.contains(this.images.seats[this.userSeatNumber].hiddenCard0.image)){
+            this.stage.removeChild(this.images.seats[this.userSeatNumber].hiddenCard0.image)
+            this.stage.removeChild(this.images.seats[this.userSeatNumber].hiddenCard1.image)
             }
 
-        holdemCanvas.images.displayShownCard(card0, holdemCanvas.images.seats[holdemCanvas.userSeatNumber].shownCard0)
-        holdemCanvas.images.displayShownCard(card1, holdemCanvas.images.seats[holdemCanvas.userSeatNumber].shownCard1)
+        this.displayShownCard(card0, this.images.seats[this.userSeatNumber].shownCard0)
+        this.displayShownCard(card1, this.images.seats[this.userSeatNumber].shownCard1)
     }
 
-   holdemCanvas.images.displayAllCommunity = function(communityArray){
+   this.displayAllCommunity = function(communityArray){
 
     for (var i = 0; i < 5; i = i + 1) {
 
@@ -548,48 +317,42 @@ holdemCanvas.images.defaultMessages = function(){
     
     }
     else{
-    holdemCanvas.images.displayShownCard(communityArray[i], holdemCanvas.images.community[i])
+    this.displayShownCard(communityArray[i], this.images.community[i])
     }
     }
     }
-   
-
-
  
     //parameter is parent of the actual Image object
-    holdemCanvas.images.displayImage = function (parentOfImageObject)
-    {
+    this.displayImage = function (parentOfImageObject){
 
-            holdemCanvas.stage.addChild(parentOfImageObject.bitmap)
-            holdemCanvas.stage.update()
+            this.stage.addChild(parentOfImageObject.image)
+            this.stage.update()
 
     }
+    
+    this.displayAll = function () {
 
-    holdemCanvas.images.displayAll = function ()
-    {
-
-
-        for (var i = 0; i < holdemCanvas.images.seats.length; i = i + 1)
+        for (var i = 0; i < this.images.seats.length; i = i + 1)
         {
 
-            holdemCanvas.images.displayImage(holdemCanvas.images.seats[i])
-            holdemCanvas.images.displayImage(holdemCanvas.images.seats[i].hiddenCard0)
-            holdemCanvas.images.displayImage(holdemCanvas.images.seats[i].hiddenCard1)
+            this.displayImage(this.images.seats[i].seat)
+            this.displayImage(this.images.seats[i].hiddenCard0)
+            this.displayImage(this.images.seats[i].hiddenCard1)
         }
 
-        for (var i = 0; i < holdemCanvas.images.community.length; i = i + 1)
+        for (var i = 0; i < this.images.community.length; i = i + 1)
         {
 
-            holdemCanvas.images.displayImage(holdemCanvas.images.community[i])
+            this.displayImage(this.images.community[i])
         }
 
-      for (var i in holdemCanvas.images)
+      for (var i in this.images)
         {
-            if (typeof holdemCanvas.images[i] === 'object')
+            if (typeof this.images[i] === 'object')
             {
-                if (holdemCanvas.images[i].image)
+                if (this.images[i].image)
                 {
-                    holdemCanvas.images.displayImage(holdemCanvas.images[i])
+                    this.displayImage(this.images[i])
                 }
             }
         }
@@ -597,40 +360,87 @@ holdemCanvas.images.defaultMessages = function(){
     }
 
 
-   holdemCanvas.images.activateButton =  function (messages, parentOfImageObject){
+   this.activateButton =  function (messages, parentOfImageObject){
     $(document).mousedown(function(e) {
-    if((e.offsetX >=parentOfImageObject.bitmap.x && e.offsetX <= parentOfImageObject.bitmap.x + parentOfImageObject.size.x) &&
-       (e.offsetY >=parentOfImageObject.bitmap.y && e.offsetY <= parentOfImageObject.bitmap.y + parentOfImageObject.size.y)) {
+    if((e.offsetX >=parentOfImageObject.position.x && e.offsetX <= parentOfImageObject.position.x + parentOfImageObject.size.x) &&
+       (e.offsetY >=parentOfImageObject.position.y && e.offsetY <= parentOfImageObject.position.y + parentOfImageObject.size.y)) {
         console.log(messages);
        // socket.emit.apply(socket, messages);
     }
-});
+})
 }
-jQuery(document).ready(function(){
+ this.startCountdown = function(seatNumber, secondsToAct){
+     this.gameState.seatNumberToAct = seatNumber
+     this.gameState.secondsToAct = secondsToAct
+     
+     if (this.stage.contains(this.images.seats[this.gameState.seatNumberToAct].seat.text)){
+         this.gameState.tempText = this.images.seats[this.gameState.seatNumberToAct].seat.text
+         this.stage.removeChild(this.images.seats[this.gameState.seatNumberToAct].seat.text)
+         }
+          this.gameState.paused = false
+     //createjs.Ticker.setPaused(false)
+     }
     
-    holdemCanvas.images.setBackground()
-      
-        holdemCanvas.images.defaultImages()
-          holdemCanvas.images.defaultPositions()
-       
-       holdemCanvas.images.defaultSizes()
-       holdemCanvas.images.defaultMessages()
+           this.countdown = function(){
+    if (this.stage.contains(this.images.seats[this.gameState.seatNumberToAct].seat.text)){this.stage.removeChild(this.images.seats[this.gameState.seatNumberToAct].seat.text)}
+   if (this.gameState.secondsToAct< 0){
+        this.gameState.paused = true   
+        this.images.seats[this.gameState.seatNumberToAct].seat.text = this.gameState.tempText
+        this.stage.addChild(this.images.seats[this.gameState.seatNumberToAct].seat.text)
+      //  socket.emit('fold')
+     //   createjs.Ticker.setPaused(true)}
+     
+   }
+   else{
+       this.images.addItemText(this.images.seats[this.gameState.seatNumberToAct].seat,'Time: '+this.gameState.secondsToAct, '21px Arial', '#FFFFFF')
+       this.stage.addChild(this.images.seats[this.gameState.seatNumberToAct].seat.text)
+   }
+   this.stage.update()
+    this.gameState.secondsToAct=this.gameState.secondsToAct-1
+    
 
+}
+}
+
+
+jQuery(document).ready(function(){
+    holdemCanvas = new Table(10)
+     
+    holdemCanvas.initialize()
+     tick=function(event) {
+         if(!holdemCanvas.gameState.paused) {
+       
+     console.log(createjs.Ticker.getMeasuredFPS())
+ holdemCanvas.countdown()
+    }
+}
+ 
+createjs.Ticker.addEventListener("tick", tick)
+createjs.Ticker.setInterval(1000)
+    
 })
 
     jQuery(window).load(function ()
     {
        
-       holdemCanvas.images.displayAll()
-       holdemCanvas.images.displayAllCommunity(['2c','3c','4c','5c','6c'])
+       holdemCanvas.displayAll()
+       holdemCanvas.displayAllCommunity(['2c','3c','4c','5c','6c'])
        holdemCanvas.userSeatNumber = 7
-       holdemCanvas.images.displayHoleCards('ac','ad')
-       holdemCanvas.images.displayImage(holdemCanvas.images.fold)
-       holdemCanvas.images.playerSits(1,'walter',400)
-       holdemCanvas.images.activateButton (['fold'],holdemCanvas.images.fold)
-       holdemCanvas.images.activateButton (['check'],holdemCanvas.images.check)
-       holdemCanvas.images.activateButton (['raise'],holdemCanvas.images.raise)
-       for (var i = 0;i<holdemCanvas.images.seats.length;i=i+1){
-       holdemCanvas.images.activateButton (['sit',i],holdemCanvas.images.seats[i])}
-
+       holdemCanvas.displayHoleCards('ac','ad')
+       holdemCanvas.displayImage(holdemCanvas.images.fold)
+       holdemCanvas.displayImage(holdemCanvas.images.raise)
+       holdemCanvas.playerSits(1,'walter',400)
+       holdemCanvas.activateButton (['fold'],holdemCanvas.images.fold)
+      holdemCanvas.activateButton (['check'],holdemCanvas.images.check)
+      holdemCanvas.activateButton (['raise'],holdemCanvas.images.raise)
+      for (var i = 0;i<holdemCanvas.images.seats.length;i=i+1){
+      holdemCanvas.activateButton (['sit',i],holdemCanvas.images.seats[i].seat)}
+      holdemCanvas.playerPutsChipsInPot(4,400)
+      holdemCanvas.startCountdown(2,11)
     })
+
+    /*
+    	nextImage.onMouseOver = showNextRoll;
+	nextRollImage.onMouseOut = showBackRoll;
+	nextRollImage.onClick = startBtnClick;
+    */

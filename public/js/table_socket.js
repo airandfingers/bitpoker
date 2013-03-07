@@ -42,7 +42,7 @@
 
 
 //player acts
-       socket.on('player_acts', function(player, action, num_chips, pot,seat_num,stack_size){
+       socket.on('player_acts', function(player, seat_num, action, num_chips,   pot){
                if(i !== holdemCanvas.userSeatNumber){
                    holdemCanvas.images.displayImage(holdemCanvas.images.seats[i].hiddenCard0)
         holdemCanvas.images.displayImage(holdemCanvas.images.seats[i].hiddenCard1)
@@ -67,18 +67,18 @@
             break;
 
             case'bet':
-            holdemCanvas.images.playerPutsChipsInPot(seat_num,chips)
-            holdemCanvas.images.playerSits(seat_num, player, stack_size)
+            holdemCanvas.images.playerPutsChipsInPot(seat_num,num_chips)
+            holdemCanvas.images.playerSits(seat_num, player, player.chips)
             holdemCanvas.images.displayPot(pot)
             break;
 
             case'call':
             holdemCanvas.images.playerPutsChipsInPot(seat_num,chips)
-            holdemCanvas.images.playerSits(seat_num, player, stack_size)
+            holdemCanvas.images.playerSits(seat_num, player, player.chips)
             holdemCanvas.images.displayPot(pot)
 
             case 'raise':
-            holdemCanvas.images.playerSits(seat_num, player, stack_size)
+            holdemCanvas.images.playerSits(seat_num, player, player.chips)
             holdemCanvas.images.displayPot(pot)
             break;
         }
@@ -91,7 +91,8 @@
     //receive/deal community cards
        socket.on('community_dealt', function(community_cards){
         holdemCanvas.images.displayAllCommunity(community_cards)
-     
+        holdemCanvas.removeAllBets()
+     holdemCanvas.stage.update()
 });
  
 
@@ -127,7 +128,6 @@
      holdemCanvas.images.displayFaceUpCard(hand_cards[2],holdemCanvas.images.seats[userSeatNumber])
 });
 
-
 //player sits, checks if player is the user
        socket.on('player_sits', function(player, seat_num, is_you){
         console.log('player_sits', player, seat_num, is_you);
@@ -137,8 +137,6 @@
             holdemCanvas.images.displaySideButton('stand up', holdemCanvas.images.leftSideButtons[1])
             holdemCanvas.images.activateButton (['stand'], holdemCanvas.images.leftSideButtons[1])
 }});
-
-
 
 //player stands, checks if player is the user
        socket.on('player_stands', function(player, seat_num, is_you){
@@ -167,17 +165,13 @@
             }
             
         }
-});
-
+})
 
 //player adds chips to his stack
-       socket.on('player_rebuys', function(player, num_chips){
-        holdemCanvas.images.playerSits(seat_num, player, num_chips)
+       socket.on('player_rebuys', function(player,seat_num){
+        holdemCanvas.images.playerSits(seat_num, player, player.chips)
         }
   );
-
-  
-
 
 //player adds chips to his stack
        socket.on('table_state', function(player, seats, dealer, active_seats, hand, community, pot, bets ){
@@ -185,15 +179,14 @@
         }
   );
 
- holdemCanvas.images.displayCurrentTableState=function(player, seats, dealer, active_seats, hand, community, pot, bets){
+ holdemCanvas.images.displayCurrentTableState=function(players, seats, dealer, active_seats, hand, community, pot, bets){
         
-
         holdemCanvas.images.displayAllCommunity(community)
         holdemCanvas.images.displayPot(pot)
 
         //display seats
-         for (var i in seats) { 
-         holdemCanvas.images.playerSits(i,seats[i].player,0)}
+         for (var i in seats { 
+         holdemCanvas.images.playerSits(i,seats[i].player,seats[i].player.chips)}
 
         //display cards
          for(var i=0;i<active_seats.length;i=i+1){
