@@ -3,8 +3,8 @@
     //seat position 0 is top middle and proceeds clockwise
    // var holdemCanvas = new Table(10)
     function Table (maxSeats) {
-        this.canvas = document.getElementById('canvas'),
-        this.stage = new createjs.Stage(canvas),
+        this.canvas = document.getElementById('canvas')
+        this.stage = new createjs.Stage(canvas)
         this.stage.mouseEventsEnabled = true
         this.stage.enableMouseOver()
        // this.canvas.addEventListener("mouseup", this.filler, false)
@@ -12,7 +12,7 @@
   self = this
   self.asdf = function(event){
       console.log(event)
-      //stage.removeChildAt(event.target.id)
+    //  self.stage.removeChild(self.stage.getObjectUnderPoint(event.stageX,event.stageY))
   }
         this.gameState = {}
         this.gameState.secondsToAct
