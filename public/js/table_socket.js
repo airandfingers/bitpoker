@@ -1,15 +1,6 @@
 
       
-   holdemCanvas.images.activateButton =  function (messages, parentOfImageObject){
-    $(document).mousedown(function(e) {
-    if((e.offsetX >=parentOfImageObject.bitmap.x && e.offsetX <= parentOfImageObject.bitmap.x + parentOfImageObject.size.x) &&
-       (e.offsetY >=parentOfImageObject.bitmap.y && e.offsetY <= parentOfImageObject.bitmap.y + parentOfImageObject.size.y)) {
-        console.log(socket, messages);
-        socket.emit.apply(socket, messages);
-    }
-});
-}
-
+   
 //hands are dealt
        socket.on('hands_dealt', function(active_seats, hand){
            for(var i=0;i<active_seats.length;i=i+1){
@@ -208,5 +199,14 @@
     
     jQuery(window).load(function ()
     {
- 
+ holdemCanvas.images.activateButton =  function (messages, parentOfImageObject){
+    $(document).mousedown(function(e) {
+    if((e.offsetX >=parentOfImageObject.bitmap.x && e.offsetX <= parentOfImageObject.bitmap.x + parentOfImageObject.size.x) &&
+       (e.offsetY >=parentOfImageObject.bitmap.y && e.offsetY <= parentOfImageObject.bitmap.y + parentOfImageObject.size.y)) {
+        console.log(socket, messages);
+        socket.emit.apply(socket, messages);
+    }
+});
+}
+
     })
