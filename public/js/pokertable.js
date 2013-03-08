@@ -364,7 +364,7 @@ this.images.defaultMessages = function(){
     if((e.offsetX >=parentOfImageObject.position.x && e.offsetX <= parentOfImageObject.position.x + parentOfImageObject.size.x) &&
        (e.offsetY >=parentOfImageObject.position.y && e.offsetY <= parentOfImageObject.position.y + parentOfImageObject.size.y)) {
         console.log(messages);
-        socket.emit.apply(socket, messages);
+       socket.emit.apply(socket, messages);
     }
 })
 }
