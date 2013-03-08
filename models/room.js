@@ -66,6 +66,11 @@ module.exports = (function () {
     this.emit('socket_join', socket);
   };
 
+  RoomSchema.methods.leave = function(socket) {
+    // notify anyone interested (the corresponding table)
+    this.emit('socket_leave', socket);
+  };
+
   RoomSchema.methods.setJoinHandler = function(handler) {
     if (! _.isFunction(handler)) {
       console.error('setJoinHandler called with', handler);
@@ -92,10 +97,30 @@ module.exports = (function () {
 
   Room.setup();
 
-  //listen for incoming socket connections
+  // listen for incoming socket connections
   io.sockets.on('connection', function(socket) {
     //console.log('A socket with sessionID ' + socket.handshake.sessionID + ' connected!');
     socket.user_id = socket.handshake.session.passport.user;
+
+    // override emit method to log, then emit
+    var emit = socket.emit;
+    socket.emit = function() {
+      var args = Array.prototype.slice.call(arguments);
+      if (args[0] !== 'newListener') {
+        console.log('Sending to ' + socket.id + ':', args);
+        emit.apply(socket, arguments);
+      }
+    };
+
+    // override on method (called $emit) to log, then on
+    var $emit = socket.$emit;
+    socket.$emit = function() {
+      var args = Array.prototype.slice.call(arguments);
+      if (args[0] !== 'newListener') {
+        console.log(socket.username + ' sent:', args);
+        $emit.apply(socket, arguments);
+      }
+    };
 
     var room_id = socket.handshake.room_id //socket.handshake = data object from authorization handler
       , room = Room.getRoom(room_id);
@@ -105,6 +130,10 @@ module.exports = (function () {
     else {
       console.error('no room with room_id', room_id);
     }
+
+    socket.on('disconnect', function() {
+      room.leave(socket);
+    });
   });
 
   return Room;

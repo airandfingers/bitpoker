@@ -77,7 +77,6 @@ module.exports = (function () {
         return;
       }
       socket.on(message_name, function() {
-        console.log(/*self,*/'received', message_name, 'message'); /*'from', socket.user_id,*/
         if (how_to_handle.pass_message_name !== true && how_to_handle.pass_socket !== true) {
           //console.log('calling instance\'s', handler_name, 'with', arguments);
           handler.apply(self, arguments);
