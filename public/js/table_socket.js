@@ -14,12 +14,12 @@
        socket.on('hands_dealt', function(active_seats, hand){
            for(var i=0;i<active_seats.length;i=i+1){
                if(i !== holdemCanvas.userSeatNumber){
-                   holdemCanvas.images.displayImage(holdemCanvas.images.seats[i].hiddenCard0)
-        holdemCanvas.images.displayImage(holdemCanvas.images.seats[i].hiddenCard1)
+                   holdemCanvas.displayImage(holdemCanvas.images.seats[i].hiddenCard0)
+        holdemCanvas.displayImage(holdemCanvas.images.seats[i].hiddenCard1)
                    }
                    else if(i === holdemCanvas.userSeatNumber){
-        holdemCanvas.images.displayShownCard(hand[0], holdemCanvas.images.seats[i].shownCard0)
-                   holdemCanvas.images.displayShownCard(hand[1], holdemCanvas.images.seats[i].shownCard1)}
+        holdemCanvas.displayShownCard(hand[0], holdemCanvas.images.seats[i].shownCard0)
+                   holdemCanvas.displayShownCard(hand[1], holdemCanvas.images.seats[i].shownCard1)}
         }
         
      
@@ -29,27 +29,27 @@
        socket.on('player_to_act', function(seat_num, timeout){
            for(var i=0;i<active_seats.length;i=i+1){
                if(i !== holdemCanvas.userSeatNumber){
-                   holdemCanvas.images.displayImage(holdemCanvas.images.seats[i].hiddenCard0)
-        holdemCanvas.images.displayImage(holdemCanvas.images.seats[i].hiddenCard1)
+                   holdemCanvas.displayImage(holdemCanvas.images.seats[i].hiddenCard0)
+        holdemCanvas.displayImage(holdemCanvas.images.seats[i].hiddenCard1)
                    }
                    else if(i === holdemCanvas.userSeatNumber){
-        holdemCanvas.images.displayShownCard(hand[0], holdemCanvas.images.seats[i].shownCard0)
-                   holdemCanvas.images.displayShownCard(hand[1], holdemCanvas.images.seats[i].shownCard1)}
+        holdemCanvas.displayShownCard(hand[0], holdemCanvas.images.seats[i].shownCard0)
+                   holdemCanvas.displayShownCard(hand[1], holdemCanvas.images.seats[i].shownCard1)}
         }
         
-     
+     holdemCanvas.startCountdown(seat_num,timeout)
 });
 
 
 //player acts
-       socket.on('player_acts', function(player, action, num_chips, pot,seat_num,stack_size){
+       socket.on('player_acts', function(player, seat_num, action, num_chips,   pot){
                if(i !== holdemCanvas.userSeatNumber){
-                   holdemCanvas.images.displayImage(holdemCanvas.images.seats[i].hiddenCard0)
-        holdemCanvas.images.displayImage(holdemCanvas.images.seats[i].hiddenCard1)
+                   holdemCanvas.displayImage(holdemCanvas.images.seats[i].hiddenCard0)
+        holdemCanvas.displayImage(holdemCanvas.images.seats[i].hiddenCard1)
                    }
                    else if(i === holdemCanvas.userSeatNumber){
-        holdemCanvas.images.displayShownCard(hand[0], holdemCanvas.images.seats[i].shownCard0)
-                   holdemCanvas.images.displayShownCard(hand[1], holdemCanvas.images.seats[i].shownCard1)
+        holdemCanvas.displayShownCard(hand[0], holdemCanvas.images.seats[i].shownCard0)
+                   holdemCanvas.displayShownCard(hand[1], holdemCanvas.images.seats[i].shownCard1)
                    }
         switch(action){
         case 'fold':
@@ -67,19 +67,19 @@
             break;
 
             case'bet':
-            holdemCanvas.images.playerPutsChipsInPot(seat_num,chips)
-            holdemCanvas.images.playerSits(seat_num, player, stack_size)
-            holdemCanvas.images.displayPot(pot)
+            holdemCanvas.playerPutsChipsInPot(seat_num,num_chips)
+            holdemCanvas.playerSits(seat_num, player, player.chips)
+            holdemCanvas.displayPot(pot)
             break;
 
             case'call':
-            holdemCanvas.images.playerPutsChipsInPot(seat_num,chips)
-            holdemCanvas.images.playerSits(seat_num, player, stack_size)
-            holdemCanvas.images.displayPot(pot)
+            holdemCanvas.playerPutsChipsInPot(seat_num,chips)
+            holdemCanvas.playerSits(seat_num, player, player.chips)
+            holdemCanvas.displayPot(pot)
 
             case 'raise':
-            holdemCanvas.images.playerSits(seat_num, player, stack_size)
-            holdemCanvas.images.displayPot(pot)
+            holdemCanvas.playerSits(seat_num, player, player.chips)
+            holdemCanvas.displayPot(pot)
             break;
         }
         
@@ -90,8 +90,9 @@
 
     //receive/deal community cards
        socket.on('community_dealt', function(community_cards){
-        holdemCanvas.images.displayAllCommunity(community_cards)
-     
+        holdemCanvas.displayAllCommunity(community_cards)
+        holdemCanvas.removeAllBets()
+     holdemCanvas.stage.update()
 });
  
 
@@ -99,23 +100,23 @@
  socket.on('act_prompt', function(fold, check, call, raise, bet, seat_num){
 
      if (fold){
-         holdemCanvas.images.displayImage(holdemCanvas.images.fold)
+         holdemCanvas.displayImage(holdemCanvas.images.fold)
          holdemCanvas.images.activateButton(holdemCanvas.images.fold)
         }
         if (check){
-         holdemCanvas.images.displayImage(holdemCanvas.images.check)
+         holdemCanvas.displayImage(holdemCanvas.images.check)
          holdemCanvas.images.activateButton(holdemCanvas.images.check)
          }
          if (call){
-         holdemCanvas.images.displayImage(holdemCanvas.images.call)
+         holdemCanvas.displayImage(holdemCanvas.images.call)
          holdemCanvas.images.activateButton(holdemCanvas.images.call)
          }
          if (raise){
-         holdemCanvas.images.displayImage(holdemCanvas.images.raise)
+         holdemCanvas.displayImage(holdemCanvas.images.raise)
          holdemCanvas.images.activateButton(holdemCanvas.images.raise)
          }
          if (bet){
-         holdemCanvas.images.displayImage(holdemCanvas.images.bet)
+         holdemCanvas.displayImage(holdemCanvas.images.bet)
          holdemCanvas.images.activateButton(holdemCanvas.images.bet)
          }
 
@@ -123,31 +124,28 @@
 
 //receive hole cards
        socket.on('hands_dealt', function(active_seats, hand_cards){
-        holdemCanvas.images.displayFaceUpCard(hand_cards[1],holdemCanvas.images.seats[userSeatNumber])
-     holdemCanvas.images.displayFaceUpCard(hand_cards[2],holdemCanvas.images.seats[userSeatNumber])
+        holdemCanvas.displayShownCard(hand_cards[1],holdemCanvas.images.seats[userSeatNumber])
+     holdemCanvas.displayShownCard(hand_cards[2],holdemCanvas.images.seats[userSeatNumber])
 });
-
 
 //player sits, checks if player is the user
        socket.on('player_sits', function(player, seat_num, is_you){
         console.log('player_sits', player, seat_num, is_you);
-        holdemCanvas.images.playerSits(seat_num, player, 0)
+        holdemCanvas.playerSits(seat_num, player, 0)
         if(is_you){
             holdemCanvas.userSeatNumber = seat_num
-            holdemCanvas.images.displaySideButton('stand up', holdemCanvas.images.leftSideButtons[1])
+            holdemCanvas.displaySideButton('stand up', holdemCanvas.images.leftSideButtons[1])
             holdemCanvas.images.activateButton (['stand'], holdemCanvas.images.leftSideButtons[1])
 }});
 
-
-
 //player stands, checks if player is the user
        socket.on('player_stands', function(player, seat_num, is_you){
-        console.log('player_stands', player, seat_num, is_you);
-        holdemCanvas.images.seats[seat_num].image.src = holdemCanvas.images.sources.seat
-                 holdemCanvas.images.displayImage(holdemCanvas.images.seats[seat_num])
+        console.log('player_stands', player, seat_num, is_you)
+        if(holdemCanvas.stage.contains(holdemCanvas.images.seats[seat_num].seat.text)){holdemCanvas.stage.removeChild(holdemCanvas.images.seats[seat_num].seat.text)}
+        holdemCanvas.stage.update()
         holdemCanvas.images.activateButton(holdemCanvas.images.seats[seat_num])
         if(is_you){
-            delete holdemCanvas.userSeatNumber
+            holdemCanvas.userSeatNumber = false
 }});
 
    
@@ -167,17 +165,13 @@
             }
             
         }
-});
-
+})
 
 //player adds chips to his stack
-       socket.on('player_rebuys', function(player, num_chips){
-        holdemCanvas.images.playerSits(seat_num, player, num_chips)
+       socket.on('player_rebuys', function(player,seat_num){
+        holdemCanvas.images.playerSits(seat_num, player, player.chips)
         }
   );
-
-  
-
 
 //player adds chips to his stack
        socket.on('table_state', function(player, seats, dealer, active_seats, hand, community, pot, bets ){
@@ -185,31 +179,30 @@
         }
   );
 
- holdemCanvas.images.displayCurrentTableState=function(player, seats, dealer, active_seats, hand, community, pot, bets){
+ holdemCanvas.images.displayCurrentTableState=function(players, seats, dealer, active_seats, hand, community, pot, bets){
         
-
-        holdemCanvas.images.displayAllCommunity(community)
-        holdemCanvas.images.displayPot(pot)
+        holdemCanvas.displayAllCommunity(community)
+        holdemCanvas.displayPot(pot)
 
         //display seats
          for (var i in seats) { 
-         holdemCanvas.images.playerSits(i,seats[i].player,0)}
+         holdemCanvas.playerSits(i,seats[i].player,seats[i].player.chips)}
 
         //display cards
          for(var i=0;i<active_seats.length;i=i+1){
                if(i !== holdemCanvas.userSeatNumber){
-                   holdemCanvas.images.displayImage(holdemCanvas.images.seats[i].hiddenCard0)
-        holdemCanvas.images.displayImage(holdemCanvas.images.seats[i].hiddenCard1)
+                   holdemCanvas.displayImage(holdemCanvas.images.seats[i].hiddenCard0)
+        holdemCanvas.displayImage(holdemCanvas.images.seats[i].hiddenCard1)
                    }
                    else if(i === holdemCanvas.userSeatNumber){
-        holdemCanvas.images.displayShownCard(hand[0], holdemCanvas.images.seats[i].shownCard0)
-                   holdemCanvas.images.displayShownCard(hand[1], holdemCanvas.images.seats[i].shownCard1)}
+        holdemCanvas.displayShownCard(hand[0], holdemCanvas.images.seats[i].shownCard0)
+                   holdemCanvas.displayShownCard(hand[1], holdemCanvas.images.seats[i].shownCard1)}
         }
         
         //display player's current bets
 
         for (var i in bets){
-            holdemCanvas.images.playerPutsChipsInPot(bets[i],bets[i].NumChips)
+            holdemCanvas.playerPutsChipsInPot(bets[i],bets[i].NumChips)
         } 
     }
     
