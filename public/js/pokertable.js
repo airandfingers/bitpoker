@@ -62,8 +62,7 @@
         this.images.seats[i].shownCard1={}
         
         }
-       
-          
+                
 //start constructors
 this.images.Item = function (x,y,width,height){
      this.position = {}
@@ -365,7 +364,7 @@ this.images.defaultMessages = function(){
     if((e.offsetX >=parentOfImageObject.position.x && e.offsetX <= parentOfImageObject.position.x + parentOfImageObject.size.x) &&
        (e.offsetY >=parentOfImageObject.position.y && e.offsetY <= parentOfImageObject.position.y + parentOfImageObject.size.y)) {
         console.log(messages);
-       // socket.emit.apply(socket, messages);
+        socket.emit.apply(socket, messages);
     }
 })
 }
@@ -377,18 +376,16 @@ this.images.defaultMessages = function(){
          this.gameState.tempText = this.images.seats[this.gameState.seatNumberToAct].seat.text
          this.stage.removeChild(this.images.seats[this.gameState.seatNumberToAct].seat.text)
          }
-          this.gameState.paused = false
-     //createjs.Ticker.setPaused(false)
+          this.gameState.started = true
      }
     
            this.countdown = function(){
-    if (this.stage.contains(this.images.seats[this.gameState.seatNumberToAct].seat.text)){this.stage.removeChild(this.images.seats[this.gameState.seatNumberToAct].seat.text)}
+   // if (this.stage.contains(this.images.seats[this.gameState.seatNumberToAct].seat.text)){this.stage.removeChild(this.images.seats[this.gameState.seatNumberToAct].seat.text)}
    if (this.gameState.secondsToAct< 0){
-        this.gameState.paused = true   
+        this.gameState.started = false   
         this.images.seats[this.gameState.seatNumberToAct].seat.text = this.gameState.tempText
         this.stage.addChild(this.images.seats[this.gameState.seatNumberToAct].seat.text)
-      //  socket.emit('fold')
-     //   createjs.Ticker.setPaused(true)}
+       socket.emit('fold')
      
    }
    else{
@@ -408,9 +405,9 @@ jQuery(document).ready(function(){
      
     holdemCanvas.initialize()
      tick=function(event) {
-         if(!holdemCanvas.gameState.paused) {
+         if(holdemCanvas.gameState.started) {
        
-     console.log(createjs.Ticker.getMeasuredFPS())
+    // console.log(createjs.Ticker.getMeasuredFPS())
  holdemCanvas.countdown()
     }
 }
