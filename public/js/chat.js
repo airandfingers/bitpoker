@@ -1,6 +1,7 @@
 var socket = io.connect(window.location.origin, {
   transports: [
-    'xhr-multipart'
+    'websocket'
+  , 'xhr-multipart'
   , 'htmlfile'
   , 'xhr-polling'
   , 'jsonp-polling'
