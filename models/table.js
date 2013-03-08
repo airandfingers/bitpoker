@@ -16,17 +16,24 @@ module.exports = (function () {
 
   var static_properties = {
   // static properties (attached below) - Model.property_name
-    //
+    // the statuses this table can be in
     STATUSES: {
       INITIALIZING: 'initializing'
     , WAITING: 'waiting'
     , GAME_IN_PROGRESS: 'game_in_progress'
     , CLOSING: 'closing'
     }
+    // the number of tables to initialize in setup
   , NUM_TABLES: 2
+    // [this string] + table_id = room_name
   , TABLE_PREFIX: 'table_'
-  , MIN_PLAYERS: 2
+    // the message a Table should react to, on its socket
+    // {String message_name: {handler: Function, pass_socket: Boolean}}
   , messages: {}
+    // the events a Table should react to, on itself
+    // {String event_name: Function event_handler}
+  , events: {}
+    // all the tables in the world (should this be private?)
   , tables: {}
   };
 
@@ -35,20 +42,22 @@ module.exports = (function () {
   var TableSchema = new Schema({
   // instance properties - document.field_name
     // uniquely identifies this table
-    table_id: String
+    table_id : String
     // readable name for this table (Table.TABLE_PREFIX + table_id)
-  , name: String
+  , name     : String
     // the corresponding room
-  , room    : { type: Schema.Types.Mixed }
+  , room     : { type: Schema.Types.Mixed }
     // the rounds this table has gone through (oldest to newest)
   , rounds   : { type: [Schema.Types.Mixed], default: [] }
     // [Player]
-  , players : { type: Schema.Types.Mixed, default: {} }
+  , players  : { type: Schema.Types.Mixed, default: {} }
     // {seat_num: Player}
-  , seats   : { type: Schema.Types.Mixed, default: {} }
+  , seats    : { type: Schema.Types.Mixed, default: {} }
     // current status
-  , status  : { type: String, default: static_properties.STATUSES.INITIALIZING }
-  }, { discriminatorkey: 'game' });
+  , status   : { type: String, default: static_properties.STATUSES.INITIALIZING }
+    // current dealer seat
+  , dealer   : { type: Number, default: 0 }
+  });
 
   // static methods - Model.method()
   TableSchema.statics.setup = function() {
@@ -83,7 +92,7 @@ module.exports = (function () {
       , table_id = self.table_id
       , name = Table.TABLE_PREFIX + table_id
       , room = Room.createRoom({
-      room_id: name
+          room_id: name
     });
 
     self.set({
@@ -96,6 +105,10 @@ module.exports = (function () {
     room.on('socket_join', function(socket) {
       self.join(socket);
     });
+
+    /*room.on('socket_leave', function(socket) {
+      self.leave(socket);
+    });*/
 
     self.setStatus(static_properties.STATUSES.WAITING);
 
@@ -116,13 +129,15 @@ module.exports = (function () {
   };
 
   TableSchema.methods.newRound = function() {
-    var round = Round.createRound({
-      players: this.players
-    , table: this
+    var self = this
+      , round = Round.createRound({
+      seats: this.seats
+    , broadcast: this.room.broadcast
+    , dealer: this.dealer
     });
     this.rounds.push(round);
-    round.on('begin', function() {
-      console.log('Round has begun!');
+    round.onStage('done', function() {
+      console.log('Round is over!');
     });
   };
 
@@ -139,26 +154,42 @@ module.exports = (function () {
         console.error( 'No user found with id', user_id, '!' );
       }
       else {
-        var player = Player.createPlayer({
-          table: self
-        , socket: socket
-        , username: user.username
+        var username = user.username
+          , player = Player.createPlayer({
+              socket: socket
+            , username: username
         });
         self.players[user_id] = player;
+        socket.username = username;
       }
     });
 
     io.bindMessageHandlers.call(this, socket, Table.messages);
   };
 
-  static_properties.messages['sit'] = { handler: 'seatPlayer', pass_socket: true };
-  TableSchema.methods.seatPlayer = function(socket, seat_num) {
+  /*TableSchema.methods.leave = function(socket) {
+    var self = this
+      , user_id = socket.user_id
+      , player = self.players[user_id];
+
+    delete self.players[user_id];
+
+    _.each(self.seats, function(p, seat_num) {
+      if (p.username === player.username) {
+        delete self.seats[seat_num];
+      }
+    });
+  };*/
+
+  static_properties.messages.sit = { handler: 'seatPlayer', pass_socket: true };
+  TableSchema.methods.seatPlayer = function(socket, seat_num, num_chips) {
     if (this.seats[seat_num] !== undefined) {
       console.error('A player is already sitting in seat ' + seat_num);
       socket.emit('error', 'A player is already sitting in seat ' + seat_num);
       return;
     }
-    var player = this.players[socket.user_id].toObject()
+    var player = this.players[socket.user_id]
+      , player_obj = player.toObject()
       , already_sitting = _.any(this.seats, function(p, n) {
         return p.username === player.username;
     });
@@ -167,21 +198,24 @@ module.exports = (function () {
       socket.emit('error', 'Player is already sitting at the table!');
       return;
     }
+    player.chips = num_chips;
     this.seats[seat_num] = player;
-    socket.broadcast.emit('player_sits', player, seat_num, false);
-    socket.emit('player_sits', player, seat_num, true);
-    if (this.hasStatus(Table.STATUSES.WAITING) && _.keys(this.seats).length >= Table.MIN_PLAYERS) {
-      this.setStatus(Table.STATUSES.GAME_IN_PROGRESS)
-      this.getCurrentRound().emit('begin');
+    socket.broadcast.emit('player_sits', player_obj, seat_num, false);
+    socket.emit('player_sits', player_obj, seat_num, true);
+    var current_round = this.getCurrentRound();
+    if (this.hasStatus(Table.STATUSES.WAITING) && 
+        _.keys(this.seats).length >= Round.MIN_PLAYERS) {
+      this.setStatus(Table.STATUSES.GAME_IN_PROGRESS);
+      current_round.nextStage();
     }
   };
 
-  static_properties.messages['stand'] = { handler: 'unseatPlayer', pass_socket: true };
+  static_properties.messages.stand = { handler: 'unseatPlayer', pass_socket: true };
   TableSchema.methods.unseatPlayer = function(socket, seat_num) {
-    var player = this.players[socket.user_id].toObject();
+    var player_obj = this.players[socket.user_id].toObject();
     this.seats[seat_num] = null;
-    socket.broadcast.emit('player_stands', player, seat_num, false);
-    socket.emit('player_stands', player, seat_num, true);
+    socket.broadcast.emit('player_stands', player_obj, seat_num, false);
+    socket.emit('player_stands', player_obj, seat_num, true);
   };
 
   /* the model - a fancy constructor compiled from the schema:

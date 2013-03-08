@@ -15,6 +15,18 @@ var socket = io.connect(window.location.origin, {
       '<span><%= message %></span>' +
     '</p>';
 
+var emit = socket.emit;
+socket.emit = function() {
+  console.log('Sending message:', Array.prototype.slice.call(arguments));
+  emit.apply(socket, arguments);
+};
+
+var $emit = socket.$emit;
+socket.$emit = function() {
+  console.log('Message received:', Array.prototype.slice.call(arguments));
+  $emit.apply(socket, arguments);
+};
+
 $chat_message.focus();
 
 socket.on('chatMessage', function(data) {

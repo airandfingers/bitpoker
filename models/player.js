@@ -13,26 +13,24 @@ module.exports = (function () {
      *   gets compiled into one or more models */
     , PlayerSchema = new Schema({
     // instance properties
-      table: { type: ObjectId, ref: 'Table' }
-    , socket: Schema.Types.Mixed
+      // the socket by which we can communicate with this player
+      socket: Schema.Types.Mixed
+      // this player's username
     , username: String
+      // the number of chips this player has at the current table
     , chips: Number
+      // whether this player has paid a big blind at this table yet
+    , blind_paid: { type: Boolean, default: false }
     });
 
   var static_properties = {
   // static properties (attached below) - Model.property_name
     // message-to-handler map, { message_name: instance_method_name }
     messages: {
-      chatMessage: { handler: 'broadcast', pass_message_name: true }
     }
   };
 
   // static methods - Model.method()
-  PlayerSchema.statics.setup = function() {
-    // set up static variables
-    // and define any instances that should exist from the start
-  };
-
   PlayerSchema.statics.createPlayer = function(spec) {
     /* our "constructor" function. Usage: Player.createPlayer({prop: 'val'})
        (see Schema definition for list of properties)*/
@@ -42,18 +40,21 @@ module.exports = (function () {
   };
 
   // instance methods - document.method()
-  PlayerSchema.methods.join = function(socket) {
-    var self = this;
-    console.log('Socket joining ' + self.room_id + ':', socket.user_id);
-    socket.join(self.room_id);
-
-    io.bindMessageHandlers.call(self, socket, static_properties.messages);
-  };
-
-  PlayerSchema.methods.broadcast = function(message_name) {
-    console.log(this.room_id, 'broadcasting message', arguments);
-    var sockets = io.sockets.in(this.room_id);
-    sockets.emit.apply(sockets, arguments);
+  PlayerSchema.methods.prompt = function(actions, timeout, cb) {
+    var self = this
+      , act_timeout;
+    console.log('prompting', self.username, 'for next action', actions, timeout);
+    self.socket.emit('act_prompt', actions, timeout);
+    self.socket.once('act', function(action, num_chips) {
+      console.log(self.username, 'responds with', action, num_chips);
+      clearTimeout(act_timeout);
+      cb(action, num_chips);
+    });
+    act_timeout = setTimeout(function() {
+      console.log(self.username, 'fails to respond within', timeout, 'ms');
+      self.removeAllListeners('act');
+      cb();
+    }, timeout);
   };
 
   PlayerSchema.methods.toObject = function() {
@@ -68,8 +69,6 @@ module.exports = (function () {
 
   //static properties (defined above)
   _.extend(Player, static_properties);
-
-  Player.setup();
 
   return Player;
 })();
