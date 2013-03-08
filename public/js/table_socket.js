@@ -37,7 +37,7 @@
                    holdemCanvas.images.displayShownCard(hand[1], holdemCanvas.images.seats[i].shownCard1)}
         }
         
-     
+     holdemCanvas.startCountdown(seat_num,timeout)
 });
 
 
