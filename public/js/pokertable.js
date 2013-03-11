@@ -79,7 +79,7 @@ this.size.x = width
 this.size.y = height
 if(messages){this.messages = messages}
 this.drawRoundedRectangle = function(fillColor){
-this.image.graphics.beginFill(fillColor).drawRoundRect(this.position.x, this.position.y, this.size.x, this.size.y,this.size.y*.15)
+this.image.graphics.beginFill(fillColor).drawRoundRect(this.position.x, this.position.y, this.size.x, this.size.y,this.size.y*.1)
             }
 this.drawBitmap=function(imageSource){
 
@@ -163,6 +163,13 @@ parentOfImageObject.textColor = color
      var roundedBet = Math.round(unroundedBetAmount/self.gameState.minIncrement)*self.gameState.minIncrement
   }
     self.images.betSlider.betSize.text.text = roundedBet
+    if(self.stage.contains(self.images.bet.text)){
+        self.images.bet.text.text = 'Bet '+roundedBet
+        self.images.bet.messages = 'set bet amount'}
+    
+    else if(self.stage.contains(self.images.raise.text)){self.images.raise.text.text = 'Raise to '+roundedBet}
+    self.images.raise.messages = 'set raise amount'}
+    
   self.stage.update()
      
   
@@ -186,6 +193,8 @@ parentOfImageObject.textColor = color
 
   }
    self.images.betSlider.betSize.text.text = roundedBet
+   if(self.stage.contains(self.images.bet.text)){self.images.bet.text.text = 'Bet '+roundedBet}
+    else if(self.stage.contains(self.images.raise.text)){self.images.raise.text.text = 'Raise to '+roundedBet}
   self.stage.update()
 
  }
@@ -310,11 +319,16 @@ parentOfImageObject.textColor = color
         }
         
         //action buttons
-        this.itemAsBitmap(this.fold, this.sources.fold)
-        this.itemAsBitmap(this.call, this.sources.call)
-        this.itemAsBitmap(this.check, this.sources.check)
-        this.itemAsBitmap(this.raise, this.sources.raise)
-        this.itemAsBitmap(this.bet, this.sources.bet)
+        this.itemAsRectangle(this.fold,  '#FF0000')
+        this.addItemText(this.fold, 'fold','12px Arial','#000000')
+        this.itemAsRectangle(this.call, 'red')
+        this.addItemText(this.call, 'call','12px Arial','#000000')
+        this.itemAsRectangle(this.check, 'red')
+        this.addItemText(this.check, 'check','12px Arial','#000000')
+        this.itemAsRectangle(this.raise, 'red')
+        this.addItemText(this.raise, 'raise', '12px Arial','#000000')
+        this.itemAsRectangle(this.bet, 'red')
+        this.addItemText(this.bet, 'bet','12px Arial','#000000')
 
         this.itemAsRectangle(this.betSlider.horizontal, 'black')
         this.itemAsRectangle(this.betSlider.vertical, 'blue')
@@ -481,8 +495,8 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
         this.gameState.maxBet = maxBet
         this.gameState.minIncrement = minIncrement
 
-  this.displayImage(this.images.betSlider.horizontal)
-  this.displayImage(this.images.betSlider.vertical)
+  this.displayChildren(this.images.betSlider.horizontal)
+  this.displayChildren(this.images.betSlider.vertical)
   this.images.betSlider.betSize.text.text = minBet
   this.displayText(this.images.betSlider.betSize)
   $("input").keypress(function (e){
@@ -491,9 +505,11 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
     }
 
 
-    this.playerActs=function(seatNumber, actionText){
+    this.playerActs=function(seatNumber, actionText, fadeTimeInSeconds){
         var interval = 100
-        var alpha = 2
+        var alpha = 1.5
+       
+        
       var playerAction =   setInterval(function() {
 
             self.hideText(self.images.seats[seatNumber].seat)
@@ -503,7 +519,7 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
             self.displayText(self.images.seats[seatNumber].action)
             alpha = alpha - 1/interval
             if (alpha<=0){clearInterval(playerAction)
-            console.log(alpha)}
+            }
 
 }, interval)
 
@@ -520,7 +536,6 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
 
         self.hideText(self.images.seats[seatNumber].action)
         self.displayText(self.images.seats[seatNumber].seat)
-                console.log(secondsToAct)
         clearInterval(countdown)
 
    }
@@ -539,18 +554,7 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
 jQuery(document).ready(function(){
     holdemCanvas = new Table(10)
     holdemCanvas.initialize()
-/*
-     tick=function(event) {
-         if(holdemCanvas.gameState.countdownOn) {
-       
-    // console.log(createjs.Ticker.getMeasuredFPS())
- holdemCanvas.countdown()
-    }
-}
- 
-createjs.Ticker.addEventListener("tick", tick)
-createjs.Ticker.setInterval(1000)
-    */
+
 })
 
     jQuery(window).load(function (){
@@ -561,8 +565,8 @@ createjs.Ticker.setInterval(1000)
        holdemCanvas.displayAllCommunity(['2c','3c','4c','5c','6c'])
        holdemCanvas.userSeatNumber = 7
        holdemCanvas.displayHoleCards('ac','ad')
-       holdemCanvas.displayImage(holdemCanvas.images.fold)
-       holdemCanvas.displayImage(holdemCanvas.images.raise)
+       holdemCanvas.displayChildren(holdemCanvas.images.fold)
+       holdemCanvas.displayChildren(holdemCanvas.images.raise)
        
        holdemCanvas.playerSits(1,'walter',400)
       
@@ -575,6 +579,7 @@ holdemCanvas.showBetSlider(1,100,.01)
 holdemCanvas.stage.update()
 holdemCanvas.displayAllCommunity(['5c','6c','9c','Tc','Jc'])
 holdemCanvas.playerActs(8,'All In')
+
 
     })
 
@@ -607,4 +612,17 @@ console.log(holdemCanvas.stage.contains(gjorb))
 holdemCanvas.stage.removeChild(gjorb)
 //holdemCanvas.stage.update()
 console.log(holdemCanvas.stage.contains(gjorb))
+
+
+     tick=function(event) {
+         if(holdemCanvas.gameState.countdownOn) {
+       
+    // console.log(createjs.Ticker.getMeasuredFPS())
+ holdemCanvas.countdown()
+    }
+}
+ 
+createjs.Ticker.addEventListener("tick", tick)
+createjs.Ticker.setInterval(1000)
+    
 */
