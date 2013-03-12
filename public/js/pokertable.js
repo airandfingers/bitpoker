@@ -162,11 +162,11 @@ parentOfImageObject.textColor = color
     self.images.betSlider.betSize.text.text = roundedBet
     if(self.stage.contains(self.images.bet.text)){
         self.images.bet.text.text = 'Bet '+roundedBet
-        self.images.bet.messages = 'set bet amount'}
+        self.images.bet.messages = ['act','bet',roundedBet]}
     
     else if(self.stage.contains(self.images.raise.text)){
         self.images.raise.text.text = 'Raise to '+roundedBet
-    self.images.raise.messages = 'set raise amount'}
+    self.images.raise.messages = ['act','raise',roundedBet]}
     
   self.stage.update()
      
