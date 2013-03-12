@@ -134,9 +134,6 @@ parentOfImageObject.textColor = color
 
      }
      }
-     this.events.emptySeatMouseOut = function(event){
-         
-     }
 
      //bet slider to dispay betsize
      this.events.betSliderVerticalMouseDown = function(event){
@@ -167,13 +164,14 @@ parentOfImageObject.textColor = color
         self.images.bet.text.text = 'Bet '+roundedBet
         self.images.bet.messages = 'set bet amount'}
     
-    else if(self.stage.contains(self.images.raise.text)){self.images.raise.text.text = 'Raise to '+roundedBet}
+    else if(self.stage.contains(self.images.raise.text)){
+        self.images.raise.text.text = 'Raise to '+roundedBet
     self.images.raise.messages = 'set raise amount'}
     
   self.stage.update()
      
-  
- }
+  }
+ 
 
  event.onMouseUp = function(event){
      event.target.graphics.clear()
@@ -198,7 +196,15 @@ parentOfImageObject.textColor = color
   self.stage.update()
 
  }
+ 
  }
+
+ 
+  this.events.onButtonClick = function(event){
+        
+        socket.emit.apply(socket, event.target.parentOfImageObject.messages)
+
+    }
   
 //--------------end events----------------------------
 
@@ -499,6 +505,7 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
   this.displayChildren(this.images.betSlider.vertical)
   this.images.betSlider.betSize.text.text = minBet
   this.displayText(this.images.betSlider.betSize)
+
   $("input").keypress(function (e){
       console.log(event)
   })
@@ -547,8 +554,19 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
 
     }
      
-}
 
+
+  this.activateButton =  function (parentOfImageObject, messages){
+if(messages){parentOfImageObject.messages = messages}
+        parentOfImageObject.image.onClick = holdemCanvas.events.onButtonClick
+    }
+
+    this.deactivateButton = function (parentOfImageObject, messages){
+        if(messages){parentOfImageObject.messages = messages}
+        parentOfImageObject.image.OnClick = null
+    }
+
+    }
 
 jQuery(document).ready(function(){
     holdemCanvas = new Table(10)
@@ -575,6 +593,7 @@ jQuery(document).ready(function(){
   holdemCanvas.stage.addChild(holdemCanvas.images.leftSideButtons[1].button.image)
   holdemCanvas.stage.addChild(holdemCanvas.images.leftSideButtons[2].button.image)
 holdemCanvas.showBetSlider(1,100,.01)
+holdemCanvas.activateButton(holdemCanvas.images.raise,['act','raise'])
 holdemCanvas.stage.update()
 holdemCanvas.displayAllCommunity(['5c','6c','9c','Tc','Jc'])
 holdemCanvas.playerActs(8,'All In')
