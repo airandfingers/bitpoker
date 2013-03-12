@@ -396,7 +396,7 @@ parentOfImageObject.textColor = color
     
     this.displaySideButton = function (buttonText,parentOfImageObject){
 
-           this.images.rightSideButtons[i].button.text.text = buttonText
+           parentOfImageObject.text.text = buttonText
             this.displayChildren(parentOfImageObject)
             this.stage.update()
     }
