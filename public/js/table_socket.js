@@ -186,11 +186,7 @@
         } 
     }
     
-    holdemCanvas.images.onButtonClick = function(event){
-        
-        socket.emit.apply(socket, event.target.parentOfImageObject.messages)
-
-    }
+  
 
     holdemCanvas.activateButton =  function (parentOfImageObject, messages){
 if(messages){parentOfImageObject.messages = messages}
