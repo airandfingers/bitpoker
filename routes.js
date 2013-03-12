@@ -1,8 +1,9 @@
 module.exports = (function () {
   var app = require('./app').app
-    , User = require('./models/user')
     , passport = require('passport')
     , auth = require('./auth')
+    , User = require('./models/user')
+    , Room = require('./models/room')
     , Table = require('./models/table');
 
   var base_page = '/lobby';
@@ -107,7 +108,6 @@ module.exports = (function () {
         username: username,
         password: password,
       });
-      user.sayName();
       user.save(function(err, result) {
         if (err) {
           req.flash('error', err.message);
@@ -138,14 +138,20 @@ module.exports = (function () {
   });
 
   app.get('/lobby', function(req, res) {
-    var table_names = Table.getTableNames();
-    res.render('lobby', { table_names: table_names });
+    var table_names = Table.getTableNames()
+      , users = Room.getRoom('lobby').getUsers();
+    console.log('User visits lobby!', users);
+    res.render('lobby', {
+      table_names: table_names
+    , users: users
+    });
   });
 
   app.get('/' + Table.TABLE_PREFIX + ':id', auth.ensureAuthenticated, function(req, res, next) {
     var table_id = req.params.id
-      , table = Table.getTable(table_id);
-
+      , table = Table.getTable(table_id)
+      , users = table.room.getUsers();
+    console.log('User visits ' + table.name + '!', users);
     if (table) {
       res.render('table', {
         table_id: table_id,

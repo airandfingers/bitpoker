@@ -10,7 +10,7 @@ module.exports = (function () {
     , db = require('./db') // make sure db is connected
 
     , Room = require('./room')
-    , User = require('./user')
+    
     , Round = require('./round')
     , Player = require('./player');
 
@@ -27,12 +27,12 @@ module.exports = (function () {
   , NUM_TABLES: 2
     // [this string] + table_id = room_name
   , TABLE_PREFIX: 'table_'
-    // the message a Table should react to, on its socket
-    // {String message_name: {handler: Function, pass_socket: Boolean}}
+    // the messages a Table should react to, on each player's socket
+    // {String message_name: {handler: Function, pass_socket: Boolean, pass_message_name: Boolean}}
   , messages: {}
-    // the events a Table should react to, on itself
-    // {String event_name: Function event_handler}
-  , events: {}
+    // the events a Table should react to, on its room
+    // {String event_name: String handler_name}
+  , room_events: {}
     // all the tables in the world (should this be private?)
   , tables: {}
   };
@@ -48,11 +48,9 @@ module.exports = (function () {
     // the corresponding room
   , room     : { type: Schema.Types.Mixed }
     // the rounds this table has gone through (oldest to newest)
-  , rounds   : { type: [Schema.Types.Mixed], default: [] }
-    // [Player]
-  , players  : { type: Schema.Types.Mixed, default: {} }
+  , rounds   : { type: [Schema.Types.Mixed], default: function() { return []; } }
     // {seat_num: Player}
-  , seats    : { type: Schema.Types.Mixed, default: {} }
+  , seats    : { type: Schema.Types.Mixed, default: function() { return {}; } }
     // current status
   , status   : { type: String, default: static_properties.STATUSES.INITIALIZING }
     // current dealer seat
@@ -93,7 +91,7 @@ module.exports = (function () {
       , name = Table.TABLE_PREFIX + table_id
       , room = Room.createRoom({
           room_id: name
-    });
+      });
 
     self.set({
       name: name
@@ -102,15 +100,20 @@ module.exports = (function () {
 
     self.newRound();
 
-    room.on('socket_join', function(socket) {
-      self.join(socket);
+    _.each(Table.room_events, function(handler_name, event_name) {
+      var handler = self[handler_name];
+      if (! _.isFunction(handler)) {
+        console.error('room_event points to non-function', handler);
+      }
+      else {
+        self.room.on(event_name, function() {
+          //console.log(event_name, 'triggered with', arguments, '; calling', handler);
+          handler.apply(self, arguments);
+        });
+      }
     });
 
-    /*room.on('socket_leave', function(socket) {
-      self.leave(socket);
-    });*/
-
-    self.setStatus(static_properties.STATUSES.WAITING);
+    self.setStatus(Table.STATUSES.WAITING);
 
     Table.tables[name] = self;
   };
@@ -132,12 +135,17 @@ module.exports = (function () {
     var self = this
       , round = Round.createRound({
       seats: this.seats
-    , broadcast: this.room.broadcast
+    , broadcast: function() { self.room.broadcast.apply(self.room, arguments); }
     , dealer: this.dealer
     });
     this.rounds.push(round);
     round.onStage('done', function() {
       console.log('Round is over!');
+      self.dealer = round.small_blind_seat || round.dealer;
+      setTimeout(function() {
+        self.newRound();
+        self.getCurrentRound().nextStage();
+      }, 1000);
     });
   };
 
@@ -145,41 +153,29 @@ module.exports = (function () {
     return _.last(this.rounds);
   };
 
+  static_properties.room_events.socket_join = 'join';
   TableSchema.methods.join = function(socket) {
     var self = this
-      , user_id = socket.user_id;
-    User.findById(user_id, 'username', function(err, user) {
-      if (err) { return done(err); }
-      if (! user) {
-        console.error( 'No user found with id', user_id, '!' );
-      }
-      else {
-        var username = user.username
-          , player = Player.createPlayer({
-              socket: socket
-            , username: username
-        });
-        self.players[user_id] = player;
-        socket.username = username;
-      }
+      , user = socket.user
+      , player = Player.createPlayer({
+          socket: socket
+        , username: user.username
     });
+    socket.player = player;
 
+    // attach handlers for messages as defined in Table.messages
     io.bindMessageHandlers.call(this, socket, Table.messages);
   };
 
-  /*TableSchema.methods.leave = function(socket) {
+  static_properties.room_events.socket_leave = 'leave';
+  TableSchema.methods.leave = function(socket) {
     var self = this
-      , user_id = socket.user_id
-      , player = self.players[user_id];
+      , player = socket.player;
 
-    delete self.players[user_id];
-
-    _.each(self.seats, function(p, seat_num) {
-      if (p.username === player.username) {
-        delete self.seats[seat_num];
-      }
-    });
-  };*/
+    if (player && player.seat) {
+      self.unseatPlayer(socket);
+    }
+  };
 
   static_properties.messages.sit = { handler: 'seatPlayer', pass_socket: true };
   TableSchema.methods.seatPlayer = function(socket, seat_num, num_chips) {
@@ -188,20 +184,20 @@ module.exports = (function () {
       socket.emit('error', 'A player is already sitting in seat ' + seat_num);
       return;
     }
-    var player = this.players[socket.user_id]
-      , player_obj = player.toObject()
-      , already_sitting = _.any(this.seats, function(p, n) {
-        return p.username === player.username;
-    });
-    if (already_sitting) {
+    var player = socket.player;
+    if (player.seat) {
       console.error('Player is already sitting at the table!');
       socket.emit('error', 'Player is already sitting at the table!');
       return;
     }
-    player.chips = num_chips;
+    player.chips = num_chips || 1000;
+    player.takeSeat(seat_num);
     this.seats[seat_num] = player;
-    socket.broadcast.emit('player_sits', player_obj, seat_num, false);
-    socket.emit('player_sits', player_obj, seat_num, true);
+
+    var player_obj = player.toObject();
+    socket.broadcast.emit('player_sits', player_obj, false);
+    socket.emit('player_sits', player_obj, true);
+    
     var current_round = this.getCurrentRound();
     if (this.hasStatus(Table.STATUSES.WAITING) && 
         _.keys(this.seats).length >= Round.MIN_PLAYERS) {
@@ -211,11 +207,21 @@ module.exports = (function () {
   };
 
   static_properties.messages.stand = { handler: 'unseatPlayer', pass_socket: true };
-  TableSchema.methods.unseatPlayer = function(socket, seat_num) {
-    var player_obj = this.players[socket.user_id].toObject();
-    this.seats[seat_num] = null;
-    socket.broadcast.emit('player_stands', player_obj, seat_num, false);
-    socket.emit('player_stands', player_obj, seat_num, true);
+  TableSchema.methods.unseatPlayer = function(socket) {
+    var player = socket.player
+      , seat_num = player.seat;
+
+    if (_.isUndefined(seat_num)) {
+      console.error('Player is not sitting at the table!');
+      socket.emit('error', 'Player is not sitting at the table!');
+      return;
+    }
+    player.vacateSeat();
+    delete this.seats[seat_num];
+
+    var player_obj = player.toObject()
+    socket.broadcast.emit('player_stands', player_obj, false);
+    socket.emit('player_stands', player_obj, true);
   };
 
   /* the model - a fancy constructor compiled from the schema:

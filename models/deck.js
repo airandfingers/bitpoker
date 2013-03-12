@@ -13,16 +13,66 @@ module.exports = (function () {
      *   gets compiled into one or more models */
     , DeckSchema = new Schema({
     // instance properties
-      // this room's name and location
-      room_id : String 
+      // the number of cards this deck has dealt
+      cards_dealt: { type: Number, default: 0 }
     });
 
   var static_properties = {
   // static properties (attached below) - Model.property_name
-    // message-to-handler map, { message_name: instance_method_name }
-    messages: {
-      chatMessage: { handler: 'broadcast', pass_message_name: true }
-    }
+    cards: [
+      '2c',
+      '2d',
+      '2h',
+      '2s',
+      '3c',
+      '3d',
+      '3h',
+      '3s',
+      '4c',
+      '4d',
+      '4h',
+      '4s',
+      '5c',
+      '5d',
+      '5h',
+      '5s',
+      '6c',
+      '6d',
+      '6h',
+      '6s',
+      '7c',
+      '7d',
+      '7h',
+      '7s',
+      '8c',
+      '8d',
+      '8h',
+      '8s',
+      '9c',
+      '9d',
+      '9h',
+      '9s',
+      'tc',
+      'td',
+      'th',
+      'ts',
+      'jc',
+      'jd',
+      'jh',
+      'js',
+      'qc',
+      'qd',
+      'qh',
+      'qs',
+      'kc',
+      'kd',
+      'kh',
+      'ks',
+      'ac',
+      'ad',
+      'ah',
+      'as'
+    ]
   };
 
   // static methods - Model.method()
@@ -40,18 +90,8 @@ module.exports = (function () {
   };
 
   // instance methods - document.method()
-  DeckSchema.methods.join = function(socket) {
-    var self = this;
-    console.log('Socket joining ' + self.room_id + ':', socket.user_id);
-    socket.join(self.room_id);
-
-    io.bindMessageHandlers.call(self, socket, static_properties.messages);
-  };
-
-  DeckSchema.methods.broadcast = function(message_name) {
-    console.log(this.room_id, 'broadcasting message', arguments);
-    var sockets = io.sockets.in(this.room_id);
-    sockets.emit.apply(sockets, arguments);
+  DeckSchema.methods.deal = function() {
+    return Deck.cards[this.cards_dealt++];
   };
 
   /* the model - a fancy constructor compiled from the schema:
@@ -63,7 +103,5 @@ module.exports = (function () {
   //static properties (defined above)
   _.extend(Deck, static_properties);
 
-  Deck.setup();
-  
   return Deck;
 })();
