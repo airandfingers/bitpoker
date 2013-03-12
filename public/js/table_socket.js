@@ -1,4 +1,5 @@
-
+    jQuery(window).load(function ()
+    {
       
    
 //hands are dealt
@@ -18,22 +19,13 @@
 
 //player to act
        socket.on('player_to_act', function(seat_num, timeout){
-           for(var i=0;i<active_seats.length;i=i+1){
-               if(i !== holdemCanvas.userSeatNumber){
-                   holdemCanvas.displayImage(holdemCanvas.images.seats[i].hiddenCard0)
-        holdemCanvas.displayImage(holdemCanvas.images.seats[i].hiddenCard1)
-                   }
-                   else if(i === holdemCanvas.userSeatNumber){
-        holdemCanvas.displayShownCard(hand[0], holdemCanvas.images.seats[i].shownCard0)
-                   holdemCanvas.displayShownCard(hand[1], holdemCanvas.images.seats[i].shownCard1)}
-        }
-        
+          
      holdemCanvas.startCountdown(seat_num,timeout)
-});
+})
 
 
 //player acts
-       socket.on('player_acts', function(player, seat_num, action, num_chips,   pot){
+       socket.on('player_acts', function(player, seat_num, action, num_chips, pot){
                if(i !== holdemCanvas.userSeatNumber){
                    holdemCanvas.displayImage(holdemCanvas.images.seats[i].hiddenCard0)
         holdemCanvas.displayImage(holdemCanvas.images.seats[i].hiddenCard1)
@@ -76,7 +68,7 @@
         
         holdemCanvas.stage.update()
      
-});
+})
 
 
     //receive/deal community cards
@@ -88,28 +80,31 @@
  
 
 //player to act (not necessarily the user)
- socket.on('act_prompt', function(fold, check, call, raise, bet, seat_num){
+ socket.on('act_prompt', function(action, timeout){
 
-     if (fold){
+     if (actions.fold){
          holdemCanvas.displayImage(holdemCanvas.images.fold)
          holdemCanvas.images.activateButton(holdemCanvas.images.fold)
         }
-        if (check){
+        if (actions.check){
          holdemCanvas.displayImage(holdemCanvas.images.check)
          holdemCanvas.images.activateButton(holdemCanvas.images.check)
          }
-         if (call){
+         if (actions.call){
          holdemCanvas.displayImage(holdemCanvas.images.call)
          holdemCanvas.images.activateButton(holdemCanvas.images.call)
          }
-         if (raise){
+         if (actions.raise){
          holdemCanvas.displayImage(holdemCanvas.images.raise)
          holdemCanvas.images.activateButton(holdemCanvas.images.raise)
+         holdemCanvas.showBetSlider(minBet,maxBet,minIncrement)
          }
-         if (bet){
+         if (actions.bet){
          holdemCanvas.displayImage(holdemCanvas.images.bet)
          holdemCanvas.images.activateButton(holdemCanvas.images.bet)
+          holdemCanvas.showBetSlider(minBet,maxBet,minIncrement)
          }
+         holdemCanvas.startCountdown(holdemCanvas.userSeatNumber,Math.round(timeout/1000))
 
 });
 
@@ -163,13 +158,7 @@
         holdemCanvas.images.playerSits(seat_num, player, player.chips)
         }
   );
-
-//player adds chips to his stack
-       socket.on('table_state', function(player, seats, dealer, active_seats, hand, community, pot, bets ){
-        holdemCanvas.images.displayCurrentTableState(player, seats, dealer, active_seats, hand, community, pot, bets)
-        }
-  );
-
+  /*
  holdemCanvas.images.displayCurrentTableState=function(players, seats, dealer, active_seats, hand, community, pot, bets){
         
         holdemCanvas.displayAllCommunity(community)
@@ -197,16 +186,20 @@
         } 
     }
     
-    jQuery(window).load(function ()
-    {
- holdemCanvas.images.activateButton =  function (messages, parentOfImageObject){
-    $(document).mousedown(function(e) {
-    if((e.offsetX >=parentOfImageObject.bitmap.x && e.offsetX <= parentOfImageObject.bitmap.x + parentOfImageObject.size.x) &&
-       (e.offsetY >=parentOfImageObject.bitmap.y && e.offsetY <= parentOfImageObject.bitmap.y + parentOfImageObject.size.y)) {
-        console.log(socket, messages);
-        socket.emit.apply(socket, messages);
-    }
-});
-}
+    holdemCanvas.images.onButtonClick = function(event){
+        
+        socket.emit.apply(socket, event.target.parentOfImageObject.messages)
 
+    }
+
+    holdemCanvas.activateButton =  function (parentOfImageObject, messages){
+if(messages){parentOfImageObject.messages = messages}
+        parentOfImageObject.images.Onclick = holdemCanvas.images.onButtonClick
+    }
+
+    holdemCanvas.deactivateButton = function (parentOfImageObject, messages){
+        if(messages){parentOfImageObject.messages = messages}
+        parentOfImageObject.images.Onclick = null
+    }
+    */
     })
