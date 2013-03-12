@@ -3,9 +3,9 @@
       
   
 //hands are dealt
-       socket.on('hands_dealt', function(community, active_seats){
-          if(active_seats){ for(var i=0;i<active_seats.length;i=i+1){
-               if(i !== holdemCanvas.gameState.userSeatNumber){
+       socket.on('hands_dealt', function(community, players){
+          if(players){ for(var i=0;i<players.length;i=i+1){
+               if(players[i].seat !== holdemCanvas.gameState.userSeatNumber){
         holdemCanvas.displayChildren(holdemCanvas.images.seats[i].hiddenCard0)
         holdemCanvas.displayChildren(holdemCanvas.images.seats[i].hiddenCard1)
         }
