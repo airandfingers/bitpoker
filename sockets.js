@@ -13,8 +13,8 @@ module.exports = (function () {
   io.enable('browser client gzip');          // gzip the file
   io.set('log level', 1);                    // reduce logging
   io.set('transports', [                     // enable all transports (optional if you want flashsocket)
-      'xhr-polling'
-    , 'websocket'
+      'websocket'
+    , 'xhr-polling'
     //, 'flashsocket'
     , 'htmlfile'
     , 'jsonp-polling'
@@ -70,6 +70,9 @@ module.exports = (function () {
     var self = this;
     if (! _.isObject(self)) { console.error('no context object given!'); return; }
     _.each(messages, function(how_to_handle, message_name) {
+      if (_.isString(how_to_handle)) {
+        how_to_handle = { handler: how_to_handle };
+      }
       var handler_name = how_to_handle.handler
         , handler = self[handler_name];
       if (! _.isFunction(handler)) {
