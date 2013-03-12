@@ -578,7 +578,7 @@ jQuery(document).ready(function(){
        
         for(var i = 0;i<10;i++){
        holdemCanvas.displayChildren(holdemCanvas.images.seats[i].emptySeat)
-       holdemCanvas.activateButton(holdemCanvas.images.seats[i].emptySeat)
+       holdemCanvas.activateButton(holdemCanvas.images.seats[i].emptySeat, ['sit', i, 100 + i])
        }
        holdemCanvas.displayAllCommunity(['2c','3c','4c','5c','6c'])
        holdemCanvas.userSeatNumber = 7

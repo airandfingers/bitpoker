@@ -69,6 +69,7 @@ module.exports = (function () {
         socket.user = user;
         // notify anyone interested (the corresponding table)
         self.emit('socket_join', socket);
+        self.broadcast('user_joins', user);
       }
     });
     //console.log('Socket joining ' + self.room_id + ':', socket.user_id);
@@ -82,6 +83,7 @@ module.exports = (function () {
   RoomSchema.methods.leave = function(socket) {
     // notify anyone interested (the corresponding table)
     this.emit('socket_leave', socket);
+    this.broadcast('user_leaves', socket.user);
   };
 
   RoomSchema.methods.setJoinHandler = function(handler) {
@@ -123,9 +125,10 @@ module.exports = (function () {
     // override emit method to log, then emit
     var emit = socket.emit;
     socket.emit = function() {
-      var args = Array.prototype.slice.call(arguments);
+      var args = Array.prototype.slice.call(arguments)
+        , user = socket.user || {};
       if (args[0] !== 'newListener') {
-        console.log('Sending to ' + socket.id + ':', args);
+        console.log('Sending to ' + user.username + ':', args);
         emit.apply(socket, arguments);
       }
     };
@@ -133,9 +136,10 @@ module.exports = (function () {
     // override on method (called $emit) to log, then on
     var $emit = socket.$emit;
     socket.$emit = function() {
-      var args = Array.prototype.slice.call(arguments);
+      var args = Array.prototype.slice.call(arguments)
+        , user = socket.user || {};
       if (args[0] !== 'newListener') {
-        console.log(socket.username + ' sent:', args);
+        console.log(user.username + ' sent:', args);
         $emit.apply(socket, arguments);
       }
     };
