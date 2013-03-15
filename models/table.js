@@ -220,7 +220,7 @@ module.exports = (function () {
     delete this.seats[seat_num];
 
     var player_obj = player.toObject()
-    socket.broadcast.emit('player_stands', player_obj, false);
+    socket.broadcast.emit('player_stands', player_obj, seat_num, false);
     socket.emit('player_stands', player_obj, true);
   };
 
