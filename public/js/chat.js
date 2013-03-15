@@ -64,3 +64,19 @@ $(document).on('keydown', function(e) {
       $chat_message.focus();
   }
 });
+
+//Socket.on like function that takes user joins and user leaves and updates the user list.
+socket.on('user_joins', function(user) {
+  //jquery add this thingy to dom user.username
+  //if there is not already a user named __ in the chat, add them.
+    if ($("#" + user.username).length == 0) {
+      $("#users > ul").append("<li id="+ user.username +">"+ user.username + "</li>");
+      console.log("adding " + user.username + " to the users list.");
+    }
+});
+
+socket.on('user_leaves', function(user) {
+  //jquery remove this thingy from dom user.username
+  console.log("removing " + user.username + " from the users list.");
+  $("#" + user.username).detach();
+});
