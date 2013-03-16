@@ -16,7 +16,11 @@
     db_config.DB_HOST
   , db_config.DB_PORT
   , { auto_reconnect: true
-    , native_parser: true }
+    , native_parser: true
+    , socketOptions: {
+        keepAlive: 1200 // less than /proc/sys/net/ipv4/tcp_keepalive_time (7200)
+      }
+    }
   )
     , db = new mongodb.Db(db_config.DB_NAME, server_config, { w: -1 });
 
