@@ -70,10 +70,10 @@ module.exports = (function () {
   , to_act           : { type: Number, default: 0 }
     // the highest bet so far in this betting round
   , high_bet         : Number
-  // the number of chips in the pot (matched by all active players)
+    // the number of chips in the pot (matched by all active players)
   , pot              : { type: Number, default: 0 }
-  // the index (within this.players) of the winning player
-  , pot              : Number
+    // the index (within this.players) of the winning player
+  , winner           : Number
     // the deck this round uses (created in initialize)
   , deck             : Schema.Types.Mixed
     // the cards that are visible to everyone
@@ -226,7 +226,7 @@ module.exports = (function () {
         player.returnBet();
       }
       else {
-        self.broadcast('player_acts', player, 'post_blind', Round.SMALL_BLIND);
+        self.broadcast('player_acts', player.toObject(), 'post_blind', Round.SMALL_BLIND);
         SMALL_BLIND_PAID = true;
       }
       self.nextPlayer();
@@ -243,7 +243,7 @@ module.exports = (function () {
         self.playerOut(self.to_act);
       }
       else {
-        self.broadcast('player_acts', player, 'post_blind', Round.BIG_BLIND);
+        self.broadcast('player_acts', player.toObject(), 'post_blind', Round.BIG_BLIND);
         BIG_BLIND_PAID = true;
       }
       self.nextPlayer();
@@ -254,7 +254,7 @@ module.exports = (function () {
       self.nextStage();
     }
     else {
-      console.log('Round not completed!', SMALL_BLIND_PAID, BIG_BLIND_PAID, self.players);
+      console.log('Blinds not paid!', SMALL_BLIND_PAID, BIG_BLIND_PAID, self.players);
       self.toStage('done');
     }
 
@@ -288,7 +288,8 @@ module.exports = (function () {
       , min_bet
       , last_raise = Round.BIG_BLIND
       , max_raise
-      , actions;
+      , actions
+      , default_action;
     async.whilst(
       function() { // test
         console.log('testing:', self.players.length >= Round.MIN_PLAYERS, player.hasActedIn(self.stage_num), player.current_bet < self.high_bet);
@@ -299,8 +300,9 @@ module.exports = (function () {
         min_bet = self.high_bet - player.current_bet;
         max_raise = player.chips - min_bet;
         actions = [{ fold: null }];
+        default_action = 'fold';
         if (min_bet > 0) { actions.push({ call: min_bet }); }
-        else { actions.push({ check: null }); }
+        else { actions.push({ check: null }); default_action = 'check'; }
         if (max_raise > 0) { actions.push({ raise: [last_raise, max_raise] } ); }
         player.prompt(actions, Round.TIMEOUT, 'fold', function(action, num_chips) {
           switch(action) {
@@ -327,6 +329,7 @@ module.exports = (function () {
             self.playerOut(self.to_act);
             break;
           }
+          self.broadcast('player_acts', player.toObject(), action, num_chips);
           player.actedIn(self.stage_num);
           player = self.nextPlayer();
           cb();
@@ -340,7 +343,9 @@ module.exports = (function () {
           self.nextStage();
         }
         else {
-          self.toStage('done');
+          console.log('Not enough players to continue to next stage!', self.players);
+          self.winner = 0;
+          self.toStage('paying_out');
         }
       }
     );
@@ -348,16 +353,22 @@ module.exports = (function () {
 
   static_properties.stage_handlers.flopping = 'flop';
   RoundSchema.methods.flop = function() {
+    this.community.push(this.deck.deal(), this.deck.deal(), this.deck.deal());
+    this.broadcast('cards_dealt', this.community);
     this.nextStage();
   };
 
   static_properties.stage_handlers.turning = 'turn';
   RoundSchema.methods.turn = function() {
+    this.community.push(this.deck.deal());
+    this.broadcast('cards_dealt', this.community);
     this.nextStage();
   };
 
   static_properties.stage_handlers.rivering = 'river';
   RoundSchema.methods.river = function() {
+    this.community.push(this.deck.deal());
+    this.broadcast('cards_dealt', this.community);
     this.nextStage();
   };
 
