@@ -127,7 +127,7 @@
         console.log('player_sits', player, seat_num, is_you);
         holdemCanvas.playerSits(player.seat, player.name, player.chips)
         if(is_you){
-            holdemCanvas.gameState.userSeatNumber = seat_num
+            holdemCanvas.gameState.userSeatNumber = player.seat
             holdemCanvas.displaySideButton('stand up', holdemCanvas.images.leftSideButtons[1])
             holdemCanvas.images.activateButton (['stand'], holdemCanvas.images.leftSideButtons[1])
 }});

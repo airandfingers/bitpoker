@@ -16,9 +16,10 @@
         this.gameState.secondsToAct
         this.gameState.seatNumberToAct
         this.images = {}
+        this.images.backgroundContainer = new createjs.Container()
        this.images.bottomContainer = new createjs.Container()
        this.images.topContainer = new createjs.Container()
-
+       this.stage.addChild(this.images.backgroundContainer)
        this.stage.addChild(this.images.bottomContainer)
        this.stage.addChild(this.images.topContainer)
           this.images.sources = {
@@ -32,9 +33,11 @@
             bet: 'img/bet.jpg',
             community: 'img/card_back.jpg',
             fold: 'img/fold.jpg',
-            sideButton :'img/side_button.jpg'
+            sideButton :'img/side_button.jpg',
+            background: 'img/table_background.jpg'
             }
 
+            this.images.background = {}
             this.images.pot = {text:{}}
             this.images.fold = {text:{},messages:[]}
             this.images.call = {text:{},messages:[]}
@@ -224,12 +227,12 @@ parentOfImageObject.textColor = color
             this.pot = new this.Item(290,138,110,24)
 
             //side buttons
-            this.leftSideButtons[0].button = new this.Item(7.5,412,sideButtonWidth,sideButtonHeight)
-            this.leftSideButtons[1].button = new this.Item(7.5,433,sideButtonWidth,sideButtonHeight)
-            this.leftSideButtons[2].button = new this.Item(7.5,454,sideButtonWidth,sideButtonHeight)
-            this.rightSideButtons[0].button = new this.Item(497.5,412,sideButtonWidth,sideButtonHeight)
-            this.rightSideButtons[1].button = new this.Item(497.5,433,sideButtonWidth,sideButtonHeight)
-            this.rightSideButtons[2].button = new this.Item(497.5,454,sideButtonWidth,sideButtonHeight)
+            this.leftSideButtons[0].button = new this.Item(7.5,419,sideButtonWidth,sideButtonHeight)
+            this.leftSideButtons[1].button = new this.Item(7.5,439,sideButtonWidth,sideButtonHeight)
+            this.leftSideButtons[2].button = new this.Item(7.5,459,sideButtonWidth,sideButtonHeight)
+            this.rightSideButtons[0].button = new this.Item(497.5,419,sideButtonWidth,sideButtonHeight)
+            this.rightSideButtons[1].button = new this.Item(497.5,439,sideButtonWidth,sideButtonHeight)
+            this.rightSideButtons[2].button = new this.Item(497.5,459,sideButtonWidth,sideButtonHeight)
 
             //seats
            this.seats[0].seat = new this.Item(300,371,seatWidth,seatHeight)
@@ -272,15 +275,15 @@ parentOfImageObject.textColor = color
       this.seats[9].bet = new this.Item(475,291,20,10)
 
         // initial positions of action buttons
-      this.fold = new this.Item(205,412,actionButtonWidth,actionButtonHeight, ['act','fold'])
-      this.call = new this.Item(305,412,actionButtonWidth,actionButtonHeight, ['act','call'])
-      this.check = new this.Item(305,412,actionButtonWidth,actionButtonHeight, ['act','check'])
-      this.raise = new this.Item(405,412,actionButtonWidth,actionButtonHeight, ['act','raise'])
-      this.bet = new this.Item(405,412,actionButtonWidth,actionButtonHeight, ['act','bet'])
+      this.fold = new this.Item(205,419,actionButtonWidth,actionButtonHeight, ['act','fold'])
+      this.call = new this.Item(305,419,actionButtonWidth,actionButtonHeight, ['act','call'])
+      this.check = new this.Item(305,419,actionButtonWidth,actionButtonHeight, ['act','check'])
+      this.raise = new this.Item(405,419,actionButtonWidth,actionButtonHeight, ['act','raise'])
+      this.bet = new this.Item(405,419,actionButtonWidth,actionButtonHeight, ['act','bet'])
 
-      this.betSlider.horizontal = new this.Item (215,452,240,1)
-      this.betSlider.vertical = new this.Item(215,442,4,20)
-      this.betSlider.betSize = new this.Item(470,442,30,50)
+      this.betSlider.horizontal = new this.Item (215,458,240,1)
+      this.betSlider.vertical = new this.Item(215,448,4,20)
+      this.betSlider.betSize = new this.Item(470,448,30,50)
       
         //set initial positions of community cards
         this.community[0] = new this.Item(222,169,cardWidth, cardHeight)
@@ -347,9 +350,14 @@ parentOfImageObject.textColor = color
  }
     }
 
-        this.setBackground = function(){     
-        jQuery('#body').css("background", "url('img/table_background.jpg') no-repeat")
+        this.setBackground = function(){    
+        var asdf = new Image ()
+        asdf.src  = this.images.sources.background
+        this.images.background.image = new createjs.Bitmap(asdf)
+        this.images.backgroundContainer.addChild(this.images.background.image)
+        //jQuery('#body').css("background", "url('img/table_background.jpg') no-repeat")
     }
+
 
     this.images.setDefaultEvents = function(){
 
@@ -431,13 +439,13 @@ this.pot.text.text =potSize
     this.displayHoleCards = function (card0,card1){
 
        //check for and remove face down card images
-         if(this.stage.contains(this.images.seats[this.userSeatNumber].hiddenCard0.image)){
-            this.hideChildren(this.images.seats[this.userSeatNumber].hiddenCard0)
-            this.hideChildren(this.images.seats[this.userSeatNumber].hiddenCard1)
+         if(this.stage.contains(this.images.seats[this.gameState.userSeatNumber].hiddenCard0.image)){
+            this.hideChildren(this.images.seats[this.gameState.userSeatNumber].hiddenCard0)
+            this.hideChildren(this.images.seats[this.gameState.userSeatNumber].hiddenCard1)
             }
 
-        this.displayShownCard(card0, this.images.seats[this.userSeatNumber].shownCard0)
-        this.displayShownCard(card1, this.images.seats[this.userSeatNumber].shownCard1)
+        this.displayShownCard(card0, this.images.seats[this.gameState.userSeatNumber].shownCard0)
+        this.displayShownCard(card1, this.images.seats[this.gameState.userSeatNumber].shownCard1)
     }
 
    this.displayAllCommunity = function(communityArray){
@@ -514,7 +522,8 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
 
     this.playerActs=function(seatNumber, actionText, fadeTimeInSeconds){
         var interval = 100
-        var alpha = 1.5
+        if(typeof fadeTimeInSeconds == 'number'){alpha = fadeTimeInSeconds}
+        else{alpha = 2.5}
        
         
       var playerAction =   setInterval(function() {
@@ -524,10 +533,13 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
             if(alpha>1){self.images.seats[seatNumber].action.text.alpha = 1}
             else{self.images.seats[seatNumber].action.text.alpha = alpha}
             self.displayText(self.images.seats[seatNumber].action)
-            alpha = alpha - 1/interval
-            if (alpha<=0){clearInterval(playerAction)
+            alpha = alpha - interval/1000
+            if (alpha<=0){
+                clearInterval(playerAction)
+                self.hideText(self.images.seats[seatNumber].action)
+                self.displayText(self.images.seats[seatNumber].seat)
             }
-
+            self.stage.update()
 }, interval)
     }
 
@@ -554,8 +566,6 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
 
     }
      
-
-
   this.activateButton =  function (parentOfImageObject, messages){
 if(messages){parentOfImageObject.messages = messages}
         parentOfImageObject.image.onClick = holdemCanvas.events.onButtonClick
@@ -576,12 +586,13 @@ jQuery(document).ready(function(){
 
     jQuery(window).load(function (){
        
+
         for(var i = 0;i<10;i++){
        holdemCanvas.displayChildren(holdemCanvas.images.seats[i].emptySeat)
        holdemCanvas.activateButton(holdemCanvas.images.seats[i].emptySeat, ['sit', i, 100 + i])
        }
        holdemCanvas.displayAllCommunity(['2c','3c','4c','5c','6c'])
-       holdemCanvas.userSeatNumber = 7
+       holdemCanvas.gameState.userSeatNumber = 7
        holdemCanvas.displayHoleCards('ac','ad')
        holdemCanvas.displayChildren(holdemCanvas.images.fold)
        holdemCanvas.displayChildren(holdemCanvas.images.raise)
@@ -603,26 +614,7 @@ holdemCanvas.playerActs(8,'All In')
     })
 
 
- /*   this.images.defaultMessages = function(){
-    
-    this.bet.messages.push('act')
-    this.bet.messages.push('bet')
-    this.call.messages.push( 'act')
-     this.call.messages.push( 'call')
-     this.check.messages.push( 'act')
-      this.check.messages.push('check')
-      this.raise.messages.push( 'act')
-       this.raise.messages.push( 'raise')
-       this.fold.messages.push( 'act')
-        this.fold.messages.push( 'fold')
-      for(i=0;i<this.seats.length;i=i+1){
-         this.seats[i].seat.messages.push( 'sit')
-         this.seats[i].seat.messages.push( i)
-         }   
-         
-}
-
-
+ /*  
 asdf = new createjs.Container()
 holdemCanvas.stage.addChild(asdf)
 gjorb = new createjs.Shape()
