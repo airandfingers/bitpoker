@@ -78,6 +78,8 @@ module.exports = (function () {
   , deck             : Schema.Types.Mixed
     // the cards that are visible to everyone
   , community        : { type: [String], default: function() { return []; } }
+    // unique identifier for this Round
+  , round_id         : String
   });
 
   // static methods - Model.method()
@@ -126,8 +128,8 @@ module.exports = (function () {
     }
     else {
       this.stage_num = stage_num;
-      console.log('emitting stage_' + Round.STAGES[this.stage_num]);
-      this.emit('stage_' + Round.STAGES[this.stage_num]);
+      console.log('*Stage: ' + stage_name + '*');
+      this.emit('stage_' + stage_name);
     }
   };
 
@@ -292,7 +294,10 @@ module.exports = (function () {
       , default_action;
     async.whilst(
       function() { // test
-        console.log('testing:', self.players.length >= Round.MIN_PLAYERS, player.hasActedIn(self.stage_num), player.current_bet < self.high_bet);
+        console.log('testing:',
+                      '# of players: ' + self.players.length + ' vs. MIN_PLAYERS: ' + Round.MIN_PLAYERS,
+                      'Has player acted yet? ' + player.hasActedIn(self.stage_num),
+                      'current_bet: ' + player.current_bet + ' vs. high_bet: ' + self.high_bet);
         return self.players.length >= Round.MIN_PLAYERS &&
                ((! player.hasActedIn(self.stage_num)) || player.current_bet < self.high_bet);
       },
@@ -304,7 +309,13 @@ module.exports = (function () {
         if (min_bet > 0) { actions.push({ call: min_bet }); }
         else { actions.push({ check: null }); default_action = 'check'; }
         if (max_raise > 0) { actions.push({ raise: [last_raise, max_raise] } ); }
-        player.prompt(actions, Round.TIMEOUT, 'fold', function(action, num_chips) {
+        console.log('Prompting player', actions, Round.TIMEOUT, default_action);
+        player.prompt(actions, Round.TIMEOUT, default_action, function(action, num_chips) {
+          console.log('Player acted!', action, num_chips);
+          if (! _.any(actions, function(action_obj) { return (action_obj[action] !== undefined); })) {
+            console.log('Player chose invalid action', action);
+            action = 'fold';
+          }
           switch(action) {
           case 'check':
             break;
@@ -315,7 +326,7 @@ module.exports = (function () {
             player.makeBet(num_chips);
             break;
           case 'raise':
-            if (num_chips < las_raise) {
+            if (num_chips < last_raise) {
               console.error('Player raised with less than last_raise!', num_chips, last_raise);
             }
             else if (num_chips > max_raise) {
@@ -375,6 +386,7 @@ module.exports = (function () {
   static_properties.stage_handlers.showing_down = 'showdown';
   RoundSchema.methods.showdown = function() {
     var self = this;
+    console.log('Choosing the first-to-act player as the "winner"!');
     _.each(self.players, function(player, index) {
       if (_.isUndefined(self.winner)) {
         self.winner = index;
@@ -389,6 +401,10 @@ module.exports = (function () {
   static_properties.stage_handlers.paying_out = 'payout';
   RoundSchema.methods.payout = function() {
     var winning_player = this.players[this.winner];
+    if (! winning_player instanceof Player) {
+      console.error('payout called when this.winner is ', this.winner, '!', winning_player);
+      return;
+    }
     console.log(this.winner, 'wins!', winning_player, this.pot);
     winning_player.win(this.pot);
     this.pot = 0;
@@ -405,7 +421,7 @@ module.exports = (function () {
     if (self.pot > 0) {
       console.error('Round has a pot during cleanup!', self.pot);
     }
-    console.log('Round over!');
+    console.log('Round over! Notifying players...');
     _.each(self.players, function(player) {
       player.roundOver();
     });

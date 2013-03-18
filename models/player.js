@@ -98,11 +98,13 @@ module.exports = (function () {
     self.socket.once('act', function(action, num_chips) {
       console.log(self.username, 'responds with', action, num_chips);
       clearTimeout(act_timeout);
+      console.log('calling back with', action, num_chips);
       cb(action, num_chips);
     });
     act_timeout = setTimeout(function() {
       console.log(self.username, 'fails to respond within', timeout, 'ms');
       self.removeAllListeners('act');
+      console.log('calling back with', default_action);
       cb(default_action);
     }, timeout);
   };
