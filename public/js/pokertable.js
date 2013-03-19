@@ -73,7 +73,7 @@
         
         }
                 
-//-----------start constructors----------------
+//-----------START CONSTRUCTORS----------------
 this.images.Item = function (x,y,width,height, messages){
      this.position = {}
 this.position.x = x
@@ -122,24 +122,30 @@ parentOfImageObject.textColor = color
 
             }
 
-//------------end constructors-------------------
+//------------END CONSTRUCTORS-------------------
             
-//-------------start events--------------------------
-
-
-  this.events.emptySeatMouseDown = function(event){
+//-------------START EVENTS--------------------------
+this.events.buttonMouseDown = function(event){
       event.target.graphics.clear()
-  event.target.graphics.beginFill('red').drawRoundRect(event.target.parentOfImageObject.position.x, event.target.parentOfImageObject.position.y, event.target.parentOfImageObject.size.x, event.target.parentOfImageObject.size.y,event.target.parentOfImageObject.size.y*.15); 
+  event.target.graphics.beginFill('red').drawRoundRect(event.target.parentOfImageObject.position.x, event.target.parentOfImageObject.position.y, event.target.parentOfImageObject.size.x, event.target.parentOfImageObject.size.y,event.target.parentOfImageObject.size.y*.15)
+  event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.position.y + 3
      self.stage.update()
      event.onMouseUp = function(event){
-         event.target.graphics.clear()
+         event.target.graphics.clear()       
         event.target.graphics.beginFill(event.target.parentOfImageObject.fillColor).drawRoundRect(event.target.parentOfImageObject.position.x, event.target.parentOfImageObject.position.y, event.target.parentOfImageObject.size.x, event.target.parentOfImageObject.size.y,event.target.parentOfImageObject.size.y*.15); 
+event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.position.y
      self.stage.update()
 
      }
      }
+      
+  this.events.onButtonClick = function(event){
+        socket.emit.apply(socket, event.target.parentOfImageObject.messages)
 
-     //bet slider to dispay betsize
+    }
+  
+
+     //===============START BET SLIDER===================
      this.events.betSliderVerticalMouseDown = function(event){
   
       //set minX and maxX
@@ -205,15 +211,10 @@ parentOfImageObject.textColor = color
          console.log('raise: '+self.stage.contains(self.images.raise.text.text))
 
  }
+  //=============END BET SLIDER===================
 
- 
-  this.events.onButtonClick = function(event){
-        console.log(event.target.parentOfImageObject.messages)
-        socket.emit.apply(socket, event.target.parentOfImageObject.messages)
 
-    }
-  
-//--------------end events----------------------------
+//--------------END EVENTS----------------------------
 
 //-----------functions below this line ---------------------
   this.images.setDefaultItems = function (){
@@ -373,8 +374,8 @@ parentOfImageObject.textColor = color
         //mouse events for clicking on empty seats
              for (var i = 0; i < this.seats.length; i = i + 1){
            
-          this.seats[i].emptySeat.image.onPress = self.events.emptySeatMouseDown
-          this.seats[i].emptySeat.image.onMouseOut = self.events.emptySeatMouseOut
+          this.seats[i].emptySeat.image.onPress = self.events.buttonMouseDown
+         // this.seats[i].emptySeat.image.onMouseOut = self.events.buttonMouseDown
         }
     }
 
@@ -396,7 +397,8 @@ parentOfImageObject.textColor = color
     }
 
     this.removeAllBets  = function(){
-    for (i=0;i<holdemCanvas.images.seats.length;i=i+1){if(holdemCanvas.images.topContainer.contains(holdemCanvas.images.seats[i].bet.text)){holdemCanvas.removeChildren(holdemCanvas.images.seats[i].bet)}}
+    for (i=0;i<this.images.seats.length;i=i+1){
+        if(this.stage.contains(this.images.seats[i].bet.text)){this.hideChildren(this.images.seats[i].bet)}}
     this.stage.update()
     }
 
@@ -454,7 +456,7 @@ this.images.pot.text.text = potSize
 
    this.displayAllCommunity = function(communityArray){
 
-    for (var i = 0; i < 5; i = i + 1) {
+    for (var i = 0; i < communityArray.length; i = i + 1) {
 
     if (communityArray[i] === '' || communityArray[i] === null) {}
     else{this.displayShownCard(communityArray[i], this.images.community[i])}
@@ -600,18 +602,20 @@ if(messages){parentOfImageObject.messages = messages}
 
     //hands are dealt
        socket.on('cards_dealt', function(community, players){
+
           if(players){ for(var i=0;i<players.length;i=i+1){
                if(players[i].seat !== self.gameState.userSeatNumber){
         self.displayChildren(self.images.seats[i].hiddenCard0)
         self.displayChildren(self.images.seats[i].hiddenCard1)
         }
+        }
+        }
         else{
             self.removeAllBets()
             self.displayAllCommunity(community)
-            }
-                   }
-}
-        });
+
+            }                   
+})
         
 
 //hand dealt to user
@@ -633,7 +637,7 @@ if(messages){parentOfImageObject.messages = messages}
 
 //player acts
        socket.on('player_acts', function(player, action, pot){
-
+           console.log(self.gameState.userSeatNumber)
         switch(action){
         case 'fold':
         if(player.seat !== self.gameState.userSeatNumber){
@@ -684,11 +688,13 @@ if(messages){parentOfImageObject.messages = messages}
          self.displayChildren(self.images.fold)
          self.activateButton(self.images.fold,['act','fold'])
         }
-        if (actions[i].check){
+        if (actions[i].check !== undefined){
          self.displayChildren(self.images.check)
          self.activateButton(self.images.check,['act','check'])
          }
          if (actions[i].call){
+             console.log(actions[i].call)
+             self.images.call.text.text = 'Call '+actions[i].call
          self.displayChildren(holdemCanvas.images.call)
          self.activateButton(holdemCanvas.images.call,['act','call',actions[i].call])
          }
@@ -725,17 +731,15 @@ if(messages){parentOfImageObject.messages = messages}
 }});
 
 //player stands, checks if player is the user
-       socket.on('player_stands', function(player, is_you){
+       socket.on('player_stands', function(player, seatNumber, is_you){
         console.log('player_stands', player, player.seat, is_you)
-                
-  
 
-        self.displayChildren(self.images.seats[player.seat].emptySeat)
+        self.displayChildren(self.images.seats[seatNumber].emptySeat)
 
-       self.hideChildren(self.images.seats[player.seat].seat)
+       self.hideChildren(self.images.seats[seatNumber].seat)
 
 
-        self.activateButton(self.images.seats[player.seat].emptySeat, ['sit',player.seat,200+player.seat])
+        self.activateButton(self.images.seats[seatNumber].emptySeat, ['sit',seatNumber,200+seatNumber])
         if(is_you){
             self.gameState.userSeatNumber = false
             self.deactivateButton(self.images.leftSideButtons[1].button)
