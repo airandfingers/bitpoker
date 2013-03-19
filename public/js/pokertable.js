@@ -680,12 +680,12 @@ if(messages){parentOfImageObject.messages = messages}
          }
          if (actions.raise){
          self.displayImage(self.images.raise)
-         self.images.activateButton(self.images.raise,['act','raise'])
+         self.images.activateButton(self.images.raise,['act','raise', 1])
          self.showBetSlider(minBet,maxBet,minIncrement)
          }
          if (actions.bet){
          self.displayImage(self.images.bet)
-         self.images.activateButton(self.images.bet,['act','bet'])
+         self.images.activateButton(self.images.bet,['act','bet', 1])
          console.log('need minbet and maxbet and minIncrement')
          // holdemCanvas.showBetSlider(minBet,maxBet,minIncrement)
          }
@@ -770,6 +770,8 @@ jQuery(document).ready(function(){
        holdemCanvas.displayChildren(holdemCanvas.images.seats[i].emptySeat)
        holdemCanvas.activateButton(holdemCanvas.images.seats[i].emptySeat, ['sit', i, 100 + i])
        }
+    //   holdemCanvas.displayChildren(holdemCanvas.images.fold)
+    //   holdemCanvas.activateButton(holdemCanvas.images.fold)
     /*   holdemCanvas.displayAllCommunity(['2c','3c','4c','5c','6c'])
        holdemCanvas.gameState.userSeatNumber = 7
        holdemCanvas.displayHoleCards('ac','ad')
