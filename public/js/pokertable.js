@@ -801,7 +801,6 @@ holdemCanvas.displayAllCommunity(['5c','6c','9c','Tc','Jc'])
 holdemCanvas.playerActs(8,'All In')
 */
 holdemCanvas.activateSockets()
-holdemCanvas.displayPot(1000)
     })
 
 
