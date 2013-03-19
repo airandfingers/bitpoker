@@ -207,8 +207,6 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
  }
  
-          console.log('bet: ' +self.stage.contains(self.images.bet.text.text))
-         console.log('raise: '+self.stage.contains(self.images.raise.text.text))
 
  }
   //=============END BET SLIDER===================
@@ -637,7 +635,7 @@ if(messages){parentOfImageObject.messages = messages}
 
 //player acts
        socket.on('player_acts', function(player, action, pot){
-           console.log(self.gameState.userSeatNumber)
+
         switch(action){
         case 'fold':
         if(player.seat !== self.gameState.userSeatNumber){
@@ -693,7 +691,6 @@ if(messages){parentOfImageObject.messages = messages}
          self.activateButton(self.images.check,['act','check'])
          }
          if (actions[i].call){
-             console.log(actions[i].call)
              self.images.call.text.text = 'Call '+actions[i].call
          self.displayChildren(holdemCanvas.images.call)
          self.activateButton(holdemCanvas.images.call,['act','call',actions[i].call])
@@ -731,20 +728,22 @@ if(messages){parentOfImageObject.messages = messages}
 }});
 
 //player stands, checks if player is the user
-       socket.on('player_stands', function(player, seatNumber, is_you){
-        console.log('player_stands', player, player.seat, is_you)
+       socket.on('player_stands', function(player, seatNumber){
 
+           if(typeof seatNumber === 'number'){
         self.displayChildren(self.images.seats[seatNumber].emptySeat)
-
        self.hideChildren(self.images.seats[seatNumber].seat)
 
 
         self.activateButton(self.images.seats[seatNumber].emptySeat, ['sit',seatNumber,200+seatNumber])
-        if(is_you){
+        }
+        
+        else{
             self.gameState.userSeatNumber = false
             self.deactivateButton(self.images.leftSideButtons[1].button)
             self.hideChildren(self.images.leftSideButtons[1].button)
-}});
+}
+});
 
 //player adds chips to his stack
        socket.on('player_rebuys', function(player,seat_num){
