@@ -418,8 +418,8 @@ parentOfImageObject.textColor = color
     }
 
     this.displayPot = function (potSize){
-this.pot.text.text =potSize
-   this.displayChildren(this.pot)
+this.images.pot.text.text = potSize
+   this.displayChildren(this.images.pot)
            this.stage.update()
     }
 
@@ -494,6 +494,19 @@ this.stage.update()
  this.hideChildren = function(parent){
           this.hideImage(parent)
           this.hideText(parent)
+
+ }
+
+ this.hideAllActions=function(seatNumber){
+     if(this.stage.contains(this.images.fold.image)){this.hideChildren(this.images.fold)}
+     if(this.stage.contains(this.images.call.image)){this.hideChildren(this.images.call)}
+     if(this.stage.contains(this.images.check.image)){this.hideChildren(this.images.check)}
+     if(this.stage.contains(this.images.raise.image)){this.hideChildren(this.images.raise)}
+     if(this.stage.contains(this.images.bet.image)){this.hideChildren(this.images.bet)}
+     if(this.stage.contains(this.images.betSlider.betSize.image)){this.hideChildren(this.images.betSlider.betSize)}
+     if(this.stage.contains(this.images.betSlider.horizontal.image)){this.hideChildren(this.images.betSlider.horizontal)}
+     if(this.stage.contains(this.images.betSlider.vertical.image)){this.hideChildren(this.images.betSlider.vertical)}
+     
 
  }
 
@@ -577,10 +590,13 @@ if(messages){parentOfImageObject.messages = messages}
         parentOfImageObject.image.onClick = null
     }
 
+
+
+
     this.activateSockets = function(){
 
     //hands are dealt
-       socket.on('hands_dealt', function(community, players){
+       socket.on('cards_dealt', function(community, players){
           if(players){ for(var i=0;i<players.length;i=i+1){
                if(players[i].seat !== self.gameState.userSeatNumber){
         self.displayChildren(self.images.seats[i].hiddenCard0)
@@ -614,24 +630,16 @@ if(messages){parentOfImageObject.messages = messages}
 
 //player acts
        socket.on('player_acts', function(player, action, pot){
-  /*             if(i !== holdemCanvas.gameState.userSeatNumber){
-                   holdemCanvas.displayImage(holdemCanvas.images.seats[i].hiddenCard0)
-        holdemCanvas.displayImage(holdemCanvas.images.seats[i].hiddenCard1)
-                   }
-                   else if(i === holdemCanvas.gameState.userSeatNumber){
-        holdemCanvas.displayShownCard(hand[0], holdemCanvas.images.seats[i].shownCard0)
-                   holdemCanvas.displayShownCard(hand[1], holdemCanvas.images.seats[i].shownCard1)
-                   }
-                   */
+
         switch(action){
         case 'fold':
         if(player.seat !== self.gameState.userSeatNumber){
-                   self.hideChildren(self.images.seats[i].hiddenCard0)
-        self.hideChildren(self.images.seats[i].hiddenCard1)
+                   self.hideChildren(self.images.seats[player.seat].hiddenCard0)
+        self.hideChildren(self.images.seats[player.seat].hiddenCard1)
                    }
             else{
-                self.hideChildren(self.images.seats[seat_num].shownCard0)
-            self.hideChildren(self.images.seats[seat_num].shownCard0)
+                self.hideChildren(self.images.seats[self.gameState.userSeatNumber].shownCard0)
+            self.hideChildren(self.images.seats[self.gameState.userSeatNumber].shownCard0)
             }
             break;
 
@@ -640,22 +648,23 @@ if(messages){parentOfImageObject.messages = messages}
 
             case'bet':
             self.playerPutsChipsInPot(player.seat,player.current_bet)
-            self.playerSits(player.seat, player.user_name, player.chips)
-            self.displayPot(pot)
+            self.playerSits(player.seat, player.username, player.chips)
+            if(pot){self.displayPot(pot)}
             break;
 
             case'call':
             self.playerPutsChipsInPot(player.seat,player.current_bet)
-             self.playerSits(player.seat, player.user_name, player.chips)
-            self.displayPot(pot)
+             self.playerSits(player.seat, player.username, player.chips)
+            if(pot){self.displayPot(pot)}
 
             case 'raise':
             self.playerPutsChipsInPot(player.seat,player.current_bet)
-             self.playerSits(player.seat, player.user_name, player.chips)
-            self.displayPot(pot)
+             self.playerSits(player.seat, player.username, player.chips)
+            if(pot){self.displayPot(pot)}
             break;
         }
-        self.playerActs(player.seat, player.action, 2)
+        if(player.seat === self.gameState.userSeatNumber){self.hideAllActions(self.gameState.userSeatNumber)}
+        self.playerActs(player.seat, action, 2)
         self.stage.update()
      
 })
@@ -664,30 +673,32 @@ if(messages){parentOfImageObject.messages = messages}
  
 
 //player to act (not necessarily the user)
- socket.on('act_prompt', function(action, timeout){
+ socket.on('act_prompt', function(actions, timeout){
 
-     if (actions.fold){
+     for (var i = 0; i < actions.length; i++){
+     if (actions[i]){
          self.displayChildren(self.images.fold)
-         self.images.activateButton(self.images.fold,['act','fold'])
+         self.activateButton(self.images.fold,['act','fold'])
         }
-        if (actions.check){
+        if (actions[i]){
          self.displayImage(self.images.check)
-         self.images.activateButton(self.images.check,['act','check'])
+         self.activateButton(self.images.check,['act','check'])
          }
-         if (actions.call){
-         holdemCanvas.displayImage(holdemCanvas.images.call)
-         holdemCanvas.images.activateButton(holdemCanvas.images.call,['act','call'])
+         if (actions[i]){
+         self.displayImage(holdemCanvas.images.call)
+         self.activateButton(holdemCanvas.images.call,['act','call'])
          }
-         if (actions.raise){
+         if (actions[i]){
          self.displayImage(self.images.raise)
-         self.images.activateButton(self.images.raise,['act','raise', 1])
-         self.showBetSlider(minBet,maxBet,minIncrement)
+         self.activateButton(self.images.raise,['act','raise', 1])
+         self.showBetSlider(1,100,.01)
          }
-         if (actions.bet){
+         if (actions[i]){
          self.displayImage(self.images.bet)
-         self.images.activateButton(self.images.bet,['act','bet', 1])
+         self.activateButton(self.images.bet,['act','bet', 1])
          console.log('need minbet and maxbet and minIncrement')
-         // holdemCanvas.showBetSlider(minBet,maxBet,minIncrement)
+          self.showBetSlider(1,100,.01)
+         }
          }
          self.startCountdown(self.gameState.userSeatNumber,Math.round(timeout/1000))
 
@@ -703,11 +714,9 @@ if(messages){parentOfImageObject.messages = messages}
        socket.on('player_sits', function(player, is_you){
            self.hideChildren(self.images.seats[player.seat].emptySeat)
         self.playerSits(player.seat, player.username, player.chips)
-        console.log(self.images.leftSideButtons[1].button.text)
         if(is_you){
             self.gameState.userSeatNumber = player.seat
             self.displaySideButton('stand up', self.images.leftSideButtons[1].button)
-            console.log(self.images.leftSideButtons[1].button.text)
             self.activateButton ( self.images.leftSideButtons[1].button,['stand'])
             //console.log(self.images.leftSideButtons[1].button.image)
 }});
@@ -792,7 +801,7 @@ holdemCanvas.displayAllCommunity(['5c','6c','9c','Tc','Jc'])
 holdemCanvas.playerActs(8,'All In')
 */
 holdemCanvas.activateSockets()
-console.log(self.images.leftSideButtons[1].button.image)
+holdemCanvas.displayPot(1000)
     })
 
 
