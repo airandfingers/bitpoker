@@ -172,7 +172,15 @@ module.exports = (function () {
       first_round = false;
     }
     console.log('calculated players:', self.players, 'small_blind_seat:', self.small_blind_seat);
-  }
+  };
+
+  RoundSchema.methods.calculatePot = function() {
+    var bets = 0;
+    _.each(this.players, function(player) {
+      bets += player.current_bet;
+    });
+    return this.pot + bets;
+  };
 
   RoundSchema.methods.takeBets = function() {
     var self = this
@@ -190,9 +198,10 @@ module.exports = (function () {
 
   RoundSchema.methods.nextPlayer = function() {
     this.to_act++;
-    if (this.to_act === this.players.length) {
+    if (this.to_act >= this.players.length) {
       this.to_act = 0;
     }
+    console.log('nextPlayer:', this.to_act, this.players[this.to_act]);
     return this.players[this.to_act];
   };
 
@@ -228,7 +237,7 @@ module.exports = (function () {
         player.returnBet();
       }
       else {
-        self.broadcast('player_acts', player.toObject(), 'post_blind', Round.SMALL_BLIND);
+        self.broadcast('player_acts', player.toObject(), 'post_blind', self.calculatePot());
         SMALL_BLIND_PAID = true;
       }
       self.nextPlayer();
@@ -245,7 +254,7 @@ module.exports = (function () {
         self.playerOut(self.to_act);
       }
       else {
-        self.broadcast('player_acts', player.toObject(), 'post_blind', Round.BIG_BLIND);
+        self.broadcast('player_acts', player.toObject(), 'post_blind', self.calculatePot());
         BIG_BLIND_PAID = true;
       }
       self.nextPlayer();
@@ -309,21 +318,21 @@ module.exports = (function () {
         if (min_bet > 0) { actions.push({ call: min_bet }); }
         else { actions.push({ check: null }); default_action = 'check'; }
         if (max_raise > 0) { actions.push({ raise: [last_raise, max_raise] } ); }
-        console.log('Prompting player', actions, Round.TIMEOUT, default_action);
+        console.log('Prompting', player.username, actions, Round.TIMEOUT, default_action);
         player.prompt(actions, Round.TIMEOUT, default_action, function(action, num_chips) {
-          console.log('Player acted!', action, num_chips);
+          console.log(player.username, 'acted!', action, num_chips);
           if (! _.any(actions, function(action_obj) { return (action_obj[action] !== undefined); })) {
-            console.log('Player chose invalid action', action);
-            action = 'fold';
+            console.log('Player chose invalid action', action, ', so treating it as', default_action);
+            action = default_action;
           }
           switch(action) {
           case 'check':
             break;
           case 'call':
             if (num_chips !== min_bet) {
-              console.error('Player called with less than min_bet!', num_chips, min_bet);
+              console.error('Player tried to call with a value other than min_bet!', num_chips, min_bet);
             }
-            player.makeBet(num_chips);
+            player.makeBet(min_bet);
             break;
           case 'raise':
             if (num_chips < last_raise) {
@@ -332,7 +341,7 @@ module.exports = (function () {
             else if (num_chips > max_raise) {
               console.error('Player raised with more than max_raise!', num_chips, max_raise);
             }
-            self.high_bet = min_bet + num_chips;
+            self.high_bet += num_chips;
             player.makeBet(self.high_bet);
             last_raise = num_chips;
             break;
@@ -340,7 +349,7 @@ module.exports = (function () {
             self.playerOut(self.to_act);
             break;
           }
-          self.broadcast('player_acts', player.toObject(), action, num_chips);
+          self.broadcast('player_acts', player.toObject(), action, self.calculatePot());
           player.actedIn(self.stage_num);
           player = self.nextPlayer();
           cb();

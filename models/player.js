@@ -58,9 +58,10 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.makeBet = function(amount) {
-    if (this.chips < amount) {
+    /*if (this.chips < amount) {
       amount = this.chips;
-    }
+      console.log('Cant afford the bet!');
+    }*/
     this.chips -= amount;
     this.current_bet += amount;
     return amount;
@@ -146,7 +147,7 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.vacateSeat = function() {
-    delete this.seat;
+    this.seat = undefined;
   };
 
   PlayerSchema.methods.setFlag = function(name, value) {
