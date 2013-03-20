@@ -224,7 +224,7 @@ module.exports = (function () {
 
     var player_obj = player.toObject();
     socket.broadcast.emit('player_stands', player_obj, seat_num, false);
-    socket.emit('player_stands', player_obj, true);
+    socket.emit('player_stands', player_obj, seat_num, true);
   };
 
   /* the model - a fancy constructor compiled from the schema:

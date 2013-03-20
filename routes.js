@@ -96,7 +96,7 @@ module.exports = (function () {
     }
   });
 
-  //bobby's attempt at sending register the new information
+  //Send register the new information
   app.post('/register', function (req, res, next) {
     var username = req.body.username
       , password = req.body.password
@@ -155,6 +155,7 @@ module.exports = (function () {
     if (table) {
       res.render('table', {
         table_id: table_id,
+        users: users,
         hide_navbar: true,
       });
     }
