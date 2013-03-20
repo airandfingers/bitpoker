@@ -132,13 +132,16 @@ module.exports = (function () {
     this.socket.emit.apply(this.socket, arguments);
   };
 
-  PlayerSchema.methods.toObject = function() {
+  PlayerSchema.methods.toObject = function(include_hand) {
     var self = this
       , keys = ['username', 'seat', 'chips', 'auto_post_blinds', 'current_bet']
       , player_obj = {};
     _.each(keys, function(key) {
       player_obj[key] = self[key];
     });
+    if (include_hand === true) {
+      player_obj.hand = self.hand;
+    }
     return player_obj;
   };
 

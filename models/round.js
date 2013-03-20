@@ -20,13 +20,13 @@ module.exports = (function () {
       'waiting'
     , 'blinding'
     , 'dealing'
-    , 'betting'
+    , 'betting_preflop'
     , 'flopping'
-    , 'betting'
+    , 'betting_postflop'
     , 'turning'
-    , 'betting'
+    , 'betting_preriver'
     , 'rivering'
-    , 'betting'
+    , 'betting_postriver'
     , 'showing_down'
     , 'paying_out'
     , 'done'
@@ -101,8 +101,9 @@ module.exports = (function () {
 
     self.deck = Deck.createDeck({});
 
-    _.each(Round.stage_handlers, function(handler_name, stage_name) {
-      handler = self[handler_name];
+    _.each(Round.stage_handlers, function(handler, stage_name) {
+      /* from when stage_handers were names of instance methods
+      handler = self[handler_name];*/
       self.onStage(stage_name, handler);
     });
   };
@@ -135,10 +136,10 @@ module.exports = (function () {
 
   RoundSchema.methods.isInStage = function(stage) {
     if (_.isNumber(stage)) {
-      return this.stage === stage;
+      return this.stage_num === stage;
     }
     else if (_.isString(stage)) {
-      return Round.STAGES[this.stage] === stage;
+      return Round.STAGES[this.stage_num] === stage;
     }
     else {
       console.error('isInStage called with', stage);
@@ -217,8 +218,7 @@ module.exports = (function () {
     }
   };
 
-  static_properties.stage_handlers.blinding = 'collectBlinds';
-  RoundSchema.methods.collectBlinds = function() {
+  static_properties.stage_handlers.blinding = function() {
     var self = this
       , SMALL_BLIND_PAID = false
       , BIG_BLIND_PAID = false
@@ -277,8 +277,7 @@ module.exports = (function () {
     }*/
   };
 
-  static_properties.stage_handlers.dealing = 'dealHands';
-  RoundSchema.methods.dealHands = function() {
+  static_properties.stage_handlers.dealing = function() {
     var self = this
       , first_card
       , second_card;
@@ -288,12 +287,14 @@ module.exports = (function () {
       player.receiveHand(first_card, second_card);
       player.sendMessage('hand_dealt', player.hand);
     });
-    this.broadcast('cards_dealt', this.community);
+    this.broadcast('cards_dealt', this.community, this.players);
     this.nextStage();
   };
 
-  static_properties.stage_handlers.betting = 'bettingRound';
-  RoundSchema.methods.bettingRound = function() {
+  static_properties.stage_handlers.betting_preflop   =
+  static_properties.stage_handlers.betting_postflop  =
+  static_properties.stage_handlers.betting_preriver  =
+  static_properties.stage_handlers.betting_postriver = function() {
     var self = this
       , player = self.currentPlayer()
       , min_bet
@@ -301,6 +302,13 @@ module.exports = (function () {
       , max_raise
       , actions
       , default_action;
+
+    console.log(self.stage_num, self.isInStage('betting_preflop'));
+    if (! self.isInStage('betting_preflop')) {
+      self.high_bet = 0;
+      self.to_act = 0;
+    }
+
     async.whilst(
       function() { // test
         console.log('testing:',
@@ -341,8 +349,8 @@ module.exports = (function () {
             else if (num_chips > max_raise) {
               console.error('Player raised with more than max_raise!', num_chips, max_raise);
             }
-            self.high_bet += num_chips;
-            player.makeBet(self.high_bet);
+            self.high_bet += num_chips - min_bet;
+            player.makeBet(num_chips);
             last_raise = num_chips;
             break;
           case 'fold':
@@ -359,7 +367,6 @@ module.exports = (function () {
         if (self.players.length >= Round.MIN_PLAYERS) {
           console.log('Betting round completed!', self.pot, self.players);
           self.takeBets();
-          self.high_bet = 0;
           self.nextStage();
         }
         else {
@@ -371,29 +378,25 @@ module.exports = (function () {
     );
   };
 
-  static_properties.stage_handlers.flopping = 'flop';
-  RoundSchema.methods.flop = function() {
+  static_properties.stage_handlers.flopping = function() {
     this.community.push(this.deck.deal(), this.deck.deal(), this.deck.deal());
-    this.broadcast('cards_dealt', this.community);
+    this.broadcast('cards_dealt', this.community, this.players);
     this.nextStage();
   };
 
-  static_properties.stage_handlers.turning = 'turn';
-  RoundSchema.methods.turn = function() {
+  static_properties.stage_handlers.turning = function() {
     this.community.push(this.deck.deal());
-    this.broadcast('cards_dealt', this.community);
+    this.broadcast('cards_dealt', this.community, this.players);
     this.nextStage();
   };
 
-  static_properties.stage_handlers.rivering = 'river';
-  RoundSchema.methods.river = function() {
+  static_properties.stage_handlers.rivering = function() {
     this.community.push(this.deck.deal());
-    this.broadcast('cards_dealt', this.community);
+    this.broadcast('cards_dealt', this.community, this.players);
     this.nextStage();
   };
 
-  static_properties.stage_handlers.showing_down = 'showdown';
-  RoundSchema.methods.showdown = function() {
+  static_properties.stage_handlers.showing_down = function() {
     var self = this;
     console.log('Choosing the first-to-act player as the "winner"!');
     _.each(self.players, function(player, index) {
@@ -407,8 +410,7 @@ module.exports = (function () {
     self.nextStage();
   };
 
-  static_properties.stage_handlers.paying_out = 'payout';
-  RoundSchema.methods.payout = function() {
+  static_properties.stage_handlers.paying_out = function() {
     var winning_player = this.players[this.winner];
     if (! winning_player instanceof Player) {
       console.error('payout called when this.winner is ', this.winner, '!', winning_player);
@@ -416,12 +418,12 @@ module.exports = (function () {
     }
     console.log(this.winner, 'wins!', winning_player, this.pot);
     winning_player.win(this.pot);
-    this.pot = 0;
+    var winning_player_obj = winning_player.toObject(true);
+    this.broadcast('round_ends', [winning_player_obj], this.pot)
     this.nextStage();
   };
 
-  static_properties.stage_handlers.done = 'cleanup';
-  RoundSchema.methods.cleanup = function() {
+  static_properties.stage_handlers.done = function() {
     var self = this
       , num_players = self.players.length;
     if (num_players > Round.MIN_PLAYERS) {
