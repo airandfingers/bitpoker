@@ -128,7 +128,7 @@ parentOfImageObject.textColor = color
 this.events.buttonMouseDown = function(event){
       event.target.graphics.clear()
   event.target.graphics.beginFill('red').drawRoundRect(event.target.parentOfImageObject.position.x, event.target.parentOfImageObject.position.y, event.target.parentOfImageObject.size.x, event.target.parentOfImageObject.size.y,event.target.parentOfImageObject.size.y*.15)
-  event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.position.y + 3
+  event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.position.y + 2
      self.stage.update()
      event.onMouseUp = function(event){
          event.target.graphics.clear()       
@@ -371,10 +371,11 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
         //mouse events for clicking on empty seats
              for (var i = 0; i < this.seats.length; i = i + 1){
-           
           this.seats[i].emptySeat.image.onPress = self.events.buttonMouseDown
          // this.seats[i].emptySeat.image.onMouseOut = self.events.buttonMouseDown
         }
+
+
     }
 
     this.initialize = function(){
@@ -599,6 +600,7 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
       if(messages){parentOfImageObject.messages = messages}
 
       parentOfImageObject.image.onClick = this.events.onButtonClick
+      parentOfImageObject.image.onPress = this.events.buttonMouseDown
      this.displayChildren(parentOfImageObject)
    this.stage.update()
  
@@ -737,22 +739,20 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
 }});
 
 //player stands, checks if player is the user
-       socket.on('player_stands', function(player, seatNumber){
+       socket.on('player_stands', function(player, seatNumber, is_you){
 
-           if(typeof seatNumber === 'number'){
         self.displayChildren(self.images.seats[seatNumber].emptySeat)
        self.hideChildren(self.images.seats[seatNumber].seat)
 
-
         self.displayButton(self.images.seats[seatNumber].emptySeat, false,['sit',seatNumber,200+seatNumber])
-        }
+
         
-        else{
+        if(is_you){
             self.gameState.userSeatNumber = false
             self.hideButton(self.images.leftSideButtons[1].button)
             self.hideChildren(self.images.leftSideButtons[1].button)
 }
-});
+})
 
 //player adds chips to his stack
        socket.on('player_rebuys', function(player,seat_num){
@@ -762,21 +762,16 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
 
 
 //round ends, all hole cards are shown
-       socket.on('round_ends', function(winner, hands, pot){
-           for(var i in hands){
-               if(typeof hands[i].card === 'array'){
-        self.images.displayFaceUpCard(hands[i].card[0],self.images.seats[i].shownCard0)
-        self.images.displayFaceUpCard(hands[i].card[1],self.images.seats[i].shownCard1)
+       socket.on('round_ends', function(players, pot){
+           for(var i =0;i<players.length;i++){
+        self.images.displayFaceUpCard(players[i].hand[0],self.images.seats[players[i].seat].shownCard0)
+        self.images.displayFaceUpCard(players[i].hand[1],self.images.seats[players[i].seat].shownCard1)
+        self.playerActs(players[i], 'Wins '+pot,3)
         }
-        }
-        {
-            for(var i in winners){
-                {if(typeof winners[i].player === 'string'){
-                    self.images.playerSits(winners[i], winners[i].player, pot)
-                }}
-            }
-            
-        }
+
+        
+
+
 })
 
     }
