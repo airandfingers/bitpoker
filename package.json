@@ -18,7 +18,8 @@
     "connect": "~2.7.2",
     "cookie": "0.0.5",
     "poker-evaluator": "0.0.4",
-    "node-class": "0.0.24"
+    "node-class": "0.0.24",
+    "async": "~0.2.6"
   },
   "subdomain": "rpwm-server",
   "domains": [],

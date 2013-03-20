@@ -133,14 +133,17 @@ module.exports = (function () {
 
   TableSchema.methods.newRound = function() {
     var self = this
+      , round_num = this.rounds.length + 1
       , round = Round.createRound({
       seats: this.seats
     , broadcast: function() { self.room.broadcast.apply(self.room, arguments); }
     , dealer: this.dealer
+    , round_id: self.name + '.' + round_num
     });
+    console.log('Pushing new round onto rounds, with round_id: ', this.rounds.length);
     this.rounds.push(round);
     round.onStage('done', function() {
-      console.log('Round is over!');
+      console.log('Round is over! Creating a new round in 1 second...');
       self.dealer = round.small_blind_seat || round.dealer;
       setTimeout(function() {
         self.newRound();
@@ -219,8 +222,8 @@ module.exports = (function () {
     player.vacateSeat();
     delete this.seats[seat_num];
 
-    var player_obj = player.toObject()
-    socket.broadcast.emit('player_stands', player_obj, false);
+    var player_obj = player.toObject();
+    socket.broadcast.emit('player_stands', player_obj, seat_num, false);
     socket.emit('player_stands', player_obj, true);
   };
 

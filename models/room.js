@@ -60,18 +60,27 @@ module.exports = (function () {
   RoomSchema.methods.join = function(socket) {
     var self = this
       , user_id = socket.handshake.session.passport.user;
-    User.findById(user_id, 'username', function(err, user) {
-      if (err) { console.error(err); }
-      else if (! user) {
-        console.error( 'No user found with id', user_id, '!' );
-      }
-      else {
+    if (! _.isUndefined(user_id)) {
+      User.findById(user_id, 'username', function(err, user) {
+        if (err) { console.error(err); }
+        else if (! user) {
+          console.error( 'No user found with id', user_id, '!' );
+          user = {};
+        }
+        //else {
         socket.user = user;
         // notify anyone interested (the corresponding table)
         self.emit('socket_join', socket);
         self.broadcast('user_joins', user);
-      }
-    });
+        //}
+      });
+    }
+    else {
+      var user = {};
+      socket.user = user;
+      self.emit('socket_join', socket);
+      self.broadcast('user_joins', user);
+    }
     //console.log('Socket joining ' + self.room_id + ':', socket.user_id);
     socket.join(self.room_id);
     socket.room_id = self.room_id;

@@ -29,6 +29,8 @@ module.exports = (function () {
     , auto_post_blinds: { type: Boolean, default: true }
       // the seat number this player is currently sitting in, if any
     , seat: Number
+      // which stages this player has acted in, in the current round
+    , has_acted: { type: Schema.Types.Mixed, default: function() { return {}; } }
     });
 
   var static_properties = {
@@ -56,9 +58,10 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.makeBet = function(amount) {
-    if (this.chips < amount) {
+    /*if (this.chips < amount) {
       amount = this.chips;
-    }
+      console.log('Cant afford the bet!');
+    }*/
     this.chips -= amount;
     this.current_bet += amount;
     return amount;
@@ -75,6 +78,10 @@ module.exports = (function () {
     this.current_bet = 0;
   };
 
+  PlayerSchema.methods.win = function(amount) {
+    this.chips += amount;
+  };
+
   PlayerSchema.methods.receiveHand = function(first_card, second_card) {
     this.hand.push(first_card);
     this.hand.push(second_card);
@@ -84,7 +91,7 @@ module.exports = (function () {
     this.hand = [];
   };
 
-  PlayerSchema.methods.prompt = function(actions, timeout, cb) {
+  PlayerSchema.methods.prompt = function(actions, timeout, default_action, cb) {
     var self = this
       , act_timeout;
     console.log('prompting', self.username, 'for next action', actions, timeout);
@@ -92,13 +99,33 @@ module.exports = (function () {
     self.socket.once('act', function(action, num_chips) {
       console.log(self.username, 'responds with', action, num_chips);
       clearTimeout(act_timeout);
+      console.log('calling back with', action, num_chips);
       cb(action, num_chips);
     });
     act_timeout = setTimeout(function() {
       console.log(self.username, 'fails to respond within', timeout, 'ms');
       self.removeAllListeners('act');
-      cb();
+      console.log('calling back with', default_action);
+      cb(default_action);
     }, timeout);
+  };
+
+  PlayerSchema.methods.actedIn = function(stage) {
+    this.has_acted[stage] = true;
+  };
+
+  PlayerSchema.methods.hasActedIn = function(stage) {
+    return this.has_acted[stage] || false;
+  };
+
+  PlayerSchema.methods.resetHasActed = function() {
+    this.has_acted = {};
+  };
+
+  PlayerSchema.methods.roundOver = function() {
+    this.returnBet();
+    this.returnHand();
+    this.resetHasActed();
   };
 
   PlayerSchema.methods.sendMessage = function() {
@@ -120,7 +147,7 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.vacateSeat = function() {
-    delete this.seat;
+    this.seat = undefined;
   };
 
   PlayerSchema.methods.setFlag = function(name, value) {
