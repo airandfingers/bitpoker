@@ -764,9 +764,9 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
 //round ends, all hole cards are shown
        socket.on('round_ends', function(players, pot){
            for(var i =0;i<players.length;i++){
-        self.images.displayFaceUpCard(players[i].hand[0],self.images.seats[players[i].seat].shownCard0)
-        self.images.displayFaceUpCard(players[i].hand[1],self.images.seats[players[i].seat].shownCard1)
-        self.playerActs(players[i], 'Wins '+pot,3)
+        self.displayShownCard(players[i].hand[0],self.images.seats[players[i].seat].shownCard0)
+        self.displayShownCard(players[i].hand[1],self.images.seats[players[i].seat].shownCard1)
+        self.playerActs(players[i].seat, 'Wins '+pot,3)
         }
 
         
