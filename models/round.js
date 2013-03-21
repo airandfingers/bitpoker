@@ -17,7 +17,9 @@ module.exports = (function () {
   // static properties (attached below) - Model.property_name
     // the stages this round can be in, in order
     STAGES: [
-      'waiting'
+      'initializing'
+    , 'shuffling'
+    , 'waiting'
     , 'blinding'
     , 'dealing'
     , 'betting_preflop'
@@ -105,6 +107,232 @@ module.exports = (function () {
       /* from when stage_handers were names of instance methods
       handler = self[handler_name];*/
       self.onStage(stage_name, handler);
+    });
+
+    self.nextStage();
+  };
+
+  static_properties.stage_handlers.shuffling = function() {
+    var self = this;
+    self.deck.shuffle(function onShuffled() {
+      self.nextStage();
+    });
+  };
+
+  RoundSchema.methods.go = function() {
+    if (! this.isInStage('waiting')) {
+      console.error('go called with this.stage_num is', this.stage_num, ':', Round.STAGES[this.stage_num]);
+      return;
+    }
+    this.nextStage();
+  };
+
+  static_properties.stage_handlers.blinding = function() {
+    var self = this
+      , SMALL_BLIND_PAID = false
+      , BIG_BLIND_PAID = false
+      , bet
+      , player;
+
+    self.calculatePlayers();
+    while (SMALL_BLIND_PAID === false && 
+           self.players.length >= Round.MIN_PLAYERS) {
+      player = self.players[this.to_act];
+      //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
+      bet = player.makeBet(Round.SMALL_BLIND);
+      if (bet < Round.SMALL_BLIND) {
+        console.error('Player does not have enough chips to pay small blind!');
+        self.playerOut(self.to_act);
+        player.returnBet();
+      }
+      else {
+        self.broadcast('player_acts', player.toObject(), 'post_blind', self.calculatePot());
+        SMALL_BLIND_PAID = true;
+      }
+      self.nextPlayer();
+    }
+
+    while (SMALL_BLIND_PAID &&
+           BIG_BLIND_PAID === false &&
+           self.players.length >= Round.MIN_PLAYERS) {
+      player = self.players[this.to_act];
+      //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
+      bet = player.makeBet(Round.BIG_BLIND);
+      if (bet < Round.BIG_BLIND) {
+        console.error('Player does not have enough chips to pay big blind!');
+        self.playerOut(self.to_act);
+      }
+      else {
+        self.broadcast('player_acts', player.toObject(), 'post_blind', self.calculatePot());
+        BIG_BLIND_PAID = true;
+      }
+      self.nextPlayer();
+    }
+
+    if (SMALL_BLIND_PAID && BIG_BLIND_PAID) {
+      self.high_bet = Round.BIG_BLIND;
+      self.nextStage();
+    }
+    else {
+      console.log('Blinds not paid!', SMALL_BLIND_PAID, BIG_BLIND_PAID, self.players);
+      self.toStage('done');
+    }
+  };
+
+  static_properties.stage_handlers.dealing = function() {
+    var self = this
+      , first_card
+      , second_card;
+    _.each(self.players, function(player) {
+      first_card = self.deck.deal();
+      second_card = self.deck.deal();
+      player.receiveHand(first_card, second_card);
+      player.sendMessage('hole_cards_dealt', player.hand);
+    });
+    this.broadcast('hands_dealt', this.players);
+    this.nextStage();
+  };
+
+  static_properties.stage_handlers.betting_preflop   =
+  static_properties.stage_handlers.betting_postflop  =
+  static_properties.stage_handlers.betting_preriver  =
+  static_properties.stage_handlers.betting_postriver = function() {
+    // reset high_bet and to_act values
+    if (! this.isInStage('betting_preflop')) {
+      console.log('Not in betting_preflop, so resetting high_bet and to_act');
+      this.high_bet = 0;
+      this.to_act = 0;
+    }
+
+    var self = this
+      , player = self.currentPlayer()
+      , min_bet
+      , last_raise = Round.BIG_BLIND
+      , max_raise
+      , actions
+      , default_action;
+
+    async.whilst(
+      function() { // test
+        console.log('testing:',
+                      '# of players: ' + self.players.length + ' vs. MIN_PLAYERS: ' + Round.MIN_PLAYERS,
+                      'Has player acted yet? ' + player.hasActedIn(self.stage_num),
+                      'current_bet: ' + player.current_bet + ' vs. high_bet: ' + self.high_bet);
+        return self.players.length >= Round.MIN_PLAYERS &&
+               ((! player.hasActedIn(self.stage_num)) || player.current_bet < self.high_bet);
+      },
+      function(cb) { // loop body
+        min_bet = self.high_bet - player.current_bet;
+        max_raise = player.chips - min_bet;
+        actions = [{ fold: null }];
+        default_action = 'fold';
+        if (min_bet > 0) { actions.push({ call: min_bet }); }
+        else { actions.push({ check: null }); default_action = 'check'; }
+        if (max_raise > last_raise) { actions.push({ raise: [last_raise, max_raise] } ); }
+        console.log('Prompting', player.username, actions, Round.TIMEOUT, default_action);
+        player.prompt(actions, Round.TIMEOUT, default_action, function(action, num_chips) {
+          console.log(player.username, 'acted!', action, num_chips);
+          if (! _.any(actions, function(action_obj) { return (action_obj[action] !== undefined); })) {
+            console.log('Player chose invalid action', action, ', so treating it as', default_action);
+            action = default_action;
+          }
+          switch(action) {
+          case 'check':
+            break;
+          case 'call':
+            if (num_chips !== min_bet) {
+              console.error('Player tried to call with a value other than min_bet!', num_chips, min_bet);
+            }
+            player.makeBet(min_bet);
+            break;
+          case 'raise':
+            if (num_chips < last_raise) {
+              console.error('Player raised with less than last_raise!', num_chips, last_raise);
+            }
+            else if (num_chips > max_raise) {
+              console.error('Player raised with more than max_raise!', num_chips, max_raise);
+            }
+            self.high_bet += num_chips;
+            player.makeBet(min_bet + num_chips);
+            last_raise = num_chips;
+            break;
+          case 'fold':
+            self.playerOut(self.to_act);
+            break;
+          }
+          self.broadcast('player_acts', player.toObject(), action, self.calculatePot());
+          player.actedIn(self.stage_num);
+          player = self.nextPlayer();
+          cb();
+        });
+      },
+      function() { // done
+        if (self.players.length >= Round.MIN_PLAYERS) {
+          console.log('Betting round completed!', self.pot, self.players);
+          self.takeBets();
+          self.nextStage();
+        }
+        else {
+          console.log('Not enough players to continue to next stage!', self.players);
+          self.winner = 0;
+          self.toStage('paying_out');
+        }
+      }
+    );
+  };
+
+  static_properties.stage_handlers.flopping = function() {
+    this.community.push(this.deck.deal(), this.deck.deal(), this.deck.deal());
+    this.broadcast('community_dealt', this.community);
+    this.nextStage();
+  };
+
+  static_properties.stage_handlers.turning = function() {
+    this.community.push(this.deck.deal());
+    this.broadcast('community_dealt', this.community);
+    this.nextStage();
+  };
+
+  static_properties.stage_handlers.rivering = function() {
+    this.community.push(this.deck.deal());
+    this.broadcast('community_dealt', this.community);
+    this.nextStage();
+  };
+
+  static_properties.stage_handlers.showing_down = function() {
+    var self = this;
+    console.log('Choosing the first-to-act player as the "winner"!');
+    //TODO: actually calculate winner
+    _.each(self.players, function(player, index) {
+      if (_.isUndefined(self.winner)) {
+        self.winner = index;
+      }
+    });
+    self.nextStage();
+  };
+
+  static_properties.stage_handlers.paying_out = function() {
+    var winning_player = this.players[this.winner];
+    if (! winning_player instanceof Player) {
+      console.error('payout called when this.winner is ', this.winner, '!', winning_player);
+      return;
+    }
+    console.log(this.winner, 'wins!', winning_player, this.pot);
+    winning_player.win(this.pot);
+    var player_objs = _.map(this.players, function(player) { return player.toObject(true); });
+    this.broadcast('round_ends', player_objs);
+    this.nextStage();
+  };
+
+  static_properties.stage_handlers.done = function() {
+    var self = this
+      , num_players = self.players.length;
+    if (num_players > Round.MIN_PLAYERS) {
+      console.error(num_players + ' players in at cleanup!', self.players);
+    }
+    console.log('Round over! Notifying players...');
+    _.each(self.players, function(player) {
+      player.roundOver();
     });
   };
 
@@ -216,215 +444,6 @@ module.exports = (function () {
     if (this.to_act >= index) {
       this.to_act--;
     }
-  };
-
-  static_properties.stage_handlers.blinding = function() {
-    var self = this
-      , SMALL_BLIND_PAID = false
-      , BIG_BLIND_PAID = false
-      , bet
-      , player;
-
-    self.calculatePlayers();
-    while (SMALL_BLIND_PAID === false && 
-           self.players.length >= Round.MIN_PLAYERS) {
-      player = self.players[this.to_act];
-      //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
-      bet = player.makeBet(Round.SMALL_BLIND);
-      if (bet < Round.SMALL_BLIND) {
-        console.error('Player does not have enough chips to pay small blind!');
-        self.playerOut(self.to_act);
-        player.returnBet();
-      }
-      else {
-        self.broadcast('player_acts', player.toObject(), 'post_blind', self.calculatePot());
-        SMALL_BLIND_PAID = true;
-      }
-      self.nextPlayer();
-    }
-
-    while (SMALL_BLIND_PAID &&
-           BIG_BLIND_PAID === false &&
-           self.players.length >= Round.MIN_PLAYERS) {
-      player = self.players[this.to_act];
-      //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
-      bet = player.makeBet(Round.BIG_BLIND);
-      if (bet < Round.BIG_BLIND) {
-        console.error('Player does not have enough chips to pay big blind!');
-        self.playerOut(self.to_act);
-      }
-      else {
-        self.broadcast('player_acts', player.toObject(), 'post_blind', self.calculatePot());
-        BIG_BLIND_PAID = true;
-      }
-      self.nextPlayer();
-    }
-
-    if (SMALL_BLIND_PAID && BIG_BLIND_PAID) {
-      self.high_bet = Round.BIG_BLIND;
-      self.nextStage();
-    }
-    else {
-      console.log('Blinds not paid!', SMALL_BLIND_PAID, BIG_BLIND_PAID, self.players);
-      self.toStage('done');
-    }
-  };
-
-  static_properties.stage_handlers.dealing = function() {
-    var self = this
-      , first_card
-      , second_card;
-    _.each(self.players, function(player) {
-      first_card = self.deck.deal();
-      second_card = self.deck.deal();
-      player.receiveHand(first_card, second_card);
-      player.sendMessage('hole_cards_dealt', player.hand);
-    });
-    this.broadcast('hands_dealt', this.players);
-    this.nextStage();
-  };
-
-  static_properties.stage_handlers.betting_preflop   =
-  static_properties.stage_handlers.betting_postflop  =
-  static_properties.stage_handlers.betting_preriver  =
-  static_properties.stage_handlers.betting_postriver = function() {
-    // reset high_bet and to_act values
-    if (! this.isInStage('betting_preflop')) {
-      console.log('Not in betting_preflop, so resetting high_bet and to_act');
-      this.high_bet = 0;
-      this.to_act = 0;
-    }
-
-    var self = this
-      , player = self.currentPlayer()
-      , min_bet
-      , last_raise = Round.BIG_BLIND
-      , max_raise
-      , actions
-      , default_action;
-
-    async.whilst(
-      function() { // test
-        console.log('testing:',
-                      '# of players: ' + self.players.length + ' vs. MIN_PLAYERS: ' + Round.MIN_PLAYERS,
-                      'Has player acted yet? ' + player.hasActedIn(self.stage_num),
-                      'current_bet: ' + player.current_bet + ' vs. high_bet: ' + self.high_bet);
-        return self.players.length >= Round.MIN_PLAYERS &&
-               ((! player.hasActedIn(self.stage_num)) || player.current_bet < self.high_bet);
-      },
-      function(cb) { // loop body
-        min_bet = self.high_bet - player.current_bet;
-        max_raise = player.chips - min_bet;
-        actions = [{ fold: null }];
-        default_action = 'fold';
-        if (min_bet > 0) { actions.push({ call: min_bet }); }
-        else { actions.push({ check: null }); default_action = 'check'; }
-        if (max_raise > 0) { actions.push({ raise: [last_raise, max_raise] } ); }
-        console.log('Prompting', player.username, actions, Round.TIMEOUT, default_action);
-        player.prompt(actions, Round.TIMEOUT, default_action, function(action, num_chips) {
-          console.log(player.username, 'acted!', action, num_chips);
-          if (! _.any(actions, function(action_obj) { return (action_obj[action] !== undefined); })) {
-            console.log('Player chose invalid action', action, ', so treating it as', default_action);
-            action = default_action;
-          }
-          switch(action) {
-          case 'check':
-            break;
-          case 'call':
-            if (num_chips !== min_bet) {
-              console.error('Player tried to call with a value other than min_bet!', num_chips, min_bet);
-            }
-            player.makeBet(min_bet);
-            break;
-          case 'raise':
-            if (num_chips < last_raise) {
-              console.error('Player raised with less than last_raise!', num_chips, last_raise);
-            }
-            else if (num_chips > max_raise) {
-              console.error('Player raised with more than max_raise!', num_chips, max_raise);
-            }
-            self.high_bet += num_chips - min_bet;
-            player.makeBet(num_chips);
-            last_raise = num_chips;
-            break;
-          case 'fold':
-            self.playerOut(self.to_act);
-            break;
-          }
-          self.broadcast('player_acts', player.toObject(), action, self.calculatePot());
-          player.actedIn(self.stage_num);
-          player = self.nextPlayer();
-          cb();
-        });
-      },
-      function() { // done
-        if (self.players.length >= Round.MIN_PLAYERS) {
-          console.log('Betting round completed!', self.pot, self.players);
-          self.takeBets();
-          self.nextStage();
-        }
-        else {
-          console.log('Not enough players to continue to next stage!', self.players);
-          self.winner = 0;
-          self.toStage('paying_out');
-        }
-      }
-    );
-  };
-
-  static_properties.stage_handlers.flopping = function() {
-    this.community.push(this.deck.deal(), this.deck.deal(), this.deck.deal());
-    this.broadcast('community_dealt', this.community);
-    this.nextStage();
-  };
-
-  static_properties.stage_handlers.turning = function() {
-    this.community.push(this.deck.deal());
-    this.broadcast('community_dealt', this.community);
-    this.nextStage();
-  };
-
-  static_properties.stage_handlers.rivering = function() {
-    this.community.push(this.deck.deal());
-    this.broadcast('community_dealt', this.community);
-    this.nextStage();
-  };
-
-  static_properties.stage_handlers.showing_down = function() {
-    var self = this;
-    console.log('Choosing the first-to-act player as the "winner"!');
-    //TODO: actually calculate winner
-    _.each(self.players, function(player, index) {
-      if (_.isUndefined(self.winner)) {
-        self.winner = index;
-      }
-    });
-    self.nextStage();
-  };
-
-  static_properties.stage_handlers.paying_out = function() {
-    var winning_player = this.players[this.winner];
-    if (! winning_player instanceof Player) {
-      console.error('payout called when this.winner is ', this.winner, '!', winning_player);
-      return;
-    }
-    console.log(this.winner, 'wins!', winning_player, this.pot);
-    winning_player.win(this.pot);
-    var player_objs = _.map(this.players, function(player) { return player.toObject(true); });
-    this.broadcast('round_ends', player_objs);
-    this.nextStage();
-  };
-
-  static_properties.stage_handlers.done = function() {
-    var self = this
-      , num_players = self.players.length;
-    if (num_players > Round.MIN_PLAYERS) {
-      console.error(num_players + ' players in at cleanup!', self.players);
-    }
-    console.log('Round over! Notifying players...');
-    _.each(self.players, function(player) {
-      player.roundOver();
-    });
   };
 
   /* the model - a fancy constructor compiled from the schema:
