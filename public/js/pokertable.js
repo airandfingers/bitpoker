@@ -478,6 +478,12 @@ this.images.pot.text.text = 'pot: '+potSize
          this.displayText(parent)
         }
  }
+
+ this.displayHiddenCard=function(seatNumber){
+     this.displayChildren(this.images.seats[seatNumber].hiddenCard0)
+     this.displayChildren(this.images.seats[seatNumber].hiddenCard1)
+
+ }
     this.hideText = function(parent){
         if(this.stage.contains(parent.text)){this.images.topContainer.removeChild(parent.text)}
 this.stage.update()
@@ -612,27 +618,28 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
         parentOfImageObject.image.onClick = null
     }
 
+  //---------------------SOCKET CODE------------------------
     this.activateSockets = function(){
 
-    //hands are dealt
-       socket.on('cards_dealt', function(community, players){
-
-          if(players){ for(var i=0;i<players.length;i=i+1){
-               if(players[i].seat !== self.gameState.userSeatNumber){
-        self.displayChildren(self.images.seats[i].hiddenCard0)
-        self.displayChildren(self.images.seats[i].hiddenCard1)
-        }
-        }
-        }
-        else{
+    //community cards are dealt
+       socket.on('community_dealt', function(community, players){
             self.removeAllBets()
             self.displayAllCommunity(community)
-
-            }                   
+                
 })
         
+//hands dealt to non-user players
+       socket.on('hands_dealt', function(players){
+           for(var i = 0; i<players.length;i++){
+               if(players[i]!=self.gameState.userSeatNumber){
+        self.displayHiddenCard(players[i].seat)
+     }
+      }
+});
+
+
 //hand dealt to user
-       socket.on('hand_dealt', function(hand){
+       socket.on('hole_cards_dealt', function(hand){
 
                    self.displayShownCard(hand[0],self.images.seats[self.gameState.userSeatNumber].shownCard0)
         self.displayShownCard(hand[1],self.images.seats[self.gameState.userSeatNumber].shownCard1)
@@ -643,6 +650,7 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
        socket.on('player_to_act', function(seat_num, timeout){ 
      self.startCountdown(seat_num,timeout)
 })
+
 
 //player acts
        socket.on('player_acts', function(player, action, pot){
@@ -721,12 +729,7 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
 
 });
 
-//receive hole cards
-       socket.on('hands_dealt', function(active_seats, hand_cards){
-        self.displayShownCard(hand_cards[1],self.images.seats[self.gameState.userSeatNumber])
-     self.displayShownCard(hand_cards[2],self.images.seats[self.gameState.userSeatNumber])
-     self.displayInHandOptions()
-});
+
 
 //player sits, checks if player is the user
        socket.on('player_sits', function(player, is_you){
@@ -776,6 +779,9 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
 
     }
     }
+
+    //---------------END SOCKET CODE----------------------------
+
 jQuery(document).ready(function(){
     holdemCanvas = new Table(10)
     holdemCanvas.initialize()
