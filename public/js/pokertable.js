@@ -316,7 +316,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
             this.itemAsRectangle(this.seats[i].seat, "#000000")
             this.addItemText(this.seats[i].seat,'','13px Arial','#FFFFFF' )
             this.itemAsRectangle(this.seats[i].emptySeat, "#000000")
-            this.addItemText(this.seats[i].emptySeat,'click to sit','18px arial','#FFFFFF' )
+            this.addItemText(this.seats[i].emptySeat,'click to sit','16px tahoma','#FFFFFF' )
             //hole cards
             this.itemAsBitmap(this.seats[i].hiddenCard0, this.sources.hiddenCard)
             this.itemAsBitmap(this.seats[i].hiddenCard1, this.sources.hiddenCard)
@@ -622,7 +622,7 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
     this.activateSockets = function(){
 
     //community cards are dealt
-       socket.on('community_dealt', function(community, players){
+       socket.on('community_dealt', function(community){
             self.removeAllBets()
             self.displayAllCommunity(community)
                 
@@ -765,11 +765,11 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
 
 
 //round ends, all hole cards are shown
-       socket.on('round_ends', function(players, pot){
+       socket.on('round_ends', function(players){
            for(var i =0;i<players.length;i++){
         self.displayShownCard(players[i].hand[0],self.images.seats[players[i].seat].shownCard0)
         self.displayShownCard(players[i].hand[1],self.images.seats[players[i].seat].shownCard1)
-        self.playerActs(players[i].seat, 'Wins '+pot,3)
+        self.playerActs(players[i].seat, 'Wins '+players.chips_won,2)
         }
 
         
