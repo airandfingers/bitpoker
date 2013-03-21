@@ -533,7 +533,8 @@ this.hideChildren(this.images.betSlider.vertical)
         }
 
      }
-
+        self.removeAllBets()
+        self.hideChildren(self.images.pot)
 
  }
 
@@ -690,6 +691,9 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
 //player acts
        socket.on('player_acts', function(player, action, pot){
 
+        self.endCountdown(player.seat)
+        self.playerActs(player.seat, action, 2)
+
         switch(action){
         case 'fold':
         if(player.seat !== self.gameState.userSeatNumber){
@@ -709,27 +713,29 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
             case'bet':
             self.playerPutsChipsInPot(player.seat,player.current_bet)
             self.playerSits(player.seat, player.username, player.chips)
-            if(pot){self.displayPot(pot)}
             break;
 
             case'call':
             self.playerPutsChipsInPot(player.seat,player.current_bet)
              self.playerSits(player.seat, player.username, player.chips)
-            if(pot){self.displayPot(pot)}
+             break;
 
             case 'raise':
             self.playerPutsChipsInPot(player.seat,player.current_bet)
              self.playerSits(player.seat, player.username, player.chips)
-            if(pot){self.displayPot(pot)}
             break;
 
-            default:
-            if(player.current_bet&&player.current_bet>0){self.playerPutsChipsInPot(player.seat,player.current_bet)}
+            
         }
+        //show player's bet
+        if(player.current_bet&&player.current_bet>0){self.playerPutsChipsInPot(player.seat,player.current_bet)}
+        //if player is current user, hide action buttons
         if(player.seat === self.gameState.userSeatNumber){self.hideAllActions(self.gameState.userSeatNumber)}
+        //display updated potsize if necessary
+        if(pot){self.displayPot(pot)}
         //set countdownOn to false to disable countdown
-        self.endCountdown(player.seat)
-        self.playerActs(player.seat, action, 2)
+
+        
         self.stage.update()
      
 })
@@ -812,7 +818,8 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
         self.playerActs(players[i].seat, 'Wins '+players[i].chips_won)
 
         }
-        self.removeAllBets()
+        
+
         self.roundEnds()
 
 })
@@ -842,6 +849,7 @@ holdemCanvas.activateSockets()
 //console.log(holdemCanvas.images.seats[4].hiddenCard0)
 //console.log(holdemCanvas.stage.contains(holdemCanvas.images.seats[4].hiddenCard0.image))
 //holdemCanvas.stage.update
+
     })
 
 
