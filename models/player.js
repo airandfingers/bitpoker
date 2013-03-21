@@ -31,6 +31,8 @@ module.exports = (function () {
     , seat: Number
       // which stages this player has acted in, in the current round
     , has_acted: { type: Schema.Types.Mixed, default: function() { return {}; } }
+      // the number of chips thie player won this round, if any
+    , chips_won: Number
     });
 
   var static_properties = {
@@ -80,6 +82,7 @@ module.exports = (function () {
 
   PlayerSchema.methods.win = function(amount) {
     this.chips += amount;
+    this.chips_won = amount;
   };
 
   PlayerSchema.methods.receiveHand = function(first_card, second_card) {
@@ -132,15 +135,16 @@ module.exports = (function () {
     this.socket.emit.apply(this.socket, arguments);
   };
 
-  PlayerSchema.methods.toObject = function(include_hand) {
+  PlayerSchema.methods.toObject = function(round_end) {
     var self = this
       , keys = ['username', 'seat', 'chips', 'auto_post_blinds', 'current_bet']
       , player_obj = {};
     _.each(keys, function(key) {
       player_obj[key] = self[key];
     });
-    if (include_hand === true) {
+    if (round_end === true) {
       player_obj.hand = self.hand;
+      player_obj.chips_won = self.chips_won || 0;
     }
     return player_obj;
   };
