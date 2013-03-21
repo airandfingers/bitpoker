@@ -285,9 +285,9 @@ module.exports = (function () {
       first_card = self.deck.deal();
       second_card = self.deck.deal();
       player.receiveHand(first_card, second_card);
-      player.sendMessage('hand_dealt', player.hand);
+      player.sendMessage('hole_cards_dealt', player.hand);
     });
-    this.broadcast('cards_dealt', this.community, this.players);
+    this.broadcast('hands_dealt', this.players);
     this.nextStage();
   };
 
@@ -380,19 +380,19 @@ module.exports = (function () {
 
   static_properties.stage_handlers.flopping = function() {
     this.community.push(this.deck.deal(), this.deck.deal(), this.deck.deal());
-    this.broadcast('cards_dealt', this.community, this.players);
+    this.broadcast('community_dealt', this.community, this.players);
     this.nextStage();
   };
 
   static_properties.stage_handlers.turning = function() {
     this.community.push(this.deck.deal());
-    this.broadcast('cards_dealt', this.community, this.players);
+    this.broadcast('community_dealt', this.community, this.players);
     this.nextStage();
   };
 
   static_properties.stage_handlers.rivering = function() {
     this.community.push(this.deck.deal());
-    this.broadcast('cards_dealt', this.community, this.players);
+    this.broadcast('community_dealt', this.community, this.players);
     this.nextStage();
   };
 
@@ -428,9 +428,6 @@ module.exports = (function () {
       , num_players = self.players.length;
     if (num_players > Round.MIN_PLAYERS) {
       console.error(num_players + ' players in at cleanup!', self.players);
-    }
-    if (self.pot > 0) {
-      console.error('Round has a pot during cleanup!', self.pot);
     }
     console.log('Round over! Notifying players...');
     _.each(self.players, function(player) {
