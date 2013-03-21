@@ -268,13 +268,6 @@ module.exports = (function () {
       console.log('Blinds not paid!', SMALL_BLIND_PAID, BIG_BLIND_PAID, self.players);
       self.toStage('done');
     }
-
-    /*if (! player.blind_paid) {
-      player.prompt(['post_blind', 'sit_out'], Round.TIMEOUT, function(action, num_chips) {
-        console.log('Player.prompt returns', action, num_chips);
-        self.nextStage();
-      });
-    }*/
   };
 
   static_properties.stage_handlers.dealing = function() {
@@ -295,6 +288,13 @@ module.exports = (function () {
   static_properties.stage_handlers.betting_postflop  =
   static_properties.stage_handlers.betting_preriver  =
   static_properties.stage_handlers.betting_postriver = function() {
+    // reset high_bet and to_act values
+    if (! this.isInStage('betting_preflop')) {
+      console.log('Not in betting_preflop, so resetting high_bet and to_act');
+      this.high_bet = 0;
+      this.to_act = 0;
+    }
+
     var self = this
       , player = self.currentPlayer()
       , min_bet
@@ -302,12 +302,6 @@ module.exports = (function () {
       , max_raise
       , actions
       , default_action;
-
-    console.log(self.stage_num, self.isInStage('betting_preflop'));
-    if (! self.isInStage('betting_preflop')) {
-      self.high_bet = 0;
-      self.to_act = 0;
-    }
 
     async.whilst(
       function() { // test
@@ -380,31 +374,29 @@ module.exports = (function () {
 
   static_properties.stage_handlers.flopping = function() {
     this.community.push(this.deck.deal(), this.deck.deal(), this.deck.deal());
-    this.broadcast('community_dealt', this.community, this.players);
+    this.broadcast('community_dealt', this.community);
     this.nextStage();
   };
 
   static_properties.stage_handlers.turning = function() {
     this.community.push(this.deck.deal());
-    this.broadcast('community_dealt', this.community, this.players);
+    this.broadcast('community_dealt', this.community);
     this.nextStage();
   };
 
   static_properties.stage_handlers.rivering = function() {
     this.community.push(this.deck.deal());
-    this.broadcast('community_dealt', this.community, this.players);
+    this.broadcast('community_dealt', this.community);
     this.nextStage();
   };
 
   static_properties.stage_handlers.showing_down = function() {
     var self = this;
     console.log('Choosing the first-to-act player as the "winner"!');
+    //TODO: actually calculate winner
     _.each(self.players, function(player, index) {
       if (_.isUndefined(self.winner)) {
         self.winner = index;
-      }
-      else {
-        self.playerOut(index);
       }
     });
     self.nextStage();
@@ -418,8 +410,8 @@ module.exports = (function () {
     }
     console.log(this.winner, 'wins!', winning_player, this.pot);
     winning_player.win(this.pot);
-    var winning_player_obj = winning_player.toObject(true);
-    this.broadcast('round_ends', [winning_player_obj], this.pot)
+    var player_objs = _.map(this.players, function(player) { return player.toObject(true); });
+    this.broadcast('round_ends', player_objs);
     this.nextStage();
   };
 
