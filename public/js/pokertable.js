@@ -19,6 +19,7 @@
         this.gameState.seats = []
         for(var i = 0;i<maxSeats;i++){
              this.gameState.seats[i]={}
+             this.gameState.seats[i].displayMessageType = 'emptySeat'
         }
         this.images = {}
         this.images.backgroundContainer = new createjs.Container()
@@ -100,7 +101,7 @@ this.positionBitmap=function(){
  this.images.itemAsBitmap = function (item,imageSource){
     var tempImage= new Image()
     tempImage.src = imageSource
-    item.image = new createjs.Bitmap(this.tempImage)
+    item.image = new createjs.Bitmap(tempImage)
     item.positionBitmap()
     item.image.parentOfImageObject = item
             }
@@ -258,6 +259,8 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
          
          this.seats[i].emptySeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y)
          this.seats[i].action = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y)
+         this.seats[i].countdown = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y)
+         this.seats[i].winner = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y)
 
      }
      //corresponding hole cards
@@ -332,6 +335,10 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
             this.addItemText(this.seats[i].bet,'', "14px Arial", "#FFFFFF")
             //action
             this.addItemText(this.seats[i].action,'','20px Arial','#FFFFFF')
+            //countdown
+            this.addItemText(this.seats[i].countdown,'','20px Arial','#FFFFFF')
+            //winner
+             this.addItemText(this.seats[i].winner,'','20px Arial','#FFFFFF')
         }
         
         //action buttons
@@ -394,7 +401,6 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
         
          this.images.seats[seatNumber].bet.text.text = chips
            this.displayChildren(this.images.seats[seatNumber].bet)
-           this.stage.update()
 
     }
 
@@ -416,27 +422,25 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
         
         parentOfImageObject.text.text= cardText
             this.displayChildren(parentOfImageObject)
-            this.stage.update()
     }
 
     this.displayPot = function (potSize){
 this.images.pot.text.text = 'pot: '+potSize
    this.displayChildren(this.images.pot)
-           this.stage.update()
     }
 
     this.playerSits = function(seatNumber, playerName, chips){
+        this.gameState.seats[seatNumber].displayMessageType = 'seat'
         this.hideChildren(this.images.seats[seatNumber].emptySeat)
         this.images.seats[seatNumber].seat.text.text =  playerName+'\n'+chips
            this.displayChildren(this.images.seats[seatNumber].seat)
-           this.stage.update()
 
     }
 
      this.playerStands = function(seatNumber){
+          this.gameState.seats[seatNumber].displayMessageType = 'emptySeat'
         this.hideChildren(this.images.seats[seatNumber].seat)
         this.displayChildren(this.images.seats[seatNumber].emptySeat)
-        this.stage.update()
     }
 
     this.displayHoleCards = function (card0,card1){
@@ -527,10 +531,8 @@ this.hideChildren(this.images.betSlider.vertical)
          
         this.hideChildren(this.images.seats[i].hiddenCard0)
         this.hideChildren(this.images.seats[i].hiddenCard1)
-        if(i === this.gameState.userSeatNumber){
         this.hideChildren(this.images.seats[i].shownCard0)
         this.hideChildren(this.images.seats[i].shownCard1)
-        }
 
      }
         self.removeAllBets()
@@ -573,68 +575,175 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
   })
     }
 
+    this.displayCorrectSeatMessage = function(seatNumber){
+        
+        switch (this.gameState.seats[seatNumber].displayMessageType){
+
+            case 'seat':
+            this.hideText(this.images.seats[seatNumber].action)
+            this.hideText(this.images.seats[seatNumber].winner)
+            this.hideText(this.images.seats[seatNumber].countdown)
+            this.displayText(this.images.seats[seatNumber].seat)
+             this.hideChildren(this.images.seats[seatNumber].emptySeat)
+            break;
+
+            case 'countdown':
+            this.hideText(this.images.seats[seatNumber].action)
+            this.hideText(this.images.seats[seatNumber].seat)
+            this.hideText(this.images.seats[seatNumber].winner)
+            this.displayText(this.images.seats[seatNumber].countdown)
+             this.hideChildren(this.images.seats[seatNumber].emptySeat)
+            break;
+
+            case 'action':
+            this.hideText(this.images.seats[seatNumber].winner)
+            this.hideText(this.images.seats[seatNumber].seat)
+            this.hideText(this.images.seats[seatNumber].countdown)
+            this.displayText(this.images.seats[seatNumber].action)
+             this.hideChildren(this.images.seats[seatNumber].emptySeat)
+            break;
+
+            case 'winner':
+            this.hideText(this.images.seats[seatNumber].action)
+            this.hideText(this.images.seats[seatNumber].seat)
+            this.hideText(this.images.seats[seatNumber].countdown)
+            this.displayText(this.images.seats[seatNumber].winner)
+            this.hideChildren(this.images.seats[seatNumber].emptySeat)
+            break;
+
+            case 'emptySeat':
+            this.hideText(this.images.seats[seatNumber].action)
+            this.hideText(this.images.seats[seatNumber].winner)
+            this.hideText(this.images.seats[seatNumber].countdown)
+            this.hideText(this.images.seats[seatNumber].seat)
+            this.displayChildren(this.images.seats[seatNumber].emptySeat)
+            break;
+
+            default:
+            this.hideText(this.images.seats[seatNumber].action)
+            this.hideText(this.images.seats[seatNumber].seat)
+            this.hideText(this.images.seats[seatNumber].countdown)
+            this.hideText(this.images.seats[seatNumber].winner)
+            this.hideChildren(this.images.seats[seatNumber].emptySeat)
+            break;
+
+            
+
+        }
+
+    }
+
 
     this.playerActs=function(seatNumber, actionText, fadeTimeInSeconds){
+
+        this.gameState.seats[seatNumber].displayMessageType = 'action'
+
+        self.images.seats[seatNumber].action.text.text = ''
+
+        //hide other messages on the seat box
+        self.displayCorrectSeatMessage(seatNumber)
+
         var interval = 100
         if(typeof fadeTimeInSeconds == 'number'){alpha = fadeTimeInSeconds}
         else{alpha = 2.5}
-       
-        
+
       var playerAction =   setInterval(function() {
 
-            self.hideText(self.images.seats[seatNumber].seat)
-            self.images.seats[seatNumber].action.text.text = actionText
-            if(alpha>1){self.images.seats[seatNumber].action.text.alpha = 1}
-            else{self.images.seats[seatNumber].action.text.alpha = alpha}
-            
-            self.displayText(self.images.seats[seatNumber].action)
-            alpha = alpha - interval/1000
-            if (alpha<=0){
+          if(self.gameState.seats[seatNumber].displayMessageType != 'action'||alpha<=0)
+          {
+                if(self.gameState.seats[seatNumber].displayMessageType === 'action'){self.gameState.seats[seatNumber].displayMessageType = 'seat'}
+                self.displayCorrectSeatMessage(seatNumber)
                 clearInterval(playerAction)
-                self.hideText(self.images.seats[seatNumber].action)
-                self.displayText(self.images.seats[seatNumber].seat)
             }
+
+        else if(alpha>1){
+                self.images.seats[seatNumber].action.text.alpha = 1
+                self.images.seats[seatNumber].action.text.text = actionText
+                self.stage.update()
+                }
+            else{
+                self.images.seats[seatNumber].action.text.alpha = alpha
+            self.images.seats[seatNumber].action.text.text = actionText
             self.stage.update()
+            }
+            
+            alpha = alpha - interval/1000
+
 }, interval)
     }
-    this.endCountdown = function(seatNumber){
+
+    this.playerWins =function(seatNumber, chipsWon, fadeTimeInSeconds){
         
-        this.gameState.seats[seatNumber].countdownOn = false
+        this.gameState.seats[seatNumber].displayMessageType === 'winner'
+
+
+         self.images.seats[seatNumber].winner.text.text = ''
+                  //hide other messages on the seat box
+self.displayCorrectSeatMessage(seatNumber)
+
+         var interval = 100
+        if(typeof fadeTimeInSeconds == 'number'){alpha = fadeTimeInSeconds}
+        else{alpha = 2.5}
+
+
+      var declareWinner =   setInterval(function() {
+
+          if(self.gameState.seats[seatNumber].displayMessageType != 'winner'||alpha<=0)
+          {
+                if(self.gameState.seats[seatNumber].displayMessageType === 'winner'){self.gameState.seats[seatNumber].displayMessageType = 'seat'}
+                self.displayCorrectSeatMessage(seatNumber)
+                clearInterval(declareWinner)
+            }
+            
+            
+            else if(alpha>1){
+                self.images.seats[seatNumber].winner.text.alpha = 1
+                self.images.seats[seatNumber].winner.text.text = 'Wins '+chipsWon
+                self.stage.update()
+                }
+            else{
+                self.images.seats[seatNumber].winner.text.alpha = alpha
+            self.images.seats[seatNumber].winner.text.text = 'Wins '+chipsWon
+            self.stage.update()
+            }
+            
+            alpha = alpha - interval/1000
+
+
+}, interval)
 
     }
+
+
  this.startCountdown = function(seatNumber, secondsToAct){
 
-      this.gameState.seats[seatNumber].countdownOn = true
-       self.hideText(self.images.seats[seatNumber].seat)
-       self.images.seats[seatNumber].action.text.text = ''
-       self.displayText(self.images.seats[seatNumber].action)
-     
-      var countdown = setInterval(function() {
-          if(self.gameState.seats[seatNumber].countdownOn){
+      this.gameState.seats[seatNumber].displayMessageType = 'countdown'
 
-   if ( secondsToAct>= 0){
-        self.images.seats[seatNumber].action.text.text = 'Time: '+secondsToAct
+         self.images.seats[seatNumber].countdown.text.text = ''
+                  //hide other messages on the seat box
+self.displayCorrectSeatMessage(seatNumber)
+
+      var countdown = setInterval(function() {
+          if(self.gameState.seats[seatNumber].displayMessageType != 'countdown'){clearInterval(countdown)}
+
+   else if ( secondsToAct>= 0){
+        self.images.seats[seatNumber].countdown.text.text = 'Time: '+secondsToAct
        secondsToAct=secondsToAct-1
        self.stage.update()
    }
 
    else{
-       self.hideText(self.images.seats[seatNumber].action)
-        self.displayText(self.images.seats[seatNumber].seat)
-        self.endCountdown(seatNumber)
+        if(self.gameState.seats[seatNumber].displayMessageType === 'countdown'){self.gameState.seats[seatNumber].displayMessageType = 'seat'}
+        self.displayCorrectSeatMessage(seatNumber)
         clearInterval(countdown)
        }
        
-   }
 
-   else{self.hideText(self.images.seats[seatNumber].action)}
    
-
-    
 }, 1000)
 
-    }
-     
+}
+
     //make sure to set buttonText as FALSE if you want to display the default text
   this.displayButton =  function (parentOfImageObject, buttonText, messages){
 
@@ -666,8 +775,9 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
         
 //hands dealt to non-user players
        socket.on('hands_dealt', function(players){
+           self.roundEnds()
            for(var i = 0; i<players.length;i++){
-               if(players[i]!=self.gameState.userSeatNumber){
+               if(players[i].seat!=self.gameState.userSeatNumber){
         self.displayHiddenCard(players[i].seat)
      }
       }
@@ -691,7 +801,6 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
 //player acts
        socket.on('player_acts', function(player, action, pot){
 
-        self.endCountdown(player.seat)
         self.playerActs(player.seat, action, 2)
 
         switch(action){
@@ -733,11 +842,7 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
         if(player.seat === self.gameState.userSeatNumber){self.hideAllActions(self.gameState.userSeatNumber)}
         //display updated potsize if necessary
         if(pot){self.displayPot(pot)}
-        //set countdownOn to false to disable countdown
-
-        
-        self.stage.update()
-     
+             
 })
 
 //player to act (not necessarily the user)
@@ -749,21 +854,21 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
          self.displayChildren(self.images.fold)
          self.displayButton(self.images.fold, false, ['act','fold'])
         }
-        if (actions[i].check !== undefined){
+       else if (actions[i].check !== undefined){
          self.displayChildren(self.images.check)
          self.displayButton(self.images.check,false,['act','check'])
          }
-         if (actions[i].call){
+      else   if (actions[i].call){
              self.images.call.text.text = 'Call '+actions[i].call
          self.displayChildren(holdemCanvas.images.call)
          self.displayButton(holdemCanvas.images.call,false,['act','call',actions[i].call])
          }
-         if (actions[i].raise){
+       else  if (actions[i].raise){
          self.displayChildren(self.images.raise)
          self.displayButton(self.images.raise,false,['act','raise', actions[i].raise[0]])
          self.showBetSlider(actions[i].raise[0],actions[i].raise[1],.01)
          }
-         if (actions[i].bet){
+      else   if (actions[i].bet){
          self.displayChildren(self.images.bet)
          self.displayButton(self.images.raise,false,['act','bet', actions[i].bet[0]])
          self.showBetSlider(actions[i].bet[0],actions[i].bet[1],.01)
@@ -815,12 +920,12 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
         self.displayShownCard(players[i].hand[1],self.images.seats[players[i].seat].shownCard1)
         self.playerSits(players[i].seat, players[i].username, players[i].chips)
         self.hideText(self.images.seats[players[i].seat].seat)
-        self.playerActs(players[i].seat, 'Wins '+players[i].chips_won)
+        self.playerWins(players[i].seat, players[i].chips_won)
 
         }
         
 
-        self.roundEnds()
+        
 
 })
 
@@ -843,12 +948,6 @@ jQuery(document).ready(function(){
        }
 
 holdemCanvas.activateSockets()
-//holdemCanvas.displayHiddenCard(4)
-//holdemCanvas.displayChildren(holdemCanvas.images.seats[4].hiddenCard0)
-//holdemCanvas.images.topContainer.addChild(holdemCanvas.images.seats[4].hiddenCard0.image)
-//console.log(holdemCanvas.images.seats[4].hiddenCard0)
-//console.log(holdemCanvas.stage.contains(holdemCanvas.images.seats[4].hiddenCard0.image))
-//holdemCanvas.stage.update
 
     })
 
