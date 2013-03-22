@@ -25,6 +25,8 @@ module.exports = (function () {
     }
     // the number of tables to initialize in setup
   , NUM_TABLES: 2
+    // how long (in ms) to wait between rounds
+  , ROUND_INTERIM: 1000
     // [this string] + table_id = room_name
   , TABLE_PREFIX: 'table_'
     // the messages a Table should react to, on each player's socket
@@ -142,14 +144,26 @@ module.exports = (function () {
     });
     console.log('Pushing new round onto rounds, with round_id: ', this.rounds.length);
     this.rounds.push(round);
+
+    round.onStage('waiting', function() {
+      if (_.keys(this.seats).length >= Round.MIN_PLAYERS) {
+        setTimeout(function() {
+          round.go();
+        }, Table.ROUND_INTERIM);
+      }
+      else {
+        self.setStatus(Table.STATUSES.WAITING);
+      }
+    });
+    
     round.onStage('done', function() {
       console.log('Round is over! Creating a new round in 1 second...');
       self.dealer = round.small_blind_seat || round.dealer;
       setTimeout(function() {
         self.newRound();
-        self.getCurrentRound().nextStage();
       }, 1000);
     });
+    return round;
   };
 
   TableSchema.methods.getCurrentRound = function(status) {
@@ -205,7 +219,7 @@ module.exports = (function () {
     if (this.hasStatus(Table.STATUSES.WAITING) && 
         _.keys(this.seats).length >= Round.MIN_PLAYERS) {
       this.setStatus(Table.STATUSES.GAME_IN_PROGRESS);
-      current_round.nextStage();
+      current_round.go();
     }
   };
 
@@ -224,7 +238,7 @@ module.exports = (function () {
 
     var player_obj = player.toObject();
     socket.broadcast.emit('player_stands', player_obj, seat_num, false);
-    socket.emit('player_stands', player_obj, true);
+    socket.emit('player_stands', player_obj, seat_num, true);
   };
 
   /* the model - a fancy constructor compiled from the schema:
