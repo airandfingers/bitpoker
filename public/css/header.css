@@ -20,7 +20,7 @@ header {
     font-size: 1em;
     padding: 0;
     margin: 0;
-    height: 26px;
+    height: 1.625em; /*26px/16px*/
 }
 
 .navbar ul {
