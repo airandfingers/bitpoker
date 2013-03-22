@@ -7,5 +7,16 @@
     <div>
     registration date: <%= registration_date %>
     </div>
+    <div>
+        <form action="/account" method="post">
+            email address: 
+                <% if (email === undefined) { %>
+                <input field="text" name="email" placeholder="enter e-mail address" />
+                <button> submit </button>
+                <% } else { %>
+                     <%= email %>
+                   <% } %>
+       </form>
+    </div>
     <% include plugins %>
 <% include foot %>

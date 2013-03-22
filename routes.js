@@ -14,6 +14,7 @@ module.exports = (function () {
       title: 'Account',
       username: req.user.username,
       registration_date: req.user.registration_date,
+      email: req.user.email,
     });
   });
 
@@ -79,6 +80,23 @@ module.exports = (function () {
     });
   });
 
+  // validate e-mail address & save to MongoDB
+  app.post('/account', function (req, res) {
+    var email = req.body.email
+      , valid = true; //this is a stub to hold the place for a email validator functionality. 
+      console.log("POST /account called " + req.body.email +"req.user is ", req.user);
+      console.log("req is ", req);
+    //if email is valid, save it to MondoDB
+    if (valid) {
+      //attach e-mail to user
+      User.update({ _id: req.user._id }, { $set: { email: email } }, function(err) {
+        if (err)
+          console.error('error when saving email to database.');
+        console.log("email saved to" + req.user.username + "'s account.");
+      });
+    }
+    res.redirect('/account'); 
+  });
 
   app.post('/login',
            passport.authenticate('local', 
