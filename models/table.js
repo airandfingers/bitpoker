@@ -158,6 +158,7 @@ module.exports = (function () {
     
     round.onStage('done', function() {
       console.log('Round is over! Creating a new round in 1 second...');
+      console.trace();
       self.dealer = round.small_blind_seat || round.dealer;
       setTimeout(function() {
         self.newRound();
