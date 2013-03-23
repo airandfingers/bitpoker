@@ -790,10 +790,6 @@ self.displayCorrectSeatMessage(seatNumber)
                    self.showInHandOptions()
         });
      
-//player to act
-       socket.on('player_to_act', function(seat_num, timeout){ 
-     self.startCountdown(seat_num,timeout)
-})
 
 
 //player acts
@@ -843,7 +839,7 @@ self.displayCorrectSeatMessage(seatNumber)
              
 })
 
-//player to act (not necessarily the user)
+//user to act 
  socket.on('act_prompt', function(actions, timeout){
 
      self.startCountdown(self.gameState.userSeatNumber,Math.round(timeout/1000))
@@ -863,7 +859,7 @@ self.displayCorrectSeatMessage(seatNumber)
          }
        else  if (actions[i].raise){
          self.displayChildren(self.images.raise)
-         self.displayButton(self.images.raise,false,['act','raise to '+actions[i].raise[0], actions[i].raise[0]])
+         self.displayButton(self.images.raise,'raise to '+actions[i].raise[0],['act','raise', actions[i].raise[0]])
          self.showBetSlider(actions[i].raise[0],actions[i].raise[1],.01)
          }
       else   if (actions[i].bet){
@@ -874,7 +870,14 @@ self.displayCorrectSeatMessage(seatNumber)
          }
          
 
-});
+})
+
+//player to act (not the user)
+ socket.on('player_to_act', function(player, timeout){
+
+     self.startCountdown(player.seat,Math.round(timeout/1000))
+     
+})
 
 
 
@@ -917,7 +920,6 @@ self.displayCorrectSeatMessage(seatNumber)
         self.displayShownCard(players[i].hand[0],self.images.seats[players[i].seat].shownCard0)
         self.displayShownCard(players[i].hand[1],self.images.seats[players[i].seat].shownCard1)
         self.playerSits(players[i].seat, players[i].username, players[i].chips)
-        self.hideText(self.images.seats[players[i].seat].seat)
         self.playerWins(players[i].seat, players[i].chips_won)
 
         }
