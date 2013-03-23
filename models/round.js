@@ -7,6 +7,9 @@ module.exports = (function () {
     , async = require('async') // sync/async control flow library
     
     , io = require('../sockets') // configured and listening Socket.IO
+
+    , PokerEvaluator = require('poker-evaluator')
+    , evaluator = new PokerEvaluator('./node_modules/poker-evaluator/HandRanks.dat')
     
     , db = require('./db') // make sure mongoose is connected
 
@@ -44,12 +47,14 @@ module.exports = (function () {
   , stage_handlers: {}
     // all the tables in the world (should this be private?)
   , tables: {}
-    // how long (in ms) to wait for players to respond to prompts
-  , TIMEOUT: 10000
     // how many chips the big blind costs
   , SMALL_BLIND: 10
     // how many chips the small blind costs
   , BIG_BLIND: 20
+    // how long (in ms) to wait for players to respond to prompts
+  , TIMEOUT: 10000
+    // how long (in ms) to wait for players to respond to prompts
+  , DISPLAY_HANDS_DURATION: 5000
   };
 
   /* the schema - defines the "shape" of the documents:
@@ -104,8 +109,6 @@ module.exports = (function () {
     self.deck = Deck.createDeck({});
 
     _.each(Round.stage_handlers, function(handler, stage_name) {
-      /* from when stage_handers were names of instance methods
-      handler = self[handler_name];*/
       self.onStage(stage_name, handler);
     });
 
@@ -201,13 +204,14 @@ module.exports = (function () {
     if (! this.isInStage('betting_preflop')) {
       console.log('Not in betting_preflop, so resetting high_bet and to_act');
       this.high_bet = 0;
-      this.to_act = 0;
+      this.to_act = this.first_to_act;
     }
 
     var self = this
       , player = self.currentPlayer()
       , min_bet
       , last_raise = Round.BIG_BLIND
+      , min_raise
       , max_raise
       , actions
       , default_action;
@@ -223,13 +227,15 @@ module.exports = (function () {
       },
       function(cb) { // loop body
         min_bet = self.high_bet - player.current_bet;
+        min_raise = min_bet + last_raise;
         max_raise = player.chips - min_bet;
         actions = [{ fold: null }];
         default_action = 'fold';
         if (min_bet > 0) { actions.push({ call: min_bet }); }
         else { actions.push({ check: null }); default_action = 'check'; }
-        if (max_raise > last_raise) { actions.push({ raise: [last_raise, max_raise] } ); }
+        if (max_raise > last_raise) { actions.push({ raise: [min_raise, max_raise] } ); }
         console.log('Prompting', player.username, actions, Round.TIMEOUT, default_action);
+        self.broadcast('player_to_act', player.toObject(), Round.TIMEOUT);
         player.prompt(actions, Round.TIMEOUT, default_action, function(action, num_chips) {
           console.log(player.username, 'acted!', action, num_chips);
           if (! _.any(actions, function(action_obj) { return (action_obj[action] !== undefined); })) {
@@ -246,15 +252,16 @@ module.exports = (function () {
             player.makeBet(min_bet);
             break;
           case 'raise':
-            if (num_chips < last_raise) {
+            if (num_chips < min_raise) {
               console.error('Player raised with less than last_raise!', num_chips, last_raise);
             }
             else if (num_chips > max_raise) {
               console.error('Player raised with more than max_raise!', num_chips, max_raise);
             }
-            self.high_bet += num_chips;
-            player.makeBet(min_bet + num_chips);
-            last_raise = num_chips;
+            var raise = num_chips - min_bet;
+            self.high_bet += raise;
+            player.makeBet(num_chips);
+            last_raise = raise;
             break;
           case 'fold':
             self.playerOut(self.to_act);
@@ -275,7 +282,7 @@ module.exports = (function () {
         else {
           console.log('Not enough players to continue to next stage!', self.players);
           self.winner = 0;
-          self.toStage('paying_out');
+          self.toStage('paying_out', [{ player: self.players[self.winner] }]);
         }
       }
     );
@@ -300,28 +307,40 @@ module.exports = (function () {
   };
 
   static_properties.stage_handlers.showing_down = function() {
-    var self = this;
-    console.log('Choosing the first-to-act player as the "winner"!');
-    //TODO: actually calculate winner
-    _.each(self.players, function(player, index) {
-      if (_.isUndefined(self.winner)) {
-        self.winner = index;
-      }
+    var self = this
+      , whole_hand
+      , res
+      , results = _.map(self.players, function(player) {
+          whole_hand = _.union(player.hand, self.community);
+          res = evaluator.evalHand(whole_hand);
+          console.log(whole_hand, 'evaluated as', res);
+          res.player = player;
+          return res;
     });
-    self.nextStage();
+    //console.log('results is', results);
+    results = _.groupBy(results, function(result) {
+      return (result.handType << 12) + result.handRank;
+    });
+    //console.log('grouped results:', results);
+    var high_hand = _.max(_.keys(results), function(value) {
+      return parseInt(value, 10);
+    });
+    results = results[high_hand];
+    self.nextStage(results);
   };
 
-  static_properties.stage_handlers.paying_out = function() {
-    var winning_player = this.players[this.winner];
-    if (! winning_player instanceof Player) {
-      console.error('payout called when this.winner is ', this.winner, '!', winning_player);
-      return;
-    }
-    console.log(this.winner, 'wins!', winning_player, this.pot);
-    winning_player.win(this.pot);
-    var player_objs = _.map(this.players, function(player) { return player.toObject(true); });
-    this.broadcast('round_ends', player_objs);
-    this.nextStage();
+  static_properties.stage_handlers.paying_out = function(winner_results) {
+    var self = this
+      , chips_won = Math.floor(self.pot / winner_results.length);
+    console.log('winner(s):', winner_results, ', chips_won:', chips_won);
+    _.each(winner_results, function(winner_result) {
+      winner_result.player.win(chips_won);
+    });
+    var player_objs = _.map(self.players, function(player) { return player.toObject(true); });
+    self.broadcast('hands_shown', player_objs);
+    setTimeout(function() {
+      self.nextStage();
+    }, Round.DISPLAY_HANDS_DURATION);
   };
 
   static_properties.stage_handlers.done = function() {
@@ -342,7 +361,10 @@ module.exports = (function () {
       return;
     }
     else {
-      this.toStage(this.stage_num + 1);
+      var args_array = [].slice.apply(arguments)
+        , next_stage_num = this.stage_num + 1;
+      args_array.unshift(next_stage_num);
+      this.toStage.apply(this, args_array);
     }
   };
 
@@ -358,7 +380,10 @@ module.exports = (function () {
     else {
       this.stage_num = stage_num;
       console.log('*Stage: ' + stage_name + '*');
-      this.emit('stage_' + stage_name);
+      var args_array = [].slice.apply(arguments)
+        , event_name = 'stage_' + stage_name;
+      args_array[0] = event_name;
+      this.emit.apply(this, args_array);
     }
   };
 
@@ -400,6 +425,7 @@ module.exports = (function () {
       }
       first_round = false;
     }
+    self.first_to_act = self.players.length > 2 ? 0 : 1;
     console.log('calculated players:', self.players, 'small_blind_seat:', self.small_blind_seat);
   };
 

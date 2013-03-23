@@ -90,10 +90,6 @@ module.exports = (function () {
     this.hand.push(second_card);
   };
 
-  PlayerSchema.methods.returnHand = function() {
-    this.hand = [];
-  };
-
   PlayerSchema.methods.prompt = function(actions, timeout, default_action, cb) {
     var self = this
       , act_timeout;
@@ -121,14 +117,11 @@ module.exports = (function () {
     return this.has_acted[stage] || false;
   };
 
-  PlayerSchema.methods.resetHasActed = function() {
-    this.has_acted = {};
-  };
-
   PlayerSchema.methods.roundOver = function() {
     this.returnBet();
-    this.returnHand();
-    this.resetHasActed();
+    this.hand = [];
+    this.has_acted = {};
+    this.chips_won = 0;
   };
 
   PlayerSchema.methods.sendMessage = function() {

@@ -9,7 +9,7 @@
             </div>
             <form id="chat_form">
                 <input type="text" id="chat_sender" placeholder="My Name" 
-                    <% if (locals.username) { %>
+                    <% if (locals !== undefined && locals.username) { %>
                         value="<%= locals.username %>"
                     <% } %>
                 />
