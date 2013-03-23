@@ -775,7 +775,7 @@ self.displayCorrectSeatMessage(seatNumber)
         
 //hands dealt to non-user players
        socket.on('hands_dealt', function(players){
-           self.roundEnds()
+           
            for(var i = 0; i<players.length;i++){
                if(players[i].seat!=self.gameState.userSeatNumber){
         self.displayHiddenCard(players[i].seat)
@@ -786,7 +786,7 @@ self.displayCorrectSeatMessage(seatNumber)
 
 //hand dealt to user
        socket.on('hole_cards_dealt', function(hand){
-
+           self.roundEnds()
                    self.displayShownCard(hand[0],self.images.seats[self.gameState.userSeatNumber].shownCard0)
         self.displayShownCard(hand[1],self.images.seats[self.gameState.userSeatNumber].shownCard1)
                    self.showInHandOptions()
