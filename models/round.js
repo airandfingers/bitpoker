@@ -47,12 +47,14 @@ module.exports = (function () {
   , stage_handlers: {}
     // all the tables in the world (should this be private?)
   , tables: {}
-    // how long (in ms) to wait for players to respond to prompts
-  , TIMEOUT: 10000
     // how many chips the big blind costs
   , SMALL_BLIND: 10
     // how many chips the small blind costs
   , BIG_BLIND: 20
+    // how long (in ms) to wait for players to respond to prompts
+  , TIMEOUT: 10000
+    // how long (in ms) to wait for players to respond to prompts
+  , DISPLAY_HANDS_DURATION: 5000
   };
 
   /* the schema - defines the "shape" of the documents:
@@ -209,6 +211,7 @@ module.exports = (function () {
       , player = self.currentPlayer()
       , min_bet
       , last_raise = Round.BIG_BLIND
+      , min_raise
       , max_raise
       , actions
       , default_action;
@@ -224,12 +227,13 @@ module.exports = (function () {
       },
       function(cb) { // loop body
         min_bet = self.high_bet - player.current_bet;
+        min_raise = min_bet + last_raise;
         max_raise = player.chips - min_bet;
         actions = [{ fold: null }];
         default_action = 'fold';
         if (min_bet > 0) { actions.push({ call: min_bet }); }
         else { actions.push({ check: null }); default_action = 'check'; }
-        if (max_raise > last_raise) { actions.push({ raise: [last_raise, max_raise] } ); }
+        if (max_raise > last_raise) { actions.push({ raise: [min_raise, max_raise] } ); }
         console.log('Prompting', player.username, actions, Round.TIMEOUT, default_action);
         self.broadcast('player_to_act', player.toObject(), Round.TIMEOUT);
         player.prompt(actions, Round.TIMEOUT, default_action, function(action, num_chips) {
@@ -248,15 +252,16 @@ module.exports = (function () {
             player.makeBet(min_bet);
             break;
           case 'raise':
-            if (num_chips < last_raise) {
+            if (num_chips < min_raise) {
               console.error('Player raised with less than last_raise!', num_chips, last_raise);
             }
             else if (num_chips > max_raise) {
               console.error('Player raised with more than max_raise!', num_chips, max_raise);
             }
-            self.high_bet += num_chips;
-            player.makeBet(min_bet + num_chips);
-            last_raise = num_chips;
+            var raise = num_chips - min_bet;
+            self.high_bet += raise;
+            player.makeBet(num_chips);
+            last_raise = raise;
             break;
           case 'fold':
             self.playerOut(self.to_act);
@@ -325,14 +330,17 @@ module.exports = (function () {
   };
 
   static_properties.stage_handlers.paying_out = function(winner_results) {
-    var chips_won = Math.floor(this.pot / winner_results.length);
+    var self = this
+      , chips_won = Math.floor(self.pot / winner_results.length);
     console.log('winner(s):', winner_results, ', chips_won:', chips_won);
     _.each(winner_results, function(winner_result) {
       winner_result.player.win(chips_won);
     });
-    var player_objs = _.map(this.players, function(player) { return player.toObject(true); });
-    this.broadcast('round_ends', player_objs);
-    this.nextStage();
+    var player_objs = _.map(self.players, function(player) { return player.toObject(true); });
+    self.broadcast('hands_shown', player_objs);
+    setTimeout(function() {
+      self.nextStage();
+    }, Round.DISPLAY_HANDS_DURATION);
   };
 
   static_properties.stage_handlers.done = function() {
