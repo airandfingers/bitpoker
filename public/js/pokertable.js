@@ -509,7 +509,7 @@ this.stage.update()
 
  }
 
- this.hideAllActions=function(seatNumber){
+ this.hideAllActionButtons=function(seatNumber){
 this.hideChildren(this.images.fold)
 this.hideChildren(this.images.call)
 this.hideChildren(this.images.check)
@@ -522,7 +522,7 @@ this.hideChildren(this.images.betSlider.vertical)
 
  }
 
- this.roundEnds = function(){
+ this.resetTable = function(){
      
 
      for(var i=0; i<this.images.community.length;i++){ this.hideChildren(this.images.community[i])}
@@ -645,7 +645,7 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
 
         var interval = 100
         if(typeof fadeTimeInSeconds == 'number'){alpha = fadeTimeInSeconds}
-        else{alpha = 2.5}
+        else{alpha = 2}
 
       var playerAction =   setInterval(function() {
 
@@ -676,9 +676,8 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
         
         this.gameState.seats[seatNumber].displayMessageType === 'winner'
 
-
          self.images.seats[seatNumber].winner.text.text = ''
-                  //hide other messages on the seat box
+          //hide other messages on the seat box
 self.displayCorrectSeatMessage(seatNumber)
 
          var interval = 100
@@ -694,7 +693,6 @@ self.displayCorrectSeatMessage(seatNumber)
                 self.displayCorrectSeatMessage(seatNumber)
                 clearInterval(declareWinner)
             }
-            
             
             else if(alpha>1){
                 self.images.seats[seatNumber].winner.text.alpha = 1
@@ -786,7 +784,7 @@ self.displayCorrectSeatMessage(seatNumber)
 
 //hand dealt to user
        socket.on('hole_cards_dealt', function(hand){
-           self.roundEnds()
+           
                    self.displayShownCard(hand[0],self.images.seats[self.gameState.userSeatNumber].shownCard0)
         self.displayShownCard(hand[1],self.images.seats[self.gameState.userSeatNumber].shownCard1)
                    self.showInHandOptions()
@@ -839,7 +837,7 @@ self.displayCorrectSeatMessage(seatNumber)
         //show player's bet
         if(player.current_bet&&player.current_bet>0){self.playerPutsChipsInPot(player.seat,player.current_bet)}
         //if player is current user, hide action buttons
-        if(player.seat === self.gameState.userSeatNumber){self.hideAllActions(self.gameState.userSeatNumber)}
+        if(player.seat === self.gameState.userSeatNumber){self.hideAllActionButtons(self.gameState.userSeatNumber)}
         //display updated potsize if necessary
         if(pot){self.displayPot(pot)}
              
@@ -865,12 +863,12 @@ self.displayCorrectSeatMessage(seatNumber)
          }
        else  if (actions[i].raise){
          self.displayChildren(self.images.raise)
-         self.displayButton(self.images.raise,false,['act','raise', actions[i].raise[0]])
+         self.displayButton(self.images.raise,false,['act','raise to '+actions[i].raise[0], actions[i].raise[0]])
          self.showBetSlider(actions[i].raise[0],actions[i].raise[1],.01)
          }
       else   if (actions[i].bet){
          self.displayChildren(self.images.bet)
-         self.displayButton(self.images.raise,false,['act','bet', actions[i].bet[0]])
+         self.displayButton(self.images.raise,false,['act','bet '+actions[i].bet[0], actions[i].bet[0]])
          self.showBetSlider(actions[i].bet[0],actions[i].bet[1],.01)
          }
          }
@@ -914,7 +912,7 @@ self.displayCorrectSeatMessage(seatNumber)
 
 
 //round ends, all hole cards are shown
-       socket.on('round_ends', function(players){
+       socket.on('hands_shown', function(players){
            for(var i =0;i<players.length;i++){
         self.displayShownCard(players[i].hand[0],self.images.seats[players[i].seat].shownCard0)
         self.displayShownCard(players[i].hand[1],self.images.seats[players[i].seat].shownCard1)
@@ -928,7 +926,16 @@ self.displayCorrectSeatMessage(seatNumber)
         
 
 })
+self.resetTable()
 
+//reset table
+socket.on('reset_table', function(players){
+          self.resetTable()
+        
+
+        
+
+})
     }
     }
 
