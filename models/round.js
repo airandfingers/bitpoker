@@ -233,7 +233,8 @@ module.exports = (function () {
         default_action = 'fold';
         if (min_bet > 0) { actions.push({ call: min_bet }); }
         else { actions.push({ check: null }); default_action = 'check'; }
-        if (max_raise > last_raise) { actions.push({ raise: [min_raise, max_raise] } ); }
+        if (self.high_bet === 0 && max_raise > 0) { actions.push({ bet: [min_raise, max_raise] }); }
+        else if (max_raise > last_raise) { actions.push({ raise: [min_raise, max_raise] }); }
         console.log('Prompting', player.username, actions, Round.TIMEOUT, default_action);
         self.broadcast('player_to_act', player.toObject(), Round.TIMEOUT);
         player.prompt(actions, Round.TIMEOUT, default_action, function(action, num_chips) {
@@ -251,6 +252,7 @@ module.exports = (function () {
             }
             player.makeBet(min_bet);
             break;
+          case 'bet':
           case 'raise':
             if (num_chips < min_raise) {
               console.error('Player raised with less than last_raise!', num_chips, last_raise);

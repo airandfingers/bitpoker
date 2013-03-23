@@ -103,7 +103,7 @@ module.exports = (function () {
     });
     act_timeout = setTimeout(function() {
       console.log(self.username, 'fails to respond within', timeout, 'ms');
-      self.removeAllListeners('act');
+      self.socket.removeAllListeners('act');
       console.log('calling back with', default_action);
       cb(default_action);
     }, timeout);
