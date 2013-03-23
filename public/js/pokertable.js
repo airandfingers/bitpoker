@@ -9,8 +9,6 @@
         this.stage.enableMouseOver()
             this.events = {}
        // this.canvas.addEventListener("mouseup", this.filler, false)
-  
-
     // self.stage.removeChild(self.stage.getObjectUnderPoint(event.stageX,event.stageY))
   
         this.gameState = {}
@@ -22,12 +20,15 @@
              this.gameState.seats[i].displayMessageType = 'emptySeat'
         }
         this.images = {}
-        this.images.backgroundContainer = new createjs.Container()
-       this.images.bottomContainer = new createjs.Container()
-       this.images.topContainer = new createjs.Container()
-       this.stage.addChild(this.images.backgroundContainer)
-       this.stage.addChild(this.images.bottomContainer)
-       this.stage.addChild(this.images.topContainer)
+        this.images.containers = []
+        this.images.containers[0] = new createjs.Container()
+       this.images.containers[1] = new createjs.Container()
+       this.images.containers[2] = new createjs.Container()
+       this.images.containers[3] = new createjs.Container()
+       this.stage.addChild(this.images.containers[0])
+       this.stage.addChild(this.images.containers[1])
+       this.stage.addChild(this.images.containers[2])
+       this.stage.addChild(this.images.containers[3])
           this.images.sources = {
             call: 'img/call.jpg',
             check: 'img/check.jpg',
@@ -265,11 +266,11 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
      }
      //corresponding hole cards
         for (var i = 0; i < this.seats.length; i = i + 1){
-            this.seats[i].hiddenCard0 = new this.Item(this.seats[i].seat.position.x - 1, this.seats[i].seat.position.y - 68, cardWidth, cardHeight)
-            this.seats[i].hiddenCard1 = new this.Item(this.seats[i].seat.position.x + 45, this.seats[i].seat.position.y - 68, cardWidth, cardHeight)
+            this.seats[i].hiddenCard0 = new this.Item(this.seats[i].seat.position.x - 1, this.seats[i].seat.position.y - 48, cardWidth, cardHeight)
+            this.seats[i].hiddenCard1 = new this.Item(this.seats[i].seat.position.x + 45, this.seats[i].seat.position.y - 48, cardWidth, cardHeight)
 
-            this.seats[i].shownCard0 = new this.Item(this.seats[i].seat.position.x - 1, this.seats[i].seat.position.y - 68, cardWidth, cardHeight)
-            this.seats[i].shownCard1 = new this.Item(this.seats[i].seat.position.x + 45, this.seats[i].seat.position.y - 68, cardWidth, cardHeight)
+            this.seats[i].shownCard0 = new this.Item(this.seats[i].seat.position.x - 1, this.seats[i].seat.position.y - 48, cardWidth, cardHeight)
+            this.seats[i].shownCard1 = new this.Item(this.seats[i].seat.position.x + 45, this.seats[i].seat.position.y - 48, cardWidth, cardHeight)
           }
 
      // initial positions of player's chips entering pot
@@ -323,7 +324,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
             this.itemAsRectangle(this.seats[i].seat, "#000000")
             this.addItemText(this.seats[i].seat,'','13px Arial','#FFFFFF' )
             this.itemAsRectangle(this.seats[i].emptySeat, "#000000")
-            this.addItemText(this.seats[i].emptySeat,'click to sit','16px tahoma','#FFFFFF' )
+            this.addItemText(this.seats[i].emptySeat,'take a seat','15px arial','#FFFFFF' )
             //hole cards
             this.itemAsBitmap(this.seats[i].hiddenCard0, this.sources.hiddenCard)
             this.itemAsBitmap(this.seats[i].hiddenCard1, this.sources.hiddenCard)
@@ -368,7 +369,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
         var asdf = new Image ()
         asdf.src  = this.images.sources.background
         this.images.background.image = new createjs.Bitmap(asdf)
-        this.images.backgroundContainer.addChild(this.images.background.image)
+        this.images.containers[0].addChild(this.images.background.image)
     }
 
 
@@ -410,18 +411,17 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
     this.stage.update()
     }
 
-
     //rotates positions of players seats and their hole cards n times clockwise
     this.images.rotateSeats = function (n){
 
     }
     
-
-
     this.displayShownCard = function (cardText,parentOfImageObject){
         
         parentOfImageObject.text.text= cardText
-            this.displayChildren(parentOfImageObject)
+            this.displayChildren(parentOfImageObject,1)
+            console.log(this.images.containers[1].contains(parentOfImageObject.image))
+            console.log(this.images.containers[2].contains(parentOfImageObject.image))
     }
 
     this.displayPot = function (potSize){
@@ -465,48 +465,57 @@ this.images.pot.text.text = 'pot: '+potSize
     }
  
     //parameter is parent of the actual Image object
-    this.displayImage = function (parentOfImageObject){
+    this.displayImage = function (parentOfImageObject, containerIndex){
         if(parentOfImageObject.image){
-            this.images.bottomContainer.addChild(parentOfImageObject.image)
+            if(containerIndex){
+            this.images.containers[containerIndex].addChild(parentOfImageObject.image)
+            }
+            else
+            {this.images.containers[2].addChild(parentOfImageObject.image)}
+
             this.stage.update()
             }
     }
     
     this.displayText = function (parentOfTextObject){
         if(parentOfTextObject.text){
-            this.images.topContainer.addChild(parentOfTextObject.text)
+            this.images.containers[3].addChild(parentOfTextObject.text)
             this.stage.update()
             }
     }
 
-    this.displayChildren = function(parent){
+    this.displayChildren = function(parent, imageContainerIndex){
         if(parent instanceof this.images.Item){
-        this.displayImage(parent)
+            if(imageContainerIndex){this.displayImage(parent, imageContainerIndex)}
+           else{this.displayImage(parent)}
          this.displayText(parent)
         }
  }
 
  this.displayHiddenCard =function(seatNumber){
-     this.displayChildren(this.images.seats[seatNumber].hiddenCard0)
-     this.displayChildren(this.images.seats[seatNumber].hiddenCard1)
+     this.displayChildren(this.images.seats[seatNumber].hiddenCard0,1)
+     this.displayChildren(this.images.seats[seatNumber].hiddenCard1,1)
 
  }
     this.hideText = function(parent){
-        if(this.stage.contains(parent.text)){this.images.topContainer.removeChild(parent.text)}
+        if(this.stage.contains(parent.text)){this.images.containers[3].removeChild(parent.text)}
 this.stage.update()
         }
 
  
  this.hideImage = function(parent){
-      if(this.stage.contains(parent.image)){this.images.bottomContainer.removeChild(parent.image)}
+      if(this.stage.contains(parent.image)){
+
+              this.images.containers[2].removeChild(parent.image)
+              this.images.containers[1].removeChild(parent.image)
+          }
+
 this.stage.update()
         }
 
- 
  this.hideChildren = function(parent){
           this.hideImage(parent)
           this.hideText(parent)
-
  }
 
  this.hideAllActionButtons=function(seatNumber){
@@ -751,7 +760,6 @@ self.displayCorrectSeatMessage(seatNumber)
       parentOfImageObject.image.onClick = this.events.onButtonClick
       parentOfImageObject.image.onPress = this.events.buttonMouseDown
      this.displayChildren(parentOfImageObject)
-   this.stage.update()
  
     }
 
@@ -860,16 +868,14 @@ self.displayCorrectSeatMessage(seatNumber)
        else  if (actions[i].raise){
          self.displayChildren(self.images.raise)
          self.displayButton(self.images.raise,'raise to '+actions[i].raise[0],['act','raise', actions[i].raise[0]])
-         self.showBetSlider(actions[i].raise[0],actions[i].raise[1],.01)
+         self.showBetSlider(actions[i].raise[0], actions[i].raise[1], .01)
          }
-      else   if (actions[i].bet){
+      else if (actions[i].bet){
          self.displayChildren(self.images.bet)
-         self.displayButton(self.images.raise,false,['act','bet '+actions[i].bet[0], actions[i].bet[0]])
-         self.showBetSlider(actions[i].bet[0],actions[i].bet[1],.01)
+         self.displayButton(self.images.bet,'bet '+actions[i].bet[0] ,['act','bet',actions[i].bet[0]])
+         self.showBetSlider(actions[i].bet[0], actions[i].bet[1], .01)
          }
          }
-         
-
 })
 
 //player to act (not the user)
@@ -928,14 +934,12 @@ self.displayCorrectSeatMessage(seatNumber)
         
 
 })
-self.resetTable()
 
 //reset table
 socket.on('reset_table', function(players){
           self.resetTable()
         
 
-        
 
 })
     }
@@ -957,7 +961,6 @@ jQuery(document).ready(function(){
        }
 
 holdemCanvas.activateSockets()
-
     })
 
 
