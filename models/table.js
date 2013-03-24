@@ -209,7 +209,7 @@ module.exports = (function () {
       socket.emit('error', 'Player is already sitting at the table!');
       return;
     }
-    player.chips = num_chips || 1000;
+    player.chips = num_chips;
     player.takeSeat(seat_num);
     this.seats[seat_num] = player;
 
@@ -241,6 +241,10 @@ module.exports = (function () {
     var player_obj = player.toObject();
     socket.broadcast.emit('player_stands', player_obj, seat_num, false);
     socket.emit('player_stands', player_obj, seat_num, true);
+  };
+
+  TableSchema.methods.getRoundState = function() {
+    return this.getCurrentRound().toObject();
   };
 
   /* the model - a fancy constructor compiled from the schema:

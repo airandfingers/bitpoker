@@ -15,8 +15,8 @@ module.exports = (function () {
      *   gets compiled into one or more models */
     , ClassSchema = new Schema({
     // instance properties
-      // this room's name and location
-      room_id : String 
+      // this instance's name and location
+      doc_id : String 
     });
 
   var static_properties = {
@@ -54,6 +54,17 @@ module.exports = (function () {
     console.log(this.room_id, 'broadcasting message', arguments);
     var sockets = io.sockets.in(this.room_id);
     sockets.emit.apply(sockets, arguments);
+  };
+
+  ClassSchema.methods.toObject = function(also_include) {
+    var self = this
+      , default_include = ['room_id']
+      , include = _.extend(default_include, also_include)
+      , doc_obj = {};
+    _.each(include, function(key) {
+      doc_obj[key] = self[key];
+    });
+    return doc_obj;
   };
 
   /* the model - a fancy constructor compiled from the schema:
