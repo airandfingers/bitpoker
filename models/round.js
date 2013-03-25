@@ -338,7 +338,9 @@ module.exports = (function () {
     _.each(winner_results, function(winner_result) {
       winner_result.player.win(chips_won);
     });
-    var player_objs = _.map(self.players, function(player) { return player.toObject(true); });
+    var player_objs = _.map(self.players, function(player) {
+      return player.toObject(['hand', 'chips_won']);
+    });
     self.broadcast('hands_shown', player_objs);
     setTimeout(function() {
       self.nextStage();
@@ -472,6 +474,20 @@ module.exports = (function () {
     if (this.to_act >= index) {
       this.to_act--;
     }
+  };
+
+  RoundSchema.methods.toObject = function(also_include) {
+    var self = this
+      , default_include = ['seats', 'stage_num', 'dealer',
+                           'small_blind_seat', 'players',
+                           'to_act', 'high_bet', 'pot',
+                           'winner', 'community', 'round_id']
+      , include = _.extend(default_include, also_include)
+      , round_obj = {};
+    _.each(include, function(key) {
+      round_obj[key] = self[key];
+    });
+    return round_obj;
   };
 
   /* the model - a fancy constructor compiled from the schema:

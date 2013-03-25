@@ -128,17 +128,15 @@ module.exports = (function () {
     this.socket.emit.apply(this.socket, arguments);
   };
 
-  PlayerSchema.methods.toObject = function(round_end) {
+  PlayerSchema.methods.toObject = function(also_include) {
     var self = this
-      , keys = ['username', 'seat', 'chips', 'auto_post_blinds', 'current_bet']
+      , default_include = ['username', 'seat', 'chips',
+                           'auto_post_blinds', 'current_bet']
+      , include = _.extend(default_include, also_include)
       , player_obj = {};
-    _.each(keys, function(key) {
+    _.each(include, function(key) {
       player_obj[key] = self[key];
     });
-    if (round_end === true) {
-      player_obj.hand = self.hand;
-      player_obj.chips_won = self.chips_won || 0;
-    }
     return player_obj;
   };
 

@@ -170,12 +170,26 @@ module.exports = (function () {
       , table = Table.getTable(table_id)
       , users = table.room.getUsers();
     console.log('User visits ' + table.name + '!', users);
-    if (table) {
+    if (table instanceof Table) {
+      var table_state = table.getRoundState();
       res.render('table', {
-        table_id: table_id,
-        users: users,
-        hide_navbar: true,
+        table_id: table_id
+      , users: users
+      , hide_navbar: true
+      , table_state: JSON.stringify(table_state)
       });
+    }
+    else {
+      next('No table with ID ' + table_id);
+    }
+  });
+
+  app.get('/table_state/:id', auth.ensureAuthenticated, function(req, res, next) {
+    var table_id = req.params.id
+      , table = Table.getTable(table_id);
+    if (table instanceof Table) {
+      var table_state = table.getRoundState();
+      res.json(table_state);
     }
     else {
       next('No table with ID ' + table_id);
