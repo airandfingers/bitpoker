@@ -32,7 +32,7 @@ module.exports = (function () {
       // which stages this player has acted in, in the current round
     , has_acted: { type: Schema.Types.Mixed, default: function() { return {}; } }
       // the number of chips thie player won this round, if any
-    , chips_won: Number
+    , chips_won: { type: Number, default: 0 }
     });
 
   var static_properties = {
@@ -132,7 +132,7 @@ module.exports = (function () {
     var self = this
       , default_include = ['username', 'seat', 'chips',
                            'auto_post_blinds', 'current_bet']
-      , include = _.extend(default_include, also_include)
+      , include = _.union(default_include, also_include || [])
       , player_obj = {};
     _.each(include, function(key) {
       player_obj[key] = self[key];
