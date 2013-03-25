@@ -56,7 +56,7 @@ module.exports = (function () {
     sockets.emit.apply(sockets, arguments);
   };
 
-  ClassSchema.methods.toObject = function(also_include) {
+  ClassSchema.methods.serialize = function(also_include) {
     var self = this
       , default_include = ['room_id']
       , include = _.extend(default_include, also_include)
