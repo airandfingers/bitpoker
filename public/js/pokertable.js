@@ -91,7 +91,7 @@ if(messages){this.messages = messages}
 this.drawRoundedRectangle = function(fillColor){
 this.image.graphics.beginFill(fillColor).drawRoundRect(this.position.x, this.position.y, this.size.x, this.size.y,this.size.y*.1)
             }
-this.positionBitmap=function(){
+this.positionImage=function(){
 
     this.image.x = this.position.x
     this.image.y = this.position.y
@@ -103,7 +103,7 @@ this.positionBitmap=function(){
     var tempImage= new Image()
     tempImage.src = imageSource
     item.image = new createjs.Bitmap(tempImage)
-    item.positionBitmap()
+    item.positionImage()
     item.image.parentOfImageObject = item
             }
     
@@ -262,6 +262,8 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
          this.seats[i].action = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y)
          this.seats[i].countdown = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y)
          this.seats[i].winner = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y)
+         //horizontal middle divider of the seat box
+         this.seats[i].horizontalDivider = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,1)
 
      }
      //corresponding hole cards
@@ -274,7 +276,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
           }
 
      // initial positions of player's chips entering pot
-     this.seats[0].bet = new this.Item(345,291,20,10)
+      this.seats[0].bet = new this.Item(345,291,20,10)
       this.seats[1].bet = new this.Item(215,291,20,10)
       this.seats[2].bet = new this.Item(137,227,20,10)
       this.seats[3].bet = new this.Item(137,153,20,10)
@@ -306,7 +308,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
 
     this.images.setDefaultImages = function (){
-        
+      
         //pot ****no image yet****
         this.addItemText(this.pot, '',"14px Arial", "#100D08")
         //this.itemAsBitmap(this.pot, this.sources.pot)
@@ -322,9 +324,9 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
          //seats 
         for (var i = 0; i < this.seats.length; i = i + 1){
             this.itemAsRectangle(this.seats[i].seat, "#000000")
-            this.addItemText(this.seats[i].seat,'','13px Arial','#FFFFFF' )
+            this.addItemText(this.seats[i].seat,'','11.5px Arial','#FFFFFF' )
             this.itemAsRectangle(this.seats[i].emptySeat, "#000000")
-            this.addItemText(this.seats[i].emptySeat,'take a seat','15px arial','#FFFFFF' )
+            this.addItemText(this.seats[i].emptySeat,'Open Seat','15px arial','#FFFFFF' )
             //hole cards
             this.itemAsBitmap(this.seats[i].hiddenCard0, this.sources.hiddenCard)
             this.itemAsBitmap(this.seats[i].hiddenCard1, this.sources.hiddenCard)
@@ -340,6 +342,9 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
             this.addItemText(this.seats[i].countdown,'','20px Arial','#FFFFFF')
             //winner
              this.addItemText(this.seats[i].winner,'','20px Arial','#FFFFFF')
+             //horizontal divider
+             this.seats[i].horizontalDivider.image = new createjs.Shape()
+             this.seats[i].horizontalDivider.image.graphics.beginStroke("#FFFFFF").moveTo(this.seats[i].horizontalDivider.position.x,this.seats[i].horizontalDivider.position.y).lineTo(this.seats[i].horizontalDivider.position.x+this.seats[i].horizontalDivider.size.x,this.seats[i].horizontalDivider.position.y)
         }
         
         //action buttons
@@ -378,7 +383,6 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
         //mouse events for changing bet sizes
          this.betSlider.vertical.image.onPress = self.events.betSliderVerticalMouseDown
          //this.betSlider.horizontal.image.onPress 
-
 
         //mouse events for clicking on empty seats
              for (var i = 0; i < this.seats.length; i = i + 1){
@@ -927,7 +931,6 @@ self.displayCorrectSeatMessage(seatNumber)
         self.displayShownCard(players[i].hand[1],self.images.seats[players[i].seat].shownCard1)
         self.playerSits(players[i].seat, players[i].username, players[i].chips)
         self.playerWins(players[i].seat, players[i].chips_won)
-
         }
         
 
