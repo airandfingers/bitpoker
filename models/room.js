@@ -110,10 +110,11 @@ module.exports = (function () {
     socket_list.emit.apply(socket_list, arguments);
   };
 
-  RoomSchema.methods.getUsers = function() {
+  RoomSchema.methods.getUsernames = function() {
     var sockets = io.sockets.clients(this.room_id)
-      , users = _.pluck(sockets, 'user');
-    return users;
+      , users = _.pluck(sockets, 'user')
+      , usernames = _.pluck(users, 'username');
+    return usernames;
   };
 
   /* the model - a fancy constructor compiled from the schema:

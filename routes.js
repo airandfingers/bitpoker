@@ -157,25 +157,27 @@ module.exports = (function () {
 
   app.get('/lobby', function(req, res) {
     var table_names = Table.getTableNames()
-      , users = Room.getRoom('lobby').getUsers();
+      , users = Room.getRoom('lobby').getUsernames()
+      , room_state = { users: users };
     console.log('User visits lobby!', users);
     res.render('lobby', {
       table_names: table_names
-    , users: users
+    , room_state : JSON.stringify(room_state)
     });
   });
 
   app.get('/' + Table.TABLE_PREFIX + ':id', auth.ensureAuthenticated, function(req, res, next) {
     var table_id = req.params.id
       , table = Table.getTable(table_id)
-      , users = table.room.getUsers();
+      , users = table.room.getUsernames()
+      , room_state = { users: users };
     console.log('User visits ' + table.name + '!', users);
     if (table instanceof Table) {
       var table_state = table.getRoundState();
       res.render('table', {
         table_id: table_id
-      , users: users
       , hide_navbar: true
+      , room_state : JSON.stringify(room_state)
       , table_state: JSON.stringify(table_state)
       });
     }
