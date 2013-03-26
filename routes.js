@@ -15,6 +15,7 @@ module.exports = (function () {
       username: req.user.username,
       registration_date: req.user.registration_date,
       email: req.user.email,
+      maobucks: req.user.maobucks,
     });
   });
 
@@ -96,6 +97,18 @@ module.exports = (function () {
       });
     }
     res.redirect('/account'); 
+  });
+
+  // update maobuckx
+  app.post('/update_maobucks', function (req, res) {
+    var maobucks_update = req.body.maobucks_update;
+    console.log("calling maobucks update route");
+    User.update({_id: req.user._id}, { $set: { maobucks: maobucks_update } }, function(err) {
+      if (err)
+        console.error('error when updating maobucks to database.');
+      console.log("Updated to"+ req.user.username +"'s account to " + maobucks_update + "maobucks.");
+    } );
+    res.redirect('/account')
   });
 
   app.post('/login',
