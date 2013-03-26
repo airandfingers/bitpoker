@@ -71,7 +71,8 @@ module.exports = (function () {
         socket.user = user;
         // notify anyone interested (the corresponding table)
         self.emit('socket_join', socket);
-        self.broadcast('user_joins', user);
+        socket.broadcast.emit('user_joins', user, false);
+        socket.emit('user_joins', user, true);
         //}
       });
     }
@@ -79,7 +80,8 @@ module.exports = (function () {
       var user = {};
       socket.user = user;
       self.emit('socket_join', socket);
-      self.broadcast('user_joins', user);
+      socket.broadcast.emit('user_joins', user, false);
+      socket.emit('user_joins', user, true);
     }
     //console.log('Socket joining ' + self.room_id + ':', socket.user_id);
     socket.join(self.room_id);
@@ -92,7 +94,8 @@ module.exports = (function () {
   RoomSchema.methods.leave = function(socket) {
     // notify anyone interested (the corresponding table)
     this.emit('socket_leave', socket);
-    this.broadcast('user_leaves', socket.user);
+    socket.broadcast.emit('user_leaves', socket.user, false);
+    socket.emit('user_leaves', socket.user, true);
   };
 
   RoomSchema.methods.setJoinHandler = function(handler) {
