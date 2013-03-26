@@ -540,14 +540,21 @@ module.exports = (function () {
                            'high_bet', 'pot', 'winner',
                            'community', 'round_id']
       , include = _.extend(default_include, also_include)
-      , player_fields = self.showed_down ? ['hand', 'chips_won'] : []
+      , player_fields = []
       , round_obj = {};
+    if (self.showed_down) {
+      player_fields.push('hand');
+    }
+    if (self.isInStage('paying_out') || self.isInStage('done')) {
+      player_fields.push('chips_won');
+    }
     //console.log('round.serialize called, include is', include);
     _.each(include, function(key) {
       round_obj[key] = self[key];
     });
     round_obj.seats = _.map(self.seats, function(player) { return player.serialize(player_fields); });
     round_obj.players = _.map(self.players, function(player) { return player.serialize(player_fields); });
+    round_obj.max_players = Round.MAX_PLAYERS;
     return round_obj;
   };
 
