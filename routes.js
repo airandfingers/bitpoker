@@ -159,7 +159,6 @@ module.exports = (function () {
     var table_names = Table.getTableNames()
       , users = Room.getRoom('lobby').getUsernames()
       , room_state = { users: users };
-    console.log('User visits lobby!', users);
     res.render('lobby', {
       table_names: table_names
     , room_state : JSON.stringify(room_state)
@@ -169,11 +168,11 @@ module.exports = (function () {
   app.get('/' + Table.TABLE_PREFIX + ':id', auth.ensureAuthenticated, function(req, res, next) {
     var table_id = req.params.id
       , table = Table.getTable(table_id)
-      , users = table.room.getUsernames()
-      , room_state = { users: users };
-    console.log('User visits ' + table.name + '!', users);
+      , username = req.user.username;
     if (table instanceof Table) {
-      var table_state = table.getRoundState();
+      var table_state = table.getCurrentRound().serialize(username)
+        , users = table.room.getUsernames()
+        , room_state = { users: users };
       res.render('table', {
         table_id: table_id
       , hide_navbar: true
@@ -188,9 +187,10 @@ module.exports = (function () {
 
   app.get('/table_state/:id', auth.ensureAuthenticated, function(req, res, next) {
     var table_id = req.params.id
-      , table = Table.getTable(table_id);
+      , table = Table.getTable(table_id)
+      , username = req.user.username;
     if (table instanceof Table) {
-      var table_state = table.getRoundState();
+      var table_state = table.getCurrentRound().serialize(username);
       res.json(table_state);
     }
     else {

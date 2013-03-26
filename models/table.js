@@ -243,10 +243,6 @@ module.exports = (function () {
     socket.emit('player_stands', player_obj, seat_num, true);
   };
 
-  TableSchema.methods.getRoundState = function() {
-    return this.getCurrentRound().serialize();
-  };
-
   /* the model - a fancy constructor compiled from the schema:
    *   a function that creates a new document
    *   has static methods and properties attached to it

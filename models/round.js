@@ -533,28 +533,39 @@ module.exports = (function () {
     }
   };
 
-  RoundSchema.methods.serialize = function(also_include) {
+  RoundSchema.methods.serialize = function(username) {
     var self = this
-      , default_include = ['stage_num', 'dealer',
-                           'small_blind_seat', 'to_act',
-                           'high_bet', 'pot', 'winner',
-                           'community', 'round_id']
-      , include = _.extend(default_include, also_include)
-      , player_fields = []
+      , include = ['stage_num', 'dealer',
+                          'small_blind_seat', 'to_act',
+                          'high_bet', 'pot', 'winner',
+                          'community', 'round_id']
+      , all_players_include = []
+      , this_player_include = ['hand']
       , round_obj = {};
     if (self.showed_down) {
-      player_fields.push('hand');
+      all_players_include.push('hand');
     }
     if (self.isInStage('paying_out') || self.isInStage('done')) {
-      player_fields.push('chips_won');
+      all_players_include.push('chips_won');
     }
     //console.log('round.serialize called, include is', include);
     _.each(include, function(key) {
       round_obj[key] = self[key];
     });
-    round_obj.seats = _.map(self.seats, function(player) { return player.serialize(player_fields); });
-    round_obj.players = _.map(self.players, function(player) { return player.serialize(player_fields); });
     round_obj.max_players = Round.MAX_PLAYERS;
+    round_obj.seats = _.map(self.seats, serializePlayer);
+    round_obj.players = _.map(self.players, serializePlayer);
+    function serializePlayer(player) {
+      var player_obj;
+      if (player.username === username) {
+        player_obj = player.serialize(_.union(all_players_include, this_player_include));
+        player_obj.is_you = true;
+      }
+      else {
+        player_obj = player.serialize(all_players_include);
+      }
+      return player_obj;
+    }
     return round_obj;
   };
 
