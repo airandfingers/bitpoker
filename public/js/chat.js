@@ -66,7 +66,14 @@ $(document).on('keydown', function(e) {
 });
 
 //Display initial user list.
-
+  console.log("Pre-Displaying initial user list: printing ", $("#server_values").data("room_state").users);
+  for (var i=0, len = $("#server_values").data("room_state").users.length; i < len; i++) {
+    var initial_user = $("#server_values").data("room_state").users[i];
+    if ($("#" + initial_user).length == 0) {
+      $("#users > ul").append("<li id="+ initial_user +">"+ initial_user + "</li>");
+      console.log("adding " + initial_user+ " to the initial users list.");
+    }    
+  }
 
 //Socket.on like function that takes user joins and user leaves and updates the user list.
 socket.on('user_joins', function(user) {
