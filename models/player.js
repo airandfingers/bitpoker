@@ -32,7 +32,7 @@ module.exports = (function () {
       // which stages this player has acted in, in the current round
     , has_acted: { type: Schema.Types.Mixed, default: function() { return {}; } }
       // the number of chips thie player won this round, if any
-    , chips_won: Number
+    , chips_won: { type: Number, default: 0 }
     });
 
   var static_properties = {
@@ -60,10 +60,10 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.makeBet = function(amount) {
-    /*if (this.chips < amount) {
+    if (this.chips < amount) {
       amount = this.chips;
-      console.log('Cant afford the bet!');
-    }*/
+      console.log( this.username + ' cant afford to bet ' + amount);
+    }
     this.chips -= amount;
     this.current_bet += amount;
     return amount;
@@ -90,10 +90,6 @@ module.exports = (function () {
     this.hand.push(second_card);
   };
 
-  PlayerSchema.methods.returnHand = function() {
-    this.hand = [];
-  };
-
   PlayerSchema.methods.prompt = function(actions, timeout, default_action, cb) {
     var self = this
       , act_timeout;
@@ -102,13 +98,11 @@ module.exports = (function () {
     self.socket.once('act', function(action, num_chips) {
       console.log(self.username, 'responds with', action, num_chips);
       clearTimeout(act_timeout);
-      console.log('calling back with', action, num_chips);
       cb(action, num_chips);
     });
     act_timeout = setTimeout(function() {
       console.log(self.username, 'fails to respond within', timeout, 'ms');
-      self.removeAllListeners('act');
-      console.log('calling back with', default_action);
+      self.socket.removeAllListeners('act');
       cb(default_action);
     }, timeout);
   };
@@ -121,31 +115,35 @@ module.exports = (function () {
     return this.has_acted[stage] || false;
   };
 
-  PlayerSchema.methods.resetHasActed = function() {
-    this.has_acted = {};
-  };
-
   PlayerSchema.methods.roundOver = function() {
     this.returnBet();
-    this.returnHand();
-    this.resetHasActed();
+    this.hand = [];
+    this.has_acted = {};
+    this.chips_won = 0;
   };
 
   PlayerSchema.methods.sendMessage = function() {
     this.socket.emit.apply(this.socket, arguments);
   };
 
-  PlayerSchema.methods.toObject = function(round_end) {
+  PlayerSchema.methods.toObject = function() {
+    return this.serialize('chips_won', 'hand', 'has_acted');
+  }
+
+  PlayerSchema.methods.serialize = function(also_include) {
     var self = this
-      , keys = ['username', 'seat', 'chips', 'auto_post_blinds', 'current_bet']
+      , default_include = ['username', 'seat', 'chips',
+                           'auto_post_blinds', 'current_bet']
+      , include = _.union(default_include, also_include || [])
       , player_obj = {};
-    _.each(keys, function(key) {
+    //console.log('player.serialize called, include is', include);
+    _.each(include, function(key) {
+      if (self[key] === undefined) {
+        console.trace();
+        console.error(key, self[key]);
+      }
       player_obj[key] = self[key];
     });
-    if (round_end === true) {
-      player_obj.hand = self.hand;
-      player_obj.chips_won = self.chips_won || 0;
-    }
     return player_obj;
   };
 
@@ -162,7 +160,7 @@ module.exports = (function () {
       console.error('setFlag called with', name, value);
       return;
     }
-    console.log(this.toObject(), 'setting', name, 'to', value);
+    console.log(this.serialize(), 'setting', name, 'to', value);
     this[name] = value;
   };
 

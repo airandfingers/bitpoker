@@ -87,10 +87,10 @@ module.exports = (function () {
         else {
           //add socket or message_name to front of arguments list
           var arg_to_add = how_to_handle.pass_socket ? socket : message_name
-            , argsArray = [].slice.apply(arguments);
-          argsArray.unshift(arg_to_add);
-          //console.log('calling instance\'s', handler_name, 'with', argsArray);
-          handler.apply(self, argsArray);
+            , args_array = [].slice.apply(arguments);
+          args_array.unshift(arg_to_add);
+          //console.log('calling instance\'s', handler_name, 'with', args_array);
+          handler.apply(self, args_array);
         }
       });
     });

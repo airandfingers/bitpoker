@@ -157,7 +157,9 @@ module.exports = (function () {
     });
     
     round.onStage('done', function() {
+      self.room.broadcast('reset_table');
       console.log('Round is over! Creating a new round in 1 second...');
+      //console.trace();
       self.dealer = round.small_blind_seat || round.dealer;
       setTimeout(function() {
         self.newRound();
@@ -207,11 +209,11 @@ module.exports = (function () {
       socket.emit('error', 'Player is already sitting at the table!');
       return;
     }
-    player.chips = num_chips || 1000;
+    player.chips = num_chips;
     player.takeSeat(seat_num);
     this.seats[seat_num] = player;
 
-    var player_obj = player.toObject();
+    var player_obj = player.serialize();
     socket.broadcast.emit('player_sits', player_obj, false);
     socket.emit('player_sits', player_obj, true);
     
@@ -236,9 +238,13 @@ module.exports = (function () {
     player.vacateSeat();
     delete this.seats[seat_num];
 
-    var player_obj = player.toObject();
+    var player_obj = player.serialize();
     socket.broadcast.emit('player_stands', player_obj, seat_num, false);
     socket.emit('player_stands', player_obj, seat_num, true);
+  };
+
+  TableSchema.methods.getRoundState = function() {
+    return this.getCurrentRound().serialize();
   };
 
   /* the model - a fancy constructor compiled from the schema:
