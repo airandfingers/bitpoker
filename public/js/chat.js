@@ -65,6 +65,9 @@ $(document).on('keydown', function(e) {
   }
 });
 
+//Display initial user list.
+
+
 //Socket.on like function that takes user joins and user leaves and updates the user list.
 socket.on('user_joins', function(user) {
   //jquery add this thingy to dom user.username
