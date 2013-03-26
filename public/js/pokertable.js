@@ -387,10 +387,17 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
         //mouse events for clicking on empty seats
              for (var i = 0; i < this.seats.length; i = i + 1){
           this.seats[i].emptySeat.image.onPress = self.events.buttonMouseDown
-         // this.seats[i].emptySeat.image.onMouseOut = self.events.buttonMouseDown
+         this.seats[i].emptySeat.image.onClick = self.events.onButtonClick
         }
 
 
+    }
+
+    this.images.setDefaultMessages = function(){
+        
+        for (var i = 0; i < this.seats.length; i = i + 1){
+          this.seats[i].emptySeat.messages = ['sit',i, 100+i]
+        }
     }
 
     this.initialize = function(){
@@ -398,6 +405,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
         this.images.setDefaultItems()
        this.images.setDefaultImages()
        this.images.setDefaultEvents()
+       this.images.setDefaultMessages()
     }
      
 
@@ -597,14 +605,16 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
         switch (this.gameState.seats[seatNumber].displayMessageType){
 
             case 'seat':
+            this.displayImage(this.images.seats[seatNumber].seat)
             this.hideText(this.images.seats[seatNumber].action)
             this.hideText(this.images.seats[seatNumber].winner)
             this.hideText(this.images.seats[seatNumber].countdown)
-            this.displayText(this.images.seats[seatNumber].seat)
+            this.displayChildren(this.images.seats[seatNumber].seat)
              this.hideChildren(this.images.seats[seatNumber].emptySeat)
             break;
 
             case 'countdown':
+            this.displayImage(this.images.seats[seatNumber].seat)
             this.hideText(this.images.seats[seatNumber].action)
             this.hideText(this.images.seats[seatNumber].seat)
             this.hideText(this.images.seats[seatNumber].winner)
@@ -613,6 +623,7 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
             break;
 
             case 'action':
+            this.displayImage(this.images.seats[seatNumber].seat)
             this.hideText(this.images.seats[seatNumber].winner)
             this.hideText(this.images.seats[seatNumber].seat)
             this.hideText(this.images.seats[seatNumber].countdown)
@@ -621,14 +632,16 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
             break;
 
             case 'winner':
+            this.displayImage(this.images.seats[seatNumber].seat)
             this.hideText(this.images.seats[seatNumber].action)
             this.hideText(this.images.seats[seatNumber].seat)
             this.hideText(this.images.seats[seatNumber].countdown)
-            this.displayText(this.images.seats[seatNumber].winner)
+            this.displayChildren(this.images.seats[seatNumber].winner)
             this.hideChildren(this.images.seats[seatNumber].emptySeat)
             break;
 
             case 'emptySeat':
+            this.hideImage(this.images.seats[seatNumber].seat)
             this.hideText(this.images.seats[seatNumber].action)
             this.hideText(this.images.seats[seatNumber].winner)
             this.hideText(this.images.seats[seatNumber].countdown)
