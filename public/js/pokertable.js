@@ -505,7 +505,7 @@ this.images.pot.text.text = 'pot: '+potSize
         }
  }
 
- this.displayHiddenCardss =function(seatNumber){
+ this.displayHiddenCards =function(seatNumber){
      this.displayChildren(this.images.seats[seatNumber].hiddenCard0,1)
      this.displayChildren(this.images.seats[seatNumber].hiddenCard1,1)
 
@@ -798,13 +798,16 @@ self.displayCorrectSeatMessage(seatNumber)
         //comunity cards
         holdemCanvas.displayAllCommunity(table_state.community)
         //pot
-        if(table_state.pot&&table_state.pot>0){holdemCanvas.displayPot(table_state.pot)}
+        if(table_state.pot&&table_state.pot>0){this.displayPot(table_state.pot)}
 
         //display seats
          for (var i in table_state.seats) { 
          //seated players
          this.playerSits(table_state.seats[i].seat,table_state.seats[i].username,table_state.seats[i].chips)
+         //assign userSeatNumber if player is user
+         if(table_state.seats[i].is_you){this.gameState.userSeatNumber = table_state.seats[i].seat}
          }
+
          //empty seats
          for (var i = 0; i<this.images.seats.length;i++){
              
@@ -821,13 +824,12 @@ self.displayCorrectSeatMessage(seatNumber)
          for(var i=0;i<table_state.players.length;i=i+1){
                if(!table_state.players[i].hand)
                {
-                   this.displayImage(this.images.seats[i].hiddenCard0)
-        this.displayImage(this.images.seats[i].hiddenCard1)
+                   this.displayHiddenCards(this.images.seats[i].seat)
                    }
               
                    else if(table_state.players[i].hand)
                    {
-        holdemCanvas.displayHoleCards(table_state.players.hand, htable_state.players.seat)
+        this.displayHoleCards(table_state.players[i].hand, table_state.players[i].seat)
         }
         }
         
@@ -836,8 +838,8 @@ self.displayCorrectSeatMessage(seatNumber)
     
   //---------------------SOCKET CODE------------------------
   this.loadTableOnConnect =function(){
-         socket.on('connect', function(){
-             self.displayInitialTableState()
+         socket.on('user_joins', function(user,is_you){
+             if(is_you === true){   self.displayInitialTableState()   }
             self.activateSockets()
                 
 })
@@ -1025,17 +1027,13 @@ socket.on('reset_table', function(players){
 jQuery(document).ready(function(){
     holdemCanvas = new Table(10)
     holdemCanvas.initialize()
-
+    
+        
 })
 
     jQuery(window).load(function (){
         holdemCanvas.loadTableOnConnect()
-    //    for(var i = 0;i<10;i++){
-   //    holdemCanvas.displayChildren(holdemCanvas.images.seats[i].emptySeat)
-  //  holdemCanvas.displayButton(holdemCanvas.images.seats[i].emptySeat, holdemCanvas.images.seats[i].emptySeat.text.text,['sit', i, 100 + i])
-   //    }
-      
-      holdemCanvas.activateSockets()
+ //     holdemCanvas.activateSockets()
  
     })
 
