@@ -17,7 +17,7 @@ module.exports = (function() {
   , password        : String
     //added 3/3/13
   , email           : {type: String, trim: true}
-  , maobucks        : Number
+  , maobucks        : {type: Number, default: 0}
   , registration_date: {type: Date, default: Date.now}
   });
 
