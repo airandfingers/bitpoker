@@ -24,6 +24,9 @@
         <!--displays list of users-->
         <% include users %>
 
+        <!--include values to expose to scripts-->
+        <input type="hidden" id="server_values" data-room_state="<%= room_state %>" />
+
     </div> <!-- container-->        
         <% include plugins %>
         <script src="/js/chat.js"></script>

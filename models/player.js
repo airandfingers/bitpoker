@@ -139,7 +139,6 @@ module.exports = (function () {
     //console.log('player.serialize called, include is', include);
     _.each(include, function(key) {
       if (self[key] === undefined) {
-        console.trace();
         console.error(key, self[key]);
       }
       player_obj[key] = self[key];

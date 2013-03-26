@@ -358,7 +358,9 @@ module.exports = (function () {
     var self = this
       , whole_hand
       , res
-      , results = _.map(self.players, function(player) {
+      , results;
+    self.showed_down = true;
+    results = _.map(self.players, function(player) {
           whole_hand = _.union(player.hand, self.community);
           res = evaluator.evalHand(whole_hand);
           //console.log(whole_hand, 'evaluated as', res);
@@ -374,7 +376,6 @@ module.exports = (function () {
       return parseInt(value, 10);
     });
     results = results[high_hand];
-    self.showed_down = true;
     self.nextStage(results);
   };
 
@@ -534,16 +535,19 @@ module.exports = (function () {
 
   RoundSchema.methods.serialize = function(also_include) {
     var self = this
-      , default_include = ['seats', 'stage_num', 'dealer',
-                           'small_blind_seat', 'players',
-                           'to_act', 'high_bet', 'pot',
-                           'winner', 'community', 'round_id']
+      , default_include = ['stage_num', 'dealer',
+                           'small_blind_seat', 'to_act',
+                           'high_bet', 'pot', 'winner',
+                           'community', 'round_id']
       , include = _.extend(default_include, also_include)
+      , player_fields = self.showed_down ? ['hand', 'chips_won'] : []
       , round_obj = {};
     //console.log('round.serialize called, include is', include);
     _.each(include, function(key) {
       round_obj[key] = self[key];
     });
+    round_obj.seats = _.map(self.seats, function(player) { return player.serialize(player_fields); });
+    round_obj.players = _.map(self.players, function(player) { return player.serialize(player_fields); });
     return round_obj;
   };
 
