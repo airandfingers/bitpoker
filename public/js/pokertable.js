@@ -13,7 +13,7 @@
   
         this.gameState = {}
         this.gameState.secondsToAct
-        this.gameState.seatNumberToAct
+        this.gameState.seatNuseumberToAct
         this.gameState.seats = []
         for(var i = 0;i<maxSeats;i++){
              this.gameState.seats[i]={}
@@ -25,10 +25,14 @@
        this.images.containers[1] = new createjs.Container()
        this.images.containers[2] = new createjs.Container()
        this.images.containers[3] = new createjs.Container()
+       this.images.containers[4] = new createjs.Container()
+        this.images.containers[5] = new createjs.Container()
        this.stage.addChild(this.images.containers[0])
        this.stage.addChild(this.images.containers[1])
        this.stage.addChild(this.images.containers[2])
        this.stage.addChild(this.images.containers[3])
+        this.stage.addChild(this.images.containers[4])
+         this.stage.addChild(this.images.containers[5])
           this.images.sources = {
             call: 'img/call.jpg',
             check: 'img/check.jpg',
@@ -80,10 +84,11 @@
         }
                 
 //-----------START CONSTRUCTORS----------------
-this.images.Item = function (x,y,width,height, messages){
+this.images.Item = function (x,y,width,height, zOfImageEvenIfNoImageExists,messages){
      this.position = {}
 this.position.x = x
 this.position.y = y
+this.position.z = zOfImageEvenIfNoImageExists
 this.size = {}
 this.size.x = width
 this.size.y = height
@@ -233,77 +238,77 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
             var seatHeight = 33
 
             //initial positions and sizes of graphics of the poker table
-            this.pot = new this.Item(290,138,110,24)
+            this.pot = new this.Item(290,138,110,24,2)
 
             //side buttons
-            this.leftSideButtons[0].button = new this.Item(7.5,419,sideButtonWidth,sideButtonHeight)
-            this.leftSideButtons[1].button = new this.Item(7.5,439,sideButtonWidth,sideButtonHeight)
-            this.leftSideButtons[2].button = new this.Item(7.5,459,sideButtonWidth,sideButtonHeight)
-            this.rightSideButtons[0].button = new this.Item(497.5,419,sideButtonWidth,sideButtonHeight)
-            this.rightSideButtons[1].button = new this.Item(497.5,439,sideButtonWidth,sideButtonHeight)
-            this.rightSideButtons[2].button = new this.Item(497.5,459,sideButtonWidth,sideButtonHeight)
+            this.leftSideButtons[0].button = new this.Item(7.5,419,sideButtonWidth,sideButtonHeight,2)
+            this.leftSideButtons[1].button = new this.Item(7.5,439,sideButtonWidth,sideButtonHeight,2)
+            this.leftSideButtons[2].button = new this.Item(7.5,459,sideButtonWidth,sideButtonHeight,2)
+            this.rightSideButtons[0].button = new this.Item(497.5,419,sideButtonWidth,sideButtonHeight,2)
+            this.rightSideButtons[1].button = new this.Item(497.5,439,sideButtonWidth,sideButtonHeight,2)
+            this.rightSideButtons[2].button = new this.Item(497.5,459,sideButtonWidth,sideButtonHeight,2)
 
             //seats
-           this.seats[0].seat = new this.Item(300,371,seatWidth,seatHeight)
-           this.seats[1].seat = new this.Item(170,371,seatWidth,seatHeight)
-           this.seats[2].seat = new this.Item(27,301,seatWidth,seatHeight)
-           this.seats[3].seat = new this.Item(27,153,seatWidth,seatHeight)
-           this.seats[4].seat = new this.Item(170,77,seatWidth,seatHeight)
-           this.seats[5].seat = new this.Item(300,77,seatWidth,seatHeight)
-           this.seats[6].seat = new this.Item(430,77,seatWidth,seatHeight)
-            this.seats[7].seat = new this.Item(573,153,seatWidth,seatHeight)
-             this.seats[8].seat = new this.Item(573,301,seatWidth,seatHeight)
-     this.seats[9].seat = new this.Item(430,371,seatWidth,seatHeight)
+           this.seats[0].seat = new this.Item(300,371,seatWidth,seatHeight,2)
+           this.seats[1].seat = new this.Item(170,371,seatWidth,seatHeight,2)
+           this.seats[2].seat = new this.Item(27,301,seatWidth,seatHeight,2)
+           this.seats[3].seat = new this.Item(27,153,seatWidth,seatHeight,2)
+           this.seats[4].seat = new this.Item(170,77,seatWidth,seatHeight,2)
+           this.seats[5].seat = new this.Item(300,77,seatWidth,seatHeight,2)
+           this.seats[6].seat = new this.Item(430,77,seatWidth,seatHeight,2)
+            this.seats[7].seat = new this.Item(573,153,seatWidth,seatHeight,2)
+             this.seats[8].seat = new this.Item(573,301,seatWidth,seatHeight,2)
+     this.seats[9].seat = new this.Item(430,371,seatWidth,seatHeight,2)
 
      //empty seats and action
      for(var i=0;i<this.seats.length;i=i+1){
          
-         this.seats[i].emptySeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y)
-         this.seats[i].action = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y)
-         this.seats[i].countdown = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y)
-         this.seats[i].winner = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y)
+         this.seats[i].emptySeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,2)
+         this.seats[i].action = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,2)
+         this.seats[i].countdown = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,2)
+         this.seats[i].winner = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,2)
          //horizontal middle divider of the seat box
-         this.seats[i].horizontalDivider = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,1)
+         this.seats[i].horizontalDivider = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,1,2)
 
      }
      //corresponding hole cards
         for (var i = 0; i < this.seats.length; i = i + 1){
-            this.seats[i].hiddenCard0 = new this.Item(this.seats[i].seat.position.x - 1, this.seats[i].seat.position.y - 48, cardWidth, cardHeight)
-            this.seats[i].hiddenCard1 = new this.Item(this.seats[i].seat.position.x + 45, this.seats[i].seat.position.y - 48, cardWidth, cardHeight)
+            this.seats[i].hiddenCard0 = new this.Item(this.seats[i].seat.position.x - 1, this.seats[i].seat.position.y - 48, cardWidth, cardHeight,1)
+            this.seats[i].hiddenCard1 = new this.Item(this.seats[i].seat.position.x + 45, this.seats[i].seat.position.y - 48, cardWidth, cardHeight,1)
 
-            this.seats[i].shownCard0 = new this.Item(this.seats[i].seat.position.x - 1, this.seats[i].seat.position.y - 48, cardWidth, cardHeight)
-            this.seats[i].shownCard1 = new this.Item(this.seats[i].seat.position.x + 45, this.seats[i].seat.position.y - 48, cardWidth, cardHeight)
+            this.seats[i].shownCard0 = new this.Item(this.seats[i].seat.position.x - 1, this.seats[i].seat.position.y - 48, cardWidth, cardHeight,1)
+            this.seats[i].shownCard1 = new this.Item(this.seats[i].seat.position.x + 45, this.seats[i].seat.position.y - 48, cardWidth, cardHeight,1)
           }
 
      // initial positions of player's chips entering pot
-      this.seats[0].bet = new this.Item(345,291,20,10)
-      this.seats[1].bet = new this.Item(215,291,20,10)
-      this.seats[2].bet = new this.Item(137,227,20,10)
-      this.seats[3].bet = new this.Item(137,153,20,10)
-      this.seats[4].bet = new this.Item(215,121,20,10)
-      this.seats[5].bet = new this.Item(345,121,20,10)
-      this.seats[6].bet = new this.Item(475,121,20,10)
-      this.seats[7].bet = new this.Item(553,153,20,10)
-      this.seats[8].bet = new this.Item(553,227,20,10)
-      this.seats[9].bet = new this.Item(475,291,20,10)
+      this.seats[0].bet = new this.Item(345,291,20,10,2)
+      this.seats[1].bet = new this.Item(215,291,20,10,2)
+      this.seats[2].bet = new this.Item(137,227,20,10,2)
+      this.seats[3].bet = new this.Item(137,153,20,10,2)
+      this.seats[4].bet = new this.Item(215,121,20,10,2)
+      this.seats[5].bet = new this.Item(345,121,20,10,2)
+      this.seats[6].bet = new this.Item(475,121,20,10,2)
+      this.seats[7].bet = new this.Item(553,153,20,10,2)
+      this.seats[8].bet = new this.Item(553,227,20,10,2)
+      this.seats[9].bet = new this.Item(475,291,20,10,2)
 
         // initial positions of action buttons
-      this.fold = new this.Item(205,419,actionButtonWidth,actionButtonHeight, ['act','fold'])
-      this.call = new this.Item(305,419,actionButtonWidth,actionButtonHeight, ['act','call'])
-      this.check = new this.Item(305,419,actionButtonWidth,actionButtonHeight, ['act','check'])
-      this.raise = new this.Item(405,419,actionButtonWidth,actionButtonHeight, ['act','raise'])
-      this.bet = new this.Item(405,419,actionButtonWidth,actionButtonHeight, ['act','bet'])
+      this.fold = new this.Item(205,419,actionButtonWidth,actionButtonHeight,2, ['act','fold'])
+      this.call = new this.Item(305,419,actionButtonWidth,actionButtonHeight,2, ['act','call'])
+      this.check = new this.Item(305,419,actionButtonWidth,actionButtonHeight,2, ['act','check'])
+      this.raise = new this.Item(405,419,actionButtonWidth,actionButtonHeight,2, ['act','raise'])
+      this.bet = new this.Item(405,419,actionButtonWidth,actionButtonHeight,2, ['act','bet'])
 
-      this.betSlider.horizontal = new this.Item (215,458,240,1)
-      this.betSlider.vertical = new this.Item(215,448,4,20)
-      this.betSlider.betSize = new this.Item(470,448,30,50)
+      this.betSlider.horizontal = new this.Item (215,458,240,2)
+      this.betSlider.vertical = new this.Item(215,448,4,20,2)
+      this.betSlider.betSize = new this.Item(470,448,30,50,2)
       
         //set initial positions of community cards
-        this.community[0] = new this.Item(222,169,cardWidth, cardHeight)
-        this.community[1] = new this.Item(272,169,cardWidth, cardHeight)
-        this.community[2] = new this.Item(322,169,cardWidth, cardHeight)
-        this.community[3] = new this.Item(372,169,cardWidth, cardHeight)
-        this.community[4] = new this.Item(422,169,cardWidth, cardHeight)
+        this.community[0] = new this.Item(222,169,cardWidth, cardHeight,2)
+        this.community[1] = new this.Item(272,169,cardWidth, cardHeight,2)
+        this.community[2] = new this.Item(322,169,cardWidth, cardHeight,2)
+        this.community[3] = new this.Item(372,169,cardWidth, cardHeight,2)
+        this.community[4] = new this.Item(422,169,cardWidth, cardHeight,2)
       }
 
 
@@ -359,6 +364,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
         this.itemAsRectangle(this.bet, 'red')
         this.addItemText(this.bet, 'bet','12px Arial','#000000')
 
+        //bet slider
         this.itemAsRectangle(this.betSlider.horizontal, 'black')
         this.itemAsRectangle(this.betSlider.vertical, 'blue')
         this.addItemText(this.betSlider.betSize, 0, '14px Arial', 'black')
@@ -431,7 +437,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
     this.displayShownCard = function (cardText,parentOfImageObject){
         
         parentOfImageObject.text.text= cardText
-            this.displayChildren(parentOfImageObject,1)
+            this.displayChildren(parentOfImageObject)
     }
 
         this.displayHoleCards = function (hand,seatNumber){
@@ -444,6 +450,17 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
         this.displayShownCard(hand[0], this.images.seats[seatNumber].shownCard0)
         this.displayShownCard(hand[1], this.images.seats[seatNumber].shownCard1)
+
+    }
+
+    this.hideHoleCards = function (seatNumber){
+        
+
+            this.hideChildren(this.images.seats[seatNumber].hiddenCard0)
+            this.hideChildren(this.images.seats[seatNumber].hiddenCard1)
+this.hideChildren(this.images.seats[seatNumber].shownCard0)
+            this.hideChildren(this.images.seats[seatNumber].shownCard1)
+
 
     }
 
@@ -477,53 +494,46 @@ this.images.pot.text.text = 'pot: '+potSize
     }
  
     //parameter is parent of the actual Image object
-    this.displayImage = function (parentOfImageObject, containerIndex){
+    this.displayImage = function (parentOfImageObject){
         if(parentOfImageObject.image){
-            if(containerIndex){
-            this.images.containers[containerIndex].addChild(parentOfImageObject.image)
-            }
-            else
-            {this.images.containers[2].addChild(parentOfImageObject.image)}
-
+this.images.containers[parentOfImageObject.position.z].addChild(parentOfImageObject.image)
             this.stage.update()
             }
     }
     
     this.displayText = function (parentOfTextObject){
         if(parentOfTextObject.text){
-            this.images.containers[3].addChild(parentOfTextObject.text)
+            this.images.containers[parentOfTextObject.position.z+1].addChild(parentOfTextObject.text)
             this.stage.update()
             }
     }
 
     //imageContainerIndex is optional, 3 = top, 0 = background
-    this.displayChildren = function(parent, imageContainerIndex){
+    this.displayChildren = function(parent){
         if(parent instanceof this.images.Item){
-            if(imageContainerIndex){this.displayImage(parent, imageContainerIndex)}
-           else{this.displayImage(parent)}
+            this.displayImage(parent)
          this.displayText(parent)
         }
  }
 
  this.displayHiddenCards =function(seatNumber){
-     this.displayChildren(this.images.seats[seatNumber].hiddenCard0,1)
-     this.displayChildren(this.images.seats[seatNumber].hiddenCard1,1)
+     this.displayChildren(this.images.seats[seatNumber].hiddenCard0)
+     this.displayChildren(this.images.seats[seatNumber].hiddenCard1)
 
  }
     this.hideText = function(parent){
-        if(this.stage.contains(parent.text)){this.images.containers[3].removeChild(parent.text)}
-this.stage.update()
+        if(this.stage.contains(parent.text)){
+            this.images.containers[parent.position.z+1].removeChild(parent.text)
+        this.stage.update()
+        }
         }
 
  
- this.hideImage = function(parent){
-      if(this.stage.contains(parent.image)){
-
-              this.images.containers[2].removeChild(parent.image)
-              this.images.containers[1].removeChild(parent.image)
+ this.hideImage = function(parentOfImageObject){
+      if(this.stage.contains(parentOfImageObject.image)){
+              this.images.containers[parentOfImageObject.position.z].removeChild(parentOfImageObject.image)
+              this.stage.update()
           }
-
-this.stage.update()
         }
 
  this.hideChildren = function(parent){
@@ -785,15 +795,59 @@ self.displayCorrectSeatMessage(seatNumber)
     }
 
     this.hideButton = function (parentOfImageObject, messages){
-        this.removeChildren(parentOfImageObject)
+        this.hideChildren(parentOfImageObject)
         if(messages){parentOfImageObject.messages = messages}
         parentOfImageObject.image.onClick = null
+    }
+    
+    this.cashierPopup = function(tableMin, tableMax, accountBalance, currency)
+
+    {
+        this.images.cashier = {}
+        var cashierWindowX = 200
+        var cashierWindowY = 200
+        var cashierWindowWidth = 300
+        var cashierWindowHeight = 400
+        this.images.cashier.window = new this.images.Item(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight,4)
+        this.images.itemAsRectangle(this.images.cashier.window, '#A8A8A8 ')
+
+        this.images.cashier.tableMin = new this.images.Item (cashierWindowX + 10,cashierWindowY+10, cashierWindowWidth,25,4)
+        this.images.addItemText(this.images.cashier.tableMin, tableMin, '13px arial', '#000000')
+
+        this.images.cashier.tableMax = new this.images.Item (cashierWindowX + 10,cashierWindowY+35, cashierWindowWidth,25,4)
+        this.images.addItemText(this.images.cashier.tableMax, tableMax, '13px arial', '#000000')
+
+        this.images.cashier.accountBalance = new this.images.Item (this.images.accountBalance + 10,cashierWindowY+60, cashierWindowWidth,25,4)
+        this.images.addItemText(this.images.cashier.accountBalance, accountBalance, '13px arial', '#000000')
+
+        this.images.cashier.currency =  new this.images.Item (cashierWindowX + 10,cashierWindowY+85, cashierWindowWidth,25,4) 
+        this.images.addItemText( this.images.cashier.currency, currency, '13px arial', '#000000')
+        
+        this.images.cashier.addChips =  new this.images.Item (cashierWindowX + 10,cashierWindowY+cashierWindowHeight-40, 30,25,4) 
+        this.images.itemAsRectangle( this.images.cashier.addChips, '#0000FF')
+        this.images.addItemText( this.images.cashier.addChips, 'add chips', '13px arial', '#000000')
+
+        this.images.cashier.cancel =  new this.images.Item (cashierWindowX + 50,cashierWindowY+cashierWindowHeight-40, 30,25,4) 
+        this.images.itemAsRectangle( this.images.cashier.cancel, '#0000FF')
+        this.images.addItemText( this.images.cashier.cancel, 'cancel', '13px arial', '#000000')
+
+        
+
+
     }
 
    this.displayInitialTableState=function(){
         
         var table_state = $('#server_values').data('table_state');
         console.log(table_state)
+
+        //remove extra seats
+        for (var i = 9;i>table_state.max_players;i=i-1){
+            
+            this.images.seats[i] = null
+            this.gameState.seats[i] = null
+
+        }
         
         //comunity cards
         holdemCanvas.displayAllCommunity(table_state.community)
@@ -809,7 +863,7 @@ self.displayCorrectSeatMessage(seatNumber)
          }
 
          //empty seats
-         for (var i = 0; i<this.images.seats.length;i++){
+         for (var i = 0; i<table_state.max_players;i++){
              
              this.displayCorrectSeatMessage(i)
          }
@@ -824,7 +878,7 @@ self.displayCorrectSeatMessage(seatNumber)
          for(var i=0;i<table_state.players.length;i=i+1){
                if(!table_state.players[i].hand)
                {
-                   this.displayHiddenCards(this.images.seats[i].seat)
+                   this.displayHiddenCards(table_state.players[i].seat)
                    }
               
                    else if(table_state.players[i].hand)
@@ -868,9 +922,7 @@ self.displayCorrectSeatMessage(seatNumber)
 
 //hand dealt to user
        socket.on('hole_cards_dealt', function(hand){
-           
-                   self.displayShownCard(hand[0],self.images.seats[self.gameState.userSeatNumber].shownCard0)
-        self.displayShownCard(hand[1],self.images.seats[self.gameState.userSeatNumber].shownCard1)
+           self.displayHoleCards(hand, self.gameState.userSeatNumber)
                    self.showInHandOptions()
         });
      
@@ -883,13 +935,8 @@ self.displayCorrectSeatMessage(seatNumber)
 
         switch(action){
         case 'fold':
-        if(player.seat !== self.gameState.userSeatNumber){
-        self.hideChildren(self.images.seats[player.seat].hiddenCard0)
-        self.hideChildren(self.images.seats[player.seat].hiddenCard1)
-                   }
-            else{
-                self.hideChildren(self.images.seats[self.gameState.userSeatNumber].shownCard0)
-            self.hideChildren(self.images.seats[self.gameState.userSeatNumber].shownCard0)
+        self.hideHoleCards(player.seat)
+        if(player.seat == self.gameState.userSeatNumber){
             self.hideInHandOptions()
             }
             break;
@@ -942,6 +989,8 @@ self.displayCorrectSeatMessage(seatNumber)
          self.displayButton(holdemCanvas.images.call,false,['act','call',actions[i].call])
          }
        else  if (actions[i].raise){
+           console.log(self.images.raise.position.z)
+           console.log(self.images.containers[2])
          self.displayChildren(self.images.raise)
          self.displayButton(self.images.raise,'raise to '+actions[i].raise[0],['act','raise', actions[i].raise[0]])
          self.showBetSlider(actions[i].raise[0], actions[i].raise[1], .01)
@@ -967,9 +1016,10 @@ self.displayCorrectSeatMessage(seatNumber)
        socket.on('player_sits', function(player, is_you){
            self.hideChildren(self.images.seats[player.seat].emptySeat)
         self.playerSits(player.seat, player.username, player.chips)
-        if(is_you){
+        if(is_you == true){
             self.gameState.userSeatNumber = player.seat
             self.displayButton(self.images.leftSideButtons[1].button, 'stand up', ['stand'])
+            self.cashierPopup(40,100,1000,'BTC')
             //console.log(self.images.leftSideButtons[1].button.image)
 }});
 
@@ -997,12 +1047,11 @@ self.displayCorrectSeatMessage(seatNumber)
 
 
 //round ends, all hole cards are shown
-       socket.on('hands_shown', function(players){
+       socket.on('winners', function(players){
 
 
            for(var i =0;i<players.length;i++){
-               self.hideChildren(self.images.seats[players[i].seat].hiddenCard0)
-        self.hideChildren(self.images.seats[players[i].seat].hiddenCard1)
+               self.hideHoleCards(players[i].seat)
         self.displayHoleCards(players[i].hand, players[i].seat)
         self.playerSits(players[i].seat, players[i].username, players[i].chips)
         self.playerWins(players[i].seat, players[i].chips_won)
@@ -1033,7 +1082,6 @@ jQuery(document).ready(function(){
 
     jQuery(window).load(function (){
         holdemCanvas.loadTableOnConnect()
- //     holdemCanvas.activateSockets()
  
     })
 
