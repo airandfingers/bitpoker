@@ -65,6 +65,8 @@ module.exports = (function () {
     seats            : { type: Schema.Types.Mixed, default: function() { return {}; } }
     // the current stage, an index of Round.STAGES
   , stage_num        : { type: Number, default: 0 }
+    // the current stage, one of Round.STAGES
+  , stage_name        : { type: String, default: 'initializing' }
     // the function this round can call to broadcast to all players in the room
   , broadcast        : Schema.Types.Mixed
     // the seat number of the dealer (use to calculate order-adjusted players)
@@ -173,7 +175,6 @@ module.exports = (function () {
     }
 
     if (SMALL_BLIND_PAID && BIG_BLIND_PAID) {
-      self.high_bet = Round.BIG_BLIND;
       self.nextStage();
     }
     else {
@@ -182,7 +183,7 @@ module.exports = (function () {
     }
   };
 
-  static_properties.stage_handlers.dealing = function() {
+  static_properties.stage_handlers.dealing = function deal() {
     var self = this
       , first_card
       , second_card
@@ -200,25 +201,43 @@ module.exports = (function () {
   static_properties.stage_handlers.betting_preflop   =
   static_properties.stage_handlers.betting_postflop  =
   static_properties.stage_handlers.betting_preriver  =
-  static_properties.stage_handlers.betting_postriver = function() {
-    // reset high_bet and to_act values
-    if (! this.isInStage('betting_preflop')) {
-      //console.log('Not in betting_preflop, so resetting high_bet and to_act');
-      this.high_bet = 0;
-      this.to_act = this.first_to_act;
-    }
-
+  static_properties.stage_handlers.betting_postriver = function bettingRound() {
     var self = this
-      , player = self.currentPlayer()
+      , player
       , to_call
-      , last_raise = Round.BIG_BLIND
+      , last_raise
       , min_bet
       , max_bet
       , actions
-      , default_action
-      , default_action_obj
+      , free_action
+      , free_action_obj
       , bet_action
       , bet_action_obj;
+
+    switch(this.stage_name) {
+      case 'betting_preflop':
+        // big-blind-player has already started the betting at the big blind level
+        this.high_bet = Round.BIG_BLIND;
+        last_raise = Round.SMALL_BLIND;
+        break;
+      case 'betting_postflop':
+        console.log('Not in betting_preflop, so resetting high_bet and to_act');
+        last_raise = Round.SMALL_BLIND;
+        this.high_bet = 0;
+        this.to_act = this.first_to_act;
+        break;
+      case 'betting_preriver':
+      case 'betting_postriver':
+        console.log('Not in betting_preflop, so resetting high_bet and to_act');
+        last_raise = Round.BIG_BLIND;
+        this.high_bet = 0;
+        this.to_act = this.first_to_act;
+        break;
+      default:
+        console.error('bettingRound called when stage_name is', this.stage_name);
+    }
+
+    player = self.currentPlayer();
 
     async.whilst(
       function shouldRunBody() { // test
@@ -232,21 +251,23 @@ module.exports = (function () {
       function loopBody(cb) {
         // handle "no chips" condition
         if (player.chips === 0) {
+          console.log('player is out of chips, so skipping!', player);
           player.actedIn(self.stage_num);
           player = self.nextPlayer();
           return cb();
         }
-        // calculate/set actions and default_action to be used in prompt
+        // calculate/set actions and free_action to be used in prompt
         actions = [];
-        to_call = self.high_bet - player.current_bet;
         // fold/check
-        default_action = to_call > 0 ? 'fold' : 'check';
-        default_action_obj = {};
-        default_action_obj[default_action] = true;
-        actions.push(default_action_obj);
-        // raise/bet
-        min_bet = to_call + last_raise;
-        max_bet = player.chips;
+        free_action = self.high_bet > player.current_bet ? 'fold' : 'check';
+        free_action_obj = {};
+        free_action_obj[free_action] = true;
+        actions.push(free_action_obj);
+        // call
+        to_call = self.high_bet - player.current_bet;
+        // raise/bet - "raise to" values
+        min_bet = self.high_bet + last_raise;
+        max_bet = player.current_bet + player.chips;
         //console.log('high_bet', self.high_bet, 'to_call', to_call, 'min_bet', min_bet, 'max_bet', max_bet);
         
         if (max_bet < min_bet) {
@@ -268,11 +289,19 @@ module.exports = (function () {
           // player must pay to_call or fold
           actions.push({ call: to_call });
         }
-
-        player.prompt(actions, Round.TIMEOUT, default_action, function(action_choice, num_chips_choice) {
+        console.log(to_call
+      , last_raise
+      , min_bet
+      , max_bet
+      , actions
+      , free_action
+      , free_action_obj
+      , bet_action
+      , bet_action_obj);
+        player.prompt(actions, Round.TIMEOUT, free_action, function(action_choice, num_chips_choice) {
           if (_.all(actions, function(action_obj) { return (action_obj[action_choice] === undefined); })) {
-            console.error('Player chose invalid action', action_choice, ', so treating it as', default_action);
-            action_choice = default_action; // act as if the player timed out (in less than Round.TIMEOUT)
+            console.error('Player chose invalid action', action_choice, ', so treating it as', free_action);
+            action_choice = free_action; // act as if the player timed out (in less than Round.TIMEOUT)
             num_chips = undefined;
           }
           performAction(action_choice, num_chips_choice);
@@ -297,18 +326,17 @@ module.exports = (function () {
     );
     // describes how to handle each action
     function performAction(action, num_chips) {
-      console.log(player.username, 'acted!', action, num_chips);
       switch(action) {
       case 'check':
         break;
       case 'call':
         if (num_chips > player.chips) {
           console.error('Player tried to call with a value higher than his/r chip count!', num_chips, player.chips);
-          return performAction(default_action, undefined);
+          return performAction(free_action, undefined);
         }
-        else if (num_chips > min_bet) {
-          console.error('Player tried to call with a value higher than min_bet!', num_chips, min_bet);
-          return performAction(default_action, undefined);
+        if (num_chips !== to_call) {
+          console.error('Player tried to call with a value other than to_call!', num_chips, to_call);
+          return performAction(free_action, undefined);
         }
         player.makeBet(num_chips);
         break;
@@ -316,15 +344,16 @@ module.exports = (function () {
       case 'raise':
         if (num_chips < min_bet) {
           console.error('Player raised with less than min_bet!', num_chips, min_bet);
-          return performAction(default_action, undefined);
+          return performAction(free_action, undefined);
         }
         else if (num_chips > max_bet) {
           console.error('Player raised with more than max_bet!', num_chips, max_bet);
-          return performAction(default_action, undefined);
+          return performAction(free_action, undefined);
         }
-        var raise = num_chips - to_call;
+        var bet = num_chips - player.current_bet // how much the player bet
+          , raise = bet - to_call; // how much the player RAISED
+        player.makeBet(bet);
         self.high_bet += raise;
-        player.makeBet(num_chips);
         last_raise = raise;
         break;
       case 'fold':
@@ -435,11 +464,12 @@ module.exports = (function () {
       stage_num = stage;
     }
     var stage_name = Round.STAGES[stage_num];
-    if (! _.isString(stage_name)) {
+    if (! _.isString(stage_name) || ! _.contains(Round.STAGES, stage_name)) {
       console.error('toStage called with', stage, stage_num, stage_name);
     }
     else {
       this.stage_num = stage_num;
+      this.stage_name = stage_name;
       console.log('*Stage: ' + stage_name + '*');
       var args_array = [].slice.apply(arguments)
         , event_name = 'stage_' + stage_name;
@@ -472,10 +502,12 @@ module.exports = (function () {
   RoundSchema.methods.calculatePlayers = function() {
     var self = this
       , player
+      , first_to_blind = (self.players.length > 2 ? self.dealer + 1 : self.dealer) % Round.MAX_PLAYERS
       , seat_counter
       , first_round = true;
-    for (seat_counter = (self.dealer + 1) % Round.MAX_PLAYERS;
-         first_round || seat_counter !== ((self.dealer + 1) % Round.MAX_PLAYERS);
+    for (seat_counter = first_to_blind;
+         first_round || seat_counter !== first_to_blind;
+         first_round = false,
          seat_counter = (seat_counter + 1) % Round.MAX_PLAYERS) {
       player = self.seats[seat_counter];
       if (player instanceof Player && player.auto_post_blinds) {
@@ -484,7 +516,6 @@ module.exports = (function () {
           self.small_blind_seat = seat_counter;
         }
       }
-      first_round = false;
     }
     self.first_to_act = self.players.length > 2 ? 0 : 1;
     //console.log('calculated players:', self.players, 'small_blind_seat:', self.small_blind_seat);
@@ -522,6 +553,7 @@ module.exports = (function () {
   };
 
   RoundSchema.methods.playerOut = function(index) {
+    console.log('before playerOut:', index, this.players[this.to_act]);
     var player = this.players[index]
       , bet = player.giveBet();
     //console.log('got bet from player:', bet);
@@ -531,6 +563,7 @@ module.exports = (function () {
     if (this.to_act >= index) {
       this.to_act--;
     }
+    //console.log('playerOut:', index, this.players[this.to_act]);
   };
 
   RoundSchema.methods.serialize = function(username) {

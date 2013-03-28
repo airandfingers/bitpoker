@@ -33,6 +33,10 @@ module.exports = (function () {
     , has_acted: { type: Schema.Types.Mixed, default: function() { return {}; } }
       // the number of chips thie player won this round, if any
     , chips_won: { type: Number, default: 0 }
+      // whether this player is idle
+    , idle: { type: Boolean, default: false }
+      // the number of consecutive act_prompt messages this player has timed out on
+    , prompts_timed_out: { type: Number, default: 0 }
     });
 
   var static_properties = {
@@ -41,6 +45,8 @@ module.exports = (function () {
     messages: {
       set_flag: 'setFlag'
     }
+    // the number of timeouts after which Players are considered idle
+  , NUM_TIMEOUTS_TO_IDLE: 3
   };
 
   // static methods - Model.method()
@@ -97,11 +103,17 @@ module.exports = (function () {
     self.sendMessage('act_prompt', actions, timeout);
     self.socket.once('act', function(action, num_chips) {
       console.log(self.username, 'responds with', action, num_chips);
+      self.prompts_timed_out = 0;
+      self.idle = false;
       clearTimeout(act_timeout);
       cb(action, num_chips);
     });
     act_timeout = setTimeout(function() {
       console.log(self.username, 'fails to respond within', timeout, 'ms');
+      self.prompts_timed_out++;
+      if (self.prompts_timed_out === Player.NUM_TIMEOUTS_TO_IDLE) {
+        self.idle = true;
+      }
       self.socket.removeAllListeners('act');
       cb(default_action);
     }, timeout);
@@ -161,6 +173,18 @@ module.exports = (function () {
     }
     console.log(this.serialize(), 'setting', name, 'to', value);
     this[name] = value;
+  };
+
+  PlayerSchema.methods.onConnect = function(socket) {
+    this.socket = socket;
+    this.idle = false;
+  };
+
+  PlayerSchema.methods.onDisconnect = function(socket) {
+    if (! (_.isObject(socket) && this.socket.id === socket.id) ) {
+      console.error('Player.onDisconnect called with non-matching socket', socket);
+    }
+    this.idle = true;
   };
 
   /* the model - a fancy constructor compiled from the schema:

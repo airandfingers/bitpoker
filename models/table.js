@@ -51,6 +51,8 @@ module.exports = (function () {
   , room     : { type: Schema.Types.Mixed }
     // the rounds this table has gone through (oldest to newest)
   , rounds   : { type: [Schema.Types.Mixed], default: function() { return []; } }
+    // the players that are currently at this table (seated or not)
+  , players  : { type: Schema.Types.Mixed, default: function() { return {}; } }
     // {seat_num: Player}
   , seats    : { type: Schema.Types.Mixed, default: function() { return {}; } }
     // current status
@@ -172,27 +174,45 @@ module.exports = (function () {
     return _.last(this.rounds);
   };
 
-  static_properties.room_events.socket_join = 'join';
-  TableSchema.methods.join = function(socket) {
+  static_properties.room_events.socket_join = 'onSocketConnect';
+  TableSchema.methods.onSocketConnect = function(socket) {
     var self = this
       , user = socket.user
-      , player = Player.createPlayer({
-          socket: socket
-        , username: user.username
-    });
+      , username = user.username
+      , player = self.players[username];
+    if (player instanceof Player) {
+      // player is already in this room.. is he idle?
+      if (player.idle) {
+        // yes - replace player's socket with this socket
+        player.onConnect(socket);
+      }
+      else {
+        // no - so why is this new socket joining? Ignore it.
+        console.error('Socket belonging to ' + username + ' joined ' + self.table_id +
+                      ' while another socket is live! Ignoring..');
+        return;
+      }
+    }
+    else {
+      // create a new player
+      player = Player.createPlayer({
+            socket: socket
+          , username: username
+      });
+      self.players[username] = player;
+    }
     socket.player = player;
-
     // attach handlers for messages as defined in Table.messages
     io.bindMessageHandlers.call(this, socket, Table.messages);
   };
 
-  static_properties.room_events.socket_leave = 'leave';
-  TableSchema.methods.leave = function(socket) {
+  static_properties.room_events.socket_leave = 'onSocketDisconnect';
+  TableSchema.methods.onSocketDisconnect = function(socket) {
     var self = this
       , player = socket.player;
 
-    if (player && player.seat) {
-      self.unseatPlayer(socket);
+    if (player instanceof Player) {
+      player.onDisconnect(socket);
     }
   };
 
