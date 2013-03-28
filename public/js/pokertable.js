@@ -299,7 +299,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
       this.raise = new this.Item(405,419,actionButtonWidth,actionButtonHeight,2, ['act','raise'])
       this.bet = new this.Item(405,419,actionButtonWidth,actionButtonHeight,2, ['act','bet'])
 
-      this.betSlider.horizontal = new this.Item (215,458,240,2)
+      this.betSlider.horizontal = new this.Item (215,458,240,1,2)
       this.betSlider.vertical = new this.Item(215,448,4,20,2)
       this.betSlider.betSize = new this.Item(470,448,30,50,2)
       
@@ -594,13 +594,16 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
           this.hideChildren(this.images.rightSideButtons[2].button)
     }
 
-    this.showBetSlider=function(minBet, maxBet, minIncrement){
+    this.showBetSlider =function(minBet, maxBet, minIncrement){
        
         this.gameState.minBet = minBet
         this.gameState.maxBet = maxBet
         this.gameState.minIncrement = minIncrement
 
   this.displayChildren(this.images.betSlider.horizontal)
+ //reset slider to original position and color
+ this.images.betSlider.vertical.image.graphics.clear()
+ this.images.betSlider.vertical.image.graphics.beginFill('blue').drawRect(this.images.betSlider.vertical.position.x,this.images.betSlider.vertical.position.y,this.images.betSlider.vertical.size.x,this.images.betSlider.vertical.size.y)
   this.displayChildren(this.images.betSlider.vertical)
   this.images.betSlider.betSize.text.text = minBet
   this.displayChildren(this.images.betSlider.betSize)
@@ -800,28 +803,38 @@ self.displayCorrectSeatMessage(seatNumber)
         parentOfImageObject.image.onClick = null
     }
     
-    this.cashierPopup = function(tableMin, tableMax, accountBalance, currency)
+    this.hideCashier = function(){
 
+        for(var i in self.images.cashier){
+            if(self.images.cashier[i] instanceof self.images.Item){
+                self.hideChildren(self.images.cashier[i])
+            }
+
+
+    }
+    }
+
+    this.displayCashier = function(tableMin, tableMax, accountBalance, currency)
     {
         this.images.cashier = {}
         var cashierWindowX = 200
-        var cashierWindowY = 200
-        var cashierWindowWidth = 300
-        var cashierWindowHeight = 400
+        var cashierWindowY = 100
+        var cashierWindowWidth = 200
+        var cashierWindowHeight = 250
         this.images.cashier.window = new this.images.Item(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight,4)
         this.images.itemAsRectangle(this.images.cashier.window, '#A8A8A8 ')
 
         this.images.cashier.tableMin = new this.images.Item (cashierWindowX + 10,cashierWindowY+10, cashierWindowWidth,25,4)
-        this.images.addItemText(this.images.cashier.tableMin, tableMin, '13px arial', '#000000')
+        this.images.addItemText(this.images.cashier.tableMin, 'Minimum Buyin: '+tableMin, '13px arial', '#000000')
 
         this.images.cashier.tableMax = new this.images.Item (cashierWindowX + 10,cashierWindowY+35, cashierWindowWidth,25,4)
-        this.images.addItemText(this.images.cashier.tableMax, tableMax, '13px arial', '#000000')
+        this.images.addItemText(this.images.cashier.tableMax, 'Maximum Buyin: '+tableMax, '13px arial', '#000000')
 
         this.images.cashier.accountBalance = new this.images.Item (this.images.accountBalance + 10,cashierWindowY+60, cashierWindowWidth,25,4)
-        this.images.addItemText(this.images.cashier.accountBalance, accountBalance, '13px arial', '#000000')
+        this.images.addItemText(this.images.cashier.accountBalance, 'Account Balance: '+accountBalance, '13px arial', '#000000')
 
         this.images.cashier.currency =  new this.images.Item (cashierWindowX + 10,cashierWindowY+85, cashierWindowWidth,25,4) 
-        this.images.addItemText( this.images.cashier.currency, currency, '13px arial', '#000000')
+        this.images.addItemText( this.images.cashier.currency, 'Currency: '+currency, '13px arial', '#000000')
         
         this.images.cashier.addChips =  new this.images.Item (cashierWindowX + 10,cashierWindowY+cashierWindowHeight-40, 30,25,4) 
         this.images.itemAsRectangle( this.images.cashier.addChips, '#0000FF')
@@ -830,9 +843,15 @@ self.displayCorrectSeatMessage(seatNumber)
         this.images.cashier.cancel =  new this.images.Item (cashierWindowX + 50,cashierWindowY+cashierWindowHeight-40, 30,25,4) 
         this.images.itemAsRectangle( this.images.cashier.cancel, '#0000FF')
         this.images.addItemText( this.images.cashier.cancel, 'cancel', '13px arial', '#000000')
+        this.images.cashier.cancel.onClick = this.hideCashier()
 
-        
-
+        for(var i in this.images.cashier){
+            if(this.images.cashier[i] instanceof this.images.Item)
+            {
+                this.displayChildren(this.images.cashier[i])
+            }
+}
+this.images.cashier.cancel.image.onClick = this.hideCashier
 
     }
 
@@ -917,7 +936,7 @@ self.displayCorrectSeatMessage(seatNumber)
         self.displayHiddenCards(players[i].seat)
      }
       }
-});
+})
 
 
 //hand dealt to user
@@ -989,8 +1008,6 @@ self.displayCorrectSeatMessage(seatNumber)
          self.displayButton(holdemCanvas.images.call,false,['act','call',actions[i].call])
          }
        else  if (actions[i].raise){
-           console.log(self.images.raise.position.z)
-           console.log(self.images.containers[2])
          self.displayChildren(self.images.raise)
          self.displayButton(self.images.raise,'raise to '+actions[i].raise[0],['act','raise', actions[i].raise[0]])
          self.showBetSlider(actions[i].raise[0], actions[i].raise[1], .01)
@@ -1019,7 +1036,7 @@ self.displayCorrectSeatMessage(seatNumber)
         if(is_you == true){
             self.gameState.userSeatNumber = player.seat
             self.displayButton(self.images.leftSideButtons[1].button, 'stand up', ['stand'])
-            self.cashierPopup(40,100,1000,'BTC')
+            self.displayCashier(40,100,1000,'BTC')
             //console.log(self.images.leftSideButtons[1].button.image)
 }});
 
@@ -1069,7 +1086,7 @@ socket.on('reset_table', function(players){
 
 })
     }
-    }
+   } 
 
     //---------------END SOCKET CODE----------------------------
 
