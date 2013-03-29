@@ -830,17 +830,17 @@ self.displayCorrectSeatMessage(seatNumber)
         this.images.cashier.tableMax = new this.images.Item (cashierWindowX + 10,cashierWindowY+35, cashierWindowWidth,25,4)
         this.images.addItemText(this.images.cashier.tableMax, 'Maximum Buyin: '+tableMax, '13px arial', '#000000')
 
-        this.images.cashier.accountBalance = new this.images.Item (this.images.accountBalance + 10,cashierWindowY+60, cashierWindowWidth,25,4)
+        this.images.cashier.accountBalance = new this.images.Item (cashierWindowX + 10,cashierWindowY+60, cashierWindowWidth,25,4)
         this.images.addItemText(this.images.cashier.accountBalance, 'Account Balance: '+accountBalance, '13px arial', '#000000')
 
         this.images.cashier.currency =  new this.images.Item (cashierWindowX + 10,cashierWindowY+85, cashierWindowWidth,25,4) 
         this.images.addItemText( this.images.cashier.currency, 'Currency: '+currency, '13px arial', '#000000')
         
-        this.images.cashier.addChips =  new this.images.Item (cashierWindowX + 10,cashierWindowY+cashierWindowHeight-40, 30,25,4) 
+        this.images.cashier.addChips =  new this.images.Item (cashierWindowX + 10,cashierWindowY+cashierWindowHeight-40, 50,25,4) 
         this.images.itemAsRectangle( this.images.cashier.addChips, '#0000FF')
         this.images.addItemText( this.images.cashier.addChips, 'add chips', '13px arial', '#000000')
 
-        this.images.cashier.cancel =  new this.images.Item (cashierWindowX + 50,cashierWindowY+cashierWindowHeight-40, 30,25,4) 
+        this.images.cashier.cancel =  new this.images.Item (cashierWindowX + 100,cashierWindowY+cashierWindowHeight-40, 50,25,4) 
         this.images.itemAsRectangle( this.images.cashier.cancel, '#0000FF')
         this.images.addItemText( this.images.cashier.cancel, 'cancel', '13px arial', '#000000')
         this.images.cashier.cancel.onClick = this.hideCashier()
