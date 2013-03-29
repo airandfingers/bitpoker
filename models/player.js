@@ -139,7 +139,7 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.toObject = function() {
-    return this.serialize('chips_won', 'hand', 'has_acted');
+    return this.serialize(['chips_won', 'hand', 'has_acted']);
   }
 
   PlayerSchema.methods.serialize = function(also_include) {

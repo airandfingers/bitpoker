@@ -201,9 +201,10 @@ module.exports = (function () {
   app.get('/table_state/:id', auth.ensureAuthenticated, function(req, res, next) {
     var table_id = req.params.id
       , table = Table.getTable(table_id)
-      , username = req.user.username;
+      , round_include = req.query.fields || 'all';
     if (table instanceof Table) {
-      var table_state = table.getCurrentRound().serialize(username);
+      var username = req.user.username
+        , table_state = table.getCurrentRound().serialize(username, round_include);
       res.json(table_state);
     }
     else {

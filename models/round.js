@@ -566,32 +566,52 @@ module.exports = (function () {
     //console.log('playerOut:', index, this.players[this.to_act]);
   };
 
-  RoundSchema.methods.serialize = function(username) {
+  static_properties.includes = {
+    all: ['stage_num', 'dealer', 'small_blind_seat', 'to_act',
+          'high_bet', 'pot', 'winner', 'community', 'round_id',
+          'max_players', 'seats', 'players']
+  };
+  RoundSchema.methods.serialize = function(this_username, include) {
     var self = this
-      , include = ['stage_num', 'dealer',
-                          'small_blind_seat', 'to_act',
-                          'high_bet', 'pot', 'winner',
-                          'community', 'round_id']
+      , round_include = include
       , all_players_include = []
       , this_player_include = ['hand']
       , round_obj = {};
+
+    if (_.isString(include)) {
+      round_include = Round.includes[include];
+      if (_.isUndefined(round_include)) {
+        try {
+          round_include = JSON.parse(include);
+        }
+        catch(e) {
+          console.error('Error while parsing include:', e);
+        }
+      }
+    }
+    if (! _.isArray(round_include)) {
+      console.error('Round.serialize called with include:', include, '.. defaulting to "all"');
+      round_include = static_properties.includes.all;
+    }
+
     if (self.showed_down) {
       all_players_include.push('hand');
     }
     if (self.isInStage('paying_out') || self.isInStage('done')) {
       all_players_include.push('chips_won');
+      this_player_include.push('chips_won');
     }
-    //console.log('round.serialize called, include is', include);
-    _.each(include, function(key) {
+    //console.log('round.serialize called, round_include is', round_include);
+    _.each(round_include, function(key) {
       round_obj[key] = self[key];
     });
-    round_obj.max_players = Round.MAX_PLAYERS;
-    round_obj.seats = _.map(self.seats, serializePlayer);
-    round_obj.players = _.map(self.players, serializePlayer);
+    if (_.contains(round_include, 'max_players')) round_obj.max_players = Round.MAX_PLAYERS;
+    if (_.contains(round_include, 'seats')) round_obj.seats = _.map(round_obj.seats, serializePlayer);
+    if (_.contains(round_include, 'players')) round_obj.players = _.map(round_obj.players, serializePlayer);
     function serializePlayer(player) {
       var player_obj;
-      if (player.username === username) {
-        player_obj = player.serialize(_.union(all_players_include, this_player_include));
+      if (player.username === this_username) {
+        player_obj = player.serialize(this_player_include);
         player_obj.is_you = true;
       }
       else {
