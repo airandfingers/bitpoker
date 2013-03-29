@@ -202,6 +202,9 @@ module.exports = (function () {
     var table_id = req.params.id
       , table = Table.getTable(table_id)
       , username = req.user.username;
+
+    req.user.maobucks_inquire(function(err, maobucks){console.log(err, maobucks);});
+
     if (table instanceof Table) {
       var table_state = table.getCurrentRound().serialize(username);
       res.json(table_state);
