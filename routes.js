@@ -1,5 +1,6 @@
 module.exports = (function () {
   var app = require('./app').app
+    , _ = require('underscore') // list utility library
     , passport = require('passport')
     , auth = require('./auth')
     , User = require('./models/user')
@@ -99,7 +100,7 @@ module.exports = (function () {
     res.redirect('/account'); 
   });
 
-  // update maobuckx
+  // update maobucks
   app.post('/update_maobucks', function (req, res) {
     var maobucks_update = req.body.maobucks_update;
     console.log("calling maobucks update route");
@@ -202,10 +203,28 @@ module.exports = (function () {
     var table_id = req.params.id
       , table = Table.getTable(table_id)
       , round_include = req.query.fields || 'all';
+
     if (table instanceof Table) {
       var username = req.user.username
-        , table_state = table.getCurrentRound().serialize(username, round_include);
-      res.json(table_state);
+        , table_state = table.getCurrentRound().serialize(username, round_include)
+        , player = table.players[username];
+      table_state.table_name = table.name;
+      if (_.isObject(player)) {
+        table_state.num_chips = player.num_chips;
+      }
+      else {
+        console.error('No player currently exists for username', username);
+      }
+      req.user.maobucks_inquire(function(err, maobucks) {
+        if (err) {
+          console.error('Error while looking up number of maobucks:', err);
+          res.json({ error: err });
+        }
+        else {
+          table_state.balance = maobucks;
+          res.json(table_state);
+        }
+      });
     }
     else {
       next('No table with ID ' + table_id);

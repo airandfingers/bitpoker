@@ -37,6 +37,15 @@ module.exports = (function() {
     });
   };
 
+  // lookup and return current maobucks value
+  UserSchema.methods.maobucks_inquire = function(cb) {
+    User.findOne({_id: this._id}, function(err, user) {
+      console.log('findOne returns', err, user);
+      console.log(this.username + " has " + user && user.maobucks + " in maobucks on " + Date());
+      cb(err, user && user.maobucks);
+    });
+  }  
+
   // instance methods - document.method()
   // example method
   UserSchema.methods.sayName = function() {

@@ -42,11 +42,13 @@ module.exports = (function () {
   , MIN_PLAYERS: 2
     // the maximum number of players this came can have
   , MAX_PLAYERS: 10
+    // at least how many chips must players bring to the table to play?
+  , MIN_CHIPS: 100
+    // at most how many chips can players bring to the table to play?
+  , MAX_CHIPS: 500
     // how a Round should handle each stage
     // {String stage_name: Function stage_handler}
   , stage_handlers: {}
-    // all the tables in the world (should this be private?)
-  , tables: {}
     // how many chips the big blind costs
   , SMALL_BLIND: 10
     // how many chips the small blind costs
@@ -567,9 +569,9 @@ module.exports = (function () {
   };
 
   static_properties.includes = {
-    all: ['stage_num', 'dealer', 'small_blind_seat', 'to_act',
+    all: ['stage_name', 'dealer', 'small_blind_seat', 'to_act',
           'high_bet', 'pot', 'winner', 'community', 'round_id',
-          'max_players', 'seats', 'players']
+          'max_players', 'min_chips', 'max_chips', 'seats', 'players']
   };
   RoundSchema.methods.serialize = function(this_username, include) {
     var self = this
@@ -606,6 +608,8 @@ module.exports = (function () {
       round_obj[key] = self[key];
     });
     if (_.contains(round_include, 'max_players')) round_obj.max_players = Round.MAX_PLAYERS;
+    if (_.contains(round_include, 'min_chips')) round_obj.min_chips = Round.MIN_CHIPS;
+    if (_.contains(round_include, 'max_chips')) round_obj.max_chips = Round.MAX_CHIPS;
     if (_.contains(round_include, 'seats')) round_obj.seats = _.map(round_obj.seats, serializePlayer);
     if (_.contains(round_include, 'players')) round_obj.players = _.map(round_obj.players, serializePlayer);
     function serializePlayer(player) {
