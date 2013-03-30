@@ -181,17 +181,8 @@ module.exports = (function () {
       , username = user.username
       , player = self.players[username];
     if (player instanceof Player) {
-      // player is already in this room.. is he idle?
-      if (player.idle) {
-        // yes - replace player's socket with this socket
-        player.onConnect(socket);
-      }
-      else {
-        // no - so why is this new socket joining? Ignore it.
-        console.error('Socket belonging to ' + username + ' joined ' + self.table_id +
-                      ' while another socket is live! Ignoring..');
-        return;
-      }
+      // replace player's socket with this socket
+      player.onConnect(socket);
     }
     else {
       // create a new player

@@ -512,7 +512,7 @@ module.exports = (function () {
          first_round = false,
          seat_counter = (seat_counter + 1) % Round.MAX_PLAYERS) {
       player = self.seats[seat_counter];
-      if (player instanceof Player && player.auto_post_blinds) {
+      if (player instanceof Player && ! player.sitting_out) {
         self.players.push(player);
         if (_.isUndefined(self.small_blind_seat)) {
           self.small_blind_seat = seat_counter;
