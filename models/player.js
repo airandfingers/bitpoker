@@ -33,8 +33,6 @@ module.exports = (function () {
     , has_acted: { type: Schema.Types.Mixed, default: function() { return {}; } }
       // the number of chips thie player won this round, if any
     , chips_won: { type: Number, default: 0 }
-      // whether this player is sitting out
-    , sitting_out: { type: Boolean, default: false }
     });
 
   var static_properties = {
@@ -59,6 +57,9 @@ module.exports = (function () {
   PlayerSchema.methods.initialize = function() {
     // attach handlers for messages as defined in Player.messages
     io.bindMessageHandlers.call(this, this.socket, static_properties.messages);
+    // set post_blind flag
+    this.setFlag('post_blind', true);
+    this.setFlag('receive_hole_cards', true);
   };
 
   PlayerSchema.methods.makeBet = function(amount) {
@@ -94,21 +95,36 @@ module.exports = (function () {
 
   PlayerSchema.methods.prompt = function(actions, timeout, default_action, cb) {
     var self = this
+      , auto_action
       , act_timeout;
-    console.log('prompting', self.username, 'for next action', actions, timeout);
-    self.sendMessage('act_prompt', actions, timeout);
-    self.socket.once('act', function(action, num_chips) {
-      console.log(self.username, 'responds with', action, num_chips);
-      self.sitting_out = false;
-      clearTimeout(act_timeout);
-      cb(action, num_chips);
+
+    _.all(actions, function(action_params, action) {
+      if (self.isFlagSet(action)) {
+        auto_action = action;
+        return false; //break
+      }
     });
-    act_timeout = setTimeout(function() {
-      console.log(self.username, 'fails to respond within', timeout, 'ms');
-      //self.setFlag('sit_out_next_hand', true);
-      self.socket.removeAllListeners('act');
-      cb(default_action);
-    }, timeout);
+
+    if (_.isString(auto_action)) {
+      console.log(auto_action, 'flag was set, so responding immediately!');
+      cb(auto_action);
+    }
+    else {
+      console.log('prompting', self.username, 'for next action', actions, timeout);
+      self.sendMessage('act_prompt', actions, timeout);
+      self.socket.once('act', function(action, num_chips) {
+        console.log(self.username, 'responds with', action, num_chips);
+        self.setFlag('receive_hole_cards', true);
+        clearTimeout(act_timeout);
+        cb(action, num_chips);
+      });
+      act_timeout = setTimeout(function() {
+        console.log(self.username, 'fails to respond within', timeout, 'ms');
+        self.setFlag('receive_hole_cards', false);
+        self.socket.removeAllListeners('act');
+        cb(default_action);
+      }, timeout);
+    }
   };
 
   PlayerSchema.methods.actedIn = function(stage) {
@@ -132,7 +148,7 @@ module.exports = (function () {
 
   PlayerSchema.methods.toObject = function() {
     return this.serialize(['chips_won', 'hand', 'has_acted']);
-  }
+  };
 
   PlayerSchema.methods.serialize = function(also_include) {
     var self = this
@@ -166,16 +182,20 @@ module.exports = (function () {
     this.flags[name] = value;
   };
 
+  PlayerSchema.methods.isFlagSet = function(name) {
+    return this.flags[name] || false;
+  };
+
   PlayerSchema.methods.onConnect = function(socket) {
     this.socket = socket;
-    this.sitting_out = false;
+    this.setFlag('receive_hole_cards', true);
   };
 
   PlayerSchema.methods.onDisconnect = function(socket) {
     if (! (_.isObject(socket) && this.socket.id === socket.id) ) {
       console.error('Player.onDisconnect called with non-matching socket', socket);
     }
-    this.sitting_out = true;
+    this.setFlag('receive_hole_cards', false);
   };
 
   /* the model - a fancy constructor compiled from the schema:

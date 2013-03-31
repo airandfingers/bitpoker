@@ -138,21 +138,24 @@ module.exports = (function () {
     var self = this
       , SMALL_BLIND_PAID = false
       , BIG_BLIND_PAID = false
-      , bet
       , player;
 
     self.calculatePlayers();
     while (SMALL_BLIND_PAID === false && 
            self.players.length >= Round.MIN_PLAYERS) {
       player = self.players[this.to_act];
-      //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
-      bet = player.makeBet(Round.SMALL_BLIND);
-      if (bet < Round.SMALL_BLIND) {
+      console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
+      if (! player.isFlagSet('post_blind')) {
+        console.log('Player\'s post_blind flag is unset - skipping player!');
+        self.playerOut(self.to_act);
+      }
+      else if (player.num_chips < Round.SMALL_BLIND) {
         console.error('Player does not have enough chips to pay small blind!');
         self.playerOut(self.to_act);
-        player.returnBet();
       }
       else {
+        console.log('player will post blind:', player, Round.SMALL_BLIND);
+        player.makeBet(Round.SMALL_BLIND);
         self.broadcast('player_acts', player.serialize(), 'post_blind', self.calculatePot());
         SMALL_BLIND_PAID = true;
       }
@@ -164,12 +167,17 @@ module.exports = (function () {
            self.players.length >= Round.MIN_PLAYERS) {
       player = self.players[this.to_act];
       //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
-      bet = player.makeBet(Round.BIG_BLIND);
-      if (bet < Round.BIG_BLIND) {
+      if (! player.isFlagSet('post_blind')) {
+        console.log('Player\'s post_blind flag is unset - skipping player!');
+        self.playerOut(self.to_act);
+      }
+      else if (player.num_chips < Round.BIG_BLIND) {
         console.error('Player does not have enough chips to pay big blind!');
         self.playerOut(self.to_act);
       }
       else {
+        console.log('player will post blind:', player, Round.SMALL_BLIND);
+        player.makeBet(Round.BIG_BLIND);
         self.broadcast('player_acts', player.serialize(), 'post_blind', self.calculatePot());
         BIG_BLIND_PAID = true;
       }
@@ -304,7 +312,7 @@ module.exports = (function () {
           if (_.all(actions, function(action_obj) { return (action_obj[action_choice] === undefined); })) {
             console.error('Player chose invalid action', action_choice, ', so treating it as', free_action);
             action_choice = free_action; // act as if the player timed out (in less than Round.TIMEOUT)
-            num_chips = undefined;
+            num_chips_choice = undefined;
           }
           performAction(action_choice, num_chips_choice);
           self.broadcast('player_acts', player.serialize(), action_choice, self.calculatePot());
@@ -512,7 +520,7 @@ module.exports = (function () {
          first_round = false,
          seat_counter = (seat_counter + 1) % Round.MAX_PLAYERS) {
       player = self.seats[seat_counter];
-      if (player instanceof Player && ! player.sitting_out) {
+      if (player instanceof Player && player.isFlagSet('receive_hole_cards') && player.isFlagSet('post_blind')) {
         self.players.push(player);
         if (_.isUndefined(self.small_blind_seat)) {
           self.small_blind_seat = seat_counter;
