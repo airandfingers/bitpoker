@@ -514,7 +514,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
     this.playerPutsChipsInPot =function(seatNumber,betSize, stackSize){
         
          this.images.seats[seatNumber].bet.text.text = betSize
-         if(stackSize <=0){stackSize = 'All-In'}
+         if(stackSize && stackSize <=0){stackSize = 'All In'}
          this.images.seats[seatNumber].status.text.text = stackSize
 
            this.displayChildren(this.images.seats[seatNumber].bet)
@@ -571,15 +571,15 @@ this.images.pot.text.text = 'pot: '+potSize
 
     this.playerSits = function(seatNumber, playerName, chips){
         this.gameState.seats[seatNumber].displayMessageType = 'seat'
-        this.hideChildren(this.images.seats[seatNumber].emptySeat)
         this.images.seats[seatNumber].playerName.text.text =  playerName
         if(typeof chips == 'number' && chips>0){
         this.images.seats[seatNumber].status.text.text =  chips
         }
-        else{this.images.seats[seatNumber].status.text.textd =  'Sitting Out'}
+        else if(this.stage.contains(this.images.seats[seatNumber].hiddenCard0)||this.stage.contains(this.images.seats[seatNumber].shownCard0)){this.images.seats[seatNumber].status.text.text =  'All In'}
+        else{this.images.seats[seatNumber].status.text.text =  'Sitting Out'}
            
         this.displayCorrectSeatMessage(seatNumber)
-           this.displayChildren(this.images.stand)
+        if(this.gameState.userSeatNumber == seatNumber){   this.displayChildren(this.images.stand)}
 
     }
 
@@ -859,6 +859,7 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
         self.displayCorrectSeatMessage(seatNumber)
 
         var interval = 100
+        var alpha
         if(typeof fadeTimeInSeconds == 'number'){alpha = fadeTimeInSeconds}
         else{alpha = 2}
 
@@ -896,6 +897,7 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
 self.displayCorrectSeatMessage(seatNumber)
 
          var interval = 100
+         var alpha
         if(typeof fadeTimeInSeconds == 'number'){alpha = fadeTimeInSeconds}
         else{alpha = 2.5}
 
@@ -988,37 +990,52 @@ self.displayCorrectSeatMessage(seatNumber)
 
         var cashierWindowWidth = 200
         var cashierWindowHeight = 250
+        //declare size variables
+        var textLeftOffset = 10
+         var outerTopHeight = cashierWindowHeight*.08
+                var outerBottomHeight = cashierWindowHeight*.03
+        var outerSideWidth = cashierWindowWidth*.02
+
         var asdf = document.getElementById('canvas')
         var stageWidth = asdf.width
         var stageHeight = asdf.height
         var cashierWindowX = stageWidth/2 - cashierWindowWidth/2
         var cashierWindowY = stageHeight/2 - cashierWindowHeight/2
-        var cashierWindowOffsetLeft = cashierWindowX + 10
+        
 
+        var innerCashierX = cashierWindowX+outerSideWidth
+        var innerCashierY = cashierWindowY+outerTopHeight
+        var innerCashierWidth = cashierWindowWidth-2*outerSideWidth
+        var innerCashierHeight = cashierWindowHeight-outerBottomHeight-outerTopHeight
+
+        var textX = innerCashierX + textLeftOffset
         
 
         this.images.cashier.window = new this.images.Item(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight,4)
-        this.images.itemAsRectangle(this.images.cashier.window, '#A8A8A8 ')
+        this.images.cashier.window.image = new createjs.Shape()
+        //outer blue rim
+        this.images.cashier.window.image.graphics.setStrokeStyle(1).beginFill('blue').beginStroke('#FF00FF').rect(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight)
+        this.images.cashier.window.image.graphics.setStrokeStyle(1).beginFill('#C0C0C0').beginStroke('#FF00FF').rect(innerCashierX,innerCashierY,innerCashierWidth,innerCashierHeight)
 
-        this.images.cashier.blinds = new this.images.Item (cashierWindowOffsetLeft,cashierWindowY+10, cashierWindowWidth,25,4)
+        this.images.cashier.blinds = new this.images.Item (textX,innerCashierY+15, innerCashierWidth,25,4)
         this.images.addItemText(this.images.cashier.blinds, 'blinds: '+small_blind+'/'+big_blind, '13px arial', '#000000')
 
-         this.images.cashier.tableName = new this.images.Item (cashierWindowOffsetLeft,this.images.cashier.blinds.position.y+10, cashierWindowWidth,25,4)
+         this.images.cashier.tableName = new this.images.Item (textX,this.images.cashier.blinds.position.y+15, innerCashierWidth,25,4)
         this.images.addItemText(this.images.cashier.tableName, 'Table Name: '+table_name, '13px arial', '#000000')
 
-        this.images.cashier.tableMin = new this.images.Item (cashierWindowOffsetLeft,this.images.cashier.tableName.position.y+10, cashierWindowWidth,25,4)
+        this.images.cashier.tableMin = new this.images.Item (textX,this.images.cashier.tableName.position.y+15, innerCashierWidth,25,4)
         this.images.addItemText(this.images.cashier.tableMin, 'Minimum Buyin: '+min, '13px arial', '#000000')
 
-        this.images.cashier.tableMax = new this.images.Item (cashierWindowOffsetLeft, this.images.cashier.tableMin.position.y+10, cashierWindowWidth,25,4)
+        this.images.cashier.tableMax = new this.images.Item (textX, this.images.cashier.tableMin.position.y+15, innerCashierWidth,25,4)
         this.images.addItemText(this.images.cashier.tableMax, 'Maximum Buyin: '+max, '13px arial', '#000000')
 
-        this.images.cashier.accountBalance = new this.images.Item (cashierWindowOffsetLeft,this.images.cashier.tableMax.position.y +10, cashierWindowWidth,25,4)
+        this.images.cashier.accountBalance = new this.images.Item (textX,this.images.cashier.tableMax.position.y +15, innerCashierWidth,25,4)
         this.images.addItemText(this.images.cashier.accountBalance, 'My Available Balance: '+balance, '13px arial', '#000000')
 
-        this.images.cashier.addChipsTextBox = new this.images.Item (cashierWindowOffsetLeft,this.images.cashier.accountBalance.position.y +20, cashierWindowWidth/2,25,4)
+        this.images.cashier.addChipsTextBox = new this.images.Item (textX,this.images.cashier.accountBalance.position.y +25, cashierWindowWidth/2,25,4)
     //    $('<form id = 'cashier'>    <input type = 'radio' name = 'max'>max<br>Other Amount: <input type = 'text'>        </form>')
-        this.images.cashier.addChipsTextBox.image = new createjs.DOMElement(cashier)
-        this.images.cashier.addChipsTextBox.positionImage()
+      //  this.images.cashier.addChipsTextBox.image = new createjs.DOMElement(cashier)
+      //  this.images.cashier.addChipsTextBox.positionImage()
 
     //    this.images.cashier.currency =  new this.images.Item (cashierWindowOffsetLeft,this.images.cashier.accountBalance.position.y+10, cashierWindowWidth,25,4) 
     //    this.images.addItemText( this.images.cashier.currency, 'Currency: '+currency, '13px arial', '#000000')
@@ -1035,9 +1052,9 @@ self.displayCorrectSeatMessage(seatNumber)
       this.images.cashier.horizontalSlider = new this.images.Item (this.images.cashier.addChips.position.x,this.images.cashier.addChips.position.y-25,cashierWindowWidth-30,1,4)
       this.images.cashier.verticalSlider = new this.images.Item(this.images.cashier.horizontalSlider.position.x,this.images.cashier.horizontalSlider.position.y-10,5,20,4)
       this.images.cashier.addChipsAmount = new this.images.Item(this.images.cashier.horizontalSlider.position.x+this.images.cashier.horizontalSlider.size.x+20,30,35,30,4)
-              this.itemAsRectangle(this.betSlider.horizontal, 'black')
-        this.itemAsRectangle(this.betSlider.vertical, 'blue')
-        this.addItemText(this.betSlider.betSize, 0, '14px Arial', 'black')
+              this.images.itemAsRectangle(this.images.cashier.horizontalSlider, 'black')
+        this.images.itemAsRectangle(this.images.cashier.verticalSlider, 'blue')
+        this.images.addItemText(this.images.cashier.addChipsAmount, '0', '14px Arial', 'black')
 
 
         this.images.cashier.cancel.image.onClick = this.hideCashier
@@ -1064,33 +1081,14 @@ self.displayCorrectSeatMessage(seatNumber)
             this.gameState.seats[i] = null
 
         }
-        
-        //comunity cards
-        this.displayAllCommunity(table_state.community)
-        //pot
-        if(table_state.pot&&table_state.pot>0){this.displayPot(table_state.pot)}
 
-        //display seats
-         for (var i in table_state.seats) { 
-         //seated players
-         this.playerSits(table_state.seats[i].seat,table_state.seats[i].username,table_state.seats[i].chips)
-         //assign userSeatNumber if player is user
-         if(table_state.seats[i].is_you){this.gameState.userSeatNumber = table_state.seats[i].seat}
-         }
-
-         //empty seats
+                 //empty seats
          for (var i = 0; i<table_state.max_players;i++){
              
              this.displayCorrectSeatMessage(i)
          }
 
-         
-         //current bets
-         for (var i=0;i<table_state.players.length;i=i+1) { 
-         this.playerPutsChipsInPot(table_state.players[i].seat,table_state.players[i].current_bet)
-         }
-
-        //display player's cards
+                //display player's cards
          for(var i=0;i<table_state.players.length;i=i+1){
                if(!table_state.players[i].hand)
                {
@@ -1102,6 +1100,27 @@ self.displayCorrectSeatMessage(seatNumber)
         this.displayHoleCards(table_state.players[i].hand, table_state.players[i].seat)
         }
         }
+        
+                //display seats and assign userSeatNumber
+         for (var i in table_state.seats) { 
+          //assign userSeatNumber if player is user
+         if(table_state.seats[i].is_you){ this.gameState.userSeatNumber = table_state.seats[i].seat }
+         //seated players
+         this.playerSits(table_state.seats[i].seat,table_state.seats[i].username,table_state.seats[i].chips)
+        
+         }
+
+        //comunity cards
+        this.displayAllCommunity(table_state.community)
+        //pot
+        if(table_state.pot&&table_state.pot>0){this.displayPot(table_state.pot)}
+
+         //current bets
+         for (var i=0;i<table_state.players.length;i=i+1) { 
+         this.playerPutsChipsInPot(table_state.players[i].seat,table_state.players[i].current_bet, table_state.players[i].chips)
+         }
+
+
         
   
     }
@@ -1229,7 +1248,7 @@ self.displayCorrectSeatMessage(seatNumber)
             socket.emit('get_add_chips_info')
             self.gameState.userSeatNumber = player.seat
             self.displayButton(self.images.stand, false, ['stand'])
-            //self.displayCashier(40,100,1000,'BTC')
+            self.displayCashier(1,2,1000,'no limit holdem',.01,.02)
             //console.log(self.images.leftSideButtons[1].button.image)
 }});
 
