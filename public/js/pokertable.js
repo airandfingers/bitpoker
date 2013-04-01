@@ -219,9 +219,9 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
     //if mouse is inside the dimensions of the horizontal slider, proportionally display bet size
         else if(event.stageX>=minX && event.stageX<=maxX) {
      event.target.graphics.beginFill('blue').drawRect(event.stageX,event.target.parentOfImageObject.position.y,event.target.parentOfImageObject.size.x,event.target.parentOfImageObject.size.y)
-  var betSizePercent = (event.stageX-minX)/(maxX-minX)
-     var unroundedBetAmount =  betSizePercent*(self.gameState.maxBet-self.gameState.minBet)+self.gameState.minBet
-     var roundedBet = Math.round(unroundedBetAmount/self.gameState.minIncrement)*self.gameState.minIncrement
+   betSizePercent = (event.stageX-minX)/(maxX-minX)
+      unroundedBetAmount =  betSizePercent*(self.gameState.maxBet-self.gameState.minBet)+self.gameState.minBet
+      roundedBet = Math.round(unroundedBetAmount/self.gameState.minIncrement)*self.gameState.minIncrement
 
   }
    self.images.betSlider.betSize.text.text = roundedBet
@@ -236,8 +236,9 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
   //=============END BET SLIDER===================
 
   //===========START ADD CHIPS SLIDER ======================
-    this.events.addChipsSliderVerticalMouseDown = function(){
+    this.events.addChipsSliderVerticalMouseDown = function(event){
           
+
           var unRounded
          var addPercent
          var rounded
@@ -259,9 +260,9 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
     //if mouse is inside the dimensions of the horizontal slider, proportionally display add size
         else if(event.stageX>=minX && event.stageX<=maxX) {
      event.target.graphics.beginFill('red').drawRect(event.stageX,event.target.parentOfImageObject.position.y,event.target.parentOfImageObject.size.x,event.target.parentOfImageObject.size.y)
-  var addPercent = (event.stageX-minX)/(maxX-minX)
-     var unRounded =  addPercent*(self.gameState.maxBet-self.gameState.minBet)+self.gameState.minBet
-     var rounded = Math.round(unroundedBetAmount/self.gameState.cashier.minIncrement)*self.gameState.cashier.minIncrement
+   addPercent = (event.stageX-minX)/(maxX-minX)
+      unRounded =  addPercent*(self.gameState.cashier.max-self.gameState.cashier.min)+self.gameState.cashier.min
+      rounded =  Math.round(unRounded*1000)/1000
   }
 
     self.images.cashier.addChipsAmount.text.text = rounded
@@ -277,17 +278,17 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
         addChipsAmount = self.gameState.cashier.max}
   else if(event.stageX<minX){
       event.target.graphics.beginFill('blue').drawRect(minX,event.target.parentOfImageObject.position.y,event.target.parentOfImageObject.size.x,event.target.parentOfImageObject.size.y)
-  rounded = self.gameState.minBet}
+  rounded = self.gameState.cashier.min}
 
     //if mouse is inside the dimensions of the horizontal slider, proportionally display bet size
         else if(event.stageX>=minX && event.stageX<=maxX) {
      event.target.graphics.beginFill('blue').drawRect(event.stageX,event.target.parentOfImageObject.position.y,event.target.parentOfImageObject.size.x,event.target.parentOfImageObject.size.y)
    addPercent = (event.stageX-minX)/(maxX-minX)
       unRounded =  addPercent*(self.gameState.cashier.max-self.gameState.cashier.min)+self.gameState.cashier.min
-     rounded = Math.round(unroundedBetAmount/self.gameState.minIncrement)*self.gameState.minIncrement
+     rounded =    Math.round(unRounded*1000)/1000
 
   }
-   self.images.cashier.addAmount.text.text = rounded
+   self.images.cashier.addChipsAmount.text.text = rounded
   self.stage.update()
 
  }
@@ -390,7 +391,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
         this.community[4] = new this.Item(422,169,cardWidth, cardHeight,2)
 
         //upper left side button
-        this.stand = new this.Item(0,0,actionButtonWidth,actionButtonHeight/2,2)
+        this.stand = new this.Item(0,0,actionButtonWidth,actionButtonHeight/2,2, ['stand'])
 
       }
 
@@ -491,6 +492,8 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
         }
 
         this.rightSideButtons[0].button.image.onClick = self.events.foldToAnyBetClick
+        this.stand.image.onPress = self.events.buttonMouseDown
+        this.stand.image.onClick = self.events.onButtonClick
 
     }
 
@@ -986,6 +989,13 @@ self.displayCorrectSeatMessage(seatNumber)
     this.displayCashier = function(min, max, balance,table_name,small_blind, big_blind)
     {
         
+        this.gameState.cashier.min = min
+        this.gameState.cashier.max = max
+        this.gameState.cashier.balance = balance
+        this.gameState.cashier.table_name = table_name
+        this.gameState.cashier.small_blind = small_blind
+        this.gameState.cashier.big_blind = big_blind
+
         this.images.cashier = {}
 
         var cashierWindowWidth = 200
@@ -1033,8 +1043,20 @@ self.displayCorrectSeatMessage(seatNumber)
         this.images.addItemText(this.images.cashier.accountBalance, 'My Available Balance: '+balance, '13px arial', '#000000')
 
         this.images.cashier.addChipsTextBox = new this.images.Item (textX,this.images.cashier.accountBalance.position.y +25, cashierWindowWidth/2,25,4)
+
+        $('#canvas').append(
+    $('<input />', {
+        id: 'cashier',
+        type: "radio",
+        name: "blah",
+        value: "blahval"
+    })
+);
     //    $('<form id = 'cashier'>    <input type = 'radio' name = 'max'>max<br>Other Amount: <input type = 'text'>        </form>')
-      //  this.images.cashier.addChipsTextBox.image = new createjs.DOMElement(cashier)
+    
+    var htmlcashier = document.getElementById('cashier')
+    console.log(htmlcashier)
+        this.images.cashier.addChipsTextBox.image = new createjs.DOMElement(htmlcashier)
       //  this.images.cashier.addChipsTextBox.positionImage()
 
     //    this.images.cashier.currency =  new this.images.Item (cashierWindowOffsetLeft,this.images.cashier.accountBalance.position.y+10, cashierWindowWidth,25,4) 
@@ -1049,9 +1071,20 @@ self.displayCorrectSeatMessage(seatNumber)
         this.images.addItemText( this.images.cashier.cancel, 'cancel', '13px arial', '#000000')
         this.images.cashier.cancel.onClick = this.hideCashier()
 
+         this.images.cashier.closeWindow =  new this.images.Item (innerCashierX + innerCashierWidth*.9,cashierWindowY+1, innerCashierWidth*.1,innerCashierY-cashierWindowY-2,4) 
+        this.images.cashier.closeWindow.image  = new createjs.Shape() 
+        this.images.cashier.closeWindow.image.graphics.beginFill('#CD0000').rect(this.images.cashier.closeWindow.position.x,this.images.cashier.closeWindow.position.y, this.images.cashier.closeWindow.size.x,this.images.cashier.closeWindow.size.y)
+        this.images.cashier.closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
+        this.images.cashier.closeWindow.image.graphics.moveTo(this.images.cashier.closeWindow.position.x+this.images.cashier.closeWindow.size.x*.12,this.images.cashier.closeWindow.position.y+this.images.cashier.closeWindow.size.y*.12)
+        this.images.cashier.closeWindow.image.graphics.lineTo(this.images.cashier.closeWindow.position.x+this.images.cashier.closeWindow.size.x*.88,this.images.cashier.closeWindow.position.y+this.images.cashier.closeWindow.size.y*.88)
+        this.images.cashier.closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
+        this.images.cashier.closeWindow.image.graphics.moveTo(this.images.cashier.closeWindow.position.x+this.images.cashier.closeWindow.size.x*.88,this.images.cashier.closeWindow.position.y+this.images.cashier.closeWindow.size.y*.12)
+        this.images.cashier.closeWindow.image.graphics.lineTo(this.images.cashier.closeWindow.position.x+this.images.cashier.closeWindow.size.x*.12,this.images.cashier.closeWindow.position.y+this.images.cashier.closeWindow.size.y*.88)
+        this.images.cashier.closeWindow.image.onClick = this.hideCashier
+
       this.images.cashier.horizontalSlider = new this.images.Item (this.images.cashier.addChips.position.x,this.images.cashier.addChips.position.y-25,cashierWindowWidth-30,1,4)
       this.images.cashier.verticalSlider = new this.images.Item(this.images.cashier.horizontalSlider.position.x,this.images.cashier.horizontalSlider.position.y-10,5,20,4)
-      this.images.cashier.addChipsAmount = new this.images.Item(this.images.cashier.horizontalSlider.position.x+this.images.cashier.horizontalSlider.size.x+20,30,35,30,4)
+      this.images.cashier.addChipsAmount = new this.images.Item(this.images.cashier.horizontalSlider.position.x+this.images.cashier.horizontalSlider.size.x/2,this.images.cashier.horizontalSlider.position.y-35,35,30,4)
               this.images.itemAsRectangle(this.images.cashier.horizontalSlider, 'black')
         this.images.itemAsRectangle(this.images.cashier.verticalSlider, 'blue')
         this.images.addItemText(this.images.cashier.addChipsAmount, '0', '14px Arial', 'black')
@@ -1059,7 +1092,7 @@ self.displayCorrectSeatMessage(seatNumber)
 
         this.images.cashier.cancel.image.onClick = this.hideCashier
 
-        this.images.cashier.addChips.image.onClick = this.events.addChipsSliderVerticalMouseDown
+        this.images.cashier.verticalSlider.image.onPress = self.events.addChipsSliderVerticalMouseDown
 
                 this.displayChildren(this.images.cashier)
 
@@ -1081,12 +1114,6 @@ self.displayCorrectSeatMessage(seatNumber)
             this.gameState.seats[i] = null
 
         }
-
-                 //empty seats
-         for (var i = 0; i<table_state.max_players;i++){
-             
-             this.displayCorrectSeatMessage(i)
-         }
 
                 //display player's cards
          for(var i=0;i<table_state.players.length;i=i+1){
@@ -1120,7 +1147,11 @@ self.displayCorrectSeatMessage(seatNumber)
          this.playerPutsChipsInPot(table_state.players[i].seat,table_state.players[i].current_bet, table_state.players[i].chips)
          }
 
-
+          //empty seats
+         for (var i = 0; i<table_state.max_players;i++){
+             
+             this.displayCorrectSeatMessage(i)
+         }
         
   
     }
