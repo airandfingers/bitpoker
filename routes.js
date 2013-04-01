@@ -2,10 +2,12 @@ module.exports = (function () {
   var app = require('./app').app
     , _ = require('underscore') // list utility library
     , passport = require('passport')
+    , nodemailer = require('nodemailer')
     , auth = require('./auth')
     , User = require('./models/user')
     , Room = require('./models/room')
-    , Table = require('./models/table');
+    , Table = require('./models/table')
+    , mailer = require('./mailer');
 
   var base_page = '/lobby';
   
@@ -82,7 +84,7 @@ module.exports = (function () {
     });
   });
 
-  // validate e-mail address & save to MongoDB
+  // validate e-mail address & save to MongoDB & send an e-mail confirmation.
   app.post('/account', function (req, res) {
     var email = req.body.email
       , valid = true; //this is a stub to hold the place for a email validator functionality. 
@@ -95,6 +97,8 @@ module.exports = (function () {
         if (err)
           console.error('error when saving email to database.');
         console.log("email saved to" + req.user.username + "'s account.");
+        mailer.sendMessage();
+
       });
     }
     res.redirect('/account'); 
