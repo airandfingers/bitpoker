@@ -393,6 +393,9 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
         //upper left side button
         this.stand = new this.Item(0,0,actionButtonWidth,actionButtonHeight/2,2, ['stand'])
 
+        //not in hand action buttons
+        this.sitIn = new this.Item(205,419,actionButtonWidth,actionButtonHeight,2, ['set flag','receive_hole_cards', true])
+
       }
 
 
@@ -468,6 +471,9 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
  //upper left button
  this.itemAsRectangle(this.stand, 'black')
  this.addItemText(this.stand,'stand up','10px Arial','white')
+
+ //options (when not to act)
+this.addItemText(this.sitIn,'Deal Me In','10px Arial','white')
 
     }
 
@@ -661,6 +667,13 @@ this.images.containers[parentOfImageObject.position.z].addChild(parentOfImageObj
             this.images.containers[parent.position.z+1].removeChild(parent.text)
         this.stage.update()
         }
+        }
+
+        this.playerSitsOut=function(seatNumber){
+            
+            this.images.seats[seatNumber].status.text.text = "Sitting Out"
+            if(seatNumber == this.gameState.userSeatNumber){this.displayButton(this.images.sitIn,false)}
+
         }
 
  
@@ -1292,6 +1305,14 @@ self.displayCorrectSeatMessage(seatNumber)
         if(is_you){
             self.gameState.userSeatNumber = false
 }
+})
+
+//player stands, checks if player is the user
+       socket.on('player_sits_out', function(seatNumber){
+
+           self.playerSitsOut(seatNumber)
+
+
 })
 
 //player receives server message to open cashier
