@@ -126,8 +126,8 @@ item.fillColor = fillColor
             this.images.addItemText = function(parentOfImageObject,text,sizeAndFont,color){
                 
                 parentOfImageObject.text = new createjs.Text(text, sizeAndFont, color)
-parentOfImageObject.text.x=parentOfImageObject.position.x + parentOfImageObject.size.x/2
-parentOfImageObject.text.y=parentOfImageObject.position.y
+parentOfImageObject.text.x=parentOfImageObject.position.x + parentOfImageObject.size.x/2 
+parentOfImageObject.text.y=parentOfImageObject.position.y + 1
 parentOfImageObject.text.baseline = 'top'
 parentOfImageObject.text.textAlign = 'center'
 parentOfImageObject.text.maxWidth = parentOfImageObject.size.x*.9
@@ -1015,7 +1015,7 @@ self.displayCorrectSeatMessage(seatNumber)
 
         var innerCashierX = cashierWindowX+outerSideWidth
         var innerCashierY = cashierWindowY+outerTopHeight
-        var innerCashierWidth = cashierWindowWidth-2*outerSideWidth
+        var innerCashierWidth = cashierWindowWidth-2*outerSideWidth -2
         var innerCashierHeight = cashierWindowHeight-outerBottomHeight-outerTopHeight
 
         var textX = innerCashierX + textLeftOffset
