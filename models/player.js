@@ -25,18 +25,14 @@ module.exports = (function () {
     , current_bet: { type: Number, default: 0 }
     /*// whether this player has paid a big blind at this table yet
     , blind_paid: { type: Boolean, default: false }*/
-      // whether this player wants to post blinds automatically (or, in v1, at all)
-    , auto_post_blinds: { type: Boolean, default: true }
+      // the flags that describe how this player will act automatically
+    , flags: { type: Schema.Types.Mixed, default: function() { return {}; } }
       // the seat number this player is currently sitting in, if any
     , seat: Number
       // which stages this player has acted in, in the current round
     , has_acted: { type: Schema.Types.Mixed, default: function() { return {}; } }
       // the number of chips thie player won this round, if any
     , chips_won: { type: Number, default: 0 }
-      // whether this player is idle
-    , idle: { type: Boolean, default: false }
-      // the number of consecutive act_prompt messages this player has timed out on
-    , prompts_timed_out: { type: Number, default: 0 }
     });
 
   var static_properties = {
@@ -45,8 +41,6 @@ module.exports = (function () {
     messages: {
       set_flag: 'setFlag'
     }
-    // the number of timeouts after which Players are considered idle
-  , NUM_TIMEOUTS_TO_IDLE: 3
   };
 
   // static methods - Model.method()
@@ -63,6 +57,9 @@ module.exports = (function () {
   PlayerSchema.methods.initialize = function() {
     // attach handlers for messages as defined in Player.messages
     io.bindMessageHandlers.call(this, this.socket, static_properties.messages);
+    // set post_blind flag
+    this.setFlag('post_blind', true);
+    this.setFlag('receive_hole_cards', true);
   };
 
   PlayerSchema.methods.makeBet = function(amount) {
@@ -98,25 +95,36 @@ module.exports = (function () {
 
   PlayerSchema.methods.prompt = function(actions, timeout, default_action, cb) {
     var self = this
+      , auto_action
       , act_timeout;
-    console.log('prompting', self.username, 'for next action', actions, timeout);
-    self.sendMessage('act_prompt', actions, timeout);
-    self.socket.once('act', function(action, num_chips) {
-      console.log(self.username, 'responds with', action, num_chips);
-      self.prompts_timed_out = 0;
-      self.idle = false;
-      clearTimeout(act_timeout);
-      cb(action, num_chips);
-    });
-    act_timeout = setTimeout(function() {
-      console.log(self.username, 'fails to respond within', timeout, 'ms');
-      self.prompts_timed_out++;
-      if (self.prompts_timed_out === Player.NUM_TIMEOUTS_TO_IDLE) {
-        self.idle = true;
+
+    _.all(actions, function(action_params, action) {
+      if (self.isFlagSet(action)) {
+        auto_action = action;
+        return false; //break
       }
-      self.socket.removeAllListeners('act');
-      cb(default_action);
-    }, timeout);
+    });
+
+    if (_.isString(auto_action)) {
+      console.log(auto_action, 'flag was set, so responding immediately!');
+      cb(auto_action);
+    }
+    else {
+      console.log('prompting', self.username, 'for next action', actions, timeout);
+      self.sendMessage('act_prompt', actions, timeout);
+      self.socket.once('act', function(action, num_chips) {
+        console.log(self.username, 'responds with', action, num_chips);
+        self.setFlag('receive_hole_cards', true);
+        clearTimeout(act_timeout);
+        cb(action, num_chips);
+      });
+      act_timeout = setTimeout(function() {
+        console.log(self.username, 'fails to respond within', timeout, 'ms');
+        self.setFlag('receive_hole_cards', false);
+        self.socket.removeAllListeners('act');
+        cb(default_action);
+      }, timeout);
+    }
   };
 
   PlayerSchema.methods.actedIn = function(stage) {
@@ -139,13 +147,12 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.toObject = function() {
-    return this.serialize('chips_won', 'hand', 'has_acted');
-  }
+    return this.serialize(['chips_won', 'hand', 'has_acted']);
+  };
 
   PlayerSchema.methods.serialize = function(also_include) {
     var self = this
-      , default_include = ['username', 'seat', 'chips',
-                           'auto_post_blinds', 'current_bet']
+      , default_include = ['username', 'seat', 'chips', 'current_bet']
       , include = _.union(default_include, also_include || [])
       , player_obj = {};
     //console.log('player.serialize called, include is', include);
@@ -167,24 +174,28 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.setFlag = function(name, value) {
-    if (name !== 'auto_post_blinds' || ! _.isBoolean(value)) {
+    /*if (name !== 'auto_post_blinds' || ! _.isBoolean(value)) {
       console.error('setFlag called with', name, value);
       return;
-    }
+    }*/
     console.log(this.serialize(), 'setting', name, 'to', value);
-    this[name] = value;
+    this.flags[name] = value;
+  };
+
+  PlayerSchema.methods.isFlagSet = function(name) {
+    return this.flags[name] || false;
   };
 
   PlayerSchema.methods.onConnect = function(socket) {
     this.socket = socket;
-    this.idle = false;
+    this.setFlag('receive_hole_cards', true);
   };
 
   PlayerSchema.methods.onDisconnect = function(socket) {
     if (! (_.isObject(socket) && this.socket.id === socket.id) ) {
       console.error('Player.onDisconnect called with non-matching socket', socket);
     }
-    this.idle = true;
+    this.setFlag('receive_hole_cards', false);
   };
 
   /* the model - a fancy constructor compiled from the schema:

@@ -42,11 +42,13 @@ module.exports = (function () {
   , MIN_PLAYERS: 2
     // the maximum number of players this came can have
   , MAX_PLAYERS: 10
+    // at least how many chips must players bring to the table to play?
+  , MIN_CHIPS: 100
+    // at most how many chips can players bring to the table to play?
+  , MAX_CHIPS: 500
     // how a Round should handle each stage
     // {String stage_name: Function stage_handler}
   , stage_handlers: {}
-    // all the tables in the world (should this be private?)
-  , tables: {}
     // how many chips the big blind costs
   , SMALL_BLIND: 10
     // how many chips the small blind costs
@@ -136,21 +138,24 @@ module.exports = (function () {
     var self = this
       , SMALL_BLIND_PAID = false
       , BIG_BLIND_PAID = false
-      , bet
       , player;
 
     self.calculatePlayers();
     while (SMALL_BLIND_PAID === false && 
            self.players.length >= Round.MIN_PLAYERS) {
       player = self.players[this.to_act];
-      //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
-      bet = player.makeBet(Round.SMALL_BLIND);
-      if (bet < Round.SMALL_BLIND) {
+      console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
+      if (! player.isFlagSet('post_blind')) {
+        console.log('Player\'s post_blind flag is unset - skipping player!');
+        self.playerOut(self.to_act);
+      }
+      else if (player.num_chips < Round.SMALL_BLIND) {
         console.error('Player does not have enough chips to pay small blind!');
         self.playerOut(self.to_act);
-        player.returnBet();
       }
       else {
+        console.log('player will post blind:', player, Round.SMALL_BLIND);
+        player.makeBet(Round.SMALL_BLIND);
         self.broadcast('player_acts', player.serialize(), 'post_blind', self.calculatePot());
         SMALL_BLIND_PAID = true;
       }
@@ -162,12 +167,17 @@ module.exports = (function () {
            self.players.length >= Round.MIN_PLAYERS) {
       player = self.players[this.to_act];
       //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
-      bet = player.makeBet(Round.BIG_BLIND);
-      if (bet < Round.BIG_BLIND) {
+      if (! player.isFlagSet('post_blind')) {
+        console.log('Player\'s post_blind flag is unset - skipping player!');
+        self.playerOut(self.to_act);
+      }
+      else if (player.num_chips < Round.BIG_BLIND) {
         console.error('Player does not have enough chips to pay big blind!');
         self.playerOut(self.to_act);
       }
       else {
+        console.log('player will post blind:', player, Round.SMALL_BLIND);
+        player.makeBet(Round.BIG_BLIND);
         self.broadcast('player_acts', player.serialize(), 'post_blind', self.calculatePot());
         BIG_BLIND_PAID = true;
       }
@@ -302,7 +312,7 @@ module.exports = (function () {
           if (_.all(actions, function(action_obj) { return (action_obj[action_choice] === undefined); })) {
             console.error('Player chose invalid action', action_choice, ', so treating it as', free_action);
             action_choice = free_action; // act as if the player timed out (in less than Round.TIMEOUT)
-            num_chips = undefined;
+            num_chips_choice = undefined;
           }
           performAction(action_choice, num_chips_choice);
           self.broadcast('player_acts', player.serialize(), action_choice, self.calculatePot());
@@ -510,7 +520,7 @@ module.exports = (function () {
          first_round = false,
          seat_counter = (seat_counter + 1) % Round.MAX_PLAYERS) {
       player = self.seats[seat_counter];
-      if (player instanceof Player && player.auto_post_blinds) {
+      if (player instanceof Player && player.isFlagSet('receive_hole_cards') && player.isFlagSet('post_blind')) {
         self.players.push(player);
         if (_.isUndefined(self.small_blind_seat)) {
           self.small_blind_seat = seat_counter;
@@ -566,32 +576,54 @@ module.exports = (function () {
     //console.log('playerOut:', index, this.players[this.to_act]);
   };
 
-  RoundSchema.methods.serialize = function(username) {
+  static_properties.includes = {
+    all: ['stage_name', 'dealer', 'small_blind_seat', 'to_act',
+          'high_bet', 'pot', 'winner', 'community', 'round_id',
+          'max_players', 'min_chips', 'max_chips', 'seats', 'players']
+  };
+  RoundSchema.methods.serialize = function(this_username, include) {
     var self = this
-      , include = ['stage_num', 'dealer',
-                          'small_blind_seat', 'to_act',
-                          'high_bet', 'pot', 'winner',
-                          'community', 'round_id']
+      , round_include = include
       , all_players_include = []
       , this_player_include = ['hand']
       , round_obj = {};
+
+    if (_.isString(include)) {
+      round_include = Round.includes[include];
+      if (_.isUndefined(round_include)) {
+        try {
+          round_include = JSON.parse(include);
+        }
+        catch(e) {
+          console.error('Error while parsing include:', e);
+        }
+      }
+    }
+    if (! _.isArray(round_include)) {
+      console.error('Round.serialize called with include:', include, '.. defaulting to "all"');
+      round_include = static_properties.includes.all;
+    }
+
     if (self.showed_down) {
       all_players_include.push('hand');
     }
     if (self.isInStage('paying_out') || self.isInStage('done')) {
       all_players_include.push('chips_won');
+      this_player_include.push('chips_won');
     }
-    //console.log('round.serialize called, include is', include);
-    _.each(include, function(key) {
+    //console.log('round.serialize called, round_include is', round_include);
+    _.each(round_include, function(key) {
       round_obj[key] = self[key];
     });
-    round_obj.max_players = Round.MAX_PLAYERS;
-    round_obj.seats = _.map(self.seats, serializePlayer);
-    round_obj.players = _.map(self.players, serializePlayer);
+    if (_.contains(round_include, 'max_players')) round_obj.max_players = Round.MAX_PLAYERS;
+    if (_.contains(round_include, 'min_chips')) round_obj.min_chips = Round.MIN_CHIPS;
+    if (_.contains(round_include, 'max_chips')) round_obj.max_chips = Round.MAX_CHIPS;
+    if (_.contains(round_include, 'seats')) round_obj.seats = _.map(round_obj.seats, serializePlayer);
+    if (_.contains(round_include, 'players')) round_obj.players = _.map(round_obj.players, serializePlayer);
     function serializePlayer(player) {
       var player_obj;
-      if (player.username === username) {
-        player_obj = player.serialize(_.union(all_players_include, this_player_include));
+      if (player.username === this_username) {
+        player_obj = player.serialize(this_player_include);
         player_obj.is_you = true;
       }
       else {

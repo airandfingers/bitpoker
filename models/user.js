@@ -4,6 +4,7 @@ module.exports = (function() {
     , ObjectId = Schema.ObjectId // Mongoose ObjectId type
 
     , crypto = require('crypto') // encryption utility library
+    , async = require('async') // flow control utility library
     
     , db = require('./db'); // make sure db is connected
 
@@ -12,13 +13,17 @@ module.exports = (function() {
   var UserSchema = new Schema({
   // instance properties - document.field_name
     //the user's username
-    username        : String
+    username         : String
     //the user's password, hashed with SHA-1
-  , password        : String
-    //added 3/3/13
-  , email           : {type: String, trim: true}
-  , maobucks        : {type: Number, default: 0}
-  , registration_date: {type: Date, default: Date.now}
+  , password         : String
+    //the user's email address
+  , email            : { type: String, trim: true }
+    //the code used to confirm this user's email
+  , confirmation_code: String
+    //whether the user has confirmed his/r email address
+  , email_confirmed  : Boolean
+  , maobucks         : { type: Number, default: 0 }
+  , registration_date: { type: Date, default: Date.now }
   });
 
   // static methods - Model.method()
@@ -37,6 +42,24 @@ module.exports = (function() {
     });
   };
 
+  UserSchema.statics.generateConfirmationCode = function(callback) {
+    crypto.randomBytes(16, function(err, buf) {
+      if (err) {
+        callback(err);
+      }
+      else {
+        var confirmation_code = buf.toString('hex');
+        callback(null, confirmation_code);
+      }
+    });
+  };
+
+  // instance methods - document.method()
+  // example method
+  UserSchema.methods.sayName = function() {
+    console.log(this.username);
+  };
+
   // lookup and return current maobucks value
   UserSchema.methods.maobucks_inquire = function(cb) {
     User.findOne({_id: this._id}, function(err, user) {
@@ -44,13 +67,7 @@ module.exports = (function() {
       console.log(this.username + " has " + user && user.maobucks + " in maobucks on " + Date());
       cb(err, user && user.maobucks);
     });
-  }  
-
-  // instance methods - document.method()
-  // example method
-  UserSchema.methods.sayName = function() {
-    console.log(this.username);
-  };
+  }
 
   // gets called before a document is saved
   UserSchema.pre('save', function(next) {
@@ -61,15 +78,14 @@ module.exports = (function() {
     shasum = shasum.digest('hex');
     user.password = shasum;
 
-    // check to make sure that the username is unique
     User.findOne({username : user.username}, function(err, result) {
       if (err) {
-          next(err);
+        next(err);
       } else if (result) {
-          user.invalidate('username', 'username must be unique');
-          next(new Error('username already exists!'));
+        user.invalidate('username', 'username must be unique');
+        next(new Error('username already exists!'));
       } else {
-          next();
+        next();
       }
     });
   });
