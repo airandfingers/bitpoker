@@ -93,12 +93,26 @@ module.exports = (function () {
     //if email is valid, save it to MondoDB
     if (valid) {
       //attach e-mail to user
-      User.update({ _id: req.user._id }, { $set: { email: email } }, function(err) {
-        if (err)
-          console.error('error when saving email to database.');
-        console.log("email saved to" + req.user.username + "'s account.");
-        mailer.sendMessage();
-
+      User.generateConfirmationCode(function(err, confirmation_code) {
+        if (err) {
+          console.error('Error while generating confirmation code:', err);
+        }
+        else {
+          User.update({ _id: req.user._id },
+                      { $set: { email: email, confirmation_code: confirmation_code } },
+                      function(err, num_updated) {
+            if (err) {
+              console.error('Error when saving email to database:', err);
+            }
+            else if (! (num_updated > 0)) {
+              console.error('Failed to update any users with', req.user._id);
+            }
+            else {
+              console.log("Email saved to" + req.user.username + "'s account.");
+              mailer.sendConfirmationEmail(email, confirmation_code, req.user.username);
+            }
+          });
+        }
       });
     }
     res.redirect('/account'); 
@@ -111,7 +125,7 @@ module.exports = (function () {
     User.update({_id: req.user._id}, { $set: { maobucks: maobucks_update } }, function(err) {
       if (err)
         console.error('error when updating maobucks to database.');
-      console.log("Updated to"+ req.user.username +"'s account to " + maobucks_update + "maobucks.");
+      console.log("Updated " + req.user.username + "'s account to " + maobucks_update + "maobucks.");
     } );
     res.redirect('/account')
   });
