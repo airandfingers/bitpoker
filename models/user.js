@@ -21,7 +21,7 @@ module.exports = (function() {
     //the code used to confirm this user's email
   , confirmation_code: String
     //whether the user has confirmed his/r email address
-  , email_confirmed  : Boolean
+  , email_confirmed  : { type: Boolean, default: false }
   , maobucks         : { type: Number, default: 0 }
   , registration_date: { type: Date, default: Date.now }
   });

@@ -86,14 +86,24 @@ module.exports = (function () {
   });
 
   //this route handles the verify e-mail circumstance.
-  app.get('/verify_email, confirmation_code', function(req, res) {
-    res.render('verify_email', {    
-        email: req.query.email 
-      , confirmation_code: req.query.confirmation_code
-    });
+  app.get('/verify_email', function (req, res) {
+    var email = req.query.email
+      , confirmation_code = req.query.confirmation_code;
 
+    res.render('verify_email', {    
+      username: req.user.username,
+      registration_date: req.user.registration_date,
+      email: req.user.email,
+      maobucks: req.user.maobucks,
+      email_confirmed: req.user.email_confirmed,
+    });
+    console.log("HEY! We got to the verify e-mail route. good job son. req.query.email is ", req.query.email, " and req.query.confirmation code is ", req.query.confirmation_code);
     //check user database for users with matching email and confirmation code, then update email_confirmed property to true.
-    User.findOneAndUpdate( {email: email, confirmation_code: confirmation_code}, {email_confirmed: true});
+    User.findOneAndUpdate( {email: email, confirmation_code: confirmation_code}, {email_confirmed: true}, function(err) {
+      if (err) {
+        console.error('Error during findOneAndUpdate:', err);
+      }
+    });
   });
 
   // validate e-mail address & save to MongoDB & send an e-mail confirmation.
@@ -116,7 +126,7 @@ module.exports = (function () {
             if (err) {
               console.error('Error when saving email to database:', err);
             }
-            else if (! (num_updated > 0)) {
+            else if (num_updated <= 0) {
               console.error('Failed to update any users with', req.user._id);
             }
             else {
