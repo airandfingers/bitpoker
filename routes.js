@@ -1,5 +1,6 @@
 module.exports = (function () {
   var app = require('./app').app
+    , _ = require('underscore') // list utility library
     , passport = require('passport')
     , nodemailer = require('nodemailer')
     , auth = require('./auth')
@@ -18,6 +19,7 @@ module.exports = (function () {
       registration_date: req.user.registration_date,
       email: req.user.email,
       maobucks: req.user.maobucks,
+      email_confirmed: req.user.email_confirmed, 
     });
   });
 
@@ -51,7 +53,7 @@ module.exports = (function () {
     res.render('legal_info', {
       title: 'legal_info',
     });
-  })
+  });
 
   app.get('/login', function (req, res) {
     //console.log("GET /login called!");
@@ -84,16 +86,14 @@ module.exports = (function () {
   });
 
   //this route handles the verify e-mail circumstance.
-  app.get('/verify_email' + confirmation_code, function(req, res) {
+  app.get('/verify_email, confirmation_code', function(req, res) {
     res.render('verify_email', {    
         email: req.query.email 
       , confirmation_code: req.query.confirmation_code
     });
 
-    //check user database for users with mathcing email and confirmation code
-    if () {
-      //set email_confirmed value to true
-    }
+    //check user database for users with matching email and confirmation code, then update email_confirmed property to true.
+    User.findOneAndUpdate( {email: email, confirmation_code: confirmation_code}, {email_confirmed: true});
   });
 
   // validate e-mail address & save to MongoDB & send an e-mail confirmation.
@@ -105,27 +105,44 @@ module.exports = (function () {
     //if email is valid, save it to MondoDB
     if (valid) {
       //attach e-mail to user
-      User.update({ _id: req.user._id }, { $set: { email: email } }, function(err) {
-        if (err)
-          console.error('error when saving email to database.');
-        console.log("email saved to" + req.user.username + "'s account.");
-        mailer.sendMessage();
-
+      User.generateConfirmationCode(function(err, confirmation_code) {
+        if (err) {
+          console.error('Error while generating confirmation code:', err);
+        }
+        else {
+          User.update({ _id: req.user._id },
+                      { $set: { email: email, confirmation_code: confirmation_code } },
+                      function(err, num_updated) {
+            if (err) {
+              console.error('Error when saving email to database:', err);
+            }
+            else if (! (num_updated > 0)) {
+              console.error('Failed to update any users with', req.user._id);
+            }
+            else {
+              console.log("Email saved to" + req.user.username + "'s account.");
+              mailer.sendConfirmationEmail(email, confirmation_code, req.user.username);
+            }
+          });
+        }
       });
     }
     res.redirect('/account'); 
   });
 
-  // update maobuckx
+  // update maobucks
   app.post('/update_maobucks', function (req, res) {
     var maobucks_update = req.body.maobucks_update;
     console.log("calling maobucks update route");
     User.update({_id: req.user._id}, { $set: { maobucks: maobucks_update } }, function(err) {
-      if (err)
-        console.error('error when updating maobucks to database.');
-      console.log("Updated to"+ req.user.username +"'s account to " + maobucks_update + "maobucks.");
+      if (err) {
+        console.error('error when updating maobucks to database.'); 
+      }
+      else {
+      console.log("Updated " + req.user.username + "'s account to " + maobucks_update + "maobucks.");
+      }
     } );
-    res.redirect('/account')
+    res.redirect('/account');
   });
 
   app.post('/login',
@@ -218,13 +235,29 @@ module.exports = (function () {
   app.get('/table_state/:id', auth.ensureAuthenticated, function(req, res, next) {
     var table_id = req.params.id
       , table = Table.getTable(table_id)
-      , username = req.user.username;
-
-    req.user.maobucks_inquire(function(err, maobucks){console.log(err, maobucks);});
+      , round_include = req.query.fields || 'all';
 
     if (table instanceof Table) {
-      var table_state = table.getCurrentRound().serialize(username);
-      res.json(table_state);
+      var username = req.user.username
+        , table_state = table.getCurrentRound().serialize(username, round_include)
+        , player = table.players[username];
+      table_state.table_name = table.name;
+      if (_.isObject(player)) {
+        table_state.num_chips = player.num_chips;
+      }
+      else {
+        console.error('No player currently exists for username', username);
+      }
+      req.user.maobucks_inquire(function(err, maobucks) {
+        if (err) {
+          console.error('Error while looking up number of maobucks:', err);
+          res.json({ error: err });
+        }
+        else {
+          table_state.balance = maobucks;
+          res.json(table_state);
+        }
+      });
     }
     else {
       next('No table with ID ' + table_id);
