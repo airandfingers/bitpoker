@@ -138,21 +138,21 @@ module.exports = (function () {
     // override emit method to log, then emit
     var emit = socket.emit;
     socket.emit = function() {
-      var args = Array.prototype.slice.call(arguments)
+      var args_array = _.toArray(arguments)
         , user = socket.user || {};
-      if (args[0] !== 'newListener') {
-        console.log('Sending to ' + user.username + ':', args);
+      if (args_array[0] !== 'newListener') {
+        console.log('Sending to ' + user.username + ':', args_array);
         emit.apply(socket, arguments);
       }
     };
 
-    // override on method (called $emit) to log, then on
+    // override message-received trigger (called $emit) to log, then trigger
     var $emit = socket.$emit;
     socket.$emit = function() {
-      var args = Array.prototype.slice.call(arguments)
+      var args_array = _.toArray(arguments)
         , user = socket.user || {};
-      if (args[0] !== 'newListener') {
-        console.log(user.username + ' sent:', args);
+      if (args_array[0] !== 'newListener') {
+        console.log('(room) ' + user.username + ' sent:', args_array);
         $emit.apply(socket, arguments);
       }
     };

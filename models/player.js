@@ -55,11 +55,12 @@ module.exports = (function () {
 
   // instance methods - document.method()
   PlayerSchema.methods.initialize = function() {
+    var self = this;
     // attach handlers for messages as defined in Player.messages
     io.bindMessageHandlers.call(this, this.socket, static_properties.messages);
     // set post_blind flag
     this.setFlag('post_blind', true);
-    this.setFlag('receive_hole_cards', true);
+    this.onConnect(this.socket);
   };
 
   PlayerSchema.methods.makeBet = function(amount) {
@@ -173,6 +174,25 @@ module.exports = (function () {
     this.seat = undefined;
   };
 
+  PlayerSchema.methods.calculateAddChipsInfo = function(min_chips, max_chips, chips_per_maobuck, cb) {
+    var self = this;
+    self.socket.user.maobucks_inquire(function(err, maobucks) {
+      if (err) {
+        cb(err);
+      }
+      else {
+        var balance_in_chips = maobucks * chips_per_maobuck
+          , add_chips_info = {
+              balance: maobucks
+            , min: balance_in_chips >= min_chips ? min_chips : -1
+            , max: balance_in_chips >= max_chips ? max_chips : balance_in_chips >= min_chips ? balance_in_chips : -1
+            , stack: self.chips
+        };
+        cb(null, add_chips_info);
+      }
+    });
+  };
+
   PlayerSchema.methods.setFlag = function(name, value) {
     /*if (name !== 'auto_post_blinds' || ! _.isBoolean(value)) {
       console.error('setFlag called with', name, value);
@@ -187,8 +207,22 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.onConnect = function(socket) {
-    this.socket = socket;
-    this.setFlag('receive_hole_cards', true);
+    var self = this;
+    self.socket = socket;
+    self.setFlag('receive_hole_cards', true);
+
+    // override message-received trigger (called $emit) to log, trigger player event, then trigger
+    var $emit = self.socket.$emit;
+    self.socket.$emit = function() {
+      var args_array = _.toArray(arguments);
+      if (args_array[0] !== 'newListener') {
+        console.log('(player) ' + self.username + ' sent:', args_array);
+        // trigger event on this player object
+        self.emit.apply(self, arguments);
+        // trigger any message handlers as normal
+        $emit.apply(self.socket, arguments);
+      }
+    };
   };
 
   PlayerSchema.methods.onDisconnect = function(socket) {

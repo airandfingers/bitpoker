@@ -43,9 +43,9 @@ module.exports = (function () {
     // the maximum number of players this came can have
   , MAX_PLAYERS: 10
     // at least how many chips must players bring to the table to play?
-  , MIN_CHIPS: 100
+  , MIN_CHIPS: 50
     // at most how many chips can players bring to the table to play?
-  , MAX_CHIPS: 500
+  , MAX_CHIPS: 1000
     // how a Round should handle each stage
     // {String stage_name: Function stage_handler}
   , stage_handlers: {}
@@ -53,6 +53,8 @@ module.exports = (function () {
   , SMALL_BLIND: 10
     // how many chips the small blind costs
   , BIG_BLIND: 20
+    // how many chips each maobuck buys
+  , CHIPS_PER_MAOBUCK: 100
     // how long (in ms) to wait for players to respond to prompts
   , TIMEOUT: 10000
     // how long (in ms) to wait for players to respond to prompts

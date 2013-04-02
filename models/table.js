@@ -29,12 +29,12 @@ module.exports = (function () {
   , ROUND_INTERIM: 1000
     // [this string] + table_id = room_name
   , TABLE_PREFIX: 'table_'
-    // the messages a Table should react to, on each player's socket
-    // {String message_name: {handler: Function, pass_socket: Boolean, pass_message_name: Boolean}}
-  , messages: {}
     // the events a Table should react to, on its room
     // {String event_name: String handler_name}
   , room_events: {}
+    // the events a Table should react to, on each player
+    // {String event_name: String handler_name}
+  , player_events: {}
     // all the tables in the world (should this be private?)
   , tables: {}
   };
@@ -191,10 +191,25 @@ module.exports = (function () {
           , username: username
       });
       self.players[username] = player;
+      // attach handlers for events as defined in Table.player_events
+      console.log('Created player', username, ', binding player events');
+      _.each(Table.player_events, function(handler_name, event_name) {
+        var handler = self[handler_name];
+        if (! _.isFunction(handler)) {
+          console.error('player_event points to non-function', handler);
+        }
+        else {
+          player.on(event_name, function() {
+            var args_array = _.toArray(arguments);
+            // add player as first argument
+            args_array.unshift(player);
+            //console.log(event_name, 'triggered with', args_array, '; calling', handler);
+            handler.apply(self, args_array);
+          });
+        }
+      });
     }
     socket.player = player;
-    // attach handlers for messages as defined in Table.messages
-    io.bindMessageHandlers.call(this, socket, Table.messages);
   };
 
   static_properties.room_events.socket_leave = 'onSocketDisconnect';
@@ -207,14 +222,14 @@ module.exports = (function () {
     }
   };
 
-  static_properties.messages.sit = { handler: 'seatPlayer', pass_socket: true };
-  TableSchema.methods.seatPlayer = function(socket, seat_num, num_chips) {
+  static_properties.player_events.sit = 'seatPlayer';
+  TableSchema.methods.seatPlayer = function(player, seat_num, num_chips) {
+    var socket = player.socket;
     if (this.seats[seat_num] !== undefined) {
       console.error('A player is already sitting in seat ' + seat_num);
       socket.emit('error', 'A player is already sitting in seat ' + seat_num);
       return;
     }
-    var player = socket.player;
     if (player.seat) {
       console.error('Player is already sitting at the table!');
       socket.emit('error', 'Player is already sitting at the table!');
@@ -236,9 +251,9 @@ module.exports = (function () {
     }
   };
 
-  static_properties.messages.stand = { handler: 'unseatPlayer', pass_socket: true };
-  TableSchema.methods.unseatPlayer = function(socket) {
-    var player = socket.player
+  static_properties.player_events.stand = 'unseatPlayer';
+  TableSchema.methods.unseatPlayer = function(player) {
+    var socket = player.socket
       , seat_num = player.seat;
 
     if (_.isUndefined(seat_num)) {
@@ -252,6 +267,27 @@ module.exports = (function () {
     var player_obj = player.serialize();
     socket.broadcast.emit('player_stands', player_obj, seat_num, false);
     socket.emit('player_stands', player_obj, seat_num, true);
+  };
+
+  static_properties.player_events.get_add_chips_info = 'sendAddChipsInfo';
+  TableSchema.methods.sendAddChipsInfo = function(player) {
+    var socket = player.socket
+      , add_chips_info = {
+          table_name: this.name
+        , small_blind: Round.SMALL_BLIND
+        , big_blind: Round.BIG_BLIND
+    };
+    player.calculateAddChipsInfo(Round.MIN_CHIPS, Round.MAX_CHIPS, Round.CHIPS_PER_MAOBUCK,
+                                 function(err, player_add_chips_info) {
+      if (err) {
+        console.error('Error during Player.calculateAddChipsInfo:', err);
+        socket.emit('error', err.message || err);
+      }
+      else {
+        _.extend(add_chips_info, player_add_chips_info);
+        socket.emit('add_chips_info', add_chips_info);
+      }
+    });
   };
 
   /* the model - a fancy constructor compiled from the schema:
