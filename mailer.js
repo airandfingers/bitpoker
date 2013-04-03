@@ -40,7 +40,7 @@ module.exports = (function () {
       // if you don't want to use this transport object anymore, uncomment following line
       smtp_transport.close(); // shut down the connection pool, no more messages
     });
-  }
+  };
 
   return {sendConfirmationEmail: sendConfirmationEmail};
 })();

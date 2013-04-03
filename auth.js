@@ -33,7 +33,7 @@ module.exports = (function () {
 
   passport.deserializeUser(function(id, done) {
     //console.log("deserializeUser called!");
-    User.findById(id, 'username registration_date maobucks email', function(err, result) {
+    User.findById(id, 'username registration_date maobucks email email_confirmed', function(err, result) {
       if (err) { return done(err); }
       if (! result) {
         return done(null, false, {message: 'Unknown id!'});
