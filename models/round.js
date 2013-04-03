@@ -146,13 +146,13 @@ module.exports = (function () {
     while (SMALL_BLIND_PAID === false && 
            self.players.length >= Round.MIN_PLAYERS) {
       player = self.players[this.to_act];
-      console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
+      //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
       if (! player.isFlagSet('post_blind')) {
         console.log('Player\'s post_blind flag is unset - skipping player!');
         self.playerOut(self.to_act);
       }
       else if (player.num_chips < Round.SMALL_BLIND) {
-        console.error('Player does not have enough chips to pay small blind!');
+        console.log('Player does not have enough chips to pay small blind!');
         self.playerOut(self.to_act);
       }
       else {
@@ -522,7 +522,7 @@ module.exports = (function () {
          first_round = false,
          seat_counter = (seat_counter + 1) % Round.MAX_PLAYERS) {
       player = self.seats[seat_counter];
-      if (player instanceof Player && player.isFlagSet('receive_hole_cards') && player.isFlagSet('post_blind')) {
+      if (player instanceof Player && player.isFlagSet('receive_hole_cards')) {
         self.players.push(player);
         if (_.isUndefined(self.small_blind_seat)) {
           self.small_blind_seat = seat_counter;
@@ -587,7 +587,7 @@ module.exports = (function () {
     var self = this
       , round_include = include
       , all_players_include = []
-      , this_player_include = ['hand']
+      , this_player_include = ['hand', 'flags']
       , round_obj = {};
 
     if (_.isString(include)) {
@@ -617,6 +617,7 @@ module.exports = (function () {
     _.each(round_include, function(key) {
       round_obj[key] = self[key];
     });
+    //console.log('round_obj is', round_obj);
     if (_.contains(round_include, 'max_players')) round_obj.max_players = Round.MAX_PLAYERS;
     if (_.contains(round_include, 'min_chips')) round_obj.min_chips = Round.MIN_CHIPS;
     if (_.contains(round_include, 'max_chips')) round_obj.max_chips = Round.MAX_CHIPS;

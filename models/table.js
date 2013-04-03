@@ -139,10 +139,11 @@ module.exports = (function () {
     var self = this
       , round_num = this.rounds.length + 1
       , round = Round.createRound({
-      seats: this.seats
-    , broadcast: function() { self.room.broadcast.apply(self.room, arguments); }
-    , dealer: this.dealer
-    , round_id: self.name + '.' + round_num
+          seats: this.seats
+        , players: this.players
+        , broadcast: function() { self.room.broadcast.apply(self.room, arguments); }
+        , dealer: this.dealer
+        , round_id: self.name + '.' + round_num
     });
     console.log('Pushing new round onto rounds, with round_id: ', this.rounds.length);
     this.rounds.push(round);
@@ -223,7 +224,7 @@ module.exports = (function () {
   };
 
   static_properties.player_events.sit = 'seatPlayer';
-  TableSchema.methods.seatPlayer = function(player, seat_num, num_chips) {
+  TableSchema.methods.seatPlayer = function(player, seat_num) {
     var socket = player.socket;
     if (this.seats[seat_num] !== undefined) {
       console.error('A player is already sitting in seat ' + seat_num);
@@ -235,7 +236,6 @@ module.exports = (function () {
       socket.emit('error', 'Player is already sitting at the table!');
       return;
     }
-    player.chips = num_chips;
     player.takeSeat(seat_num);
     this.seats[seat_num] = player;
 
@@ -244,6 +244,7 @@ module.exports = (function () {
     socket.emit('player_sits', player_obj, true);
     
     var current_round = this.getCurrentRound();
+    console.log('about to test:', this.hasStatus(Table.STATUSES.WAITING), _.keys(this.seats).length >= Round.MIN_PLAYERS);
     if (this.hasStatus(Table.STATUSES.WAITING) && 
         _.keys(this.seats).length >= Round.MIN_PLAYERS) {
       this.setStatus(Table.STATUSES.GAME_IN_PROGRESS);
@@ -267,6 +268,16 @@ module.exports = (function () {
     var player_obj = player.serialize();
     socket.broadcast.emit('player_stands', player_obj, seat_num, false);
     socket.emit('player_stands', player_obj, seat_num, true);
+  };
+
+  static_properties.player_events.sit_out = 'playerSitsOut';
+  TableSchema.methods.playerSitsOut = function(player) {
+    this.room.broadcast('player_sits_out', player.serialize());
+  };
+
+  static_properties.player_events.sit_in = 'playerSitsIn';
+  TableSchema.methods.playerSitsIn = function(player) {
+    this.room.broadcast('player_sits_in', player.serialize());
   };
 
   static_properties.player_events.get_add_chips_info = 'sendAddChipsInfo';

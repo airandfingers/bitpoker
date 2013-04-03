@@ -39,7 +39,6 @@ module.exports = (function () {
   // static properties (attached below) - Model.property_name
     // message-to-handler map, { message_name: instance_method_name }
     messages: {
-      set_flag: 'setFlag'
     }
   };
 
@@ -141,6 +140,9 @@ module.exports = (function () {
     this.hand = [];
     this.has_acted = {};
     this.chips_won = 0;
+    if (! this.isFlagSet('receive_hole_cards')) {
+      this.sitOut();
+    }
   };
 
   PlayerSchema.methods.sendMessage = function() {
@@ -153,14 +155,14 @@ module.exports = (function () {
 
   PlayerSchema.methods.serialize = function(also_include) {
     var self = this
-      , default_include = ['username', 'seat', 'chips', 'current_bet']
+      , default_include = ['username', 'seat', 'chips', 'current_bet', 'sitting_out']
       , include = _.union(default_include, also_include || [])
       , player_obj = {};
     //console.log('player.serialize called, include is', include);
     _.each(include, function(key) {
-      if (self[key] === undefined) {
+      /*if (self[key] === undefined) {
         console.error(key, self[key]);
-      }
+      }*/
       player_obj[key] = self[key];
     });
     return player_obj;
@@ -172,6 +174,18 @@ module.exports = (function () {
 
   PlayerSchema.methods.vacateSeat = function() {
     this.seat = undefined;
+  };
+
+  static_properties.messages.sit_out = 'sitOut';
+  PlayerSchema.methods.sitOut = function() {
+    this.sitting_out = true;
+    this.emit('sit_out');
+  };
+
+  static_properties.messages.sit_in = 'sitIn';
+  PlayerSchema.methods.sitIn = function() {
+    this.sitting_out = false;
+    this.emit('sit_in');
   };
 
   PlayerSchema.methods.calculateAddChipsInfo = function(min_chips, max_chips, chips_per_maobuck, cb) {
@@ -193,12 +207,13 @@ module.exports = (function () {
     });
   };
 
+  static_properties.messages.set_flag = 'setFlag';
   PlayerSchema.methods.setFlag = function(name, value) {
     /*if (name !== 'auto_post_blinds' || ! _.isBoolean(value)) {
       console.error('setFlag called with', name, value);
       return;
     }*/
-    console.log(this.serialize(), 'setting', name, 'to', value);
+    console.log(this.username, 'setting', name, 'to', value);
     this.flags[name] = value;
   };
 
