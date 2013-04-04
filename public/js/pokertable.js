@@ -506,7 +506,7 @@ this.addItemText(this.sitIn,'Deal Me In','10px Arial','white')
     this.images.setDefaultMessages = function(){
         
         for (var i = 0; i < this.seats.length; i = i + 1){
-          this.seats[i].emptySeat.messages = ['sit',i, 100+i]
+          this.seats[i].emptySeat.messages = ['sit',i]
         }
     }
 
@@ -999,15 +999,15 @@ self.displayCorrectSeatMessage(seatNumber)
 
     }
 
-    this.displayCashier = function(min, max, balance,table_name,small_blind, big_blind)
+    this.displayCashier = function(info)
     {
         
-        this.gameState.cashier.min = min
-        this.gameState.cashier.max = max
-        this.gameState.cashier.balance = balance
-        this.gameState.cashier.table_name = table_name
-        this.gameState.cashier.small_blind = small_blind
-        this.gameState.cashier.big_blind = big_blind
+        this.gameState.cashier.min = info.min
+        this.gameState.cashier.max = info.max
+        this.gameState.cashier.balance = info.balance
+        this.gameState.cashier.table_name = info.table_name
+        this.gameState.cashier.small_blind = info.small_blind
+        this.gameState.cashier.big_blind = info.big_blind
 
         this.images.cashier = {}
 
@@ -1044,19 +1044,19 @@ self.displayCorrectSeatMessage(seatNumber)
          this.images.addItemText(this.images.cashier.windowTitle, 'Get Chips', '13px arial', '#000000')
 
         this.images.cashier.blinds = new this.images.Item (textX,innerCashierY+15, innerCashierWidth,25,4)
-        this.images.addItemText(this.images.cashier.blinds, 'blinds: '+small_blind+'/'+big_blind, '13px arial', '#000000')
+        this.images.addItemText(this.images.cashier.blinds, 'blinds: '+info.small_blind+'/'+info.big_blind, '13px arial', '#000000')
 
          this.images.cashier.tableName = new this.images.Item (textX,this.images.cashier.blinds.position.y+15, innerCashierWidth,25,4)
-        this.images.addItemText(this.images.cashier.tableName, 'Table Name: '+table_name, '13px arial', '#000000')
+        this.images.addItemText(this.images.cashier.tableName, 'Table Name: '+info.table_name, '13px arial', '#000000')
 
         this.images.cashier.tableMin = new this.images.Item (textX,this.images.cashier.tableName.position.y+15, innerCashierWidth,25,4)
-        this.images.addItemText(this.images.cashier.tableMin, 'Minimum Buyin: '+min, '13px arial', '#000000')
+        this.images.addItemText(this.images.cashier.tableMin, 'Minimum Buyin: '+info.min, '13px arial', '#000000')
 
         this.images.cashier.tableMax = new this.images.Item (textX, this.images.cashier.tableMin.position.y+15, innerCashierWidth,25,4)
-        this.images.addItemText(this.images.cashier.tableMax, 'Maximum Buyin: '+max, '13px arial', '#000000')
+        this.images.addItemText(this.images.cashier.tableMax, 'Maximum Buyin: '+info.max, '13px arial', '#000000')
 
         this.images.cashier.accountBalance = new this.images.Item (textX,this.images.cashier.tableMax.position.y +15, innerCashierWidth,25,4)
-        this.images.addItemText(this.images.cashier.accountBalance, 'My Available Balance: '+balance, '13px arial', '#000000')
+        this.images.addItemText(this.images.cashier.accountBalance, 'My Available Balance: '+info.balance, '13px arial', '#000000')
 
     /*   
 
@@ -1298,7 +1298,6 @@ self.displayCorrectSeatMessage(seatNumber)
             socket.emit('get_add_chips_info')
             self.gameState.userSeatNumber = player.seat
             self.displayButton(self.images.stand, false, ['stand'])
-            self.displayCashier(1,2,1000,'no limit holdem',.01,.02)
             //console.log(self.images.leftSideButtons[1].button.image)
 }});
 
@@ -1314,16 +1313,16 @@ self.displayCorrectSeatMessage(seatNumber)
 })
 
 //player stands, checks if player is the user
-       socket.on('player_sits_out', function(seatNumber){
+       socket.on('player_sits_out', function(player){
 
-           self.playerSitsOut(seatNumber)
+           self.playerSitsOut(player.seat)
 
 
 })
 
 //player receives server message to open cashier
-       socket.on('add_chips_info', function(min,max, balance,table_name,small_blind, big_blind){
-        self.displayCashier(min,max, balance,table_name,small_blind, big_blind)
+       socket.on('add_chips_info', function(info){
+        self.displayCashier(info)
         }
   );   
 
