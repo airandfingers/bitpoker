@@ -1040,6 +1040,9 @@ self.displayCorrectSeatMessage(seatNumber)
         this.images.cashier.window.image.graphics.setStrokeStyle(1).beginFill('blue').beginStroke('#FF00FF').rect(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight)
         this.images.cashier.window.image.graphics.setStrokeStyle(1).beginFill('#C0C0C0').beginStroke('#FF00FF').rect(innerCashierX,innerCashierY,innerCashierWidth,innerCashierHeight)
 
+        this.images.cashier.windowTitle = new this.images.Item (cashierWindowX+1,cashierWindowY+1, cashierWindowWidth,outerTopHeight-2,4)
+         this.images.addItemText(this.images.cashier.windowTitle, 'Get Chips', '13px arial', '#000000')
+
         this.images.cashier.blinds = new this.images.Item (textX,innerCashierY+15, innerCashierWidth,25,4)
         this.images.addItemText(this.images.cashier.blinds, 'blinds: '+small_blind+'/'+big_blind, '13px arial', '#000000')
 
@@ -1055,22 +1058,25 @@ self.displayCorrectSeatMessage(seatNumber)
         this.images.cashier.accountBalance = new this.images.Item (textX,this.images.cashier.tableMax.position.y +15, innerCashierWidth,25,4)
         this.images.addItemText(this.images.cashier.accountBalance, 'My Available Balance: '+balance, '13px arial', '#000000')
 
-        this.images.cashier.addChipsTextBox = new this.images.Item (textX,this.images.cashier.accountBalance.position.y +25, cashierWindowWidth/2,25,4)
+    /*   
 
-        $('#canvas').append(
+        $('#pokerTable').append(
     $('<input />', {
         id: 'cashier',
         type: "radio",
         name: "blah",
-        value: "blahval"
+        value: "blahval",
+        style: 'z-index:1'
+        
     })
 );
     //    $('<form id = 'cashier'>    <input type = 'radio' name = 'max'>max<br>Other Amount: <input type = 'text'>        </form>')
-    
+    */
+     this.images.cashier.addChipsTextBox = new this.images.Item (textX,this.images.cashier.accountBalance.position.y +25, innerCashierWidth,25,4)
     var htmlcashier = document.getElementById('cashier')
     console.log(htmlcashier)
         this.images.cashier.addChipsTextBox.image = new createjs.DOMElement(htmlcashier)
-      //  this.images.cashier.addChipsTextBox.positionImage()
+        this.images.cashier.addChipsTextBox.positionImage()
 
     //    this.images.cashier.currency =  new this.images.Item (cashierWindowOffsetLeft,this.images.cashier.accountBalance.position.y+10, cashierWindowWidth,25,4) 
     //    this.images.addItemText( this.images.cashier.currency, 'Currency: '+currency, '13px arial', '#000000')

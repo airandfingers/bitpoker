@@ -3,7 +3,14 @@
         <h1 id="welcome">
             Hello Bitcoin Poker world! You are in <%= title %>.
         </h1>
-        <canvas id="canvas" width="690" height="480"></canvas>
+<div id="pokerTable">
+        <canvas id="canvas" width="690" height="480" style= 'z-index :0'></canvas>
+       
+    <form id = 'cashier' style="z-index: 1" style="display: none">    
+           <input type = 'radio' name = 'max'>max<br>
+           Other Amount: <input type = 'text'>        </form>  
+    
+    </div>
         <div id="chat">
             <div id="chat_messages">
             </div>
