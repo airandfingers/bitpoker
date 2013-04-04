@@ -266,7 +266,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
   }
 
     self.images.cashier.addChipsAmount.text.text = rounded
-       self.images.cashier.addChips.messages = 'Add '+rounded
+       self.images.cashier.addChips.messages = ['add_chips',rounded]
   self.stage.update()  
   }
  
@@ -289,6 +289,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
   }
    self.images.cashier.addChipsAmount.text.text = rounded
+   self.images.cashier.addChips.messages =['add_chips',rounded]
   self.stage.update()
 
  }
@@ -1084,11 +1085,12 @@ self.displayCorrectSeatMessage(seatNumber)
         this.images.cashier.addChips =  new this.images.Item (cashierWindowX + 10,cashierWindowY+cashierWindowHeight-40, 50,25,4) 
         this.images.itemAsRectangle( this.images.cashier.addChips, '#0000FF')
         this.images.addItemText( this.images.cashier.addChips, 'add chips', '13px arial', '#000000')
+        this.images.cashier.addChips.image.onClick = self.events.onButtonClick
 
         this.images.cashier.cancel =  new this.images.Item (cashierWindowX + 100,cashierWindowY+cashierWindowHeight-40, 50,25,4) 
         this.images.itemAsRectangle( this.images.cashier.cancel, '#0000FF')
         this.images.addItemText( this.images.cashier.cancel, 'cancel', '13px arial', '#000000')
-        this.images.cashier.cancel.onClick = this.hideCashier()
+        this.images.cashier.cancel.image.onClick = self.hideCashier
 
          this.images.cashier.closeWindow =  new this.images.Item (innerCashierX + innerCashierWidth*.9,cashierWindowY+1, innerCashierWidth*.1,innerCashierY-cashierWindowY-2,4) 
         this.images.cashier.closeWindow.image  = new createjs.Shape() 
@@ -1109,7 +1111,6 @@ self.displayCorrectSeatMessage(seatNumber)
         this.images.addItemText(this.images.cashier.addChipsAmount, '0', '14px Arial', 'black')
 
 
-        this.images.cashier.cancel.image.onClick = this.hideCashier
 
         this.images.cashier.verticalSlider.image.onPress = self.events.addChipsSliderVerticalMouseDown
 
