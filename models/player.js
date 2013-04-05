@@ -18,7 +18,7 @@ module.exports = (function () {
       // this player's username
     , username: String
       // the number of chips this player has at the current table
-    , chips: Number
+    , chips: { type: Number, default: 0 }
       // this player's hand, a list of Strings representing cards
     , hand: { type: [String], default: function() { return []; } }
       // the number of chips this player is betting in the current stage
@@ -55,8 +55,6 @@ module.exports = (function () {
   // instance methods - document.method()
   PlayerSchema.methods.initialize = function() {
     var self = this;
-    // attach handlers for messages as defined in Player.messages
-    io.bindMessageHandlers.call(this, this.socket, static_properties.messages);
     // set post_blind flag
     this.setFlag('post_blind', true);
     this.onConnect(this.socket);
@@ -196,23 +194,67 @@ module.exports = (function () {
       }
       else {
         var balance_in_chips = maobucks * chips_per_maobuck
+          , stack = self.chips
+          , num_to_min = min_chips - stack
+          , num_to_max = max_chips - stack
           , add_chips_info = {
               balance: maobucks
-            , min: balance_in_chips >= min_chips ? min_chips : -1
-            , max: balance_in_chips >= max_chips ? max_chips : balance_in_chips >= min_chips ? balance_in_chips : -1
-            , stack: self.chips
+            , min: balance_in_chips >= num_to_min ? num_to_min : -1
+            , max: balance_in_chips >= num_to_max ? num_to_max :
+                   (balance_in_chips >= num_to_min ? balance_in_chips : -1)
+            , stack: stack
+            , chips_per_maobuck: chips_per_maobuck
         };
+        self.add_chips_info = add_chips_info;
         cb(null, add_chips_info);
       }
     });
   };
 
+  static_properties.messages.add_chips = 'addChips';
+  PlayerSchema.methods.addChips = function(num_chips) {
+    var self = this
+      , add_chips_info = self.add_chips_info;
+    console.log('in addChips!', add_chips_info);
+    if (! _.isObject(add_chips_info)) {
+      self.sendMessage('error', 'add_chips message received before get_add_chips_info!');
+    }
+    else if (add_chips_info.min === -1) {
+      self.sendMessage('error', 'add_chips message received when player can\'t add chips to the table!');
+    }
+    else if (num_chips < add_chips_info.min) {
+      self.sendMessage('error', 'cannot add fewer than ' + add_chips_info.min + ' chips!');
+    }
+    else if (num_chips > add_chips_info.max) {
+      self.sendMessage('error', 'cannot add more than ' + add_chips_info.max + ' chips!');
+    }
+    else {
+      self.socket.user.fetch(function(fetch_err, user) {
+        var num_maobucks = num_chips / add_chips_info.chips_per_maobuck
+          , new_maobucks = user.maobucks - num_maobucks;;
+        if (fetch_err) {
+          self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);
+        }
+        else if (user.maobucks < num_maobucks) {
+          self.sendMessage('error', 'player no longer has enough maobucks to add ' + num_chips + ' chips!');
+        }
+        else {
+          user.update({ $set: { maobucks: new_maobucks } }, function(save_err) {
+            if (save_err) {
+              self.sendMessage('error', 'error while saving user: ' + save_err.message || save_err);
+            }
+            else {
+              self.chips += num_chips;
+              self.emit('chips_added', num_chips);
+            }
+          });
+        }
+      });
+    }
+  };
+
   static_properties.messages.set_flag = 'setFlag';
   PlayerSchema.methods.setFlag = function(name, value) {
-    /*if (name !== 'auto_post_blinds' || ! _.isBoolean(value)) {
-      console.error('setFlag called with', name, value);
-      return;
-    }*/
     console.log(this.username, 'setting', name, 'to', value);
     this.flags[name] = value;
   };
@@ -238,6 +280,9 @@ module.exports = (function () {
         $emit.apply(self.socket, arguments);
       }
     };
+
+    // attach handlers for messages as defined in Player.messages
+    io.bindMessageHandlers.call(this, this.socket, static_properties.messages);
   };
 
   PlayerSchema.methods.onDisconnect = function(socket) {

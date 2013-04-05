@@ -282,23 +282,31 @@ module.exports = (function () {
 
   static_properties.player_events.get_add_chips_info = 'sendAddChipsInfo';
   TableSchema.methods.sendAddChipsInfo = function(player) {
-    var socket = player.socket
-      , add_chips_info = {
+    var add_chips_info = {
           table_name: this.name
         , small_blind: Round.SMALL_BLIND
         , big_blind: Round.BIG_BLIND
+        , table_min: Round.MIN_CHIPS
+        , table_max: Round.MAX_CHIPS
     };
     player.calculateAddChipsInfo(Round.MIN_CHIPS, Round.MAX_CHIPS, Round.CHIPS_PER_MAOBUCK,
                                  function(err, player_add_chips_info) {
       if (err) {
         console.error('Error during Player.calculateAddChipsInfo:', err);
-        socket.emit('error', err.message || err);
+        player.sendMessage('error', err.message || err);
       }
       else {
         _.extend(add_chips_info, player_add_chips_info);
-        socket.emit('add_chips_info', add_chips_info);
+        player.sendMessage('add_chips_info', add_chips_info);
       }
     });
+  };
+
+  static_properties.player_events.chips_added = 'playerAddsChips';
+  TableSchema.methods.playerAddsChips = function(player, num_chips) {
+    var socket = player.socket;
+    socket.broadcast.emit('player_adds_chips', player.serialize(), false);
+    socket.emit('player_adds_chips', player.serialize(), true);
   };
 
   /* the model - a fancy constructor compiled from the schema:
