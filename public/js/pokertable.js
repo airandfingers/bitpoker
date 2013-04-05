@@ -997,6 +997,8 @@ self.displayCorrectSeatMessage(seatNumber)
     this.hideCashier = function(){
 
                 self.hideChildren(self.images.cashier)
+                var htmlcashier = document.getElementById('cashier')
+                htmlcashier.style.display = 'none'
 
     }
 
@@ -1012,8 +1014,8 @@ self.displayCorrectSeatMessage(seatNumber)
 
         this.images.cashier = {}
 
-        var cashierWindowWidth = 200
-        var cashierWindowHeight = 250
+        var cashierWindowWidth = 265
+        var cashierWindowHeight = 355
         //declare size variables
         var textLeftOffset = 10
          var outerTopHeight = cashierWindowHeight*.08
@@ -1075,9 +1077,11 @@ self.displayCorrectSeatMessage(seatNumber)
     */
      this.images.cashier.addChipsTextBox = new this.images.Item (textX,this.images.cashier.accountBalance.position.y +25, innerCashierWidth,25,4)
     var htmlcashier = document.getElementById('cashier')
-    console.log(htmlcashier)
-        this.images.cashier.addChipsTextBox.image = new createjs.DOMElement(htmlcashier)
-        this.images.cashier.addChipsTextBox.positionImage()
+    htmlcashier.style.display = 'inline'
+    htmlcashier.style.position = 'absolute'
+    htmlcashier.style.left = this.images.cashier.addChipsTextBox.position.x + 'px'
+    htmlcashier.style.top = this.images.cashier.addChipsTextBox.position.y + 'px'
+
 
     //    this.images.cashier.currency =  new this.images.Item (cashierWindowOffsetLeft,this.images.cashier.accountBalance.position.y+10, cashierWindowWidth,25,4) 
     //    this.images.addItemText( this.images.cashier.currency, 'Currency: '+currency, '13px arial', '#000000')
