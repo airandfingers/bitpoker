@@ -45,7 +45,7 @@ module.exports = (function () {
     // at least how many chips must players bring to the table to play?
   , MIN_CHIPS: 50
     // at most how many chips can players bring to the table to play?
-  , MAX_CHIPS: 1000
+  , MAX_CHIPS: 10000
     // how a Round should handle each stage
     // {String stage_name: Function stage_handler}
   , stage_handlers: {}

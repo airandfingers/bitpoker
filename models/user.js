@@ -13,7 +13,7 @@ module.exports = (function() {
   var UserSchema = new Schema({
   // instance properties - document.field_name
     //the user's username
-    username         : String
+    username         : { type: String, unique: true }
     //the user's password, hashed with SHA-1
   , password         : String
     //the user's email address
@@ -62,12 +62,20 @@ module.exports = (function() {
 
   // lookup and return current maobucks value
   UserSchema.methods.maobucks_inquire = function(cb) {
-    User.findOne({_id: this._id}, function(err, user) {
-      console.log('findOne returns', err, user);
+    User.findOne({ _id: this._id }, function(err, user) {
+      //console.log('findOne returns', err, user);
       console.log(this.username + " has " + user && user.maobucks + " in maobucks on " + Date());
       cb(err, user && user.maobucks);
     });
-  }
+  };
+
+  // lookup and return current, complete user document
+  UserSchema.methods.fetch = function(cb) {
+    User.findOne({ _id: this._id }, function(err, user) {
+      //console.log('findOne returns', err, user);
+      cb(err, user);
+    });
+  };
 
   // gets called before a document is saved
   UserSchema.pre('save', function(next) {
@@ -77,17 +85,6 @@ module.exports = (function() {
     shasum.update(user.password);
     shasum = shasum.digest('hex');
     user.password = shasum;
-
-    User.findOne({username : user.username}, function(err, result) {
-      if (err) {
-        next(err);
-      } else if (result) {
-        user.invalidate('username', 'username must be unique');
-        next(new Error('username already exists!'));
-      } else {
-        next();
-      }
-    });
   });
 
   /* the model - a fancy constructor compiled from the schema:
