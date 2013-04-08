@@ -75,13 +75,13 @@ module.exports = (function () {
       }
       var handler_name = how_to_handle.handler
         , handler = self[handler_name];
-      console.log('binding', message_name, 'to', handler_name);
+      //console.log('binding', message_name, 'to', handler_name);
       if (! _.isFunction(handler)) {
         console.error('context object has no function', handler_name);
         return;
       }
       socket.on(message_name, function() {
-        console.log('calling instance\'s', handler_name, 'with', arguments);
+        //console.log('calling instance\'s', handler_name, 'with', arguments);
         if (how_to_handle.pass_message_name !== true && how_to_handle.pass_socket !== true) {
           //console.log('calling instance\'s', handler_name, 'with', arguments);
           handler.apply(self, arguments);
