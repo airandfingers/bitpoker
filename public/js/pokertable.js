@@ -23,18 +23,11 @@
 
         this.images = {}
         this.images.containers = []
-        this.images.containers[0] = new createjs.Container()
-       this.images.containers[1] = new createjs.Container()
-       this.images.containers[2] = new createjs.Container()
-       this.images.containers[3] = new createjs.Container()
-       this.images.containers[4] = new createjs.Container()
-        this.images.containers[5] = new createjs.Container()
-       this.stage.addChild(this.images.containers[0])
-       this.stage.addChild(this.images.containers[1])
-       this.stage.addChild(this.images.containers[2])
-       this.stage.addChild(this.images.containers[3])
-        this.stage.addChild(this.images.containers[4])
-         this.stage.addChild(this.images.containers[5])
+        for (var i = 0;i<8;i++){
+        this.images.containers[i] = new createjs.Container()
+        this.stage.addChild(this.images.containers[i])
+     }
+
           this.images.sources = {
             call: 'img/call.jpg',
             check: 'img/check.jpg',
@@ -996,15 +989,122 @@ self.displayCorrectSeatMessage(seatNumber)
     
     this.hideCashier = function(){
 
+       var cashierImageContainerIndex = 4
+
                 self.hideChildren(self.images.cashier)
                 var htmlcashier = document.getElementById('cashier')
                 htmlcashier.style.display = 'none'
 
+                  for(var i = 0; i<cashierImageContainerIndex;i++){
+            self.images.containers[i].mouseEnabled = true
+
+        }
+
     }
+
+    this.hideMessageBox = function(){
+
+        var messageBoxImageContainerIndex = 6
+                for(var i = 0; i<messageBoxImageContainerIndex;i++){
+            self.images.containers[i].mouseEnabled = true
+
+        }
+
+        self.hideChildren(self.images.messageBox)
+        
+    }
+
+    this.displayMessageBox = function(messageInfo){
+       
+      //  title,message,okay, okayMessages, cancel, cancelMessages
+
+        self.images.messageBox = {}
+
+        var messageBoxImageContainerIndex = 6
+        var messageBoxWindowWidth = 400
+        var messageBoxWindowHeight = 200
+        //declare size variables
+        var textLeftOffset = 10
+         var outerTopHeight = messageBoxWindowHeight*.08
+                var outerBottomHeight = messageBoxWindowHeight*.03
+        var outerSideWidth = messageBoxWindowWidth*.02
+
+        var asdf = document.getElementById('canvas')
+        var stageWidth = asdf.width
+        var stageHeight = asdf.height
+        var messageBoxWindowX = stageWidth/2 - messageBoxWindowWidth/2
+        var messageBoxWindowY = stageHeight/2 - messageBoxWindowHeight/2
+        
+
+        var innerMessageBoxX = messageBoxWindowX+outerSideWidth
+        var innerMessageBoxY = messageBoxWindowY+outerTopHeight
+        var innerMessageBoxWidth = messageBoxWindowWidth-2*outerSideWidth -2
+        var innerMessageBoxHeight = messageBoxWindowHeight-outerBottomHeight-outerTopHeight
+
+        var textX = innerMessageBoxX + textLeftOffset
+        
+
+        self.images.messageBox.window = new self.images.Item(messageBoxWindowX,messageBoxWindowY,messageBoxWindowWidth,messageBoxWindowHeight,messageBoxImageContainerIndex)
+        self.images.messageBox.window.image = new createjs.Shape()
+        //outer blue rim
+        self.images.messageBox.window.image.graphics.setStrokeStyle(1).beginFill('blue').beginStroke('#FF00FF').rect(messageBoxWindowX,messageBoxWindowY,messageBoxWindowWidth,messageBoxWindowHeight)
+        self.images.messageBox.window.image.graphics.setStrokeStyle(1).beginFill('#C0C0C0').beginStroke('#FF00FF').rect(innerMessageBoxX,innerMessageBoxY,innerMessageBoxWidth,innerMessageBoxHeight)
+
+        self.images.messageBox.windowTitle = new self.images.Item (messageBoxWindowX+1,messageBoxWindowY+1, messageBoxWindowWidth,outerTopHeight-2,messageBoxImageContainerIndex)
+         self.images.addItemText(self.images.messageBox.windowTitle, messageInfo.title, '13px arial', '#000000')
+
+        self.images.messageBox.message = new self.images.Item (textX,innerMessageBoxY+15, innerMessageBoxWidth,25,messageBoxImageContainerIndex)
+        self.images.addItemText(self.images.messageBox.message, messageInfo.message, '13px arial', '#000000')
+
+   
+
+        if(messageInfo.okay){
+        self.images.messageBox.okay =  new self.images.Item (messageBoxWindowX + 10,messageBoxWindowY+messageBoxWindowHeight-40, 50,25,messageBoxImageContainerIndex) 
+        self.images.itemAsRectangle( self.images.messageBox.okay, '#0000FF')
+        self.images.addItemText( self.images.messageBox.okay, 'Okay', '13px arial', '#000000')
+                self.images.messageBox.okay.messages = messageInfo.okayMessages
+        self.images.messageBox.okay.image.onClick = self.events.onButtonClick
+        self.images.messageBox.okay.image.onClick = self.hideMessageBox
+        }
+        else{self.images.messageBox.Okay = null}
+
+        if(messageInfo.cancel){
+        self.images.messageBox.cancel =  new self.images.Item (messageBoxWindowX + 100,messageBoxWindowY+messageBoxWindowHeight-40, 50,25,messageBoxImageContainerIndex) 
+        self.images.itemAsRectangle( self.images.messageBox.cancel, '#0000FF')
+        self.images.addItemText( self.images.messageBox.cancel, 'cancel', '13px arial', '#000000')
+          self.images.messageBox.cancel.messages = messageInfo.cancelMessages
+        self.images.messageBox.cancel.image.onClick = self.hidemessageBox}
+        else{self.images.messageBox.cancel = null}
+
+         self.images.messageBox.closeWindow =  new self.images.Item (innerMessageBoxX + innerMessageBoxWidth*.9,messageBoxWindowY+1, innerMessageBoxWidth*.1,innerMessageBoxY-messageBoxWindowY-2,messageBoxImageContainerIndex) 
+        self.images.messageBox.closeWindow.image  = new createjs.Shape() 
+        self.images.messageBox.closeWindow.image.graphics.beginFill('#CD0000').rect(self.images.messageBox.closeWindow.position.x,self.images.messageBox.closeWindow.position.y, self.images.messageBox.closeWindow.size.x,self.images.messageBox.closeWindow.size.y)
+        self.images.messageBox.closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
+        self.images.messageBox.closeWindow.image.graphics.moveTo(self.images.messageBox.closeWindow.position.x+self.images.messageBox.closeWindow.size.x*.12,self.images.messageBox.closeWindow.position.y+self.images.messageBox.closeWindow.size.y*.12)
+        self.images.messageBox.closeWindow.image.graphics.lineTo(self.images.messageBox.closeWindow.position.x+self.images.messageBox.closeWindow.size.x*.88,self.images.messageBox.closeWindow.position.y+self.images.messageBox.closeWindow.size.y*.88)
+        self.images.messageBox.closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
+        self.images.messageBox.closeWindow.image.graphics.moveTo(self.images.messageBox.closeWindow.position.x+self.images.messageBox.closeWindow.size.x*.88,self.images.messageBox.closeWindow.position.y+self.images.messageBox.closeWindow.size.y*.12)
+        self.images.messageBox.closeWindow.image.graphics.lineTo(self.images.messageBox.closeWindow.position.x+self.images.messageBox.closeWindow.size.x*.12,self.images.messageBox.closeWindow.position.y+self.images.messageBox.closeWindow.size.y*.88)
+        self.images.messageBox.closeWindow.image.onClick = self.hideMessageBox
+
+
+        for(var i = 0; i<messageBoxImageContainerIndex;i++){
+            self.images.containers[i].mouseEnabled = false
+
+        }
+
+
+                self.displayChildren(self.images.messageBox)
+
+    }
+
 
     this.displayCashier = function(info)
     {
         
+
+         var cashierImageContainerIndex = 4
+
         this.gameState.cashier.min = info.min
         this.gameState.cashier.max = info.max
         this.gameState.cashier.balance = info.balance
@@ -1118,6 +1218,12 @@ self.displayCorrectSeatMessage(seatNumber)
 
         this.images.cashier.verticalSlider.image.onPress = self.events.addChipsSliderVerticalMouseDown
 
+
+        for(var i = 0; i<cashierImageContainerIndex;i++){
+            this.images.containers[i].mouseEnabled = false
+
+        }
+
                 this.displayChildren(this.images.cashier)
 
 }
@@ -1191,6 +1297,17 @@ self.displayCorrectSeatMessage(seatNumber)
   }
 
     this.activateSockets = function(){
+
+    //error received
+       socket.on('error', function(errorString){
+           var messageInfo = {}
+           messageInfo.message = errorString
+           messageInfo.okay = true
+            self.displayMessageBox(messageInfo)
+                
+})
+        
+
 
     //community cards are dealt
        socket.on('community_dealt', function(community){
