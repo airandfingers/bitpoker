@@ -2,8 +2,8 @@ module.exports = (function () {
   var app = require('./app')
     , session_settings = app.session_settings
     , io = require('socket.io').listen(app.server)
-    , parseSignedCookies = require('connect').utils.parseSignedCookies
-    , cookieParse = require('cookie').parse
+    // parse cookies; code from https://github.com/senchalabs/connect/issues/588#issuecomment-8206494
+    , sioCookieParser = require('express').cookieParser(session_settings.secret)
 
     , _ = require('underscore');
 
@@ -20,32 +20,33 @@ module.exports = (function () {
     , 'jsonp-polling'
   ]);
   io.set('close timeout', 30);
-
+  
   //authorization handler - 
   io.set('authorization', function (data, cb) {
     var error = null
       , authorized = false;
     // check if there's a cookie header
     if (data.headers.cookie) {
-      //console.log('data: ', data);
-      // if there is, parse the cookie
-      data.cookie = parseSignedCookies( cookieParse( decodeURIComponent( data.headers.cookie ) ), session_settings.secret );
-      data.sessionID = data.cookie[session_settings.sid_name];
-      if (session_settings.store.getCollection() === null) {
-        error = 'Session store isn\'t ready yet.';
-        cb(error, authorized);
-      }
-      else {
-        session_settings.store.get(data.sessionID, onSessionLookup);
-      }        
+      // if there is, parse the cookie using our previously-defined parser middleware
+      sioCookieParser(data, {}, function(err) {
+        // get the session ID off where the cookie parser added it ('req')
+        data.sessionID = data.signedCookies[session_settings.sid_name];
+        if (session_settings.store.getCollection() === null) {
+          error = 'Session store isn\'t ready yet.';
+          cb(error, authorized);
+        }
+        else {
+          // attempt to look up the session from our session store
+          session_settings.store.get(data.sessionID, onSessionLookup);
+        }
+      });
     } else {
       // if there isn't, turn down the connection with a message
-      // and leave the function.
       error = 'No cookie transmitted.';
       cb(error, authorized);
     }
-
     function onSessionLookup(err, session) {
+      // session has been looked up (if it exists)
       if (err) {
           error = 'Error while looking up session: ' + err
       } else if (! session) {
@@ -63,7 +64,7 @@ module.exports = (function () {
         authorized = true;
       }
       cb(error, authorized);
-    };
+    }
   });
 
   io.bindMessageHandlers = function(socket, messages) {

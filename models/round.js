@@ -49,10 +49,16 @@ module.exports = (function () {
     // how a Round should handle each stage
     // {String stage_name: Function stage_handler}
   , stage_handlers: {}
+    // how many ms to wait between polling to see how many players are ready
+  , WAIT_POLL_INTERVAL: 1000
     // how many chips the big blind costs
   , SMALL_BLIND: 10
     // how many chips the small blind costs
   , BIG_BLIND: 20
+    // which currency this table deals in (maobucks or cash)
+  , CURRENCY: 'maobucks'
+    // the minimum difference between two possible chip amounts at this table
+  , MIN_INCREMENT: 1
     // how many chips each maobuck buys
   , CHIPS_PER_MAOBUCK: 100
     // how long (in ms) to wait for players to respond to prompts
@@ -128,12 +134,37 @@ module.exports = (function () {
     });
   };
 
-  RoundSchema.methods.go = function() {
-    if (! this.isInStage('waiting')) {
-      console.error('go called with this.stage_num is', this.stage_num, ':', Round.STAGES[this.stage_num]);
-      return;
-    }
-    this.nextStage();
+  static_properties.stage_handlers.waiting = function() {
+    var self = this
+      , wait_interval = setInterval(function() {
+      var num_ready = 0;
+      _.each(self.seats, function(player, seat_num) {
+        //console.log('waiting:', seat_num, player, player.isFlagSet('receive_hole_cards'));
+        if (player instanceof Player) {
+          if (player.isFlagSet('receive_hole_cards')) {
+            if (player.chips < Round.SMALL_BLIND) {
+              // player is broke - should be sitting out.
+              player.sitOut();
+            }
+            else {
+              // player is ready.
+              num_ready++;
+            }
+          }
+          else {
+            // player is sitting out. ignore.
+          }
+        }
+        else {
+          console.error('seats contains non-player', player);
+        }
+      });
+
+      if (num_ready >= Round.MIN_PLAYERS) {
+        self.nextStage();
+        clearInterval(wait_interval);
+      }
+    }, Round.WAIT_POLL_INTERVAL);
   };
 
   static_properties.stage_handlers.blinding = function() {
@@ -148,12 +179,9 @@ module.exports = (function () {
       player = self.players[this.to_act];
       //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
       if (! player.isFlagSet('post_blind')) {
-        console.log('Player\'s post_blind flag is unset - skipping player!');
+        console.log('Player\'s post_blind flag is unset - sitting player out!');
         self.playerOut(self.to_act);
-      }
-      else if (player.num_chips < Round.SMALL_BLIND) {
-        console.log('Player does not have enough chips to pay small blind!');
-        self.playerOut(self.to_act);
+        player.sitOut();
       }
       else {
         console.log('player will post blind:', player, Round.SMALL_BLIND);
@@ -170,12 +198,9 @@ module.exports = (function () {
       player = self.players[this.to_act];
       //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
       if (! player.isFlagSet('post_blind')) {
-        console.log('Player\'s post_blind flag is unset - skipping player!');
+        console.log('Player\'s post_blind flag is unset - sitting player out!');
         self.playerOut(self.to_act);
-      }
-      else if (player.num_chips < Round.BIG_BLIND) {
-        console.error('Player does not have enough chips to pay big blind!');
-        self.playerOut(self.to_act);
+        player.sitOut();
       }
       else {
         console.log('player will post blind:', player, Round.SMALL_BLIND);
@@ -514,7 +539,8 @@ module.exports = (function () {
   RoundSchema.methods.calculatePlayers = function() {
     var self = this
       , player
-      , first_to_blind = (self.players.length > 2 ? self.dealer + 1 : self.dealer) % Round.MAX_PLAYERS
+      , num_players = _.keys(self.seats).length
+      , first_to_blind = (num_players > 2 ? self.dealer + 1 : self.dealer) % Round.MAX_PLAYERS
       , seat_counter
       , first_round = true;
     for (seat_counter = first_to_blind;
@@ -581,7 +607,8 @@ module.exports = (function () {
   static_properties.includes = {
     all: ['stage_name', 'dealer', 'small_blind_seat', 'to_act',
           'high_bet', 'pot', 'winner', 'community', 'round_id',
-          'max_players', 'min_chips', 'max_chips', 'seats', 'players']
+          'max_players', 'min_chips', 'max_chips', 'min_increment', 
+          'currency', 'chips_per_maobuck', 'seats', 'players']
   };
   RoundSchema.methods.serialize = function(this_username, include) {
     var self = this
@@ -621,6 +648,9 @@ module.exports = (function () {
     if (_.contains(round_include, 'max_players')) round_obj.max_players = Round.MAX_PLAYERS;
     if (_.contains(round_include, 'min_chips')) round_obj.min_chips = Round.MIN_CHIPS;
     if (_.contains(round_include, 'max_chips')) round_obj.max_chips = Round.MAX_CHIPS;
+    if (_.contains(round_include, 'currency')) round_obj.currency = Round.CURRENCY;
+    if (_.contains(round_include, 'min_increment')) round_obj.min_increment = Round.MIN_INCREMENT;
+    if (_.contains(round_include, 'chips_per_maobuck')) round_obj.chips_per_maobuck = Round.CHIPS_PER_MAOBUCK;
     if (_.contains(round_include, 'seats')) round_obj.seats = _.map(round_obj.seats, serializePlayer);
     if (_.contains(round_include, 'players')) round_obj.players = _.map(round_obj.players, serializePlayer);
     function serializePlayer(player) {
