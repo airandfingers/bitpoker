@@ -140,7 +140,6 @@ module.exports = (function () {
       , round_num = this.rounds.length + 1
       , round = Round.createRound({
           seats: this.seats
-        , players: this.players
         , broadcast: function() { self.room.broadcast.apply(self.room, arguments); }
         , dealer: this.dealer
         , round_id: self.name + '.' + round_num
@@ -162,7 +161,6 @@ module.exports = (function () {
     round.onStage('done', function() {
       self.room.broadcast('reset_table');
       console.log('Round is over! Creating a new round in 1 second...');
-      //console.trace();
       self.dealer = round.small_blind_seat || round.dealer;
       setTimeout(function() {
         self.newRound();
@@ -190,6 +188,7 @@ module.exports = (function () {
       player = Player.createPlayer({
             socket: socket
           , username: username
+          , Round: Round
       });
       self.players[username] = player;
       // attach handlers for events as defined in Table.player_events
@@ -223,7 +222,7 @@ module.exports = (function () {
     }
   };
 
-  static_properties.player_events.sit = 'seatPlayer';
+  static_properties.player_events['message:sit'] = 'seatPlayer';
   TableSchema.methods.seatPlayer = function(player, seat_num) {
     var socket = player.socket;
     if (this.seats[seat_num] !== undefined) {
@@ -252,7 +251,7 @@ module.exports = (function () {
     }
   };
 
-  static_properties.player_events.stand = 'unseatPlayer';
+  static_properties.player_events['message:stand'] = 'unseatPlayer';
   TableSchema.methods.unseatPlayer = function(player) {
     var socket = player.socket
       , seat_num = player.seat;
@@ -280,7 +279,7 @@ module.exports = (function () {
     this.room.broadcast('player_sits_in', player.serialize());
   };
 
-  static_properties.player_events.get_add_chips_info = 'sendAddChipsInfo';
+  static_properties.player_events['message:get_add_chips_info'] = 'sendAddChipsInfo';
   TableSchema.methods.sendAddChipsInfo = function(player) {
     var add_chips_info = {
           table_name: this.name
@@ -289,8 +288,7 @@ module.exports = (function () {
         , table_min: Round.MIN_CHIPS
         , table_max: Round.MAX_CHIPS
     };
-    player.calculateAddChipsInfo(Round.MIN_CHIPS, Round.MAX_CHIPS, Round.CHIPS_PER_MAOBUCK,
-                                 function(err, player_add_chips_info) {
+    player.calculateAddChipsInfo(function(err, player_add_chips_info) {
       if (err) {
         console.error('Error during Player.calculateAddChipsInfo:', err);
         player.sendMessage('error', err.message || err);
