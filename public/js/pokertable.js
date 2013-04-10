@@ -388,7 +388,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
         this.stand = new this.Item(0,0,actionButtonWidth,actionButtonHeight/2,2, ['stand'])
 
         //not in hand action buttons
-        this.sitIn = new this.Item(205,419,actionButtonWidth,actionButtonHeight,2, ['set flag','receive_hole_cards', true])
+        this.sitIn = new this.Item(205,419,actionButtonWidth,actionButtonHeight,2, ['sit_in'])
 
       }
 
