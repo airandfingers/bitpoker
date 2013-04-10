@@ -19,7 +19,7 @@ module.exports = (function () {
       registration_date: req.user.registration_date,
       email: req.user.email,
       maobucks: req.user.maobucks,
-      email_confirmed: req.user.email_confirmed, 
+      email_confirmed: req.user.email_confirmed,
     });
   });
 
@@ -56,13 +56,19 @@ module.exports = (function () {
   });
 
   app.get('/login', function (req, res) {
-    //console.log("GET /login called!");
-    //Show the login form.
-    res.render('login', {
-      message: req.flash('error'),
-      next: req.query.next,
-      title: 'Bitcoin Poker Login',
-    });
+    var next_page = req.query.next || base_page;
+    if (! auth.isAuthenticated(req)) {
+      //Show the login form.
+      res.render('login', {
+        message: req.flash('error'),
+        next: next_page,
+        title: 'Bitcoin Poker Login',
+      });
+    }
+    else {
+      //Redirect to "next" URL.
+      res.redirect(next_page);
+    }
   });
 
   app.get('/promo', function (req, res) {

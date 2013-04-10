@@ -117,12 +117,12 @@ module.exports = (function () {
       }
     });
 
-    self.setStatus(Table.STATUSES.WAITING);
+    //self.setStatus(Table.STATUSES.WAITING);
 
     Table.tables[name] = self;
   };
 
-  TableSchema.methods.setStatus = function(status) {
+  /*TableSchema.methods.setStatus = function(status) {
     if (! _.contains(Table.STATUSES, status)) {
       console.error('setStatus called with', status);
     }
@@ -133,7 +133,7 @@ module.exports = (function () {
 
   TableSchema.methods.hasStatus = function(status) {
     return this.status === status;
-  };
+  };*/
 
   TableSchema.methods.newRound = function() {
     var self = this
@@ -147,7 +147,7 @@ module.exports = (function () {
     console.log('Pushing new round onto rounds, with round_id: ', this.rounds.length);
     this.rounds.push(round);
 
-    round.onStage('waiting', function() {
+    /*round.onStage('waiting', function() {
       if (_.keys(this.seats).length >= Round.MIN_PLAYERS) {
         setTimeout(function() {
           round.go();
@@ -156,7 +156,7 @@ module.exports = (function () {
       else {
         self.setStatus(Table.STATUSES.WAITING);
       }
-    });
+    });*/
     
     round.onStage('done', function() {
       self.room.broadcast('reset_table');
@@ -242,13 +242,13 @@ module.exports = (function () {
     socket.broadcast.emit('player_sits', player_obj, false);
     socket.emit('player_sits', player_obj, true);
     
-    var current_round = this.getCurrentRound();
+    /*var current_round = this.getCurrentRound();
     console.log('about to test:', this.hasStatus(Table.STATUSES.WAITING), _.keys(this.seats).length >= Round.MIN_PLAYERS);
     if (this.hasStatus(Table.STATUSES.WAITING) && 
         _.keys(this.seats).length >= Round.MIN_PLAYERS) {
       this.setStatus(Table.STATUSES.GAME_IN_PROGRESS);
       current_round.go();
-    }
+    }*/
   };
 
   static_properties.player_events['message:stand'] = 'unseatPlayer';
@@ -283,10 +283,12 @@ module.exports = (function () {
   TableSchema.methods.sendAddChipsInfo = function(player) {
     var add_chips_info = {
           table_name: this.name
-        , small_blind: Round.SMALL_BLIND
-        , big_blind: Round.BIG_BLIND
-        , table_min: Round.MIN_CHIPS
-        , table_max: Round.MAX_CHIPS
+        , small_blind:   Round.SMALL_BLIND
+        , big_blind:     Round.BIG_BLIND
+        , table_min:     Round.MIN_CHIPS
+        , table_max:     Round.MAX_CHIPS
+        , currency:      Round.CURRENCY
+        , min_increment: Round.MIN_INCREMENT
     };
     player.calculateAddChipsInfo(function(err, player_add_chips_info) {
       if (err) {
