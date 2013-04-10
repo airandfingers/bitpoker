@@ -467,6 +467,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
  this.addItemText(this.stand,'stand up','10px Arial','white')
 
  //options (when not to act)
+ this.itemAsRectangle(this.sitIn,'black')
 this.addItemText(this.sitIn,'Deal Me In','10px Arial','white')
 
     }
@@ -1011,11 +1012,28 @@ self.displayCorrectSeatMessage(seatNumber)
         }
 
         self.hideChildren(self.images.messageBox)
+        if(self.gameState.cashier.display === true){
+            var htmlcashier = document.getElementById('cashier')
+           htmlcashier.style.display = 'inline'
+        }
         
     }
 
     this.displayMessageBox = function(messageInfo){
        
+       //hide html cashier(if visible)
+        var htmlcashier = document.getElementById('cashier')
+
+       if( htmlcashier.style.display !== 'none'){
+       self.gameState.cashier.display = true
+       htmlcashier.style.display = 'none'
+       }
+       else{self.gameState.cashier.display = false}
+
+       
+
+
+
       //  title,message,okay, okayMessages, cancel, cancelMessages
 
         self.images.messageBox = {}
