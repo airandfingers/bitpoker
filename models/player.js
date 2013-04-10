@@ -180,6 +180,7 @@ module.exports = (function () {
   PlayerSchema.methods.sitOut = function() {
     if (! this.sitting_out) {
       this.sitting_out = true;
+      this.setFlag('post_blind', false);
       this.setFlag('receive_hole_cards', false);
       this.emit('sit_out');
     }
@@ -193,6 +194,7 @@ module.exports = (function () {
     console.log('sitIn called!');
     if (this.sitting_out || ! this.isFlagSet('receive_hole_cards')) {
       this.sitting_out = false;
+      this.setFlag('post_blind', true);
       this.setFlag('receive_hole_cards', true);
       this.emit('sit_in');
     }
@@ -323,7 +325,7 @@ module.exports = (function () {
     if (! (_.isObject(socket) && this.socket.id === socket.id) ) {
       console.error('Player.onDisconnect called with non-matching socket', socket);
     }
-    this.sitOut();
+    this.setFlag('post_blind', false);
   };
 
   /* the model - a fancy constructor compiled from the schema:

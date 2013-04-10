@@ -49,6 +49,8 @@ module.exports = (function () {
     // how a Round should handle each stage
     // {String stage_name: Function stage_handler}
   , stage_handlers: {}
+    // how many ms to wait between polling to see how many players are ready
+  , WAIT_POLL_INTERVAL: 1000
     // how many chips the big blind costs
   , SMALL_BLIND: 10
     // how many chips the small blind costs
@@ -137,7 +139,7 @@ module.exports = (function () {
       , wait_interval = setInterval(function() {
       var num_ready = 0;
       _.each(self.seats, function(player, seat_num) {
-        console.log('waiting:', seat_num, player, player.isFlagSet('receive_hole_cards'));
+        //console.log('waiting:', seat_num, player, player.isFlagSet('receive_hole_cards'));
         if (player instanceof Player) {
           if (player.isFlagSet('receive_hole_cards')) {
             if (player.chips < Round.SMALL_BLIND) {
@@ -157,13 +159,12 @@ module.exports = (function () {
           console.error('seats contains non-player', player);
         }
       });
-      console.log('num_ready is', num_ready);
 
       if (num_ready >= Round.MIN_PLAYERS) {
         self.nextStage();
         clearInterval(wait_interval);
       }
-    }, 1000);
+    }, Round.WAIT_POLL_INTERVAL);
   };
 
   static_properties.stage_handlers.blinding = function() {
@@ -178,12 +179,7 @@ module.exports = (function () {
       player = self.players[this.to_act];
       //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
       if (! player.isFlagSet('post_blind')) {
-        console.log('Player\'s post_blind flag is unset - skipping player!');
-        self.playerOut(self.to_act);
-        player.sitOut();
-      }
-      else if (player.chips < Round.SMALL_BLIND) {
-        console.log('Player does not have enough chips to pay small blind!');
+        console.log('Player\'s post_blind flag is unset - sitting player out!');
         self.playerOut(self.to_act);
         player.sitOut();
       }
@@ -202,12 +198,7 @@ module.exports = (function () {
       player = self.players[this.to_act];
       //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
       if (! player.isFlagSet('post_blind')) {
-        console.log('Player\'s post_blind flag is unset - skipping player!');
-        self.playerOut(self.to_act);
-        player.sitOut();
-      }
-      else if (player.chips < Round.BIG_BLIND) {
-        console.error('Player does not have enough chips to pay big blind!');
+        console.log('Player\'s post_blind flag is unset - sitting player out!');
         self.playerOut(self.to_act);
         player.sitOut();
       }

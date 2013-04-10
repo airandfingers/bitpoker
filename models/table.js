@@ -25,8 +25,6 @@ module.exports = (function () {
     }
     // the number of tables to initialize in setup
   , NUM_TABLES: 2
-    // how long (in ms) to wait between rounds
-  , ROUND_INTERIM: 1000
     // [this string] + table_id = room_name
   , TABLE_PREFIX: 'table_'
     // the events a Table should react to, on its room
