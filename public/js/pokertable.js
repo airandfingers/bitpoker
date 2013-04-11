@@ -158,6 +158,50 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
     }
 
+    this.events.onAddChipsClick = function(event){
+        if($('#maxRadio').is(':checked'))
+        {
+            socket.emit('add_chips',self.gameState.cashier.max)
+
+        }
+        else if($('#otherAmountRadio').is(':checked')){
+            var amount = $('#otherAmount').val()
+            if(isNaN(amount)){
+                var info = {}
+                info.okay = true
+                info.message = "amount must be a number"
+                self.displayMessageBox(info)
+            }
+            else{
+                
+                socket.emit('add_chips',amount)
+            }
+
+        }
+        else if($('#autoRebuyRadio').is(':checked')){
+            var amount = $('#autoRebuy').val()
+            if(isNaN(otherAmount)){
+                var info = {}
+                info.okay = true
+                info.message = "Amount must be a number"
+                self.displayMessageBox(info)
+            }
+            else{
+                
+                socket.emit('auto_rebuy',amount)
+            }
+
+        }
+
+        else if(!$("input[name='addChipsRadio']:checked").val()){
+            var info = {}
+                info.okay = true
+                info.message = "Please select either: max, other amount, or auto-rebuy"
+                self.displayMessageBox(info)
+        }
+
+    }
+
      //===============START BET SLIDER===================
      this.events.betSliderVerticalMouseDown = function(event){
   
@@ -227,7 +271,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
  }
   //=============END BET SLIDER===================
-
+/*
   //===========START ADD CHIPS SLIDER ======================
     this.events.addChipsSliderVerticalMouseDown = function(event){
           
@@ -291,7 +335,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
     }
   //===========END ADD CHIPS SLIDER ======================
-
+  */
 
 //--------------END EVENTS----------------------------
 
@@ -1000,6 +1044,7 @@ self.displayCorrectSeatMessage(seatNumber)
             self.images.containers[i].mouseEnabled = true
 
         }
+        self.gameState.cashier.visible = false
 
     }
 
@@ -1207,7 +1252,7 @@ self.displayCorrectSeatMessage(seatNumber)
         this.images.cashier.addChips =  new this.images.Item (cashierWindowX + 10,cashierWindowY+cashierWindowHeight-40, 50,25,4) 
         this.images.itemAsRectangle( this.images.cashier.addChips, '#0000FF')
         this.images.addItemText( this.images.cashier.addChips, 'add chips', '13px arial', '#000000')
-        this.images.cashier.addChips.image.onClick = self.events.onButtonClick
+        this.images.cashier.addChips.image.onClick = self.events.onAddChipsClick
 
         this.images.cashier.cancel =  new this.images.Item (cashierWindowX + 100,cashierWindowY+cashierWindowHeight-40, 50,25,4) 
         this.images.itemAsRectangle( this.images.cashier.cancel, '#0000FF')
@@ -1224,7 +1269,7 @@ self.displayCorrectSeatMessage(seatNumber)
         this.images.cashier.closeWindow.image.graphics.moveTo(this.images.cashier.closeWindow.position.x+this.images.cashier.closeWindow.size.x*.88,this.images.cashier.closeWindow.position.y+this.images.cashier.closeWindow.size.y*.12)
         this.images.cashier.closeWindow.image.graphics.lineTo(this.images.cashier.closeWindow.position.x+this.images.cashier.closeWindow.size.x*.12,this.images.cashier.closeWindow.position.y+this.images.cashier.closeWindow.size.y*.88)
         this.images.cashier.closeWindow.image.onClick = this.hideCashier
-
+/*
       this.images.cashier.horizontalSlider = new this.images.Item (this.images.cashier.addChips.position.x,this.images.cashier.addChips.position.y-25,cashierWindowWidth-30,1,4)
       this.images.cashier.verticalSlider = new this.images.Item(this.images.cashier.horizontalSlider.position.x,this.images.cashier.horizontalSlider.position.y-10,5,20,4)
       this.images.cashier.addChipsAmount = new this.images.Item(this.images.cashier.horizontalSlider.position.x+this.images.cashier.horizontalSlider.size.x/2,this.images.cashier.horizontalSlider.position.y-35,35,30,4)
@@ -1235,7 +1280,7 @@ self.displayCorrectSeatMessage(seatNumber)
 
 
         this.images.cashier.verticalSlider.image.onPress = self.events.addChipsSliderVerticalMouseDown
-
+*/
 
         for(var i = 0; i<cashierImageContainerIndex;i++){
             this.images.containers[i].mouseEnabled = false
@@ -1492,10 +1537,23 @@ self.displayCorrectSeatMessage(seatNumber)
   
 
 //player adds chips to his stack
-       socket.on('player_rebuys', function(player,seat_num){
-        self.images.playerSits(seat_num, player, player.chips)
+       socket.on('player_adds_chips', function(player,is_you){
+        
+           if(player.sitting_out == true){
+                          
+           self.images.seats[player.seat].status.text.text = 'Sitting Out'
+           }
+           else{
+                self.images.seats[player.seat].status.text.text = player.chips
+           }
+
+
+        if(is_you){
+            self.hideCashier()
+
         }
-  );   
+        self.stage.update()
+ }  );   
 
 
 //round ends, all hole cards are shown
