@@ -1224,30 +1224,30 @@ self.displayCorrectSeatMessage(seatNumber)
         this.images.cashier.accountBalance = new this.images.Item (textX,this.images.cashier.tableMax.position.y +15, innerCashierWidth,25,4)
         this.images.addItemText(this.images.cashier.accountBalance, 'My Available Balance: '+info.balance, '13px arial', '#000000')
 
-    /*   
-
-        $('#pokerTable').append(
-    $('<input />', {
-        id: 'cashier',
-        type: "radio",
-        name: "blah",
-        value: "blahval",
-        style: 'z-index:1'
-        
-    })
-);
-    //    $('<form id = 'cashier'>    <input type = 'radio' name = 'max'>max<br>Other Amount: <input type = 'text'>        </form>')
-    */
+//display textboxes for adding chips
      this.images.cashier.addChipsTextBox = new this.images.Item (textX,this.images.cashier.accountBalance.position.y +25, innerCashierWidth,25,4)
     var htmlcashier = document.getElementById('cashier')
     htmlcashier.style.display = 'inline'
     htmlcashier.style.position = 'absolute'
     htmlcashier.style.left = this.images.cashier.addChipsTextBox.position.x + 'px'
     htmlcashier.style.top = this.images.cashier.addChipsTextBox.position.y + 'px'
+    
+    $("#otherAmount").click(function() {
+        $('#otherAmountRadio').attr('checked', true)
+                 $('#maxRadio').attr('checked', false)
+          $('#autoRebuyRadio').attr('checked', false)
+        })
+
+            $("#autoRebuy").click(function() {
+        $('#autoRebuyRadio').attr('checked', true)
+         $('#maxRadio').attr('checked', false)
+          $('#otherAmountRadio').attr('checked', false)
+        })
 
 
-    //    this.images.cashier.currency =  new this.images.Item (cashierWindowOffsetLeft,this.images.cashier.accountBalance.position.y+10, cashierWindowWidth,25,4) 
-    //    this.images.addItemText( this.images.cashier.currency, 'Currency: '+currency, '13px arial', '#000000')
+
+  //  this.images.cashier.currency =  new this.images.Item (cashierWindowOffsetLeft,this.images.cashier.accountBalance.position.y+10, cashierWindowWidth,25,4) 
+   // this.images.addItemText( this.images.cashier.currency, 'Currency: '+currency, '13px arial', '#000000')
         
         this.images.cashier.addChips =  new this.images.Item (cashierWindowX + 10,cashierWindowY+cashierWindowHeight-40, 50,25,4) 
         this.images.itemAsRectangle( this.images.cashier.addChips, '#0000FF')
