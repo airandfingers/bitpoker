@@ -217,7 +217,8 @@ module.exports = (function () {
           , num_to_max = self.Round.MAX_CHIPS - stack
           , add_chips_info = {
               balance: maobucks
-            , min: balance_in_chips >= num_to_min ? num_to_min : -1
+            , min: balance_in_chips < num_to_min ? -1 :
+                   (num_to_min > 0 ? num_to_min : 0)
             , max: balance_in_chips >= num_to_max ? num_to_max :
                    (balance_in_chips >= num_to_min ? balance_in_chips : -1)
             , stack: stack
