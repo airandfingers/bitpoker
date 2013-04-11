@@ -169,23 +169,42 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.takeSeat = function(seat_num) {
-    this.seat = seat_num;
+    var self = this;
+    self.seat = seat_num;
+    self.first_buyin_handler = self.once('chips_added', function() {
+      self.sitIn();
+    });
+    // emit the "sit" event
+    this.emit('sit', seat_num);
   };
 
   PlayerSchema.methods.vacateSeat = function() {
+    var seat_num = this.seat;
     this.seat = undefined;
+    // clear the sit-out timer, if any
+    clearTimeout(this.sit_out_timer);
+    // clear the sit-in-on-first-buyin timer, if any
+    clearTimeout(this.first_buyin_handler);
+    // emit the "stand" event
+    this.emit('stand', seat_num);
   };
 
   static_properties.messages.sit_out = 'sitOut';
   PlayerSchema.methods.sitOut = function() {
-    if (! this.sitting_out) {
-      this.sitting_out = true;
-      this.setFlag('post_blind', false);
-      this.setFlag('receive_hole_cards', false);
-      this.emit('sit_out');
+    var self = this;
+    if (! self.sitting_out) {
+      self.sitting_out = true;
+      self.setFlag('post_blind', false);
+      self.setFlag('receive_hole_cards', false);
+      self.emit('sit_out');
+      // set sit-out timer
+      console.log('setting sit_out_timer', self.Round.SIT_OUT_TIME_ALLOWED);
+      self.sit_out_timer = setTimeout(function() {
+        self.vacateSeat();
+      }, self.Round.SIT_OUT_TIME_ALLOWED);
     }
     else {
-      console.log('sitOut called when', this.username, 'is already sitting out!');
+      console.log('sitOut called when', self.username, 'is already sitting out!');
     }
   };
 
@@ -197,6 +216,8 @@ module.exports = (function () {
       this.setFlag('post_blind', true);
       this.setFlag('receive_hole_cards', true);
       this.emit('sit_in');
+      // clear the sit-out timer, if any
+      clearTimeout(this.sit_out_timer);
     }
     else {
       console.log('sitIn called when', this.username, 'is not sitting out!');
@@ -239,9 +260,11 @@ module.exports = (function () {
       , sent_balance = add_chips_info.balance
     if (! _.isObject(add_chips_info)) {
       self.sendMessage('error', 'add_chips message received before add_chips_info was sent!');
+      return;
     }
     else if (sent_min === -1) {
       self.sendMessage('error', 'add_chips message received when player after -1 add_chips_info!');
+      return;
     }
       // calculate the current min and max
     var chips_per_maobuck = self.Round.CHIPS_PER_MAOBUCK
@@ -254,9 +277,11 @@ module.exports = (function () {
       //      (balance_in_chips >= num_to_min ? balance_in_chips : -1)
     if (num_chips > balance_in_chips) {
       self.sendMessage('error', 'add_chips request exceeds player\'s chip balance: ' + balance_in_chips);
+      return;
     }
     else if (num_chips < sent_min && num_chips < num_to_min) {
       self.sendMessage('error', 'cannot add fewer than ' + sent_min + ' or ' + num_to_min + ' chips!');
+      return;
     }
     else if (num_chips > num_to_max) {
       //self.sendMessage('error', 'cannot add more than ' + sent_max + ' chips!');
@@ -268,14 +293,17 @@ module.exports = (function () {
           , new_maobucks = user.maobucks - num_maobucks;;
         if (fetch_err) {
           self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);
+          return;
         }
         else if (user.maobucks < num_maobucks) {
           self.sendMessage('error', 'player no longer has enough maobucks to add ' + num_chips + ' chips!');
+          return;
         }
         else {
           user.update({ $set: { maobucks: new_maobucks } }, function(save_err) {
             if (save_err) {
               self.sendMessage('error', 'error while saving user: ' + save_err.message || save_err);
+              return;
             }
             else {
               self.chips += num_chips;
