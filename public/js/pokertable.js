@@ -1427,7 +1427,25 @@ self.displayCorrectSeatMessage(seatNumber)
      self.startCountdown(player.seat,Math.round(timeout/1000))
      
 })
+//player sits in
+       socket.on('player_sits_in', function(player){
+           self.images.seats[player.seat].status.text.text = player.chips
+  
+        if(player.seat == self.gameState.userSeatNumber){
+            self.hideChildren(self.images.sitIn)
+}
+        self.stage.update()
+});
 
+//player sits out
+       socket.on('player_sits_out', function(player){
+           self.images.seats[player.seat].status.text.text = 'Sitting Out'
+  
+        if(player.seat == self.gameState.userSeatNumber){
+            self.displayButton(self.images.sitIn)
+}
+        self.stage.update()
+});
 
 
 //player sits, checks if player is the user
