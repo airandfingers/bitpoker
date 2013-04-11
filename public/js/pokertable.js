@@ -752,7 +752,7 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
     this.showInHandOptions=function(){
         
         this.displayChildren(this.images.rightSideButtons[0].button)
-        this.displayButton(this.images.rightSideButtons[1].button,false, ['set flag', 'receive_hole_cards', false])
+        this.displayButton(this.images.rightSideButtons[1].button,false, ['sit_out'])
         this.displayButton(this.images.rightSideButtons[2].button,false,['set flag','post_blind',false])
     }
     this.hideSeatedOptions = function(){
@@ -1411,12 +1411,12 @@ self.displayCorrectSeatMessage(seatNumber)
        else  if (actions[i].raise){
          self.displayChildren(self.images.raise)
          self.displayButton(self.images.raise,'raise to '+actions[i].raise[0],['act','raise', actions[i].raise[0]])
-         self.showBetSlider(actions[i].raise[0], actions[i].raise[1], .01)
+         self.showBetSlider(actions[i].raise[0], actions[i].raise[1], 1)
          }
       else if (actions[i].bet){
          self.displayChildren(self.images.bet)
          self.displayButton(self.images.bet,'bet '+actions[i].bet[0] ,['act','bet',actions[i].bet[0]])
-         self.showBetSlider(actions[i].bet[0], actions[i].bet[1], .01)
+         self.showBetSlider(actions[i].bet[0], actions[i].bet[1], 1)
          }
          }
 })
