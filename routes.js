@@ -221,7 +221,13 @@ module.exports = (function () {
         if (password === password_confirm) {
           User.findOne( {username: username, recovery_code: recovery_code}, function(err, user) {
             if (err) {
-              console.error('Error during findOne:', err);
+              console.error('Error during findOne: ' + err.message);
+              req.flash('Error during findOne: ' + err.message);
+              res.redirect('back');
+            }
+            else if (! user) {
+              req.flash('error', 'No user found with that username and recovery_code!');
+              res.redirect('back');
             }
             else {
                 user.password = password;
@@ -230,7 +236,7 @@ module.exports = (function () {
                   if (err) {
                     req.flash('error', err.message);
                     res.redirect('back');
-                  }
+                  }                  
                   else {
                     // password reset successful. Redirect.
                     console.log('password reset successful' + ' !');
