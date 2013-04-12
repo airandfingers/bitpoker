@@ -252,6 +252,19 @@ module.exports = (function () {
           res.redirect('back');
         }
   });
+  //remove email from account association
+  app.post('/remove_email', function (req, res) {
+    console.log("calling remove email route");
+    User.update({_id: req.user._id}, { $set: { email: "", email_confirmed: false } }, function(err) {
+      if (err) {
+        console.error('error when removing email from database.'); 
+      }
+      else {
+      console.log("Removed email from " + req.user.username +"'s account.");
+      }
+    } );    
+    res.redirect('back');
+  });
 
   // update maobucks
   app.post('/update_maobucks', function (req, res) {

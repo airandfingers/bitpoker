@@ -19,7 +19,10 @@
        </form>
     </div>
     <div>
-    email confirmed: <%= email_confirmed %>
+        email confirmed: <%= email_confirmed %>
+        <form action="/remove_email" method="post">
+            <button> Remove E-mail </button>
+        </form>
     </div>
     <div>
     mao bucks: <%= maobucks %>
