@@ -42,5 +42,32 @@ module.exports = (function () {
     });
   };
 
-  return {sendConfirmationEmail: sendConfirmationEmail};
+  // send password recovery email with a link to the password reset route.
+  var sendPasswordRecovery = function(email_address, recovery_code, username) {
+    var recovery_url = 'http://localhost:9000/password_reset?email=' + email_address +
+                        '&recovery_code=' + recovery_code + '&username=' + username
+        , greeting = 'Hello ' + username + ','
+        , password_recovery_email = {
+          from: 'Bobby Poker Jedi <red5wanderer@gmail.com>' //sender address
+        , to: email_address //list of receivers
+        , subject: 'Bitpoker Password Recovery' // subject line
+        , text: greeting + '\nClick here to reset your password:\n' + recovery_url
+        , html: '<b>' + greeting + '</b><br />' +
+                'Click <a href="' + recovery_url +
+                '">here</a> to confirm your email address for bitpoker.'
+    };
+    smtp_transport.sendMail(password_recovery_email, function(error, response){
+      if(error){
+        console.log(error);
+      }else{
+        console.log('Recovery message sent: ' + response.message);
+      }
+      smtp_transport.close();
+    });
+  };
+
+  return {
+    sendConfirmationEmail: sendConfirmationEmail,
+    sendPasswordRecovery: sendPasswordRecovery
+  };
 })();
