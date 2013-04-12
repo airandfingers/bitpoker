@@ -77,7 +77,7 @@ module.exports = (function() {
   UserSchema.methods.maobucks_inquire = function(cb) {
     User.findOne({ _id: this._id }, function(err, user) {
       //console.log('findOne returns', err, user);
-      console.log(this.username + " has " + (user && user.maobucks) + " in maobucks on " + Date());
+      console.log(user.username + " has " + (user && user.maobucks) + " in maobucks on " + Date());
       cb(err, user && user.maobucks);
     });
   };

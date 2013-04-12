@@ -25,8 +25,6 @@ module.exports = (function () {
     }
     // the number of tables to initialize in setup
   , NUM_TABLES: 2
-    // how long (in ms) to wait between rounds
-  , ROUND_INTERIM: 1000
     // [this string] + table_id = room_name
   , TABLE_PREFIX: 'table_'
     // the events a Table should react to, on its room
@@ -117,12 +115,12 @@ module.exports = (function () {
       }
     });
 
-    self.setStatus(Table.STATUSES.WAITING);
+    //self.setStatus(Table.STATUSES.WAITING);
 
     Table.tables[name] = self;
   };
 
-  TableSchema.methods.setStatus = function(status) {
+  /*TableSchema.methods.setStatus = function(status) {
     if (! _.contains(Table.STATUSES, status)) {
       console.error('setStatus called with', status);
     }
@@ -133,7 +131,7 @@ module.exports = (function () {
 
   TableSchema.methods.hasStatus = function(status) {
     return this.status === status;
-  };
+  };*/
 
   TableSchema.methods.newRound = function() {
     var self = this
@@ -147,7 +145,7 @@ module.exports = (function () {
     console.log('Pushing new round onto rounds, with round_id: ', this.rounds.length);
     this.rounds.push(round);
 
-    round.onStage('waiting', function() {
+    /*round.onStage('waiting', function() {
       if (_.keys(this.seats).length >= Round.MIN_PLAYERS) {
         setTimeout(function() {
           round.go();
@@ -156,7 +154,7 @@ module.exports = (function () {
       else {
         self.setStatus(Table.STATUSES.WAITING);
       }
-    });
+    });*/
     
     round.onStage('done', function() {
       self.room.broadcast('reset_table');
@@ -224,54 +222,54 @@ module.exports = (function () {
 
   static_properties.player_events['message:sit'] = 'seatPlayer';
   TableSchema.methods.seatPlayer = function(player, seat_num) {
-    var socket = player.socket;
+    var error;
     if (this.seats[seat_num] !== undefined) {
-      console.error('A player is already sitting in seat ' + seat_num);
-      socket.emit('error', 'A player is already sitting in seat ' + seat_num);
-      return;
+      error = 'A player is already sitting in seat ' + seat_num;
     }
     if (player.seat) {
-      console.error('Player is already sitting at the table!');
-      socket.emit('error', 'Player is already sitting at the table!');
+      error = 'Player is already sitting at the table!';
+    }
+    if (error) {
+      console.error(error);
+      player.socket.emit('error', error);
       return;
     }
     player.takeSeat(seat_num);
-    this.seats[seat_num] = player;
+  };
 
-    var player_obj = player.serialize();
-    socket.broadcast.emit('player_sits', player_obj, false);
+  static_properties.player_events.sit = 'playerSits';
+  TableSchema.methods.playerSits = function(player, seat_num) {
+    var socket = player.socket
+      , player_obj = player.serialize();
+    this.seats[seat_num] = player;
+    socket.emitToOthers('player_sits', player_obj, false);
     socket.emit('player_sits', player_obj, true);
-    
-    var current_round = this.getCurrentRound();
-    console.log('about to test:', this.hasStatus(Table.STATUSES.WAITING), _.keys(this.seats).length >= Round.MIN_PLAYERS);
-    if (this.hasStatus(Table.STATUSES.WAITING) && 
-        _.keys(this.seats).length >= Round.MIN_PLAYERS) {
-      this.setStatus(Table.STATUSES.GAME_IN_PROGRESS);
-      current_round.go();
-    }
   };
 
   static_properties.player_events['message:stand'] = 'unseatPlayer';
   TableSchema.methods.unseatPlayer = function(player) {
-    var socket = player.socket
-      , seat_num = player.seat;
+    var seat_num = player.seat;
 
     if (_.isUndefined(seat_num)) {
       console.error('Player is not sitting at the table!');
-      socket.emit('error', 'Player is not sitting at the table!');
+      player.socket.emit('error', 'Player is not sitting at the table!');
       return;
     }
     player.vacateSeat();
-    delete this.seats[seat_num];
+  };
 
-    var player_obj = player.serialize();
-    socket.broadcast.emit('player_stands', player_obj, seat_num, false);
+  static_properties.player_events.stand = 'playerStands';
+  TableSchema.methods.playerStands = function(player, seat_num) {
+    var socket = player.socket
+      , player_obj = player.serialize();
+      delete this.seats[seat_num];
+    socket.emitToOthers('player_stands', player_obj, seat_num, false);
     socket.emit('player_stands', player_obj, seat_num, true);
   };
 
   static_properties.player_events.sit_out = 'playerSitsOut';
   TableSchema.methods.playerSitsOut = function(player) {
-    this.room.broadcast('player_sits_out', player.serialize());
+    this.room.broadcast('player_sits_out', player.serialize(), Round.SIT_OUT_TIME_ALLOWED);
   };
 
   static_properties.player_events.sit_in = 'playerSitsIn';
@@ -283,10 +281,12 @@ module.exports = (function () {
   TableSchema.methods.sendAddChipsInfo = function(player) {
     var add_chips_info = {
           table_name: this.name
-        , small_blind: Round.SMALL_BLIND
-        , big_blind: Round.BIG_BLIND
-        , table_min: Round.MIN_CHIPS
-        , table_max: Round.MAX_CHIPS
+        , small_blind:   Round.SMALL_BLIND
+        , big_blind:     Round.BIG_BLIND
+        , table_min:     Round.MIN_CHIPS
+        , table_max:     Round.MAX_CHIPS
+        , currency:      Round.CURRENCY
+        , min_increment: Round.MIN_INCREMENT
     };
     player.calculateAddChipsInfo(function(err, player_add_chips_info) {
       if (err) {
@@ -303,7 +303,7 @@ module.exports = (function () {
   static_properties.player_events.chips_added = 'playerAddsChips';
   TableSchema.methods.playerAddsChips = function(player, num_chips) {
     var socket = player.socket;
-    socket.broadcast.emit('player_adds_chips', player.serialize(), false);
+    socket.emitToOthers('player_adds_chips', player.serialize(), false);
     socket.emit('player_adds_chips', player.serialize(), true);
   };
 

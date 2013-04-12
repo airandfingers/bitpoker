@@ -388,7 +388,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
         this.stand = new this.Item(0,0,actionButtonWidth,actionButtonHeight/2,2, ['stand'])
 
         //not in hand action buttons
-        this.sitIn = new this.Item(205,419,actionButtonWidth,actionButtonHeight,2, ['set flag','receive_hole_cards', true])
+        this.sitIn = new this.Item(205,419,actionButtonWidth,actionButtonHeight,2, ['sit_in'])
 
       }
 
@@ -467,6 +467,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
  this.addItemText(this.stand,'stand up','10px Arial','white')
 
  //options (when not to act)
+ this.itemAsRectangle(this.sitIn,'black')
 this.addItemText(this.sitIn,'Deal Me In','10px Arial','white')
 
     }
@@ -751,7 +752,7 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
     this.showInHandOptions=function(){
         
         this.displayChildren(this.images.rightSideButtons[0].button)
-        this.displayButton(this.images.rightSideButtons[1].button,false, ['set flag', 'receive_hole_cards', false])
+        this.displayButton(this.images.rightSideButtons[1].button,false, ['sit_out'])
         this.displayButton(this.images.rightSideButtons[2].button,false,['set flag','post_blind',false])
     }
     this.hideSeatedOptions = function(){
@@ -1011,11 +1012,28 @@ self.displayCorrectSeatMessage(seatNumber)
         }
 
         self.hideChildren(self.images.messageBox)
+        if(self.gameState.cashier.display === true){
+            var htmlcashier = document.getElementById('cashier')
+           htmlcashier.style.display = 'inline'
+        }
         
     }
 
     this.displayMessageBox = function(messageInfo){
        
+       //hide html cashier(if visible)
+        var htmlcashier = document.getElementById('cashier')
+
+       if( htmlcashier.style.display !== 'none'){
+       self.gameState.cashier.display = true
+       htmlcashier.style.display = 'none'
+       }
+       else{self.gameState.cashier.display = false}
+
+       
+
+
+
       //  title,message,okay, okayMessages, cancel, cancelMessages
 
         self.images.messageBox = {}
@@ -1393,12 +1411,12 @@ self.displayCorrectSeatMessage(seatNumber)
        else  if (actions[i].raise){
          self.displayChildren(self.images.raise)
          self.displayButton(self.images.raise,'raise to '+actions[i].raise[0],['act','raise', actions[i].raise[0]])
-         self.showBetSlider(actions[i].raise[0], actions[i].raise[1], .01)
+         self.showBetSlider(actions[i].raise[0], actions[i].raise[1], 1)
          }
       else if (actions[i].bet){
          self.displayChildren(self.images.bet)
          self.displayButton(self.images.bet,'bet '+actions[i].bet[0] ,['act','bet',actions[i].bet[0]])
-         self.showBetSlider(actions[i].bet[0], actions[i].bet[1], .01)
+         self.showBetSlider(actions[i].bet[0], actions[i].bet[1], 1)
          }
          }
 })
@@ -1409,7 +1427,25 @@ self.displayCorrectSeatMessage(seatNumber)
      self.startCountdown(player.seat,Math.round(timeout/1000))
      
 })
+//player sits in
+       socket.on('player_sits_in', function(player){
+           self.images.seats[player.seat].status.text.text = player.chips
+  
+        if(player.seat == self.gameState.userSeatNumber){
+            self.hideChildren(self.images.sitIn)
+}
+        self.stage.update()
+});
 
+//player sits out
+       socket.on('player_sits_out', function(player){
+           self.images.seats[player.seat].status.text.text = 'Sitting Out'
+  
+        if(player.seat == self.gameState.userSeatNumber){
+            self.displayButton(self.images.sitIn)
+}
+        self.stage.update()
+});
 
 
 //player sits, checks if player is the user

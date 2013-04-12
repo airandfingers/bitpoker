@@ -71,7 +71,7 @@ module.exports = (function () {
         socket.user = user;
         // notify anyone interested (the corresponding table)
         self.emit('socket_join', socket);
-        socket.broadcast.emit('user_joins', user, false);
+        socket.emitToOthers('user_joins', user, false);
         socket.emit('user_joins', user, true);
         //}
       });
@@ -80,7 +80,7 @@ module.exports = (function () {
       var user = {};
       socket.user = user;
       self.emit('socket_join', socket);
-      socket.broadcast.emit('user_joins', user, false);
+      socket.emitToOthers('user_joins', user, false);
       socket.emit('user_joins', user, true);
     }
     //console.log('Socket joining ' + self.room_id + ':', socket.user_id);
@@ -94,7 +94,7 @@ module.exports = (function () {
   RoomSchema.methods.leave = function(socket) {
     // notify anyone interested (the corresponding table)
     this.emit('socket_leave', socket);
-    socket.broadcast.emit('user_leaves', socket.user, false);
+    socket.emitToOthers('user_leaves', socket.user, false);
     socket.emit('user_leaves', socket.user, true);
   };
 
@@ -114,7 +114,7 @@ module.exports = (function () {
   };
 
   RoomSchema.methods.getUsernames = function() {
-    var sockets = io.sockets.clients(this.room_id)
+    var sockets = _.compact(io.sockets.clients(this.room_id))
       , users = _.pluck(sockets, 'user')
       , usernames = _.pluck(users, 'username');
     return usernames;
@@ -156,6 +156,15 @@ module.exports = (function () {
         $emit.apply(socket, arguments);
       }
     };
+
+    socket.emitToOthers = function() {
+      var args_array = _.toArray(arguments);
+      _.each(io.sockets.clients(room_id), function(_socket) {
+        if (_socket.id !== socket.id) {
+          _socket.emit.apply(_socket, args_array);
+        }
+      });
+    }
 
     var room_id = socket.handshake.room_id //socket.handshake = data object from authorization handler
       , room = Room.getRoom(room_id);

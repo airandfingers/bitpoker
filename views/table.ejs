@@ -3,13 +3,13 @@
         <h1 id="welcome">
             Hello Bitcoin Poker world! You are in <%= title %>.
         </h1>
-<div id="pokerTable">
+<div id="pokerTable" style= "position: absolute">
         <canvas id="canvas" width="690" height="480" style= 'z-index :0'></canvas>
        
     <form id = 'cashier' style='z-index: 1; display: none'>    
            <input type = 'radio' name = 'addChips' value="max" size="-4">max<br>
-<input type = 'radio' name = 'addChips' value="otherAmount">Other Amount: <input type = 'text' value="addAmount" width="20px" height="17px"> <br>
-          <input type = 'radio' name = 'addChips' value="autoRebuy">Auto-Rebuy: <input type = 'text' value="autoRebuyAmount">     </form>  
+<input type = 'radio' name = 'addChips' >Other Amount: <input type = 'text' id="addAmount" width="20px" height="17px"> <br>
+          <input type = 'radio' name = 'addChips' >Auto-Rebuy: <input type = 'text' id="autoRebuy" >     </form>  
     
     </div>
         <div id="chat">
