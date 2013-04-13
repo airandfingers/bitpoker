@@ -16,15 +16,8 @@ module.exports = (function () {
 
   var static_properties = {
   // static properties (attached below) - Model.property_name
-    // the statuses this table can be in
-    STATUSES: {
-      INITIALIZING: 'initializing'
-    , WAITING: 'waiting'
-    , GAME_IN_PROGRESS: 'game_in_progress'
-    , CLOSING: 'closing'
-    }
     // the number of tables to initialize in setup
-  , NUM_TABLES: 2
+    NUM_TABLES: 2
     // [this string] + table_id = room_name
   , TABLE_PREFIX: 'table_'
     // the events a Table should react to, on its room
@@ -53,8 +46,6 @@ module.exports = (function () {
   , players  : { type: Schema.Types.Mixed, default: function() { return {}; } }
     // {seat_num: Player}
   , seats    : { type: Schema.Types.Mixed, default: function() { return {}; } }
-    // current status
-  , status   : { type: String, default: static_properties.STATUSES.INITIALIZING }
     // current dealer seat
   , dealer   : { type: Number, default: 0 }
   });
@@ -115,23 +106,8 @@ module.exports = (function () {
       }
     });
 
-    //self.setStatus(Table.STATUSES.WAITING);
-
     Table.tables[name] = self;
   };
-
-  /*TableSchema.methods.setStatus = function(status) {
-    if (! _.contains(Table.STATUSES, status)) {
-      console.error('setStatus called with', status);
-    }
-    else {
-      this.status = status;
-    }
-  };
-
-  TableSchema.methods.hasStatus = function(status) {
-    return this.status === status;
-  };*/
 
   TableSchema.methods.newRound = function() {
     var self = this
@@ -144,17 +120,6 @@ module.exports = (function () {
     });
     console.log('Pushing new round onto rounds, with round_id: ', this.rounds.length);
     this.rounds.push(round);
-
-    /*round.onStage('waiting', function() {
-      if (_.keys(this.seats).length >= Round.MIN_PLAYERS) {
-        setTimeout(function() {
-          round.go();
-        }, Table.ROUND_INTERIM);
-      }
-      else {
-        self.setStatus(Table.STATUSES.WAITING);
-      }
-    });*/
     
     round.onStage('done', function() {
       self.room.broadcast('reset_table');
@@ -177,15 +142,10 @@ module.exports = (function () {
       , user = socket.user
       , username = user.username
       , player = self.players[username];
-    if (player instanceof Player) {
-      // replace player's socket with this socket
-      player.onConnect(socket);
-    }
-    else {
+    if (! (player instanceof Player)) {
       // create a new player
       player = Player.createPlayer({
-            socket: socket
-          , username: username
+            username: username
           , Round: Round
       });
       self.players[username] = player;
@@ -207,7 +167,12 @@ module.exports = (function () {
         }
       });
     }
+    // set socket.player to player
     socket.player = player;
+    // set player.socket to socket
+    player.onConnect(socket);
+    // send current table state
+    self.sendTableState(player);
   };
 
   static_properties.room_events.socket_leave = 'onSocketDisconnect';
@@ -223,6 +188,9 @@ module.exports = (function () {
   static_properties.player_events['message:sit'] = 'seatPlayer';
   TableSchema.methods.seatPlayer = function(player, seat_num) {
     var error;
+    if (! _.isNumber(seat_num)) {
+      error = 'sit message received with non-Number seat_num: ' + seat_num;
+    }
     if (this.seats[seat_num] !== undefined) {
       error = 'A player is already sitting in seat ' + seat_num;
     }
@@ -275,6 +243,39 @@ module.exports = (function () {
   static_properties.player_events.sit_in = 'playerSitsIn';
   TableSchema.methods.playerSitsIn = function(player) {
     this.room.broadcast('player_sits_in', player.serialize());
+  };
+
+  static_properties.player_events['message:get_table_state'] = 'sendTableState';
+  TableSchema.methods.sendTableState = function(player, fields) {
+    var self = this;
+    fields = fields || 'all';
+    self.getTableState(player.socket.user, fields, function(err, table_state) {
+      player.socket.emit('table_state', table_state);
+    })
+  };
+
+  TableSchema.methods.getTableState = function(user, round_include, cb) {
+    var self = this
+      , username = user.username
+      , table_state = self.getCurrentRound().serialize(username, round_include)
+      , player = self.players[username];
+    table_state.table_name = self.name;
+    if (player instanceof Player) {
+      table_state.num_chips = player.num_chips;
+    }
+    else {
+      console.error('No player currently exists for username', username);
+    }
+    user.maobucks_inquire(function(err, maobucks) {
+      if (err) {
+        console.error('Error while looking up number of maobucks:', err);
+        cb(err);
+      }
+      else {
+        table_state.balance = maobucks;
+        cb(null, table_state);
+      }
+    });
   };
 
   static_properties.player_events['message:get_add_chips_info'] = 'sendAddChipsInfo';

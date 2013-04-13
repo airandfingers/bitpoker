@@ -248,35 +248,23 @@ module.exports = (function () {
     }
   });
 
-  app.get('/table_state/:id', auth.ensureAuthenticated, function(req, res, next) {
+  app.get('/table_state/:id', auth.ensureAuthenticated, function(req, res) {
     var table_id = req.params.id
       , table = Table.getTable(table_id)
       , round_include = req.query.fields || 'all';
 
     if (table instanceof Table) {
-      var username = req.user.username
-        , table_state = table.getCurrentRound().serialize(username, round_include)
-        , player = table.players[username];
-      table_state.table_name = table.name;
-      if (_.isObject(player)) {
-        table_state.num_chips = player.num_chips;
-      }
-      else {
-        console.error('No player currently exists for username', username);
-      }
-      req.user.maobucks_inquire(function(err, maobucks) {
+      table.getTableState(req.user, round_include, function(err, table_state) {
         if (err) {
-          console.error('Error while looking up number of maobucks:', err);
           res.json({ error: err });
         }
         else {
-          table_state.balance = maobucks;
           res.json(table_state);
         }
-      });
+      })
     }
     else {
-      next('No table with ID ' + table_id);
+      res.json({ error: 'No table with ID ' + table_id });
     }
   });
 
