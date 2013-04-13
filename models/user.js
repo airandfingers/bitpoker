@@ -23,6 +23,7 @@ module.exports = (function() {
     //whether the user has confirmed his/r email address
   , email_confirmed  : { type: Boolean, default: false }
   , maobucks         : { type: Number, default: 0 }
+  , recovery_code    : { type: String }
   , registration_date: { type: Date, default: Date.now }
   });
 
@@ -50,6 +51,18 @@ module.exports = (function() {
       else {
         var confirmation_code = buf.toString('hex');
         callback(null, confirmation_code);
+      }
+    });
+  };
+  
+  UserSchema.statics.generatePasswordRecoveryCode = function(callback) {
+    crypto.randomBytes(16, function(err, buf) {
+      if (err) {
+        callback(err);
+      }
+      else {
+      var recovery_code = buf.toString('hex');
+      callback(null, recovery_code);
       }
     });
   };
@@ -85,6 +98,7 @@ module.exports = (function() {
     shasum.update(user.password);
     shasum = shasum.digest('hex');
     user.password = shasum;
+    next();
   });
 
   /* the model - a fancy constructor compiled from the schema:

@@ -167,6 +167,9 @@ module.exports = (function () {
         }
       });
     }
+    else {
+      console.log('Socket joined with existing player', player);
+    }
     // set socket.player to player
     socket.player = player;
     // set player.socket to socket

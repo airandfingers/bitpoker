@@ -79,4 +79,10 @@ h3 {
     height: 200px;
     position: absolute;
     display: none;
+    font-size: .8em;
+    margin: 1em;
+}
+
+#login form {
+    margin-bottom: 1em;
 }

@@ -1,6 +1,6 @@
 <% include head %>
 
-  <h4>Please log in.</h4>
+  <h4>login</h4>
   <% if (message) { %>
     <p><%= message %></p>
   <% } %>
@@ -25,6 +25,9 @@
         <input type="hidden" name="next" value="<%= next %>" />
       <% } %>
     </form>
+    <div>
+    Forgetting your password? <a href="/password_recovery">Click here.</a>
+    </div>    
   </div>
   <% include plugins %>
 <% include foot %>

@@ -113,13 +113,13 @@ module.exports = (function () {
       self.sendMessage('act_prompt', actions, timeout);
       self.socket.once('act', function(action, num_chips) {
         console.log(self.username, 'responds with', action, num_chips);
-        self.setFlag('receive_hole_cards', true);
+        self.setFlag('idle', false);
         clearTimeout(act_timeout);
         cb(action, num_chips);
       });
       act_timeout = setTimeout(function() {
         console.log(self.username, 'fails to respond within', timeout, 'ms');
-        self.setFlag('receive_hole_cards', false);
+        self.setFlag('idle', true);
         self.socket.removeAllListeners('act');
         cb(default_action);
       }, timeout);
@@ -135,11 +135,11 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.roundOver = function() {
-    this.returnBet();
+    //this.returnBet();
     this.hand = [];
     this.has_acted = {};
     this.chips_won = 0;
-    if (! this.isFlagSet('receive_hole_cards')) {
+    if (! this.isFlagSet('receive_hole_cards') || this.isFlagSet('idle')) {
       this.sitOut();
     }
   };
@@ -259,7 +259,7 @@ module.exports = (function () {
       , sent_max = add_chips_info.max
       , sent_balance = add_chips_info.balance;
     if (! _.isNumber(num_chips)) {
-      error = 'add_chips message received with non-Number num_chips!';
+      error = 'add_chips message received with non-Number num_chips: ' + num_chips;
     }
     if (! _.isObject(add_chips_info)) {
       error = 'add_chips message received before add_chips_info was sent!';

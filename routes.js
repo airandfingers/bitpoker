@@ -70,6 +70,32 @@ module.exports = (function () {
       res.redirect(next_page);
     }
   });
+  
+  //this page is where you request the password recovery e-mail
+  app.get('/password_recovery', function (req, res) {
+    res.render('password_recovery', {
+      message: req.flash('error'),
+      next: req.query.next,
+      title: 'Bitcoin Poker Password Recovery',
+    });
+  });
+
+
+  //this page is where you reset your password (after receiving the e-mail)
+  app.get('/password_reset', function(req, res) {
+    var email = req.query.email
+      , recovery_code = req.query.recovery_code
+      , username = req.query.username;
+      console.log(email + recovery_code + username);
+    res.render('password_reset', {
+      message: req.flash('error'),
+      title: 'Bitcoin Poker Password Reset',
+      email: email,
+      recovery_code: recovery_code,
+      username: username,
+    });
+    console.log("Password reset page loaded with username " + username + ", recovery code " + recovery_code + ", and e-mail " + email + ".");
+  });
 
   app.get('/promo', function (req, res) {
     res.render('promo', {
@@ -144,6 +170,100 @@ module.exports = (function () {
       });
     }
     res.redirect('/account'); 
+  });
+
+  //submit password recovery to user's e-mail address route.
+  app.post('/password_recovery', function (req, res) {
+    var username = req.body.username;
+    console.log("Post /password recovery route called for username: " + username);
+    User.findOne({ username: username }, function(err, user) {
+      console.log('findOne returns', user);
+      if (err) {
+        console.error('Error during findOne:', err);
+        res.json({ error: 'Error during findOne:' + JSON.stringify(err) });
+      }
+      else {
+        User.generatePasswordRecoveryCode(function (err, recovery_code) {
+          if (err) {
+            console.error('Error while generating confirmation code:', err);
+            res.json({ error: 'Error while generating confirmation code:' + JSON.stringify(err) });
+          }
+          else {
+            user.recovery_code = recovery_code;
+            console.log('before save:', user);
+            user.save(function(err) {
+              console.log('after save:', user);
+              if (err) {
+                console.error('Error during save:', err);
+                res.json({ error: 'Error during save:' + JSON.stringify(err) });
+              }
+              else {
+                req.flash('error', 'A recovery e-mail has been sent to your registered account. Check your e-mail for further instructions.');
+                res.redirect('/login');
+              }
+            });
+            mailer.sendPasswordRecovery(user.email, recovery_code, username);
+          }
+        });
+      }
+    });
+  });
+
+  //resets password to whatever the user inputs.
+  app.post ('/password_reset', function (req, res) {
+    console.log("req is" + req);
+    var email = req.body.email
+      , recovery_code = req.body.recovery_code
+      , username = req.body.username
+      , password = req.body.password
+      , password_confirm = req.body.password_confirm;
+    console.log("calling password reset route. password is", password, "password_confirm is", password_confirm);
+        if (password === password_confirm) {
+          User.findOne( {username: username, recovery_code: recovery_code}, function(err, user) {
+            if (err) {
+              console.error('Error during findOne: ' + err.message);
+              req.flash('Error during findOne: ' + err.message);
+              res.redirect('back');
+            }
+            else if (! user) {
+              req.flash('error', 'No user found with that username and recovery_code!');
+              res.redirect('back');
+            }
+            else {
+                user.password = password;
+                user.recovery_code = null;
+                user.save(function(err, result) {
+                  if (err) {
+                    req.flash('error', err.message);
+                    res.redirect('back');
+                  }                  
+                  else {
+                    // password reset successful. Redirect.
+                    console.log('password reset successful' + ' !');
+                    req.flash('error', 'Password reset is successful. Cheers, mate.');
+                    res.redirect('/login');
+                  }              
+                });
+            }
+          }); 
+        }
+        else { 
+          console.error('Passwords do not match son.  ' + password + '!= ' + password_confirm);
+          res.redirect('back');
+        }
+  });
+  //remove email from account association
+  app.post('/remove_email', function (req, res) {
+    console.log("calling remove email route");
+    User.update({_id: req.user._id}, { $set: { email: "", email_confirmed: false } }, function(err) {
+      if (err) {
+        console.error('error when removing email from database.'); 
+      }
+      else {
+      console.log("Removed email from " + req.user.username +"'s account.");
+      }
+    } );    
+    res.redirect('back');
   });
 
   // update maobucks
