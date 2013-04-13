@@ -59,7 +59,6 @@ module.exports = (function () {
     var self = this;
     // set post_blind flag
     this.setFlag('post_blind', true);
-    this.onConnect(this.socket);
   };
 
   PlayerSchema.methods.makeBet = function(amount) {
@@ -254,16 +253,22 @@ module.exports = (function () {
   static_properties.messages.add_chips = 'addChips';
   PlayerSchema.methods.addChips = function(num_chips) {
     var self = this
+      , error
       , add_chips_info = self.add_chips_info
       , sent_min = add_chips_info.min
       , sent_max = add_chips_info.max
-      , sent_balance = add_chips_info.balance
+      , sent_balance = add_chips_info.balance;
+    if (! _.isNumber(num_chips)) {
+      error = 'add_chips message received with non-Number num_chips!';
+    }
     if (! _.isObject(add_chips_info)) {
-      self.sendMessage('error', 'add_chips message received before add_chips_info was sent!');
-      return;
+      error = 'add_chips message received before add_chips_info was sent!';
     }
     else if (sent_min === -1) {
-      self.sendMessage('error', 'add_chips message received when player after -1 add_chips_info!');
+      error = 'add_chips message received when player after -1 add_chips_info!';
+    }
+    if (error) {
+      self.sendMessage('error', error);
       return;
     }
       // calculate the current min and max
@@ -276,26 +281,27 @@ module.exports = (function () {
       //, max = balance_in_chips >= num_to_max ? num_to_max :
       //      (balance_in_chips >= num_to_min ? balance_in_chips : -1)
     if (num_chips > balance_in_chips) {
-      self.sendMessage('error', 'add_chips request exceeds player\'s chip balance: ' + balance_in_chips);
-      return;
+      error = 'add_chips request exceeds player\'s chip balance: ' + balance_in_chips;
     }
     else if (num_chips < sent_min && num_chips < num_to_min) {
-      self.sendMessage('error', 'cannot add fewer than ' + sent_min + ' or ' + num_to_min + ' chips!');
-      return;
+      error = 'cannot add fewer than ' + sent_min + ' or ' + num_to_min + ' chips!';
     }
     else if (num_chips > num_to_max) {
       //self.sendMessage('error', 'cannot add more than ' + sent_max + ' chips!');
       num_chips = num_to_max
     }
+    if (error) {
+      self.sendMessage('error', error);
+    }
     else {
       self.socket.user.fetch(function(fetch_err, user) {
         var num_maobucks = num_chips / add_chips_info.chips_per_maobuck
-          , new_maobucks = user.maobucks - num_maobucks;;
+          , new_maobucks = user.maobucks - num_maobucks;
         if (fetch_err) {
           self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);
           return;
         }
-        else if (user.maobucks < num_maobucks) {
+        else if (new_maobucks < 0) {
           self.sendMessage('error', 'player no longer has enough maobucks to add ' + num_chips + ' chips!');
           return;
         }
