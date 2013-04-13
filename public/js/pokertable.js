@@ -339,6 +339,176 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
 //--------------END EVENTS----------------------------
 
+this.images.setDefaults = function(){
+    
+      var cardWidth = 46
+            var cardHeight = 62
+            var sideButtonWidth = 185
+            var sideButtonHeight = 16
+            var actionButtonWidth = 80
+            var actionButtonHeight = 25
+            var seatWidth = 90
+            var seatHeight = 33
+
+            //---------pot-------------------
+            this.pot = new this.Item(290,138,110,24,2)
+             this.addItemText(this.pot, '',"14px Arial", "#100D08")
+           //this.itemAsBitmap(this.pot, this.sources.pot)
+
+           //--------side buttons---------------------
+            this.leftSideButtons[0].button = new this.Item(7.5,419,sideButtonWidth,sideButtonHeight,2)
+            this.leftSideButtons[1].button = new this.Item(7.5,439,sideButtonWidth,sideButtonHeight,2)
+            this.leftSideButtons[2].button = new this.Item(7.5,459,sideButtonWidth,sideButtonHeight,2)
+            this.rightSideButtons[0].button = new this.Item(497.5,419,sideButtonWidth,sideButtonHeight,2)
+            this.rightSideButtons[1].button = new this.Item(497.5,439,sideButtonWidth,sideButtonHeight,2)
+            this.rightSideButtons[2].button = new this.Item(497.5,459,sideButtonWidth,sideButtonHeight,2)
+
+        for (var i = 0; i < 3; i = i + 1){
+            this.itemAsRectangle(this.leftSideButtons[i].button, "#000000")
+            this.addItemText(this.leftSideButtons[i].button, '',"12px Arial", "#FFFFFF")
+            this.itemAsRectangle(this.rightSideButtons[i].button, "#000000")
+            this.addItemText(this.rightSideButtons[i].button, '',"12px Arial", "#FFFFFF")
+         }
+         this.rightSideButtons[0].button.text.text = 'fold to any bet'
+         this.rightSideButtons[1].button.text.text = 'sit out next hand'
+         this.rightSideButtons[2].button.text.text = 'sit out next blind'
+
+           //----------------------seats-------------------------------
+           this.seats[0].seat = new this.Item(300,371,seatWidth,seatHeight,2)
+           this.seats[1].seat = new this.Item(170,371,seatWidth,seatHeight,2)
+           this.seats[2].seat = new this.Item(27,301,seatWidth,seatHeight,2)
+           this.seats[3].seat = new this.Item(27,153,seatWidth,seatHeight,2)
+           this.seats[4].seat = new this.Item(170,77,seatWidth,seatHeight,2)
+           this.seats[5].seat = new this.Item(300,77,seatWidth,seatHeight,2)
+           this.seats[6].seat = new this.Item(430,77,seatWidth,seatHeight,2)
+            this.seats[7].seat = new this.Item(573,153,seatWidth,seatHeight,2)
+             this.seats[8].seat = new this.Item(573,301,seatWidth,seatHeight,2)
+     this.seats[9].seat = new this.Item(430,371,seatWidth,seatHeight,2)
+
+     //--------------------empty seats and text-----------------
+     for(var i=0;i<this.seats.length;i=i+1){
+         
+         this.seats[i].emptySeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,2)
+
+         this.seats[i].action = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,2)
+         this.seats[i].countdown = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,2)
+         this.seats[i].winner = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,2)
+
+         this.seats[i].horizontalDivider = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,1,2)
+         this.seats[i].playerName = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,2)
+         this.seats[i].status = new this.Item(this.seats[i].horizontalDivider.position.x, this.seats[i].horizontalDivider.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,2)
+
+     }
+     //------------------hole cards-----------------------------
+        for (var i = 0; i < this.seats.length; i = i + 1){
+            this.seats[i].hiddenCard0 = new this.Item(this.seats[i].seat.position.x - 1, this.seats[i].seat.position.y - 48, cardWidth, cardHeight,1)
+            this.seats[i].hiddenCard1 = new this.Item(this.seats[i].seat.position.x + 45, this.seats[i].seat.position.y - 48, cardWidth, cardHeight,1)
+
+            this.seats[i].shownCard0 = new this.Item(this.seats[i].seat.position.x - 1, this.seats[i].seat.position.y - 48, cardWidth, cardHeight,1)
+            this.seats[i].shownCard1 = new this.Item(this.seats[i].seat.position.x + 45, this.seats[i].seat.position.y - 48, cardWidth, cardHeight,1)
+          }
+
+
+            //------------seat images----------------------
+        for (var i = 0; i < this.seats.length; i = i + 1){
+            //filled seats
+            this.itemAsRectangle(this.seats[i].seat, "#000000")
+            this.seats[i].seat.image.graphics.beginStroke("#FFFFFF").moveTo(this.seats[i].horizontalDivider.position.x,this.seats[i].horizontalDivider.position.y).lineTo(this.seats[i].horizontalDivider.position.x+this.seats[i].horizontalDivider.size.x,this.seats[i].horizontalDivider.position.y)
+            //Empty Seats
+            this.itemAsRectangle(this.seats[i].emptySeat, "#000000")
+            this.addItemText(this.seats[i].emptySeat,'Open Seat','15px arial','#FFFFFF' )
+            //hole cards
+            this.itemAsBitmap(this.seats[i].hiddenCard0, this.sources.hiddenCard)
+            this.itemAsBitmap(this.seats[i].hiddenCard1, this.sources.hiddenCard)
+            this.itemAsRectangle(this.seats[i].shownCard0, "#00FFFF")
+            this.itemAsRectangle(this.seats[i].shownCard1, "#00FFFF")
+            this.addItemText(this.seats[i].shownCard0,'','12px Arial','#000000')
+            this.addItemText(this.seats[i].shownCard1,'','12px Arial','#000000')
+            //player name
+            this.addItemText(this.seats[i].playerName,'','11px arial','#FFFFFF' )
+            //player's status
+            this.addItemText(this.seats[i].status,'','11px arial','#FFFFFF' )
+            //action
+            this.addItemText(this.seats[i].action,'','11px Arial','#FFFFFF')
+            //countdown
+            this.addItemText(this.seats[i].countdown,'','11px Arial','#FFFFFF')
+            //winner
+             this.addItemText(this.seats[i].winner,'','11px Arial','#FFFFFF')
+
+            
+        }
+
+             //---------player's bets-----------------
+      this.seats[0].bet = new this.Item(345,291,20,10,2)
+      this.seats[1].bet = new this.Item(215,291,20,10,2)
+      this.seats[2].bet = new this.Item(137,227,20,10,2)
+      this.seats[3].bet = new this.Item(137,153,20,10,2)
+      this.seats[4].bet = new this.Item(215,121,20,10,2)
+      this.seats[5].bet = new this.Item(345,121,20,10,2)
+      this.seats[6].bet = new this.Item(475,121,20,10,2)
+      this.seats[7].bet = new this.Item(553,153,20,10,2)
+      this.seats[8].bet = new this.Item(553,227,20,10,2)
+      this.seats[9].bet = new this.Item(475,291,20,10,2)
+
+      for(var i = 0; i < this.seats.length; i = i + 1){
+       this.addItemText(this.seats[i].bet,'', "11px Arial", "#FFFFFF")}
+
+         //---------------action buttons------------------
+      this.fold = new this.Item(205,419,actionButtonWidth,actionButtonHeight,2, ['act','fold'])
+      this.call = new this.Item(305,419,actionButtonWidth,actionButtonHeight,2, ['act','call'])
+      this.check = new this.Item(305,419,actionButtonWidth,actionButtonHeight,2, ['act','check'])
+      this.raise = new this.Item(405,419,actionButtonWidth,actionButtonHeight,2, ['act','raise'])
+      this.bet = new this.Item(405,419,actionButtonWidth,actionButtonHeight,2, ['act','bet'])
+
+        this.itemAsRectangle(this.fold,  'red')
+        this.addItemText(this.fold, 'fold','12px Arial','#000000')
+        this.itemAsRectangle(this.call, 'red')
+        this.addItemText(this.call, 'call','12px Arial','#000000')
+        this.itemAsRectangle(this.check, 'red')
+        this.addItemText(this.check, 'check','12px Arial','#000000')
+        this.itemAsRectangle(this.raise, 'red')
+        this.addItemText(this.raise, 'raise', '12px Arial','#000000')
+        this.itemAsRectangle(this.bet, 'red')
+        this.addItemText(this.bet, 'bet','12px Arial','#000000')
+
+        //-----------------bet slider-----------------------------
+              this.betSlider.horizontal = new this.Item (215,458,240,1,2)
+      this.betSlider.vertical = new this.Item(215,448,4,20,2)
+      this.betSlider.betSize = new this.Item(470,448,30,50,2)
+
+        this.itemAsRectangle(this.betSlider.horizontal, 'black')
+        this.itemAsRectangle(this.betSlider.vertical, 'blue')
+        this.addItemText(this.betSlider.betSize, 0, '14px Arial', 'black')
+
+  //------------------------------community cards---------------------------
+        this.community[0] = new this.Item(222,169,cardWidth, cardHeight,2)
+        this.community[1] = new this.Item(272,169,cardWidth, cardHeight,2)
+        this.community[2] = new this.Item(322,169,cardWidth, cardHeight,2)
+        this.community[3] = new this.Item(372,169,cardWidth, cardHeight,2)
+        this.community[4] = new this.Item(422,169,cardWidth, cardHeight,2)
+
+         for (var i = 0; i < 5; i = i + 1){
+ this.itemAsRectangle(this.community[i], "#00FFFF")
+ this.addItemText(this.community[i],'','12px Arial','black')
+ }
+
+
+        //--------------upper left side button---------------------
+        this.stand = new this.Item(0,0,actionButtonWidth,actionButtonHeight/2,2, ['stand'])
+         this.itemAsRectangle(this.stand, 'black')
+ this.addItemText(this.stand,'stand up','10px Arial','white')
+
+        //----------------not in hand action buttons------------------
+        this.sitIn = new this.Item(205,419,actionButtonWidth,actionButtonHeight,2, ['sit_in'])
+        this.getChips = new this.Item(205,419,actionButtonWidth,actionButtonHeight,2, ['get_add_chips_info'])
+
+         this.itemAsRectangle(this.sitIn,'black')
+this.addItemText(this.sitIn,'Deal Me In','10px Arial','white')
+
+ this.itemAsRectangle(this.getChips,'black')
+this.addItemText(this.getChips,'Get Chips','10px Arial','white')
+}
+
 //-----------functions below this line ---------------------
   this.images.setDefaultItems = function (){
 
@@ -427,6 +597,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
         this.community[2] = new this.Item(322,169,cardWidth, cardHeight,2)
         this.community[3] = new this.Item(372,169,cardWidth, cardHeight,2)
         this.community[4] = new this.Item(422,169,cardWidth, cardHeight,2)
+
 
         //upper left side button
         this.stand = new this.Item(0,0,actionButtonWidth,actionButtonHeight/2,2, ['stand'])
@@ -555,8 +726,7 @@ this.addItemText(this.getChips,'Get Chips','10px Arial','white')
 
     this.initialize = function(){
         this.setBackground()
-        this.images.setDefaultItems()
-       this.images.setDefaultImages()
+        this.images.setDefaults()
        this.images.setDefaultEvents()
        this.images.setDefaultMessages()
     }
