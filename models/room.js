@@ -69,19 +69,23 @@ module.exports = (function () {
         }
         //else {
         socket.user = user;
-        // notify anyone interested (the corresponding table)
-        self.emit('socket_join', socket);
+        // notify all users, including this one
         socket.emitToOthers('user_joins', user, false);
         socket.emit('user_joins', user, true);
+        // notify any interested server-side objects (the corresponding table)
+        self.emit('socket_join', socket);
         //}
       });
     }
     else {
+      // unauthenticated socket joining
       var user = {};
       socket.user = user;
-      self.emit('socket_join', socket);
+      // notify all users, including this one
       socket.emitToOthers('user_joins', user, false);
       socket.emit('user_joins', user, true);
+      // notify any interested server-side objects (the corresponding table)
+      self.emit('socket_join', socket);
     }
     //console.log('Socket joining ' + self.room_id + ':', socket.user_id);
     socket.join(self.room_id);
