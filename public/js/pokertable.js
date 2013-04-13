@@ -979,8 +979,8 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
     this.showInHandOptions=function(){
         
         this.displayChildren(this.images.rightSideButtons[0].button)
-        this.displayButton(this.images.rightSideButtons[1].button,false, ['sit_out'])
-        this.displayButton(this.images.rightSideButtons[2].button,false,['set flag','post_blind',false])
+        this.displayButton(this.images.rightSideButtons[1].button,false, ['set_flag', 'receive_hole_cards',false])
+        this.displayButton(this.images.rightSideButtons[2].button,false,['set_flag','post_blind',false])
     }
     this.hideSeatedOptions = function(){
         this.hideChildren(this.images.rightSideButtons[0].button)
