@@ -174,7 +174,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
             }
             else{
                 
-                socket.emit('add_chips',amount)
+                socket.emit('add_chips',Number(amount))
             }
 
         }
@@ -188,7 +188,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
             }
             else{
                 
-                socket.emit('auto_rebuy',amount)
+                socket.emit('auto_rebuy',Number(amount))
             }
 
         }
