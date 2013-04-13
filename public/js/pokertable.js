@@ -174,7 +174,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
             }
             else{
                 
-                socket.emit('add_chips',amount)
+                socket.emit('add_chips',Number(amount))
             }
 
         }
@@ -188,7 +188,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
             }
             else{
                 
-                socket.emit('auto_rebuy',amount)
+                socket.emit('auto_rebuy',Number(amount))
             }
 
         }
@@ -433,6 +433,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
         //not in hand action buttons
         this.sitIn = new this.Item(205,419,actionButtonWidth,actionButtonHeight,2, ['sit_in'])
+        this.getChips = new this.Item(205,419,actionButtonWidth,actionButtonHeight,2, ['get_add_chips_info'])
 
       }
 
@@ -513,6 +514,9 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
  //options (when not to act)
  this.itemAsRectangle(this.sitIn,'black')
 this.addItemText(this.sitIn,'Deal Me In','10px Arial','white')
+
+ this.itemAsRectangle(this.getChips,'black')
+this.addItemText(this.getChips,'Get Chips','10px Arial','white')
 
     }
 
@@ -634,7 +638,16 @@ this.images.pot.text.text = 'pot: '+potSize
      this.playerStands = function(seatNumber){
           this.gameState.seats[seatNumber].displayMessageType = 'emptySeat'
 this.displayCorrectSeatMessage(seatNumber)
+      if(seatNumber === this.gameState.userSeatNumber){
+        this.hideSeatedOptions()
+        }
+    }
+
+    this.hideSeatedOptions=function(){
+        this.hideInHandOptions()
         this.hideChildren(this.images.stand)
+         this.hideChildren(this.images.getChips)
+ this.hideChildren(this.images.sitIn)
     }
 
 
@@ -1232,18 +1245,34 @@ self.displayCorrectSeatMessage(seatNumber)
     htmlcashier.style.left = this.images.cashier.addChipsTextBox.position.x + 'px'
     htmlcashier.style.top = this.images.cashier.addChipsTextBox.position.y + 'px'
     
-    $("#otherAmount").click(function() {
-        $('#otherAmountRadio').attr('checked', true)
-                 $('#maxRadio').attr('checked', false)
+    $("#otherAmount").focus(function() {
+        
+                 $('#maxRadio').prop('checked', false)
+          $('#autoRebuyRadio').prop('checked', false)
+          $('#otherAmountRadio').prop('checked', true)
+        })
+
+            $("#autoRebuy").focus(function() {
+        
+         $('#maxRadio').prop('checked', false)
+          $('#otherAmountRadio').prop('checked', false)
+          $('#autoRebuyRadio').prop('checked', true)
+        })
+        
+/*
+        document.getElementById('otherAmount').onclick = function(){
+            $('#maxRadio').attr('checked', false)
           $('#autoRebuyRadio').attr('checked', false)
-        })
-
-            $("#autoRebuy").click(function() {
-        $('#autoRebuyRadio').attr('checked', true)
-         $('#maxRadio').attr('checked', false)
+          $('#otherAmountRadio').attr('checked', true)
+        }
+        
+        document.getElementById('autoRebuy').onclick = function(){
+            
+                 $('#maxRadio').attr('checked', false)
           $('#otherAmountRadio').attr('checked', false)
-        })
-
+          $('#autoRebuyRadio').attr('checked', true)
+        }
+        */
 
 
   //  this.images.cashier.currency =  new this.images.Item (cashierWindowOffsetLeft,this.images.cashier.accountBalance.position.y+10, cashierWindowWidth,25,4) 
@@ -1428,10 +1457,7 @@ self.displayCorrectSeatMessage(seatNumber)
             self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
             break;
 
-            
         }
-
-
              
 })
 
@@ -1478,6 +1504,7 @@ self.displayCorrectSeatMessage(seatNumber)
   
         if(player.seat == self.gameState.userSeatNumber){
             self.hideChildren(self.images.sitIn)
+            self.hideChildren(self.images.getChips)
 }
         self.stage.update()
 });
@@ -1487,7 +1514,13 @@ self.displayCorrectSeatMessage(seatNumber)
            self.images.seats[player.seat].status.text.text = 'Sitting Out'
   
         if(player.seat == self.gameState.userSeatNumber){
+
+            if(player.chips == 0){
+                self.displayButton(self.images.getChips)
+            }
+            else{
             self.displayButton(self.images.sitIn)
+            }
 }
         self.stage.update()
 });
@@ -1526,12 +1559,6 @@ self.displayCorrectSeatMessage(seatNumber)
 //player receives server message to open cashier
        socket.on('add_chips_info', function(info){
         self.displayCashier(info)
-        }
-  );   
-
-  //player adds chips to his stack
-       socket.on('add_chips', function(min,max, balance,table_name,small_blind, big_blind){
-        self.displayCashier(min,max, balance,table_name,small_blind, big_blind)
         }
   );   
   
