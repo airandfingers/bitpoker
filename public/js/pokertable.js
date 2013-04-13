@@ -1457,6 +1457,10 @@ self.displayCorrectSeatMessage(seatNumber)
             self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
             break;
 
+            case'post_blind':
+            self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
+            break;
+
         }
              
 })
