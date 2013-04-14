@@ -147,6 +147,7 @@ module.exports = (function () {
       player = Player.createPlayer({
             username: username
           , Round: Round
+          , table: self
       });
       self.players[username] = player;
       // attach handlers for events as defined in Table.player_events
@@ -194,10 +195,13 @@ module.exports = (function () {
     if (! _.isNumber(seat_num)) {
       error = 'sit message received with non-Number seat_num: ' + seat_num;
     }
-    if (this.seats[seat_num] !== undefined) {
+    else if (seat_num < 0 || seat_num >= Round.MAX_PLAYERS) {
+      error = 'sit message received with invalid seat_num: ' + seat_num;
+    }
+    else if (this.seats[seat_num] !== undefined) {
       error = 'A player is already sitting in seat ' + seat_num;
     }
-    if (player.seat) {
+    else if (player.seat) {
       error = 'Player is already sitting at the table!';
     }
     if (error) {
@@ -310,6 +314,11 @@ module.exports = (function () {
     socket.emitToOthers('player_adds_chips', player.serialize(), false);
     socket.emit('player_adds_chips', player.serialize(), true);
   };
+
+  TableSchema.methods.isFull = function() {
+    var num_players = _.keys(this.seats).length;
+    return num_players === Round.MAX_PLAYERS;
+  }
 
   /* the model - a fancy constructor compiled from the schema:
    *   a function that creates a new document
