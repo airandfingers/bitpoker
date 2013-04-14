@@ -52,6 +52,8 @@
             this.images.bet = {text:{},messages:[]}
             this.images.check = {text:{},messages:[]}
             this.images.betSlider ={}
+            this.images.cashier  = {}
+            this.images.messageBox ={}
 
             this.images.community = [{}, {}, {}, {}, {}]
 
@@ -339,6 +341,8 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
 //--------------END EVENTS----------------------------
 
+
+//-----------functions below this line ---------------------
 this.images.setDefaults = function(){
     
       var cardWidth = 46
@@ -507,9 +511,154 @@ this.addItemText(this.sitIn,'Deal Me In','10px Arial','white')
 
  this.itemAsRectangle(this.getChips,'black')
 this.addItemText(this.getChips,'Get Chips','10px Arial','white')
+
+//======================CASHIER=======================================
+
+ var cashierImageContainerIndex = 4
+
+
+        var cashierWindowWidth = 265
+        var cashierWindowHeight = 355
+        //declare size variables
+        var textLeftOffset = 10
+         var outerTopHeight = cashierWindowHeight*.08
+                var outerBottomHeight = cashierWindowHeight*.03
+        var outerSideWidth = cashierWindowWidth*.02
+
+        var asdf = document.getElementById('canvas')
+        var stageWidth = asdf.width
+        var stageHeight = asdf.height
+        var cashierWindowX = stageWidth/2 - cashierWindowWidth/2
+        var cashierWindowY = stageHeight/2 - cashierWindowHeight/2
+        
+
+        var innerCashierX = cashierWindowX+outerSideWidth
+        var innerCashierY = cashierWindowY+outerTopHeight
+        var innerCashierWidth = cashierWindowWidth-2*outerSideWidth -2
+        var innerCashierHeight = cashierWindowHeight-outerBottomHeight-outerTopHeight
+
+        var textX = innerCashierX + textLeftOffset
+        
+
+        this.cashier.window = new this.Item(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight,cashierImageContainerIndex)
+        this.cashier.window.image = new createjs.Shape()
+        //outer blue rim
+        this.cashier.window.image.graphics.setStrokeStyle(1).beginFill('blue').beginStroke('#FF00FF').rect(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight)
+        this.cashier.window.image.graphics.setStrokeStyle(1).beginFill('#C0C0C0').beginStroke('#FF00FF').rect(innerCashierX,innerCashierY,innerCashierWidth,innerCashierHeight)
+
+        this.cashier.windowTitle = new this.Item (cashierWindowX+1,cashierWindowY+1, cashierWindowWidth,outerTopHeight-2,cashierImageContainerIndex)
+         this.addItemText(this.cashier.windowTitle, 'Get Chips', '13px arial', '#000000')
+
+        this.cashier.blinds = new this.Item (textX,innerCashierY+15, innerCashierWidth,25,cashierImageContainerIndex)
+        this.addItemText(this.cashier.blinds, '', '13px arial', '#000000')
+
+         this.cashier.tableName = new this.Item (textX,this.cashier.blinds.position.y+15, innerCashierWidth,25,cashierImageContainerIndex)
+        this.addItemText(this.cashier.tableName, '', '13px arial', '#000000')
+
+        this.cashier.tableMin = new this.Item (textX,this.cashier.tableName.position.y+15, innerCashierWidth,25,cashierImageContainerIndex)
+        this.addItemText(this.cashier.tableMin, '', '13px arial', '#000000')
+
+        this.cashier.tableMax = new this.Item (textX, this.cashier.tableMin.position.y+15, innerCashierWidth,25,cashierImageContainerIndex)
+        this.addItemText(this.cashier.tableMax, '', '13px arial', '#000000')
+
+        this.cashier.accountBalance = new this.Item (textX,this.cashier.tableMax.position.y +15, innerCashierWidth,25,cashierImageContainerIndex)
+        this.addItemText(this.cashier.accountBalance, '', '13px arial', '#000000')
+
+// location of html textboxes for adding chips
+     this.cashier.addChipsTextBox = new this.Item (textX,this.cashier.accountBalance.position.y +25, innerCashierWidth,25,cashierImageContainerIndex)
+
+      this.cashier.addChips =  new this.Item (cashierWindowX + 10,cashierWindowY+cashierWindowHeight-40, 50,25,4) 
+        this.itemAsRectangle( this.cashier.addChips, '#0000FF')
+        this.addItemText( this.cashier.addChips, 'add chips', '13px arial', '#000000')
+        this.cashier.addChips.image.onClick = self.events.onAddChipsClick
+
+        this.cashier.cancel =  new this.Item (cashierWindowX + 100,cashierWindowY+cashierWindowHeight-40, 50,25,4) 
+        this.itemAsRectangle( this.cashier.cancel, '#0000FF')
+        this.addItemText( this.cashier.cancel, 'cancel', '13px arial', '#000000')
+        this.cashier.cancel.image.onClick = self.hideCashier
+
+         this.cashier.closeWindow =  new this.Item (innerCashierX + innerCashierWidth*.9,cashierWindowY+1, innerCashierWidth*.1,innerCashierY-cashierWindowY-2,4) 
+        this.cashier.closeWindow.image  = new createjs.Shape() 
+        this.cashier.closeWindow.image.graphics.beginFill('#CD0000').rect(this.cashier.closeWindow.position.x,this.cashier.closeWindow.position.y, this.cashier.closeWindow.size.x,this.cashier.closeWindow.size.y)
+        this.cashier.closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
+        this.cashier.closeWindow.image.graphics.moveTo(this.cashier.closeWindow.position.x+this.cashier.closeWindow.size.x*.12,this.cashier.closeWindow.position.y+this.cashier.closeWindow.size.y*.12)
+        this.cashier.closeWindow.image.graphics.lineTo(this.cashier.closeWindow.position.x+this.cashier.closeWindow.size.x*.88,this.cashier.closeWindow.position.y+this.cashier.closeWindow.size.y*.88)
+        this.cashier.closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
+        this.cashier.closeWindow.image.graphics.moveTo(this.cashier.closeWindow.position.x+this.cashier.closeWindow.size.x*.88,this.cashier.closeWindow.position.y+this.cashier.closeWindow.size.y*.12)
+        this.cashier.closeWindow.image.graphics.lineTo(this.cashier.closeWindow.position.x+this.cashier.closeWindow.size.x*.12,this.cashier.closeWindow.position.y+this.cashier.closeWindow.size.y*.88)
+        this.cashier.closeWindow.image.onClick = self.hideCashier
+
+       //===========================MESSAGE BOX================================
+
+
+        var messageBoxImageContainerIndex = 6
+        var messageBoxWindowWidth = 400
+        var messageBoxWindowHeight = 200
+        //declare size variables
+        var textLeftOffset = 10
+         var outerTopHeight = messageBoxWindowHeight*.08
+                var outerBottomHeight = messageBoxWindowHeight*.03
+        var outerSideWidth = messageBoxWindowWidth*.02
+
+        var asdf = document.getElementById('canvas')
+        var stageWidth = asdf.width
+        var stageHeight = asdf.height
+        var messageBoxWindowX = stageWidth/2 - messageBoxWindowWidth/2
+        var messageBoxWindowY = stageHeight/2 - messageBoxWindowHeight/2
+        
+
+        var innerMessageBoxX = messageBoxWindowX+outerSideWidth
+        var innerMessageBoxY = messageBoxWindowY+outerTopHeight
+        var innerMessageBoxWidth = messageBoxWindowWidth-2*outerSideWidth -2
+        var innerMessageBoxHeight = messageBoxWindowHeight-outerBottomHeight-outerTopHeight
+
+        var textX = innerMessageBoxX + textLeftOffset
+        
+
+        this.messageBox.window = new this.Item(messageBoxWindowX,messageBoxWindowY,messageBoxWindowWidth,messageBoxWindowHeight,messageBoxImageContainerIndex)
+        this.messageBox.window.image = new createjs.Shape()
+        //outer blue rim
+        this.messageBox.window.image.graphics.setStrokeStyle(1).beginFill('blue').beginStroke('#FF00FF').rect(messageBoxWindowX,messageBoxWindowY,messageBoxWindowWidth,messageBoxWindowHeight)
+        this.messageBox.window.image.graphics.setStrokeStyle(1).beginFill('#C0C0C0').beginStroke('#FF00FF').rect(innerMessageBoxX,innerMessageBoxY,innerMessageBoxWidth,innerMessageBoxHeight)
+
+        this.messageBox.windowTitle = new this.Item (messageBoxWindowX+1,messageBoxWindowY+1, messageBoxWindowWidth,outerTopHeight-2,messageBoxImageContainerIndex)
+         this.addItemText(this.messageBox.windowTitle, '', '13px arial', '#000000')
+
+        this.messageBox.message = new this.Item (textX,innerMessageBoxY+15, innerMessageBoxWidth,25,messageBoxImageContainerIndex)
+        this.addItemText(this.messageBox.message, '', '13px arial', '#000000')
+
+   
+
+        
+        this.messageBox.okay =  new this.Item (messageBoxWindowX + 10,messageBoxWindowY+messageBoxWindowHeight-40, 50,25,messageBoxImageContainerIndex) 
+        this.itemAsRectangle( this.messageBox.okay, '#0000FF')
+        this.addItemText( this.messageBox.okay, 'Okay', '13px arial', '#000000')
+        this.messageBox.okay.image.onClick = self.events.onButtonClick
+        this.messageBox.okay.image.onClick = this.hideMessageBox
+
+       
+
+        
+        this.messageBox.cancel =  new this.Item (messageBoxWindowX + 100,messageBoxWindowY+messageBoxWindowHeight-40, 50,25,messageBoxImageContainerIndex) 
+        this.itemAsRectangle( this.messageBox.cancel, '#0000FF')
+        this.addItemText( this.messageBox.cancel, 'cancel', '13px arial', '#000000')
+        this.messageBox.cancel.image.onClick = this.hidemessageBox
+       
+
+         this.messageBox.closeWindow =  new this.Item (innerMessageBoxX + innerMessageBoxWidth*.9,messageBoxWindowY+1, innerMessageBoxWidth*.1,innerMessageBoxY-messageBoxWindowY-2,messageBoxImageContainerIndex) 
+        this.messageBox.closeWindow.image  = new createjs.Shape() 
+        this.messageBox.closeWindow.image.graphics.beginFill('#CD0000').rect(this.messageBox.closeWindow.position.x,this.messageBox.closeWindow.position.y, this.messageBox.closeWindow.size.x,this.messageBox.closeWindow.size.y)
+        this.messageBox.closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
+        this.messageBox.closeWindow.image.graphics.moveTo(this.messageBox.closeWindow.position.x+this.messageBox.closeWindow.size.x*.12,this.messageBox.closeWindow.position.y+this.messageBox.closeWindow.size.y*.12)
+        this.messageBox.closeWindow.image.graphics.lineTo(this.messageBox.closeWindow.position.x+this.messageBox.closeWindow.size.x*.88,this.messageBox.closeWindow.position.y+this.messageBox.closeWindow.size.y*.88)
+        this.messageBox.closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
+        this.messageBox.closeWindow.image.graphics.moveTo(this.messageBox.closeWindow.position.x+this.messageBox.closeWindow.size.x*.88,this.messageBox.closeWindow.position.y+this.messageBox.closeWindow.size.y*.12)
+        this.messageBox.closeWindow.image.graphics.lineTo(this.messageBox.closeWindow.position.x+this.messageBox.closeWindow.size.x*.12,this.messageBox.closeWindow.position.y+this.messageBox.closeWindow.size.y*.88)
+        this.messageBox.closeWindow.image.onClick = this.hideMessageBox
+
 }
 
-//-----------functions below this line ---------------------
+
   this.images.setDefaultItems = function (){
 
             var cardWidth = 46
@@ -1349,7 +1498,7 @@ self.displayCorrectSeatMessage(seatNumber)
     {
         
 
-         var cashierImageContainerIndex = 4
+      var cashierImageContainerIndex =4
 
         this.gameState.cashier.min = info.min
         this.gameState.cashier.max = info.max
@@ -1358,57 +1507,20 @@ self.displayCorrectSeatMessage(seatNumber)
         this.gameState.cashier.small_blind = info.small_blind
         this.gameState.cashier.big_blind = info.big_blind
 
-        this.images.cashier = {}
+       this.images.cashier.windowTitle.text.text ='Get Chips'
 
-        var cashierWindowWidth = 265
-        var cashierWindowHeight = 355
-        //declare size variables
-        var textLeftOffset = 10
-         var outerTopHeight = cashierWindowHeight*.08
-                var outerBottomHeight = cashierWindowHeight*.03
-        var outerSideWidth = cashierWindowWidth*.02
+       this.images.cashier.blinds.text.text = 'blinds: '+info.small_blind+'/'+info.big_blind
 
-        var asdf = document.getElementById('canvas')
-        var stageWidth = asdf.width
-        var stageHeight = asdf.height
-        var cashierWindowX = stageWidth/2 - cashierWindowWidth/2
-        var cashierWindowY = stageHeight/2 - cashierWindowHeight/2
-        
+         this.images.cashier.tableName.text.text = 'Table Name: '+info.table_name
 
-        var innerCashierX = cashierWindowX+outerSideWidth
-        var innerCashierY = cashierWindowY+outerTopHeight
-        var innerCashierWidth = cashierWindowWidth-2*outerSideWidth -2
-        var innerCashierHeight = cashierWindowHeight-outerBottomHeight-outerTopHeight
+        this.images.cashier.tableMin.text.text = 'Minimum Buyin: '+info.min
 
-        var textX = innerCashierX + textLeftOffset
-        
+        this.images.cashier.tableMax.text.text = 'Maximum Buyin: '+info.max
 
-        this.images.cashier.window = new this.images.Item(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight,4)
-        this.images.cashier.window.image = new createjs.Shape()
-        //outer blue rim
-        this.images.cashier.window.image.graphics.setStrokeStyle(1).beginFill('blue').beginStroke('#FF00FF').rect(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight)
-        this.images.cashier.window.image.graphics.setStrokeStyle(1).beginFill('#C0C0C0').beginStroke('#FF00FF').rect(innerCashierX,innerCashierY,innerCashierWidth,innerCashierHeight)
-
-        this.images.cashier.windowTitle = new this.images.Item (cashierWindowX+1,cashierWindowY+1, cashierWindowWidth,outerTopHeight-2,4)
-         this.images.addItemText(this.images.cashier.windowTitle, 'Get Chips', '13px arial', '#000000')
-
-        this.images.cashier.blinds = new this.images.Item (textX,innerCashierY+15, innerCashierWidth,25,4)
-        this.images.addItemText(this.images.cashier.blinds, 'blinds: '+info.small_blind+'/'+info.big_blind, '13px arial', '#000000')
-
-         this.images.cashier.tableName = new this.images.Item (textX,this.images.cashier.blinds.position.y+15, innerCashierWidth,25,4)
-        this.images.addItemText(this.images.cashier.tableName, 'Table Name: '+info.table_name, '13px arial', '#000000')
-
-        this.images.cashier.tableMin = new this.images.Item (textX,this.images.cashier.tableName.position.y+15, innerCashierWidth,25,4)
-        this.images.addItemText(this.images.cashier.tableMin, 'Minimum Buyin: '+info.min, '13px arial', '#000000')
-
-        this.images.cashier.tableMax = new this.images.Item (textX, this.images.cashier.tableMin.position.y+15, innerCashierWidth,25,4)
-        this.images.addItemText(this.images.cashier.tableMax, 'Maximum Buyin: '+info.max, '13px arial', '#000000')
-
-        this.images.cashier.accountBalance = new this.images.Item (textX,this.images.cashier.tableMax.position.y +15, innerCashierWidth,25,4)
-        this.images.addItemText(this.images.cashier.accountBalance, 'My Available Balance: '+info.balance, '13px arial', '#000000')
+       this.images.cashier.accountBalance.text.text = 'My Available Balance: '+info.balance
 
 //display textboxes for adding chips
-     this.images.cashier.addChipsTextBox = new this.images.Item (textX,this.images.cashier.accountBalance.position.y +25, innerCashierWidth,25,4)
+
     var htmlcashier = document.getElementById('cashier')
     htmlcashier.style.display = 'inline'
     htmlcashier.style.position = 'absolute'
@@ -1428,46 +1540,17 @@ self.displayCorrectSeatMessage(seatNumber)
           $('#otherAmountRadio').prop('checked', false)
           $('#autoRebuyRadio').prop('checked', true)
         })
-        
-/*
-        document.getElementById('otherAmount').onclick = function(){
-            $('#maxRadio').attr('checked', false)
-          $('#autoRebuyRadio').attr('checked', false)
-          $('#otherAmountRadio').attr('checked', true)
-        }
-        
-        document.getElementById('autoRebuy').onclick = function(){
-            
-                 $('#maxRadio').attr('checked', false)
-          $('#otherAmountRadio').attr('checked', false)
-          $('#autoRebuyRadio').attr('checked', true)
-        }
-        */
 
 
   //  this.images.cashier.currency =  new this.images.Item (cashierWindowOffsetLeft,this.images.cashier.accountBalance.position.y+10, cashierWindowWidth,25,4) 
    // this.images.addItemText( this.images.cashier.currency, 'Currency: '+currency, '13px arial', '#000000')
         
-        this.images.cashier.addChips =  new this.images.Item (cashierWindowX + 10,cashierWindowY+cashierWindowHeight-40, 50,25,4) 
-        this.images.itemAsRectangle( this.images.cashier.addChips, '#0000FF')
-        this.images.addItemText( this.images.cashier.addChips, 'add chips', '13px arial', '#000000')
-        this.images.cashier.addChips.image.onClick = self.events.onAddChipsClick
+       this.images.cashier.addChips.text.text = 'add chips'
+     
 
-        this.images.cashier.cancel =  new this.images.Item (cashierWindowX + 100,cashierWindowY+cashierWindowHeight-40, 50,25,4) 
-        this.images.itemAsRectangle( this.images.cashier.cancel, '#0000FF')
-        this.images.addItemText( this.images.cashier.cancel, 'cancel', '13px arial', '#000000')
-        this.images.cashier.cancel.image.onClick = self.hideCashier
+       this.images.cashier.cancel.text.text = 'cancel'
 
-         this.images.cashier.closeWindow =  new this.images.Item (innerCashierX + innerCashierWidth*.9,cashierWindowY+1, innerCashierWidth*.1,innerCashierY-cashierWindowY-2,4) 
-        this.images.cashier.closeWindow.image  = new createjs.Shape() 
-        this.images.cashier.closeWindow.image.graphics.beginFill('#CD0000').rect(this.images.cashier.closeWindow.position.x,this.images.cashier.closeWindow.position.y, this.images.cashier.closeWindow.size.x,this.images.cashier.closeWindow.size.y)
-        this.images.cashier.closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
-        this.images.cashier.closeWindow.image.graphics.moveTo(this.images.cashier.closeWindow.position.x+this.images.cashier.closeWindow.size.x*.12,this.images.cashier.closeWindow.position.y+this.images.cashier.closeWindow.size.y*.12)
-        this.images.cashier.closeWindow.image.graphics.lineTo(this.images.cashier.closeWindow.position.x+this.images.cashier.closeWindow.size.x*.88,this.images.cashier.closeWindow.position.y+this.images.cashier.closeWindow.size.y*.88)
-        this.images.cashier.closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
-        this.images.cashier.closeWindow.image.graphics.moveTo(this.images.cashier.closeWindow.position.x+this.images.cashier.closeWindow.size.x*.88,this.images.cashier.closeWindow.position.y+this.images.cashier.closeWindow.size.y*.12)
-        this.images.cashier.closeWindow.image.graphics.lineTo(this.images.cashier.closeWindow.position.x+this.images.cashier.closeWindow.size.x*.12,this.images.cashier.closeWindow.position.y+this.images.cashier.closeWindow.size.y*.88)
-        this.images.cashier.closeWindow.image.onClick = this.hideCashier
+
 /*
       this.images.cashier.horizontalSlider = new this.images.Item (this.images.cashier.addChips.position.x,this.images.cashier.addChips.position.y-25,cashierWindowWidth-30,1,4)
       this.images.cashier.verticalSlider = new this.images.Item(this.images.cashier.horizontalSlider.position.x,this.images.cashier.horizontalSlider.position.y-10,5,20,4)
