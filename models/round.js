@@ -108,10 +108,33 @@ module.exports = (function () {
     /* our "constructor" function. Usage: Round.createRound({prop: 'val'})
        (see Schema definition for list of properties)*/
     console.log('Round.createRound called!', spec);
-    var round = new Round(spec);
+    var round = new Round(spec)
+      , constants = _.pick(static_properties, ['MIN_CHIPS', 'MAX_CHIPS', 'SMALL_BLIND', 'BIG_BLIND', 'CHIPS_PER_MAOBUCK']);
+    // make sure the constants are all even multiples of the MIN_INCREMENT
+    _.each(constants, function(value, name) {
+      if (Round.roundNumChips(value) !== value) {
+        console.error('Invalid', name, ':', value, 'for MIN_INCREMENT', MIN_INCREMENT);
+      }
+    });
+    if (Round.SMALL_BLIND % Round.MIN_INCREMENT !== 0 ||
+        Round.BIG_BLIND % Round.MIN_INCREMENT !== 0) {
+      console.error('Invalid blinds/increment!', Round.SMALL_BLIND, Round.BIG_BLIND, Round.MIN_INCREMENT);
+    }
     round.initialize();
 
     return round;
+  };
+
+  RoundSchema.statics.roundNumChips = function(amount) {
+    // console.log('Round.roundNumChips called with', amount, Round.MIN_INCREMENT);
+    var rounded_amount = amount / Round.MIN_INCREMENT;
+    // console.log('amount after dividing:', amount);
+    rounded_amount = Math.round(amount);
+    // console.log('amount after rounding:', amount);
+    rounded_amount = amount * Round.MIN_INCREMENT;
+    // console.log('amount after multiplying:', amount);
+    console.log('rounded', amount, 'to', rounded_amount);
+    return rounded_amount;
   };
 
   // instance methods - document.method()
@@ -295,6 +318,9 @@ module.exports = (function () {
           player = self.nextPlayer();
           return cb();
         }
+        else if (Round.roundNumChips(player.chips) !== player.chips) {
+          console.error('player has an invalid chips value:', player.chips, Round.MIN_INCREMENT );
+        }
         // calculate/set actions and free_action to be used in prompt
         actions = [];
         // fold/check
@@ -302,9 +328,8 @@ module.exports = (function () {
         free_action_obj = {};
         free_action_obj[free_action] = true;
         actions.push(free_action_obj);
-        // call
-        to_call = self.high_bet - player.current_bet;
         // raise/bet - "raise to" values
+        to_call = self.high_bet - player.current_bet;
         min_bet = self.high_bet + last_raise;
         max_bet = player.current_bet + player.chips;
         //console.log('high_bet', self.high_bet, 'to_call', to_call, 'min_bet', min_bet, 'max_bet', max_bet);
@@ -328,27 +353,21 @@ module.exports = (function () {
           // player must pay to_call or fold
           actions.push({ call: to_call });
         }
-        console.log(to_call
-      , last_raise
-      , min_bet
-      , max_bet
-      , actions
-      , free_action
-      , free_action_obj
-      , bet_action
-      , bet_action_obj);
+      //   console.log(to_call
+      // , last_raise
+      // , min_bet
+      // , max_bet
+      // , actions
+      // , free_action
+      // , free_action_obj
+      // , bet_action
+      // , bet_action_obj);
         player.prompt(actions, Round.TIMEOUT, free_action, function(action_choice, num_chips_choice) {
-          if (_.all(actions, function(action_obj) { return (action_obj[action_choice] === undefined); })) {
-            console.error('Player chose invalid action', action_choice, ', so treating it as', free_action);
-            action_choice = free_action; // act as if the player timed out (in less than Round.TIMEOUT)
-            num_chips_choice = undefined;
-          }
           performAction(action_choice, num_chips_choice);
-          self.broadcast('player_acts', player.serialize(), action_choice, self.calculatePot());
-          player.actedIn(self.stage_num);
-          player = self.nextPlayer();
           cb();
         });
+        // notify everyone that this player is being waited on to act
+        self.broadcast('player_to_act', player.serialize(), Round.TIMEOUT);
       },
       function loopComplete() {
         if (self.players.length >= Round.MIN_PLAYERS) {
@@ -364,7 +383,19 @@ module.exports = (function () {
       }
     );
     // describes how to handle each action
-    function performAction(action, num_chips) {
+    function performAction(action, num_chips) {      
+      if (_.all(actions, function(action_obj) { return (action_obj[action] === undefined); })) {
+        console.error('*~*Player chose invalid action', action, ', so treating it as', free_action);
+        action = free_action; // act as if the player timed out (in less than Round.TIMEOUT)
+        num_chips = undefined;
+      }
+      else if (_.isNumber(num_chips)) {
+        var rounded_num_chips = Round.roundNumChips(num_chips);
+        if (rounded_num_chips !== num_chips) {
+          console.error('Received unrounded num_chips value:', num_chips, ', so rounding to', rounded_num_chips);
+          num_chips = rounded_num_chips;
+        }
+      }
       switch(action) {
       case 'check':
         break;
@@ -399,9 +430,10 @@ module.exports = (function () {
         self.playerOut(self.to_act);
         break;
       }
+      self.broadcast('player_acts', player.serialize(), action, self.calculatePot());
+      player.actedIn(self.stage_num);
+      player = self.nextPlayer();
     }
-    // notify everyone that this player is being waited on to act
-    self.broadcast('player_to_act', player.serialize(), Round.TIMEOUT);
   };
 
   static_properties.stage_handlers.flopping = function() {
@@ -449,7 +481,7 @@ module.exports = (function () {
 
   static_properties.stage_handlers.paying_out = function(winner_results) {
     var self = this
-      , chips_won = Math.floor(self.pot / winner_results.length)
+      , chips_won = Round.roundNumChips(Math.floor(self.pot / winner_results.length))
       , player_objs;
     //console.log('winner(s):', winner_results, ', chips_won:', chips_won);
     _.each(winner_results, function(winner_result) {
@@ -574,6 +606,10 @@ module.exports = (function () {
       , bet;
     _.each(self.players, function(player) {
       bet = player.giveBet();
+      if (bet !== Round.roundNumChips(bet)) {
+        console.error('Invalid bet returned by giveBet:', bet, Round.MIN_INCREMENT);
+        bet = Round.roundNumChips(bet);
+      }
       //console.log('got bet from player:', bet);
       self.pot += bet;
     });

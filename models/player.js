@@ -35,6 +35,8 @@ module.exports = (function () {
     , chips_won: { type: Number, default: 0 }
       // a reference to the Round class this player is playing
     , Round: Schema.Types.Mixed
+      // a reference to the table on which this player is playing
+    , table: Schema.Types.Mixed
     });
 
   var static_properties = {
@@ -62,6 +64,11 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.makeBet = function(amount) {
+    var rounded_amount = this.Round.roundNumChips(amount);
+    if (rounded_amount !== amount) {
+      console.error('Invalid amount:', amount, this.Round.MIN_INCREMENT);
+      amount = rounded_amount;
+    }
     if (this.chips < amount) {
       amount = this.chips;
       console.log( this.username + ' cant afford to bet ' + amount);
@@ -181,7 +188,7 @@ module.exports = (function () {
     var seat_num = this.seat;
     this.seat = undefined;
     // clear the sit-out timer, if any
-    clearTimeout(this.sit_out_timer);
+    clearInterval(this.full_table_check);
     // clear the sit-in-on-first-buyin timer, if any
     clearTimeout(this.first_buyin_handler);
     // emit the "stand" event
@@ -198,8 +205,10 @@ module.exports = (function () {
       self.emit('sit_out');
       // set sit-out timer
       console.log('setting sit_out_timer', self.Round.SIT_OUT_TIME_ALLOWED);
-      self.sit_out_timer = setTimeout(function() {
-        self.vacateSeat();
+      self.full_table_check = setInterval(function() {
+        if (self.table.isFull()) {
+          self.vacateSeat();
+        }
       }, self.Round.SIT_OUT_TIME_ALLOWED);
     }
     else {
@@ -231,12 +240,13 @@ module.exports = (function () {
       }
       else {
         var chips_per_maobuck = self.Round.CHIPS_PER_MAOBUCK
-          , balance_in_chips = maobucks * chips_per_maobuck
+          , balance_in_chips = self.Round.roundNumChips(maobucks * chips_per_maobuck)
           , stack = self.chips
           , num_to_min = self.Round.MIN_CHIPS - stack
           , num_to_max = self.Round.MAX_CHIPS - stack
           , add_chips_info = {
               balance: maobucks
+            , balance_in_chips: balance_in_chips
             , min: balance_in_chips < num_to_min ? -1 :
                    (num_to_min > 0 ? num_to_min : 0)
             , max: balance_in_chips >= num_to_max ? num_to_max :
@@ -254,17 +264,28 @@ module.exports = (function () {
   PlayerSchema.methods.addChips = function(num_chips) {
     var self = this
       , error
-      , add_chips_info = self.add_chips_info
-      , sent_min = add_chips_info.min
-      , sent_max = add_chips_info.max
-      , sent_balance = add_chips_info.balance;
+      , rounded_num_chips
+      , add_chips_info = self.add_chips_info;
+    // validate the num_chips and that a get_add_chips_info was sent
     if (! _.isNumber(num_chips)) {
       error = 'add_chips message received with non-Number num_chips: ' + num_chips;
+    }
+    else {
+      var rounded_num_chips = self.Round.roundNumChips(num_chips);
+      if (rounded_num_chips !== num_chips) {
+        console.error('Invalid num_chips:', num_chips, self.Round.MIN_INCREMENT);
+        num_chips = rounded_num_chips;
+      }
     }
     if (! _.isObject(add_chips_info)) {
       error = 'add_chips message received before add_chips_info was sent!';
     }
-    else if (sent_min === -1) {
+    var sent_min = add_chips_info.min
+      , sent_max = add_chips_info.max
+      , sent_balance = add_chips_info.balance
+      // use the balance sent via get_add_chips_info
+      , sent_balance_in_chips = add_chips_info.balance_in_chips;
+    if (sent_min === -1) {
       error = 'add_chips message received when player after -1 add_chips_info!';
     }
     if (error) {
@@ -273,18 +294,18 @@ module.exports = (function () {
     }
       // calculate the current min and max
     var chips_per_maobuck = self.Round.CHIPS_PER_MAOBUCK
-      , balance_in_chips = sent_balance * chips_per_maobuck
       , stack = self.chips
       , num_to_min = self.Round.MIN_CHIPS - stack
-      , num_to_max = self.Round.MAX_CHIPS - stack;
+      , num_to_max = self.Round.MAX_CHIPS - stack
+      , actual_min = _.min([sent_min, num_to_min]);
       //, min = balance_in_chips >= num_to_min ? num_to_min : -1
       //, max = balance_in_chips >= num_to_max ? num_to_max :
       //      (balance_in_chips >= num_to_min ? balance_in_chips : -1)
-    if (num_chips > balance_in_chips) {
-      error = 'add_chips request exceeds player\'s chip balance: ' + balance_in_chips;
+    if (num_chips > sent_balance_in_chips) {
+      error = 'add_chips request exceeds player\'s chip balance: ' + sent_balance_in_chips;
     }
     else if (num_chips < sent_min && num_chips < num_to_min) {
-      error = 'cannot add fewer than ' + sent_min + ' or ' + num_to_min + ' chips!';
+      error = 'cannot add fewer than ' + actual_min + ' chips!';
     }
     else if (num_chips > num_to_max) {
       //self.sendMessage('error', 'cannot add more than ' + sent_max + ' chips!');
@@ -325,6 +346,14 @@ module.exports = (function () {
   PlayerSchema.methods.setFlag = function(name, value) {
     console.log(this.username, 'setting', name, 'to', value);
     this.flags[name] = value;
+  };
+
+  static_properties.messages.set_flags = 'setFlags';
+  PlayerSchema.methods.setFlags = function(flags) {
+    var self = this;
+    _.each(flags, function(value, name) {
+      self.setFlag(name, value);
+    });
   };
 
   PlayerSchema.methods.isFlagSet = function(name) {
