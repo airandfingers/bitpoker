@@ -1577,11 +1577,13 @@ self.displayCorrectSeatMessage(seatNumber)
 
     
 
-   this.displayInitialTableState=function(){
+   this.displayInitialTableState=function(tableState){
         
-        var table_state = $('#server_values').data('table_state');
-        console.log(table_state)
-
+        
+        if(tableState){table_state = tableState}
+        else{var table_state = $('#server_values').data('table_state');
+        //console.log(table_state)
+        }
         //remove extra seats
         for (var i = 9;i>table_state.max_players;i=i-1){
             
@@ -1634,7 +1636,8 @@ self.displayCorrectSeatMessage(seatNumber)
   //---------------------SOCKET CODE------------------------
   this.loadTableOnConnect =function(){
          socket.on('user_joins', function(user,is_you){
-             if(is_you === true){   self.displayInitialTableState()   }
+             if(is_you === true){   //self.displayInitialTableState()  
+              }
             self.activateSockets()
                 
 })
@@ -1642,6 +1645,14 @@ self.displayCorrectSeatMessage(seatNumber)
   }
 
     this.activateSockets = function(){
+
+
+         socket.on('table_state', function(table_state){
+             self.displayInitialTableState(table_state)
+            
+                
+})
+
 
     //error received
        socket.on('error', function(errorString){
