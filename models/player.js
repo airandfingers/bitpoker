@@ -9,6 +9,8 @@ module.exports = (function () {
     
     , db = require('./db') // make sure mongoose is connected
 
+    , async = require('async') // sync/async control flow library
+
     /* the schema - defines the "shape" of the documents:
      *   gets compiled into one or more models */
     , PlayerSchema = new Schema({
@@ -37,6 +39,14 @@ module.exports = (function () {
     , Round: Schema.Types.Mixed
       // a reference to the table on which this player is playing
     , table: Schema.Types.Mixed
+      // whether this player is currently participating in a hand
+    , in_hand: Boolean
+      // actions this player will perform once the current round is over
+    , pending_actions: { type: Schema.Types.Mixed, default: function() { return {}; } }
+      // whether this player is currently sitting out (not participating in future hands)
+    , sitting_out: Boolean
+      // whether this player is currently disconnected
+    , disconnected: Boolean
     });
 
   var static_properties = {
@@ -84,11 +94,6 @@ module.exports = (function () {
     return amount;
   };
 
-  PlayerSchema.methods.returnBet = function() {
-    this.chips += this.current_bet;
-    this.current_bet = 0;
-  };
-
   PlayerSchema.methods.win = function(amount) {
     this.chips += amount;
     this.chips_won = amount;
@@ -120,13 +125,13 @@ module.exports = (function () {
       self.sendMessage('act_prompt', actions, timeout);
       self.socket.once('act', function(action, num_chips) {
         console.log(self.username, 'responds with', action, num_chips);
-        self.setFlag('idle', false);
+        self.idle = false;
         clearTimeout(act_timeout);
         cb(action, num_chips);
       });
       act_timeout = setTimeout(function() {
         console.log(self.username, 'fails to respond within', timeout, 'ms');
-        self.setFlag('idle', true);
+        self.idle = true;
         self.socket.removeAllListeners('act');
         cb(default_action);
       }, timeout);
@@ -134,20 +139,47 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.actedIn = function(stage) {
+    //console.log('player acted in', stage);
     this.has_acted[stage] = true;
   };
 
   PlayerSchema.methods.hasActedIn = function(stage) {
+    //console.log('has player acted in', stage, '?', this.has_acted[stage] || false);
     return this.has_acted[stage] || false;
   };
 
   PlayerSchema.methods.roundOver = function() {
-    //this.returnBet();
-    this.hand = [];
-    this.has_acted = {};
-    this.chips_won = 0;
-    if (! this.isFlagSet('receive_hole_cards') || this.isFlagSet('idle')) {
-      this.sitOut();
+    var self = this
+      , action_order = ['addChips', 'sitOut', 'vacateSeat']
+      , actions = [];
+    
+    _.each(action_order, function(method_name) {
+      var args_array = self.pending_actions[method_name];
+      if (_.isArray(args_array)) {
+        actions.push(function(acb) {
+          self.performAction(method_name, args_array);
+          if (method_name === 'addChips') {
+            self.once('chips_added', function(num_chips) { acb(); });
+          }
+          else {
+            acb();
+          }
+        });
+      }
+    });
+    async.series(actions, function onComplete(err, result) {
+      if (err) {
+        // will never get called (acb's aren't given arguments)
+        console.error('error during pending_actions:', err);
+      }
+    });
+    self.pending_actions = {};
+    self.hand = [];
+    self.has_acted = {};
+    self.chips_won = 0;
+    self.in_hand = false;
+    if (self.idle) {
+      self.sitOut();
     }
   };
 
@@ -174,6 +206,30 @@ module.exports = (function () {
     return player_obj;
   };
 
+  static_properties.messages.sit = 'handleSit';
+  PlayerSchema.methods.handleSit = function(seat_num) {
+    var error;
+    if (! _.isNumber(seat_num)) {
+      error = 'sit message received with non-Number seat_num: ' + seat_num;
+    }
+    else if (seat_num < 0 || seat_num >= this.Round.MAX_PLAYERS) {
+      error = 'sit message received with invalid seat_num: ' + seat_num;
+    }
+    else if (this.table.seats[seat_num] !== undefined) {
+      error = 'A player is already sitting in seat ' + seat_num;
+    }
+    else if (this.seat) {
+      error = 'Player is already sitting at the table!';
+    }
+    if (error) {
+      console.error(error);
+      this.sendMessage('error', error);
+    }
+    else {
+      this.takeSeat(seat_num);
+    }
+  };
+
   PlayerSchema.methods.takeSeat = function(seat_num) {
     var self = this;
     self.seat = seat_num;
@@ -182,6 +238,21 @@ module.exports = (function () {
     });
     // emit the "sit" event
     this.emit('sit', seat_num);
+  };
+
+  static_properties.messages.stand = 'handleStand';
+  PlayerSchema.methods.handleStand = function() {
+    var error;
+    if (_.isUndefined(this.seat)) {
+      error = 'Player is not sitting at the table!';
+    }
+    if (error) {
+      console.error(error);
+      this.sendMessage('error', error);
+    }
+    else {
+      this.pendAction('vacateSeat');
+    }
   };
 
   PlayerSchema.methods.vacateSeat = function() {
@@ -195,13 +266,26 @@ module.exports = (function () {
     this.emit('stand', seat_num);
   };
 
-  static_properties.messages.sit_out = 'sitOut';
+  static_properties.messages.sit_out = 'handleSitOut';
+  PlayerSchema.methods.handleSitOut = function() {
+    var error;
+    /*if (this.sitting_out) {
+      error = 'sitOut called when', self.username, 'is already sitting out!';
+    }*/
+    if (error) {
+      console.error(error);
+      this.sendMessage('error', error);
+    }
+    else {
+      this.pendAction('sitOut');
+    }
+  };
+
   PlayerSchema.methods.sitOut = function() {
     var self = this;
     if (! self.sitting_out) {
       self.sitting_out = true;
       self.setFlag('post_blind', false);
-      self.setFlag('receive_hole_cards', false);
       self.emit('sit_out');
       // set sit-out timer
       console.log('setting sit_out_timer', self.Round.SIT_OUT_TIME_ALLOWED);
@@ -219,10 +303,9 @@ module.exports = (function () {
   static_properties.messages.sit_in = 'sitIn';
   PlayerSchema.methods.sitIn = function() {
     console.log('sitIn called!');
-    if (this.sitting_out || ! this.isFlagSet('receive_hole_cards')) {
+    if (this.sitting_out) {
       this.sitting_out = false;
       this.setFlag('post_blind', true);
-      this.setFlag('receive_hole_cards', true);
       this.emit('sit_in');
       // clear the sit-out timer, if any
       clearTimeout(this.sit_out_timer);
@@ -260,8 +343,8 @@ module.exports = (function () {
     });
   };
 
-  static_properties.messages.add_chips = 'addChips';
-  PlayerSchema.methods.addChips = function(num_chips) {
+  static_properties.messages.add_chips = 'handleAddChips';
+  PlayerSchema.methods.handleAddChips = function(num_chips) {
     var self = this
       , error
       , rounded_num_chips
@@ -271,75 +354,74 @@ module.exports = (function () {
       error = 'add_chips message received with non-Number num_chips: ' + num_chips;
     }
     else {
-      var rounded_num_chips = self.Round.roundNumChips(num_chips);
+      rounded_num_chips = self.Round.roundNumChips(num_chips);
       if (rounded_num_chips !== num_chips) {
-        console.error('Invalid num_chips:', num_chips, self.Round.MIN_INCREMENT);
+        console.error('add_chips message sent with unrounded num_chips:', num_chips, self.Round.MIN_INCREMENT);
         num_chips = rounded_num_chips;
       }
     }
     if (! _.isObject(add_chips_info)) {
       error = 'add_chips message received before add_chips_info was sent!';
     }
-    var sent_min = add_chips_info.min
-      , sent_max = add_chips_info.max
-      , sent_balance = add_chips_info.balance
-      // use the balance sent via get_add_chips_info
-      , sent_balance_in_chips = add_chips_info.balance_in_chips;
-    if (sent_min === -1) {
+    else if (add_chips_info.min === -1) {
       error = 'add_chips message received when player after -1 add_chips_info!';
     }
     if (error) {
       self.sendMessage('error', error);
       return;
     }
-      // calculate the current min and max
-    var chips_per_maobuck = self.Round.CHIPS_PER_MAOBUCK
+    else {
+      self.pendAction('addChips', num_chips);
+    }
+  };
+
+  PlayerSchema.methods.addChips = function(num_chips) {
+    var self = this
       , stack = self.chips
-      , num_to_min = self.Round.MIN_CHIPS - stack
-      , num_to_max = self.Round.MAX_CHIPS - stack
-      , actual_min = _.min([sent_min, num_to_min]);
-      //, min = balance_in_chips >= num_to_min ? num_to_min : -1
-      //, max = balance_in_chips >= num_to_max ? num_to_max :
-      //      (balance_in_chips >= num_to_min ? balance_in_chips : -1)
+      , num_to_min = self.Round.MIN_CHIPS - stack // current min buyin
+      , num_to_max = self.Round.MAX_CHIPS - stack // current max buyin
+      , sent_min = self.add_chips_info.min // min sent in last add_chips_info message
+      , actual_min = _.min([sent_min, num_to_min]) // the min to actually be enforced
+      , sent_balance_in_chips = self.add_chips_info.balance_in_chips // balance sent in last add_chips_info message
+      , error;
     if (num_chips > sent_balance_in_chips) {
       error = 'add_chips request exceeds player\'s chip balance: ' + sent_balance_in_chips;
     }
-    else if (num_chips < sent_min && num_chips < num_to_min) {
+    else if (num_chips < actual_min) {
       error = 'cannot add fewer than ' + actual_min + ' chips!';
     }
     else if (num_chips > num_to_max) {
-      //self.sendMessage('error', 'cannot add more than ' + sent_max + ' chips!');
-      num_chips = num_to_max
+      //self.sendMessage('error', 'cannot add more than ' + num_to_max + ' chips!');
+      num_chips = num_to_max;
     }
     if (error) {
       self.sendMessage('error', error);
+      return;
     }
-    else {
-      self.socket.user.fetch(function(fetch_err, user) {
-        var num_maobucks = num_chips / add_chips_info.chips_per_maobuck
-          , new_maobucks = user.maobucks - num_maobucks;
-        if (fetch_err) {
-          self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);
-          return;
-        }
-        else if (new_maobucks < 0) {
-          self.sendMessage('error', 'player no longer has enough maobucks to add ' + num_chips + ' chips!');
-          return;
-        }
-        else {
-          user.update({ $set: { maobucks: new_maobucks } }, function(save_err) {
-            if (save_err) {
-              self.sendMessage('error', 'error while saving user: ' + save_err.message || save_err);
-              return;
-            }
-            else {
-              self.chips += num_chips;
-              self.emit('chips_added', num_chips);
-            }
-          });
-        }
-      });
-    }
+    self.socket.user.fetch(function(fetch_err, user) {
+      var num_maobucks = num_chips / self.Round.CHIPS_PER_MAOBUCK
+        , new_maobucks = user.maobucks - num_maobucks;
+      if (fetch_err) {
+        self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);
+        return;
+      }
+      else if (new_maobucks < 0) {
+        self.sendMessage('error', 'player no longer has enough maobucks to add ' + num_chips + ' chips!');
+        return;
+      }
+      else {
+        user.update({ $set: { maobucks: new_maobucks } }, function(save_err) {
+          if (save_err) {
+            self.sendMessage('error', 'error while saving user: ' + save_err.message || save_err);
+            return;
+          }
+          else {
+            self.chips += num_chips;
+            self.emit('chips_added', num_chips);
+          }
+        });
+      }
+    });
   };
 
   static_properties.messages.set_flag = 'setFlag';
@@ -363,7 +445,7 @@ module.exports = (function () {
   PlayerSchema.methods.onConnect = function(socket) {
     var self = this;
     self.socket = socket;
-    self.sitIn();
+    self.disconnected = false;
 
     // override message-received trigger (called $emit) to log, trigger player event, then trigger
     var $emit = self.socket.$emit;
@@ -389,7 +471,28 @@ module.exports = (function () {
     if (! (_.isObject(socket) && this.socket.id === socket.id) ) {
       console.error('Player.onDisconnect called with non-matching socket', socket);
     }
-    this.setFlag('post_blind', false);
+    this.disconnected = true;
+  };
+
+  PlayerSchema.methods.pendAction = function(method_name) {
+    var args_array = _.toArray(arguments);
+    args_array.shift(); // remove method_name from arguments
+    if (this.in_hand) {
+      this.pending_actions[method_name] = args_array;
+    }
+    else {
+      this.performAction(method_name, args_array);
+    }
+  };
+
+  PlayerSchema.methods.performAction = function(method_name, args_array) {
+    var handler = this[method_name];
+    if (_.isFunction(handler)) {
+      handler.apply(this, args_array);
+    }
+    else {
+      console.error('player has no function', method_name);
+    }
   };
 
   /* the model - a fancy constructor compiled from the schema:

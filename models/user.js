@@ -22,7 +22,7 @@ module.exports = (function() {
   , confirmation_code: String
     //whether the user has confirmed his/r email address
   , email_confirmed  : { type: Boolean, default: false }
-  , maobucks         : { type: Number, default: 0 }
+  , maobucks         : { type: Number, default: 0, min: 0 }
   , recovery_code    : { type: String }
   , registration_date: { type: Date, default: Date.now }
   });

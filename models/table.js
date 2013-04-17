@@ -189,29 +189,6 @@ module.exports = (function () {
     }
   };
 
-  static_properties.player_events['message:sit'] = 'seatPlayer';
-  TableSchema.methods.seatPlayer = function(player, seat_num) {
-    var error;
-    if (! _.isNumber(seat_num)) {
-      error = 'sit message received with non-Number seat_num: ' + seat_num;
-    }
-    else if (seat_num < 0 || seat_num >= Round.MAX_PLAYERS) {
-      error = 'sit message received with invalid seat_num: ' + seat_num;
-    }
-    else if (this.seats[seat_num] !== undefined) {
-      error = 'A player is already sitting in seat ' + seat_num;
-    }
-    else if (player.seat) {
-      error = 'Player is already sitting at the table!';
-    }
-    if (error) {
-      console.error(error);
-      player.socket.emit('error', error);
-      return;
-    }
-    player.takeSeat(seat_num);
-  };
-
   static_properties.player_events.sit = 'playerSits';
   TableSchema.methods.playerSits = function(player, seat_num) {
     var socket = player.socket
@@ -219,18 +196,6 @@ module.exports = (function () {
     this.seats[seat_num] = player;
     socket.emitToOthers('player_sits', player_obj, false);
     socket.emit('player_sits', player_obj, true);
-  };
-
-  static_properties.player_events['message:stand'] = 'unseatPlayer';
-  TableSchema.methods.unseatPlayer = function(player) {
-    var seat_num = player.seat;
-
-    if (_.isUndefined(seat_num)) {
-      console.error('Player is not sitting at the table!');
-      player.socket.emit('error', 'Player is not sitting at the table!');
-      return;
-    }
-    player.vacateSeat();
   };
 
   static_properties.player_events.stand = 'playerStands';

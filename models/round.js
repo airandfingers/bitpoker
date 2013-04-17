@@ -129,9 +129,9 @@ module.exports = (function () {
     // console.log('Round.roundNumChips called with', amount, Round.MIN_INCREMENT);
     var rounded_amount = amount / Round.MIN_INCREMENT;
     // console.log('amount after dividing:', amount);
-    rounded_amount = Math.round(amount);
+    rounded_amount = Math.round(rounded_amount);
     // console.log('amount after rounding:', amount);
-    rounded_amount = amount * Round.MIN_INCREMENT;
+    rounded_amount = rounded_amount * Round.MIN_INCREMENT;
     // console.log('amount after multiplying:', amount);
     console.log('rounded', amount, 'to', rounded_amount);
     return rounded_amount;
@@ -164,11 +164,11 @@ module.exports = (function () {
       , wait_interval = setInterval(function() {
       var num_ready = 0;
       _.each(self.seats, function(player, seat_num) {
-        //console.log('waiting:', seat_num, player, player.isFlagSet('receive_hole_cards'));
+        //console.log('waiting:', seat_num, player, player.sitting_out);
         if (player instanceof Player) {
-          if (player.isFlagSet('receive_hole_cards')) {
+          if (! player.sitting_out) {
             if (player.chips < Round.SMALL_BLIND) {
-              // player is broke - should be sitting out.
+              // player can't afford small blind - should be sitting out.
               player.sitOut();
             }
             else {
@@ -203,8 +203,8 @@ module.exports = (function () {
            self.players.length >= Round.MIN_PLAYERS) {
       player = self.players[this.to_act];
       //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
-      if (! player.isFlagSet('post_blind')) {
-        console.log('Player\'s post_blind flag is unset - sitting player out!');
+      if (! player.isFlagSet('post_blind') || player.disconnected) {
+        console.log('Player\'s post_blind flag is unset, or player is disconnected - sitting player out!');
         self.playerOut(self.to_act);
         player.sitOut();
       }
@@ -222,8 +222,8 @@ module.exports = (function () {
            self.players.length >= Round.MIN_PLAYERS) {
       player = self.players[this.to_act];
       //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
-      if (! player.isFlagSet('post_blind')) {
-        console.log('Player\'s post_blind flag is unset - sitting player out!');
+      if (! player.isFlagSet('post_blind') || player.disconnected) {
+        console.log('Player\'s post_blind flag is unset, or player is disconnected - sitting player out!');
         self.playerOut(self.to_act);
         player.sitOut();
       }
@@ -378,6 +378,7 @@ module.exports = (function () {
         else {
           console.log('Not enough players to continue to next stage!', self.players);
           self.winner = 0;
+          self.takeBets();
           self.toStage('paying_out', [{ player: self.players[self.winner] }]);
         }
       }
@@ -582,8 +583,9 @@ module.exports = (function () {
          first_round = false,
          seat_counter = (seat_counter + 1) % Round.MAX_PLAYERS) {
       player = self.seats[seat_counter];
-      if (player instanceof Player && player.isFlagSet('receive_hole_cards')) {
+      if (player instanceof Player && ! player.sitting_out) {
         self.players.push(player);
+        player.in_hand = true;
         if (_.isUndefined(self.small_blind_seat)) {
           self.small_blind_seat = seat_counter;
         }
@@ -629,7 +631,6 @@ module.exports = (function () {
   };
 
   RoundSchema.methods.playerOut = function(index) {
-    console.log('before playerOut:', index, this.players[this.to_act]);
     var player = this.players[index]
       , bet = player.giveBet();
     //console.log('got bet from player:', bet);

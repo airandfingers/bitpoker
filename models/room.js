@@ -119,7 +119,7 @@ module.exports = (function () {
 
   RoomSchema.methods.getUsernames = function() {
     var sockets = _.compact(io.sockets.clients(this.room_id))
-      , users = _.pluck(sockets, 'user')
+      , users = _.compact(_.pluck(sockets, 'user'))
       , usernames = _.pluck(users, 'username');
     return usernames;
   };
