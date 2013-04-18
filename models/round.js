@@ -307,6 +307,13 @@ module.exports = (function () {
                       '# of players: ' + self.players.length + ' vs. MIN_PLAYERS: ' + Round.MIN_PLAYERS,
                       'Has player acted yet? ' + player.hasActedIn(self.stage_num),
                       'current_bet: ' + player.current_bet + ' vs. high_bet: ' + self.high_bet);
+        if (player.current_bet > self.high_bet) {
+          // adjust player's current bet to be the high bet
+          var refund = player.current_bet - self.high_bet;
+          console.log('giving player', refund);
+          player.getBet(refund);
+          self.broadcast('player_gets_refund:', refund);
+        }
         return self.players.length >= Round.MIN_PLAYERS &&
                ((! player.hasActedIn(self.stage_num)) || player.current_bet < self.high_bet);
       },
@@ -314,24 +321,22 @@ module.exports = (function () {
         // handle "no chips" condition
         if (player.chips === 0) {
           console.log('player is out of chips, so skipping!', player);
-          player.actedIn(self.stage_num);
-          player = self.nextPlayer();
-          return cb();
+          setTimeout(function() {
+            actions = [{ check: true}];
+            performAction('check', undefined);
+            cb();
+          }, 1000);
+          return;
         }
         else if (Round.roundNumChips(player.chips) !== player.chips) {
           console.error('player has an invalid chips value:', player.chips, Round.MIN_INCREMENT );
         }
         // calculate/set actions and free_action to be used in prompt
         actions = [];
-        // fold/check
-        free_action = self.high_bet > player.current_bet ? 'fold' : 'check';
-        free_action_obj = {};
-        free_action_obj[free_action] = true;
-        actions.push(free_action_obj);
         // raise/bet - "raise to" values
         to_call = self.high_bet - player.current_bet;
         min_bet = self.high_bet + last_raise;
-        max_bet = player.current_bet + player.chips;
+        max_bet = player.current_bet + player.chips; // how much this player can raise to
         //console.log('high_bet', self.high_bet, 'to_call', to_call, 'min_bet', min_bet, 'max_bet', max_bet);
         
         if (max_bet < min_bet) {
@@ -345,14 +350,23 @@ module.exports = (function () {
           actions.push(bet_action_obj);
         }
         // call
-        if (max_bet < to_call) {
-          // player can't afford to call
-          actions.push({ call: player.chips });
-        }
-        else if (to_call > 0) {
+        if (to_call > 0) {
+          if (player.chips < to_call) {
+            // player can't afford to call
+            to_call = player.chips;
+          }
           // player must pay to_call or fold
           actions.push({ call: to_call });
+          free_action = 'fold';
         }
+        else {
+          // player can check
+          free_action = 'check';
+        }
+        // fold/check
+        free_action_obj = {};
+        free_action_obj[free_action] = true;
+        actions.push(free_action_obj);
       //   console.log(to_call
       // , last_raise
       // , min_bet
@@ -384,7 +398,7 @@ module.exports = (function () {
       }
     );
     // describes how to handle each action
-    function performAction(action, num_chips) {      
+    function performAction(action, num_chips) {
       if (_.all(actions, function(action_obj) { return (action_obj[action] === undefined); })) {
         console.error('*~*Player chose invalid action', action, ', so treating it as', free_action);
         action = free_action; // act as if the player timed out (in less than Round.TIMEOUT)

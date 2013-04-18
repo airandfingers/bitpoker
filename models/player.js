@@ -94,6 +94,17 @@ module.exports = (function () {
     return amount;
   };
 
+  // only called when we've raised beyond another player's chipstack
+  PlayerSchema.methods.getBet = function(amount) {
+    var rounded_amount = this.Round.roundNumChips(amount);
+    if (rounded_amount !== amount) {
+      console.error('Invalid amount:', amount, this.Round.MIN_INCREMENT);
+      amount = rounded_amount;
+    }
+    this.chips += amount;
+    this.current_bet -= amount;
+  };
+
   PlayerSchema.methods.win = function(amount) {
     this.chips += amount;
     this.chips_won = amount;
@@ -151,6 +162,11 @@ module.exports = (function () {
   PlayerSchema.methods.roundOver = function() {
     var self = this
       , action_order = ['addChips', 'sitOut', 'vacateSeat']
+      , complete_events = {
+          addChips: 'chips_added'
+        , sitOut: 'sit_out'
+        , vacateSeat: 'stand'
+    }
       , actions = [];
     
     _.each(action_order, function(method_name) {
@@ -158,12 +174,8 @@ module.exports = (function () {
       if (_.isArray(args_array)) {
         actions.push(function(acb) {
           self.performAction(method_name, args_array);
-          if (method_name === 'addChips') {
-            self.once('chips_added', function(num_chips) { acb(); });
-          }
-          else {
-            acb();
-          }
+          // wait until the event that the method triggers when it's done
+          self.once(complete_events[method_name], function() { acb(); });
         });
       }
     });
@@ -256,14 +268,38 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.vacateSeat = function() {
-    var seat_num = this.seat;
-    this.seat = undefined;
+    var self = this
+      , seat_num = self.seat;
+    self.seat = undefined;
     // clear the sit-out timer, if any
-    clearInterval(this.full_table_check);
+    clearInterval(self.full_table_check);
     // clear the sit-in-on-first-buyin timer, if any
-    clearTimeout(this.first_buyin_handler);
-    // emit the "stand" event
-    this.emit('stand', seat_num);
+    clearTimeout(self.first_buyin_handler);
+    // credit this player's account with the appropriate number of maobucks
+    if (self.chips < 0) {
+      console.error('player attempted to cash out with ' + self.chips + ' chips! resetting to 0..');
+      self.chips = 0;
+      return;
+    }
+    self.socket.user.fetch(function(fetch_err, user) {
+      if (fetch_err) {
+        self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);
+        return;
+      }
+      var stack_in_maobucks = self.chips / self.Round.CHIPS_PER_MAOBUCK
+        , new_maobucks = user.maobucks + stack_in_maobucks;
+      user.update({ $set: { maobucks: new_maobucks } }, function(save_err) {
+        if (save_err) {
+          self.sendMessage('error', 'error while saving user: ' + save_err.message || save_err);
+          return;
+        }
+        else {
+          self.chips = 0;
+          // emit the "stand" event
+          self.emit('stand', seat_num);
+        }
+      });
+    });
   };
 
   static_properties.messages.sit_out = 'handleSitOut';
@@ -286,7 +322,6 @@ module.exports = (function () {
     if (! self.sitting_out) {
       self.sitting_out = true;
       self.setFlag('post_blind', false);
-      self.emit('sit_out');
       // set sit-out timer
       console.log('setting sit_out_timer', self.Round.SIT_OUT_TIME_ALLOWED);
       self.full_table_check = setInterval(function() {
@@ -294,6 +329,8 @@ module.exports = (function () {
           self.vacateSeat();
         }
       }, self.Round.SIT_OUT_TIME_ALLOWED);
+      // emit the "sit_out" event
+      self.emit('sit_out');
     }
     else {
       console.log('sitOut called when', self.username, 'is already sitting out!');
@@ -387,11 +424,15 @@ module.exports = (function () {
     if (num_chips > sent_balance_in_chips) {
       error = 'add_chips request exceeds player\'s chip balance: ' + sent_balance_in_chips;
     }
+    else if (num_chips < 0) {
+      error = 'cannot add negative numbers of chips!';
+    }
     else if (num_chips < actual_min) {
       error = 'cannot add fewer than ' + actual_min + ' chips!';
     }
     else if (num_chips > num_to_max) {
       //self.sendMessage('error', 'cannot add more than ' + num_to_max + ' chips!');
+      console.error('cannot add more than ' + num_to_max + ' chips, so limiting to ' + num_to_max);
       num_chips = num_to_max;
     }
     if (error) {
@@ -399,13 +440,13 @@ module.exports = (function () {
       return;
     }
     self.socket.user.fetch(function(fetch_err, user) {
-      var num_maobucks = num_chips / self.Round.CHIPS_PER_MAOBUCK
-        , new_maobucks = user.maobucks - num_maobucks;
       if (fetch_err) {
         self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);
         return;
       }
-      else if (new_maobucks < 0) {
+      var num_maobucks = num_chips / self.Round.CHIPS_PER_MAOBUCK
+        , new_maobucks = user.maobucks - num_maobucks;
+      if (new_maobucks < 0) {
         self.sendMessage('error', 'player no longer has enough maobucks to add ' + num_chips + ' chips!');
         return;
       }
