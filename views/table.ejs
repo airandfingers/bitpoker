@@ -4,14 +4,16 @@
             <%= title %>
         </h1>
 
-        <div id="pokerTable">
-                <canvas id="canvas" width="690" height="480" style= 'z-index :0'></canvas>
-               
-            <form id = 'cashier' style='z-index: 1; display: none'>    
-                   <input type = 'radio' id ="maxRadio" name = 'addChipsRadio' value="max" size="-4">max<br>
-        <input type = 'radio' id ="otherAmountRadio" name = 'addChipsRadio' >Other Amount: <input type = 'text' id="otherAmount" width="20px" height="17px"> <br>
-                  <input type = 'radio' id ="autoRebuyRadio" name = 'addChipsRadio' >Auto-Rebuy: <input type = 'text' id="autoRebuy" >     </form>      
-        </div>
+        <div id="pokerTableWrapper">
+            <div id="pokerTable">
+                    <canvas id="canvas" width="690" height="480" style= 'z-index :0'></canvas>
+                   
+                <form id = 'cashier' style='z-index: 1; display: none'>    
+                       <input type = 'radio' id ="maxRadio" name = 'addChipsRadio' value="max" size="-4">max<br>
+            <input type = 'radio' id ="otherAmountRadio" name = 'addChipsRadio' >Other Amount: <input type = 'text' id="otherAmount" width="20px" height="17px"> <br>
+                      <input type = 'radio' id ="autoRebuyRadio" name = 'addChipsRadio' >Auto-Rebuy: <input type = 'text' id="autoRebuy" >     </form>      
+            </div>
+        </div> <!-- poker table wrapper -->
             <!--include values to expose to scripts-->
             <input type="hidden" id="server_values" data-table_state="<%= table_state %>" data-table_state_url="/table_state/<%= table_id %>" data-room_state="<%= room_state %>" />
         <div id="options">

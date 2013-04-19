@@ -190,8 +190,16 @@ h1 {
     margin: 0 5%;
 }
 
-#pokertable {
+#pokerTable {
+    position: absolute;
+    margin: 0 5%;
+
+}
+
+#pokerTableWrapper {
     position: relative;
+    height: 480px;
+    width: 690px;
 }
 
 #table_list {
