@@ -278,7 +278,7 @@ module.exports = (function () {
       console.log("Updated " + req.user.username + "'s account to " + maobucks_update + "maobucks.");
       }
     } );
-    res.redirect('/account');
+    res.redirect('back');
   });
 
   app.post('/login',
@@ -361,6 +361,8 @@ module.exports = (function () {
       , hide_navbar: true
       , room_state : JSON.stringify(room_state)
       , table_state: JSON.stringify(table_state)
+      , maobucks: req.user.maobucks
+
       });
     }
     else {
