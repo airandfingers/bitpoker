@@ -67,6 +67,8 @@ module.exports = (function () {
   , DISPLAY_HANDS_DURATION: 5000
     // how long (in ms) players can sit out before being forced from their seats
   , SIT_OUT_TIME_ALLOWED: 30000 // 30 seconds (for testing)
+    // how long (in ms) players are forced to wait before buying with less than they stood up with
+  , MIN_BUYIN_TIME_ENFORCED: 30000 // 30 seconds (for testing)
   };
 
   /* the schema - defines the "shape" of the documents:

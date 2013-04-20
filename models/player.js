@@ -242,12 +242,18 @@ module.exports = (function () {
     }
   };
 
+  function first_buyin_handler(self) {
+    if (! _.isFunction(self._first_buyin_handler)) {
+      self._first_buyin_handler = function() {
+        self.sitIn();
+      };
+    }
+    return self._first_buyin_handler;
+  }
   PlayerSchema.methods.takeSeat = function(seat_num) {
     var self = this;
     self.seat = seat_num;
-    self.first_buyin_handler = self.once('chips_added', function() {
-      self.sitIn();
-    });
+    self.once('chips_added', first_buyin_handler(self));
     // emit the "sit" event
     this.emit('sit', seat_num);
   };
@@ -274,32 +280,46 @@ module.exports = (function () {
     // clear the sit-out timer, if any
     clearInterval(self.full_table_check);
     // clear the sit-in-on-first-buyin timer, if any
-    clearTimeout(self.first_buyin_handler);
-    // credit this player's account with the appropriate number of maobucks
+    self.removeListener('chips_added', first_buyin_handler(self));
+    
     if (self.chips < 0) {
       console.error('player attempted to cash out with ' + self.chips + ' chips! resetting to 0..');
       self.chips = 0;
-      return;
+      // emit the "stand" event
+      self.emit('stand', seat_num);
     }
-    self.socket.user.fetch(function(fetch_err, user) {
-      if (fetch_err) {
-        self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);
-        return;
-      }
-      var stack_in_maobucks = self.chips / self.Round.CHIPS_PER_MAOBUCK
-        , new_maobucks = user.maobucks + stack_in_maobucks;
-      user.update({ $set: { maobucks: new_maobucks } }, function(save_err) {
-        if (save_err) {
-          self.sendMessage('error', 'error while saving user: ' + save_err.message || save_err);
+    else if (self.chips === 0) {
+      // emit the "stand" event
+      self.emit('stand', seat_num);
+    }
+    else if (self.chips > 0) {
+      // credit this player's account with the appropriate number of maobucks
+      self.socket.user.fetch(function(fetch_err, user) {
+        if (fetch_err) {
+          self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);
           return;
         }
-        else {
-          self.chips = 0;
-          // emit the "stand" event
-          self.emit('stand', seat_num);
-        }
+        var stack_in_maobucks = self.chips / self.Round.CHIPS_PER_MAOBUCK
+          , new_maobucks = user.maobucks + stack_in_maobucks;
+        user.update({ $set: { maobucks: new_maobucks } }, function(save_err) {
+          if (save_err) {
+            self.sendMessage('error', 'error while saving user: ' + save_err.message || save_err);
+            return;
+          }
+          else {
+            if (self.chips > self.Round.MIN_CHIPS) {
+              self.min_buyin = self.chips;
+              self.min_buyin_timeout = setTimeout(function() {
+                delete self.min_buyin;
+              }, self.Round.MIN_BUYIN_TIME_ENFORCED);
+            }
+            self.chips = 0;
+            // emit the "stand" event
+            self.emit('stand', seat_num);
+          }
+        });
       });
-    });
+    }
   };
 
   static_properties.messages.sit_out = 'handleSitOut';
@@ -367,13 +387,25 @@ module.exports = (function () {
           , add_chips_info = {
               balance: maobucks
             , balance_in_chips: balance_in_chips
-            , min: balance_in_chips < num_to_min ? -1 :
-                   (num_to_min > 0 ? num_to_min : 0)
-            , max: balance_in_chips >= num_to_max ? num_to_max :
-                   (balance_in_chips >= num_to_min ? balance_in_chips : -1)
             , stack: stack
             , chips_per_maobuck: chips_per_maobuck
-        };
+          }
+          ,  min_buyin = self.min_buyin
+          , min
+          , max;
+        // set min and max
+        if (! _.isNumber(min_buyin)) {
+          min_buyin = 0;
+        }
+        min = _.max([min_buyin, num_to_min]);
+        max = _.max([min_buyin, num_to_max]);
+        if (balance_in_chips < min) {
+          min = max = -1;
+        }
+        _.extend(add_chips_info, {
+          min: min
+        , max: max
+        });
         self.add_chips_info = add_chips_info;
         cb(null, add_chips_info);
       }
@@ -415,10 +447,8 @@ module.exports = (function () {
   PlayerSchema.methods.addChips = function(num_chips) {
     var self = this
       , stack = self.chips
-      , num_to_min = self.Round.MIN_CHIPS - stack // current min buyin
       , num_to_max = self.Round.MAX_CHIPS - stack // current max buyin
       , sent_min = self.add_chips_info.min // min sent in last add_chips_info message
-      , actual_min = _.min([sent_min, num_to_min]) // the min to actually be enforced
       , sent_balance_in_chips = self.add_chips_info.balance_in_chips // balance sent in last add_chips_info message
       , error;
     if (num_chips > sent_balance_in_chips) {
@@ -427,8 +457,8 @@ module.exports = (function () {
     else if (num_chips < 0) {
       error = 'cannot add negative numbers of chips!';
     }
-    else if (num_chips < actual_min) {
-      error = 'cannot add fewer than ' + actual_min + ' chips!';
+    else if (num_chips < sent_min) {
+      error = 'cannot add fewer than ' + sent_min + ' chips!';
     }
     else if (num_chips > num_to_max) {
       //self.sendMessage('error', 'cannot add more than ' + num_to_max + ' chips!');
@@ -516,10 +546,18 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.pendAction = function(method_name) {
-    var args_array = _.toArray(arguments);
+    var args_array = _.toArray(arguments)
+      , action_to_english = {
+          addChips : 'add chips'
+        , vacateSeat : 'stand'
+        , sitOut : 'sit out'
+    };
     args_array.shift(); // remove method_name from arguments
     if (this.in_hand) {
       this.pending_actions[method_name] = args_array;
+      // notify user that the requested action has been delayed
+      var message = 'You will ' + action_to_english[method_name] + ' as soon as the round is over.';
+      this.sendMessage('error', message);
     }
     else {
       this.performAction(method_name, args_array);
