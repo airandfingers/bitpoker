@@ -1125,10 +1125,10 @@ for (var i = 0; i < emptySeats.length; i = i + 1)
         this.displayText(this.images.seats[emptySeats[i]].emptySeat)}
     }
 
-    this.showInHandOptions=function(){
+    this.displayInHandOptions=function(){
         
         this.displayChildren(this.images.rightSideButtons[0].button)
-        this.displayButton(this.images.rightSideButtons[1].button,false, ['set_flag', 'receive_hole_cards',false])
+        
         this.displayButton(this.images.rightSideButtons[2].button,false,['set_flag','post_blind',false])
     }
     this.hideSeatedOptions = function(){
@@ -1608,7 +1608,16 @@ self.displayCorrectSeatMessage(seatNumber)
                 //display seats and assign userSeatNumber
          for (var i in table_state.seats) { 
           //assign userSeatNumber if player is user
-         if(table_state.seats[i].is_you){ this.gameState.userSeatNumber = table_state.seats[i].seat }
+         if(table_state.seats[i].is_you){ 
+         this.gameState.userSeatNumber = table_state.seats[i].seat 
+         this.displayChildren(this.images.rightSideButtons[1])
+         if(table_state.seats[i].sitting_out == true){
+             self.displayChildren(self.images.sitIn)
+         }
+         else if(table_state.seats[i].sitting_out == false){
+
+         }
+         }
          //seated players
          this.playerSits(table_state.seats[i].seat,table_state.seats[i].username,table_state.seats[i].chips)
         
@@ -1686,7 +1695,7 @@ self.displayCorrectSeatMessage(seatNumber)
 //hand dealt to user
        socket.on('hole_cards_dealt', function(hand){
            self.displayHoleCards(hand, self.gameState.userSeatNumber)
-                   self.showInHandOptions()
+                   self.displayInHandOptions()
         });
      
 
@@ -1773,6 +1782,7 @@ self.displayCorrectSeatMessage(seatNumber)
         if(player.seat == self.gameState.userSeatNumber){
             self.hideChildren(self.images.sitIn)
             self.hideChildren(self.images.getChips)
+            self.displayButton(self.images.rightSideButtons[1].button,false, ['sit_out'])
 }
         self.stage.update()
 });
