@@ -1,36 +1,46 @@
 <% var title = 'Table ' + table_id; %>
 <% include head %>
         <h1 id="welcome">
-            Hello Bitcoin Poker world! You are in <%= title %>.
+            <%= title %>
         </h1>
-<div id="pokerTable" style= "position: absolute">
-        <canvas id="canvas" width="690" height="480" style= 'z-index :0'></canvas>
-       
-    <form id = 'cashier' style='z-index: 1; display: none'>    
-           <input type = 'radio' id ="maxRadio" name = 'addChipsRadio' value="max" size="-4">max<br>
-<input type = 'radio' id ="otherAmountRadio" name = 'addChipsRadio' >Other Amount: <input type = 'text' id="otherAmount" width="20px" height="17px"> <br>
-          <input type = 'radio' id ="autoRebuyRadio" name = 'addChipsRadio' >Auto-Rebuy: <input type = 'text' id="autoRebuy" >     </form>  
-    
-    </div>
-        <div id="chat">
-            <div id="chat_messages">
+
+        <div id="pokerTableWrapper">
+            <div id="pokerTable">
+                    <canvas id="canvas" width="690" height="480" style= 'z-index :0'></canvas>
+                   
+                <form id = 'cashier' style='z-index: 1; display: none'>    
+                       <input type = 'radio' id ="maxRadio" name = 'addChipsRadio' value="max" size="-4">max<br>
+            <input type = 'radio' id ="otherAmountRadio" name = 'addChipsRadio' >Other Amount: <input type = 'text' id="otherAmount" width="20px" height="17px"> <br>
+                      <input type = 'radio' id ="autoRebuyRadio" name = 'addChipsRadio' >Auto-Rebuy: <input type = 'text' id="autoRebuy" >     </form>      
             </div>
-            <form id="chat_form">
-                <input type="text" id="chat_sender" placeholder="My Name" 
-                    <% if (locals.username) { %>
-                        value="<%= locals.username %>"
-                    <% } %>
-                />
-                <input type="text" id="chat_message" placeholder="Message" />
-                <input type="submit" id="chat_submit" value="Send Message" />
-            </form>
+        </div> <!-- poker table wrapper -->
+            <!--include values to expose to scripts-->
+            <input type="hidden" id="server_values" data-table_state="<%= table_state %>" data-table_state_url="/table_state/<%= table_id %>" data-room_state="<%= room_state %>" />
+        <div id="options">
+            <input type="button" id="hideshow" value="hide/show" />
+            <div id="chat">
+                <div id="chat_messages">
+                </div>
+                <!--display list of users-->
+                <% include users %>                
+                <form id="chat_form">
+                    <input type="text" id="chat_sender" placeholder="My Name" 
+                        <% if (locals.username) { %>
+                            value="<%= locals.username %>"
+                        <% } %>
+                    />
+                    <input type="text" id="chat_message" placeholder="Message" />
+                    <input type="submit" id="chat_submit" value="Send Message" />
+                </form>
+            </div>
+            <div id="maobucks">
+                mao bucks: <%= maobucks %>
+                <form action ="/update_maobucks" method="post">
+                <input type="number" name="maobucks_update" placeholder="100" />
+                <button> god mode my Maobuckx </button>
+                </form>
+            </div>
         </div>
-
-        <!--include values to expose to scripts-->
-        <input type="hidden" id="server_values" data-table_state="<%= table_state %>" data-table_state_url="/table_state/<%= table_id %>" data-room_state="<%= room_state %>" />
-
-        <!--display list of users-->
-        <% include users %>
         <% include plugins %>
         <script src="/js/chat.js"></script>
         <script src="http://code.createjs.com/easeljs-0.6.0.min.js"></script>

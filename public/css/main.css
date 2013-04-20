@@ -134,23 +134,36 @@ h1 {
 }
 
 #chat {
-    width: 60%;
+    position: relative;
     display: table-cell;
+    border-top: 1px;
 
-    /*radial gradient */
-background: -moz-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 100%); /* FF3.6+ */
-background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(0,0,0,0.65)), color-stop(100%,rgba(0,0,0,0))); /* Chrome,Safari4+ */
-background: -webkit-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%); /* Chrome10+,Safari5.1+ */
-background: -o-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%); /* Opera 12+ */
-background: -ms-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%); /* IE10+ */
-background: radial-gradient(ellipse at center,  rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%); /* W3C */
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a6000000', endColorstr='#00000000',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+        /*radial gradient */
+    background: -moz-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 100%); /* FF3.6+ */
+    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(0,0,0,0.65)), color-stop(100%,rgba(0,0,0,0))); /* Chrome,Safari4+ */
+    background: -webkit-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%); /* Opera 12+ */
+    background: -ms-radial-gradient(center, ellipse cover,  rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%); /* IE10+ */
+    background: radial-gradient(ellipse at center,  rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a6000000', endColorstr='#00000000',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
 
+}
+
+#chat_form {
+    margin: auto;
+    display: table-cell;
+    width: 690px;
+    clear: both;
+}
+
+#chat_form input {
+    background-color: #ccc;
 }
 
 #chat_messages {
     background-color: #ccc;
     min-height: 3em;
+    height: 100px;
     margin: 0 auto;
     overflow: auto;
     border: .02em solid #ddd;
@@ -163,23 +176,30 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a6000000', e
     text-align: left;
 }
 
-#chat_form {
-    float: left;
-    margin: 0 auto;
-    width: 60%;
-    display: table-cell;
-}
-
-#chat_form input {
-    background-color: #ccc;
-}
-
 #chat_sender, #chat_submit {
+    clear: both;
     width: 24%;
+    padding: auto;
 }
 
 #chat_message {
-    width: 50%;
+    padding: 0 2%;
+}
+
+#options {
+    margin: 0 5%;
+}
+
+#pokerTable {
+    position: absolute;
+    margin: 0 5%;
+
+}
+
+#pokerTableWrapper {
+    position: relative;
+    height: 480px;
+    width: 690px;
 }
 
 #table_list {
@@ -225,14 +245,17 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a6000000', e
 
 #users {
     display: table-cell;
-    margin: 0 auto;
-    width: 50%;
-    float: right;
+    margin: 0 25px;
+}
+
+#users h3 {
+    margin: 0 0;
+    font-size: 1.1;
 }
 
 #users > ul {
     list-style-type: none;
-    margin: 1%;
+    margin: 0 2%;
     padding: 0;
 
 }
