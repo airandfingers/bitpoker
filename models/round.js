@@ -59,14 +59,16 @@ module.exports = (function () {
   , CURRENCY: 'maobucks'
     // the minimum difference between two possible chip amounts at this table
   , MIN_INCREMENT: 1
-    // how many chips each maobuck buys
-  , CHIPS_PER_MAOBUCK: 100
+    // how many maobucks it takes to buy a single chip at this table
+  , MAOBUCKS_PER_CHIP: .01
     // how long (in ms) to wait for players to respond to prompts
   , TIMEOUT: 10000
     // how long (in ms) to wait for players to respond to prompts
   , DISPLAY_HANDS_DURATION: 5000
     // how long (in ms) players can sit out before being forced from their seats
   , SIT_OUT_TIME_ALLOWED: 30000 // 30 seconds (for testing)
+    // how long (in ms) players are forced to wait before buying with less than they stood up with
+  , MIN_BUYIN_TIME_ENFORCED: 30000 // 30 seconds (for testing)
   };
 
   /* the schema - defines the "shape" of the documents:
@@ -109,11 +111,11 @@ module.exports = (function () {
        (see Schema definition for list of properties)*/
     console.log('Round.createRound called!', spec);
     var round = new Round(spec)
-      , constants = _.pick(static_properties, ['MIN_CHIPS', 'MAX_CHIPS', 'SMALL_BLIND', 'BIG_BLIND', 'CHIPS_PER_MAOBUCK']);
+      , constants = _.pick(static_properties, ['MIN_CHIPS', 'MAX_CHIPS', 'SMALL_BLIND', 'BIG_BLIND']);
     // make sure the constants are all even multiples of the MIN_INCREMENT
     _.each(constants, function(value, name) {
       if (Round.roundNumChips(value) !== value) {
-        console.error('Invalid', name, ':', value, 'for MIN_INCREMENT', MIN_INCREMENT);
+        console.error('Invalid', name, ':', value, 'given MIN_INCREMENT', Round.MIN_INCREMENT);
       }
     });
     if (Round.SMALL_BLIND % Round.MIN_INCREMENT !== 0 ||
@@ -270,6 +272,7 @@ module.exports = (function () {
       , last_raise
       , min_bet
       , max_bet
+      , high_stack
       , actions
       , free_action
       , free_action_obj
@@ -309,10 +312,10 @@ module.exports = (function () {
                       'current_bet: ' + player.current_bet + ' vs. high_bet: ' + self.high_bet);
         if (player.current_bet > self.high_bet) {
           // adjust player's current bet to be the high bet
+          // (SHOULD NEVER HAPPEN, DUE TO HIGH_STACK ENFORCEMENT)
           var refund = player.current_bet - self.high_bet;
-          console.log('giving player', refund);
+          console.error('giving player', refund);
           player.getBet(refund);
-          self.broadcast('player_gets_refund:', refund);
         }
         return self.players.length >= Round.MIN_PLAYERS &&
                ((! player.hasActedIn(self.stage_num)) || player.current_bet < self.high_bet);
@@ -331,6 +334,17 @@ module.exports = (function () {
         else if (Round.roundNumChips(player.chips) !== player.chips) {
           console.error('player has an invalid chips value:', player.chips, Round.MIN_INCREMENT );
         }
+        // handle "everyone else out of chips" condition
+        high_stack = self.calculateHighestStack(player); // how high other players can call to
+        if (high_stack === 0) {
+          console.log('all other players are out of chips, so skipping!', player);
+          setTimeout(function() {
+            actions = [{ check: true}];
+            performAction('check', undefined);
+            cb();
+          }, 1000);
+          return;
+        }
         // calculate/set actions and free_action to be used in prompt
         actions = [];
         // raise/bet - "raise to" values
@@ -338,7 +352,10 @@ module.exports = (function () {
         min_bet = self.high_bet + last_raise;
         max_bet = player.current_bet + player.chips; // how much this player can raise to
         //console.log('high_bet', self.high_bet, 'to_call', to_call, 'min_bet', min_bet, 'max_bet', max_bet);
-        
+        if (max_bet > high_stack) {
+          // don't let players bet higher than other players can call
+          max_bet = high_stack;
+        }
         if (max_bet < min_bet) {
           // player can't afford to raise at minimum raise level
           min_bet = max_bet;
@@ -609,12 +626,30 @@ module.exports = (function () {
     //console.log('calculated players:', self.players, 'small_blind_seat:', self.small_blind_seat);
   };
 
+  // calculate how much is in the pot, including current bets
   RoundSchema.methods.calculatePot = function() {
     var bets = 0;
     _.each(this.players, function(player) {
       bets += player.current_bet;
     });
     return this.pot + bets;
+  };
+
+  // calculate what's the highest amount any player (other than the given one) can bet,
+  // including current bets
+  RoundSchema.methods.calculateHighestStack = function(player_to_ignore) {
+    var stack_including_bet
+      , high_stack = 0;
+    _.each(this.players, function(player) {
+      if (player.username !== player_to_ignore.username) {
+        stack_including_bet = player.chips + player.current_bet;
+        if (stack_including_bet > high_stack) {
+          high_stack = stack_including_bet;
+        }
+      }
+      // else ignore
+    });
+    return high_stack;
   };
 
   RoundSchema.methods.takeBets = function() {
@@ -661,7 +696,7 @@ module.exports = (function () {
     all: ['stage_name', 'dealer', 'small_blind_seat', 'to_act',
           'high_bet', 'pot', 'winner', 'community', 'round_id',
           'max_players', 'min_chips', 'max_chips', 'min_increment', 
-          'currency', 'chips_per_maobuck', 'seats', 'players']
+          'currency', 'maobucks_per_chip', 'seats', 'players']
   };
   RoundSchema.methods.serialize = function(this_username, include) {
     var self = this
@@ -703,7 +738,7 @@ module.exports = (function () {
     if (_.contains(round_include, 'max_chips')) round_obj.max_chips = Round.MAX_CHIPS;
     if (_.contains(round_include, 'currency')) round_obj.currency = Round.CURRENCY;
     if (_.contains(round_include, 'min_increment')) round_obj.min_increment = Round.MIN_INCREMENT;
-    if (_.contains(round_include, 'chips_per_maobuck')) round_obj.chips_per_maobuck = Round.CHIPS_PER_MAOBUCK;
+    if (_.contains(round_include, 'maobucks_per_chip')) round_obj.maobucks_per_chip = Round.MAOBUCKS_PER_CHIP;
     if (_.contains(round_include, 'seats')) round_obj.seats = _.map(round_obj.seats, serializePlayer);
     if (_.contains(round_include, 'players')) round_obj.players = _.map(round_obj.players, serializePlayer);
     function serializePlayer(player) {
