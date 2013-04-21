@@ -996,7 +996,10 @@ this.images.pot.text.text = 'pot: '+potSize
           this.gameState.userSeatNumber = null
         
         }
-        this.displayCorrectSeatMessage(seatNumber)
+        for (var i=0;i<this.images.seats.length;i++){
+            
+        this.displayCorrectSeatMessage(i)
+        }
     }
 
     this.hideSeatedOptions=function(){
@@ -1928,12 +1931,12 @@ self.playerSits(player.seat, player.username, player.chips)
 //player stands, checks if player is the user
        socket.on('player_stands', function(player, seatNumber, is_you){
 
-           self.playerStands(seatNumber)
-
         
         if(is_you){
             self.gameState.userSeatNumber = false
+            self.hideSeatedOptions()
 }
+           self.playerStands(seatNumber)
 })
 
 //player stands, checks if player is the user
