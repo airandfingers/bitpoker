@@ -299,7 +299,7 @@ module.exports = (function () {
           self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);
           return;
         }
-        var stack_in_maobucks = self.chips / self.Round.CHIPS_PER_MAOBUCK
+        var stack_in_maobucks = self.chips * self.Round.MAOBUCKS_PER_CHIP
           , new_maobucks = user.maobucks + stack_in_maobucks;
         user.update({ $set: { maobucks: new_maobucks } }, function(save_err) {
           if (save_err) {
@@ -379,8 +379,8 @@ module.exports = (function () {
         cb(err);
       }
       else {
-        var chips_per_maobuck = self.Round.CHIPS_PER_MAOBUCK
-          , balance_in_chips = self.Round.roundNumChips(maobucks * chips_per_maobuck)
+        var maobucks_per_chip = self.Round.MAOBUCKS_PER_CHIP
+          , balance_in_chips = self.Round.roundNumChips(maobucks / maobucks_per_chip)
           , stack = self.chips
           , num_to_min = self.Round.MIN_CHIPS - stack
           , num_to_max = self.Round.MAX_CHIPS - stack
@@ -388,7 +388,7 @@ module.exports = (function () {
               balance: maobucks
             , balance_in_chips: balance_in_chips
             , stack: stack
-            , chips_per_maobuck: chips_per_maobuck
+            , maobucks_per_chip: maobucks_per_chip
           }
           ,  min_buyin = self.min_buyin
           , min
@@ -474,7 +474,7 @@ module.exports = (function () {
         self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);
         return;
       }
-      var num_maobucks = num_chips / self.Round.CHIPS_PER_MAOBUCK
+      var num_maobucks = num_chips * self.Round.MAOBUCKS_PER_CHIP
         , new_maobucks = user.maobucks - num_maobucks;
       if (new_maobucks < 0) {
         self.sendMessage('error', 'player no longer has enough maobucks to add ' + num_chips + ' chips!');

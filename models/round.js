@@ -59,8 +59,8 @@ module.exports = (function () {
   , CURRENCY: 'maobucks'
     // the minimum difference between two possible chip amounts at this table
   , MIN_INCREMENT: 1
-    // how many chips each maobuck buys
-  , CHIPS_PER_MAOBUCK: 100
+    // how many maobucks it takes to buy a single chip at this table
+  , MAOBUCKS_PER_CHIP: .01
     // how long (in ms) to wait for players to respond to prompts
   , TIMEOUT: 10000
     // how long (in ms) to wait for players to respond to prompts
@@ -111,11 +111,11 @@ module.exports = (function () {
        (see Schema definition for list of properties)*/
     console.log('Round.createRound called!', spec);
     var round = new Round(spec)
-      , constants = _.pick(static_properties, ['MIN_CHIPS', 'MAX_CHIPS', 'SMALL_BLIND', 'BIG_BLIND', 'CHIPS_PER_MAOBUCK']);
+      , constants = _.pick(static_properties, ['MIN_CHIPS', 'MAX_CHIPS', 'SMALL_BLIND', 'BIG_BLIND']);
     // make sure the constants are all even multiples of the MIN_INCREMENT
     _.each(constants, function(value, name) {
       if (Round.roundNumChips(value) !== value) {
-        console.error('Invalid', name, ':', value, 'for MIN_INCREMENT', MIN_INCREMENT);
+        console.error('Invalid', name, ':', value, 'given MIN_INCREMENT', Round.MIN_INCREMENT);
       }
     });
     if (Round.SMALL_BLIND % Round.MIN_INCREMENT !== 0 ||
@@ -663,7 +663,7 @@ module.exports = (function () {
     all: ['stage_name', 'dealer', 'small_blind_seat', 'to_act',
           'high_bet', 'pot', 'winner', 'community', 'round_id',
           'max_players', 'min_chips', 'max_chips', 'min_increment', 
-          'currency', 'chips_per_maobuck', 'seats', 'players']
+          'currency', 'maobucks_per_chip', 'seats', 'players']
   };
   RoundSchema.methods.serialize = function(this_username, include) {
     var self = this
@@ -705,7 +705,7 @@ module.exports = (function () {
     if (_.contains(round_include, 'max_chips')) round_obj.max_chips = Round.MAX_CHIPS;
     if (_.contains(round_include, 'currency')) round_obj.currency = Round.CURRENCY;
     if (_.contains(round_include, 'min_increment')) round_obj.min_increment = Round.MIN_INCREMENT;
-    if (_.contains(round_include, 'chips_per_maobuck')) round_obj.chips_per_maobuck = Round.CHIPS_PER_MAOBUCK;
+    if (_.contains(round_include, 'maobucks_per_chip')) round_obj.maobucks_per_chip = Round.MAOBUCKS_PER_CHIP;
     if (_.contains(round_include, 'seats')) round_obj.seats = _.map(round_obj.seats, serializePlayer);
     if (_.contains(round_include, 'players')) round_obj.players = _.map(round_obj.players, serializePlayer);
     function serializePlayer(player) {
