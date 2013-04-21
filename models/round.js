@@ -272,6 +272,7 @@ module.exports = (function () {
       , last_raise
       , min_bet
       , max_bet
+      , high_stack
       , actions
       , free_action
       , free_action_obj
@@ -311,10 +312,10 @@ module.exports = (function () {
                       'current_bet: ' + player.current_bet + ' vs. high_bet: ' + self.high_bet);
         if (player.current_bet > self.high_bet) {
           // adjust player's current bet to be the high bet
+          // (SHOULD NEVER HAPPEN, DUE TO HIGH_STACK ENFORCEMENT)
           var refund = player.current_bet - self.high_bet;
-          console.log('giving player', refund);
+          console.error('giving player', refund);
           player.getBet(refund);
-          self.broadcast('player_gets_refund:', refund);
         }
         return self.players.length >= Round.MIN_PLAYERS &&
                ((! player.hasActedIn(self.stage_num)) || player.current_bet < self.high_bet);
@@ -333,6 +334,17 @@ module.exports = (function () {
         else if (Round.roundNumChips(player.chips) !== player.chips) {
           console.error('player has an invalid chips value:', player.chips, Round.MIN_INCREMENT );
         }
+        // handle "everyone else out of chips" condition
+        high_stack = self.calculateHighestStack(player); // how high other players can call to
+        if (high_stack === 0) {
+          console.log('all other players are out of chips, so skipping!', player);
+          setTimeout(function() {
+            actions = [{ check: true}];
+            performAction('check', undefined);
+            cb();
+          }, 1000);
+          return;
+        }
         // calculate/set actions and free_action to be used in prompt
         actions = [];
         // raise/bet - "raise to" values
@@ -340,7 +352,10 @@ module.exports = (function () {
         min_bet = self.high_bet + last_raise;
         max_bet = player.current_bet + player.chips; // how much this player can raise to
         //console.log('high_bet', self.high_bet, 'to_call', to_call, 'min_bet', min_bet, 'max_bet', max_bet);
-        
+        if (max_bet > high_stack) {
+          // don't let players bet higher than other players can call
+          max_bet = high_stack;
+        }
         if (max_bet < min_bet) {
           // player can't afford to raise at minimum raise level
           min_bet = max_bet;
@@ -611,12 +626,30 @@ module.exports = (function () {
     //console.log('calculated players:', self.players, 'small_blind_seat:', self.small_blind_seat);
   };
 
+  // calculate how much is in the pot, including current bets
   RoundSchema.methods.calculatePot = function() {
     var bets = 0;
     _.each(this.players, function(player) {
       bets += player.current_bet;
     });
     return this.pot + bets;
+  };
+
+  // calculate what's the highest amount any player (other than the given one) can bet,
+  // including current bets
+  RoundSchema.methods.calculateHighestStack = function(player_to_ignore) {
+    var stack_including_bet
+      , high_stack = 0;
+    _.each(this.players, function(player) {
+      if (player.username !== player_to_ignore.username) {
+        stack_including_bet = player.chips + player.current_bet;
+        if (stack_including_bet > high_stack) {
+          high_stack = stack_including_bet;
+        }
+      }
+      // else ignore
+    });
+    return high_stack;
   };
 
   RoundSchema.methods.takeBets = function() {
