@@ -969,6 +969,7 @@ this.images.pot.text.text = 'pot: '+potSize
     }
 
     this.playerSits = function(seatNumber, playerName, chips){
+
         this.gameState.seats[seatNumber].displayMessageType = 'seat'
         this.images.seats[seatNumber].playerName.text.text =  playerName
         if(typeof chips == 'number' && chips>0){
@@ -977,7 +978,13 @@ this.images.pot.text.text = 'pot: '+potSize
 
            
         this.displayCorrectSeatMessage(seatNumber)
-        if(this.gameState.userSeatNumber == seatNumber){   this.displayChildren(this.images.stand)}
+        if(this.gameState.userSeatNumber == seatNumber){   
+        this.displayChildren(this.images.stand)
+        //refresh open seats to disabled seats
+        for (var i = 0;i<this.images.seats.length;i++){
+            this.displayCorrectSeatMessage(i)
+        }
+        }
 
     }
 
@@ -1907,14 +1914,16 @@ this.restoreActiveContainers=function(activeContainerArray){
 
 //player sits, checks if player is the user
        socket.on('player_sits', function(player, is_you){
-           self.hideChildren(self.images.seats[player.seat].openSeat)
-        self.playerSits(player.seat, player.username, player.chips)
+         self.hideChildren(self.images.seats[player.seat].openSeat)
         if(is_you == true){
-            socket.emit('get_add_chips_info')
             self.gameState.userSeatNumber = player.seat
+            socket.emit('get_add_chips_info')
             self.displayButton(self.images.stand, false, ['stand'])
             //console.log(self.images.leftSideButtons[1].button.image)
-}});
+                    
+}
+self.playerSits(player.seat, player.username, player.chips)
+});
 
 //player stands, checks if player is the user
        socket.on('player_stands', function(player, seatNumber, is_you){
