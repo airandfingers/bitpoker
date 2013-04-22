@@ -11,7 +11,8 @@ module.exports = (function () {
 
     , Room = require('./room')
     
-    , Round = require('./round')
+    , NoLimitGame = require('./no_limit_game')
+    , HoldEmHand = require('./hold_em_hand')
     , Player = require('./player');
 
   var static_properties = {
@@ -40,8 +41,8 @@ module.exports = (function () {
   , name     : String
     // the corresponding room
   , room     : { type: Schema.Types.Mixed }
-    // the rounds this table has gone through (oldest to newest)
-  , rounds   : { type: [Schema.Types.Mixed], default: function() { return []; } }
+    // the hands this table has gone through (oldest to newest)
+  , hands   : { type: [Schema.Types.Mixed], default: function() { return []; } }
     // the players that are currently at this table (seated or not)
   , players  : { type: Schema.Types.Mixed, default: function() { return {}; } }
     // {seat_num: Player}
@@ -91,7 +92,7 @@ module.exports = (function () {
     , room: room
     });
 
-    self.newRound();
+    self.newHand();
 
     _.each(Table.room_events, function(handler_name, event_name) {
       var handler = self[handler_name];
@@ -109,31 +110,32 @@ module.exports = (function () {
     Table.tables[name] = self;
   };
 
-  TableSchema.methods.newRound = function() {
+  TableSchema.methods.newHand = function() {
     var self = this
-      , round_num = this.rounds.length + 1
-      , round = Round.createRound({
-          seats: this.seats
+      , hand_num = this.hands.length + 1
+      , hand = HoldEmHand.createHoldEmHand({
+          game: NoLimitGame
+        , seats: this.seats
         , broadcast: function() { self.room.broadcast.apply(self.room, arguments); }
         , dealer: this.dealer
-        , round_id: self.name + '.' + round_num
+        , hand_id: self.name + '.' + hand_num
     });
-    console.log('Pushing new round onto rounds, with round_id: ', this.rounds.length);
-    this.rounds.push(round);
+    console.log('Pushing new hand onto hands, with hand_id: ', this.hands.length);
+    this.hands.push(hand);
     
-    round.onStage('done', function() {
+    hand.onStage('done', function() {
       self.room.broadcast('reset_table');
-      console.log('Round is over! Creating a new round in 1 second...');
-      self.dealer = round.small_blind_seat || round.dealer;
+      console.log('Hand is over! Creating a new hand in 1 second...');
+      self.dealer = hand.small_blind_seat || hand.dealer;
       setTimeout(function() {
-        self.newRound();
+        self.newHand();
       }, 1000);
     });
-    return round;
+    return hand;
   };
 
-  TableSchema.methods.getCurrentRound = function(status) {
-    return _.last(this.rounds);
+  TableSchema.methods.getCurrentHand = function(status) {
+    return _.last(this.hands);
   };
 
   static_properties.room_events.socket_join = 'onSocketConnect';
@@ -146,7 +148,7 @@ module.exports = (function () {
       // create a new player
       player = Player.createPlayer({
             username: username
-          , Round: Round
+          , game: NoLimitGame
           , table: self
       });
       self.players[username] = player;
@@ -209,7 +211,7 @@ module.exports = (function () {
 
   static_properties.player_events.sit_out = 'playerSitsOut';
   TableSchema.methods.playerSitsOut = function(player) {
-    this.room.broadcast('player_sits_out', player.serialize(), Round.SIT_OUT_TIME_ALLOWED);
+    this.room.broadcast('player_sits_out', player.serialize(), NoLimitGame.SIT_OUT_TIME_ALLOWED);
   };
 
   static_properties.player_events.sit_in = 'playerSitsIn';
@@ -226,10 +228,10 @@ module.exports = (function () {
     })
   };
 
-  TableSchema.methods.getTableState = function(user, round_include, cb) {
+  TableSchema.methods.getTableState = function(user, hand_include, cb) {
     var self = this
       , username = user.username
-      , table_state = self.getCurrentRound().serialize(username, round_include)
+      , table_state = self.getCurrentHand().serialize(username, hand_include)
       , player = self.players[username];
     table_state.table_name = self.name;
     if (player instanceof Player) {
@@ -254,12 +256,12 @@ module.exports = (function () {
   TableSchema.methods.sendAddChipsInfo = function(player) {
     var add_chips_info = {
           table_name: this.name
-        , small_blind:   Round.SMALL_BLIND
-        , big_blind:     Round.BIG_BLIND
-        , table_min:     Round.MIN_CHIPS
-        , table_max:     Round.MAX_CHIPS
-        , currency:      Round.CURRENCY
-        , min_increment: Round.MIN_INCREMENT
+        , small_blind:   NoLimitGame.SMALL_BLIND
+        , big_blind:     NoLimitGame.BIG_BLIND
+        , table_min:     NoLimitGame.MIN_CHIPS
+        , table_max:     NoLimitGame.MAX_CHIPS
+        , currency:      NoLimitGame.CURRENCY
+        , min_increment: NoLimitGame.MIN_INCREMENT
     };
     player.calculateAddChipsInfo(function(err, player_add_chips_info) {
       if (err) {
@@ -282,7 +284,7 @@ module.exports = (function () {
 
   TableSchema.methods.isFull = function() {
     var num_players = _.keys(this.seats).length;
-    return num_players === Round.MAX_PLAYERS;
+    return num_players === NoLimitGame.MAX_PLAYERS;
   }
 
   /* the model - a fancy constructor compiled from the schema:
