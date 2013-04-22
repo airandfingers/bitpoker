@@ -1166,7 +1166,7 @@ for (var i = 0; i < openSeats.length; i = i + 1)
 
     this.displayInHandOptions=function(){
         
-        this.displayChildren(this.images.rightSideButtons[0].button)
+        this.displayButton(this.images.rightSideButtons[0].button)
         
         this.displayButton(this.images.rightSideButtons[2].button,false,['set_flag','post_blind',false])
     }
@@ -1855,25 +1855,20 @@ this.restoreActiveContainers=function(activeContainerArray){
      self.startCountdown(self.gameState.userSeatNumber,Math.round(timeout/1000))
      for (var i = 0; i < actions.length; i++){
      if (typeof actions[i].fold !== 'undefined'){
-         self.displayChildren(self.images.fold)
          self.displayButton(self.images.fold, false, ['act','fold'])
         }
        else if (actions[i].check !== undefined){
-         self.displayChildren(self.images.check)
          self.displayButton(self.images.check,false,['act','check'])
          }
       else   if (actions[i].call){
              self.images.call.text.text = 'Call '+actions[i].call
-         self.displayChildren(holdemCanvas.images.call)
          self.displayButton(holdemCanvas.images.call,false,['act','call',actions[i].call])
          }
        else  if (actions[i].raise){
-         self.displayChildren(self.images.raise)
          self.displayButton(self.images.raise,'raise to '+actions[i].raise[0],['act','raise', actions[i].raise[0]])
          self.showBetSlider(actions[i].raise[0], actions[i].raise[1], 1)
          }
       else if (actions[i].bet){
-         self.displayChildren(self.images.bet)
          self.displayButton(self.images.bet,'bet '+actions[i].bet[0] ,['act','bet',actions[i].bet[0]])
          self.showBetSlider(actions[i].bet[0], actions[i].bet[1], 1)
          }
