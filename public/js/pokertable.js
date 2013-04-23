@@ -18,6 +18,7 @@
         for(var i = 0;i<maxSeats;i++){
              this.gameState.seats[i]={}
              this.gameState.seats[i].displayMessageType = 'openSeat'
+             this.gameState.seats[i].bet = []
         }
         this.gameState.cashier = {}
         this.gameState.messageBox = {}
@@ -760,7 +761,7 @@ this.addItemText(this.getChips,'Get Chips','10px Arial','white')
       this.seats[3].bet = new this.Item(137,153,20,10,2)
       this.seats[4].bet = new this.Item(215,121,20,10,2)
       this.seats[5].bet = new this.Item(345,121,20,10,2)
-      this.seats[6].bet = new this.Item(475,121,20,10,2)
+      this.seats[6].b1et = new this.Item(475,121,20,10,2)
       this.seats[7].bet = new this.Item(553,153,20,10,2)
       this.seats[8].bet = new this.Item(553,227,20,10,2)
       this.seats[9].bet = new this.Item(475,291,20,10,2)
@@ -931,8 +932,13 @@ this.addItemText(this.getChips,'Get Chips','10px Arial','white')
     }
 
     this.removeAllBets  = function(){
-    for (i=0;i<this.images.seats.length;i=i+1){
-        if(this.stage.contains(this.images.seats[i].bet.text)){this.hideChildren(this.images.seats[i].bet)}}
+
+    for (var i=0;i<this.images.seats.length;i=i+1){
+        if(this.stage.contains(this.images.seats[i].bet.text)){this.hideChildren(this.images.seats[i].bet)}
+         this.hideBet(i)
+        }
+        
+       
     this.stage.update()
     }
 
@@ -993,6 +999,96 @@ this.images.pot.text.text = 'pot: '+potSize
             this.displayCorrectSeatMessage(i)
         }
         }
+
+    }
+
+    this.hideBet = function (seatNumber){
+   
+            this.hideChildren(this.gameState.seats[seatNumber].bet)
+
+        this.gameState.seats[seatNumber].bet = []
+
+    }
+
+    this.displayBet =function(seatNumber, betSize){
+        
+        var x = this.images.seats[seatNumber].bet.position.x
+        var y = this.images.seats[seatNumber].bet.position.y - 16
+        var chipIncrementY = 3
+
+
+        while(betSize>=1){
+        if(betSize>=50){
+            
+            this.drawChip(50,x,y, seatNumber)
+            y =y-chipIncrementY
+            betSize = betSize -50
+        }
+      else  if(betSize>=25){
+            
+             this.drawChip(25,x,y, seatNumber)
+            y =y-chipIncrementY
+            betSize = betSize -25
+
+        }
+      else  if(betSize >=10){
+             this.drawChip(10,x,y, seatNumber)
+            y =y-chipIncrementY
+            betSize = betSize -10
+        }
+      else   if(betSize >=5){
+             this.drawChip(5,x,y, seatNumber)
+            y =y-chipIncrementY
+            betSize = betSize -5
+        }
+      else   if(betSize >=1){
+             this.drawChip(10,x,y, seatNumber)
+            y =y-chipIncrementY
+            betSize = betSize -1
+        }
+        }
+    }
+
+    this.drawChip =function(chipValue, x, y, seatNumber){
+
+       var diameter = 20
+       
+       //different chip values have different colors
+       if(chipValue == 50){
+           chipColor = 'red'
+       }
+       else if(chipValue == 25){
+           chipColor = 'green'
+       }
+       else if(chipValue == 10){
+           chipColor = 'black'
+       }
+      else  if(chipValue == 5){
+           chipColor = '#F52887'
+       }
+     else {
+           chipColor = 'blue'
+       }
+
+        this.gameState.seats[seatNumber].bet.push(new this.images.Item(x,y,diameter,diameter,2))
+         this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].image = new createjs.Shape()
+ this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].image.graphics.beginStroke(chipColor).beginFill('gray').drawCircle(x+diameter/2, y+diameter/2, diameter/2)
+
+this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].text =  new createjs.Text(chipValue, '8px Arial', 'white')
+this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].text.x = this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].position.x + this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].size.x/2
+this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].text.y = this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].position.y+6
+this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].text.baseline = 'top'
+this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].text.textAlign = 'center'
+this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].text.maxWidth = this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].size.x*.8
+
+//remove previous text instances
+for(var i   = 0; i<this.gameState.seats[seatNumber].bet.length-1;i++){
+    this.hideText(this.gameState.seats[seatNumber].bet[i])
+    this.gameState.seats[seatNumber].bet[i].text = null
+
+}
+ this.displayChildren(this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1])
+
 
     }
 
@@ -1148,6 +1244,8 @@ this.hideChildren(this.images.betSlider)
      
      //hide community cards
      for(var i=0; i<this.images.community.length;i++){ this.hideChildren(this.images.community[i])}
+
+
 
      //hide players' hands
        for(var i=0; i<this.images.seats.length;i++){
@@ -1755,6 +1853,7 @@ this.restoreActiveContainers=function(activeContainerArray){
          //current bets
          for (var i=0;i<table_state.players.length;i=i+1) { 
          this.playerPutsChipsInPot(table_state.players[i].seat,table_state.players[i].current_bet, table_state.players[i].chips)
+         this.displayBet(table_state.players[i].seat,table_state.players[i].current_bet)
          }
 
           //empty seats
@@ -1834,6 +1933,7 @@ this.restoreActiveContainers=function(activeContainerArray){
         switch(action){
         case 'fold':
         self.hideHoleCards(player.seat)
+        self.hideBet(player.seat)
         if(player.seat == self.gameState.userSeatNumber){
             self.hideButton(self.images.rightSideButtons[0].button)
             }
@@ -1843,18 +1943,22 @@ this.restoreActiveContainers=function(activeContainerArray){
             break;
 
             case'bet':
+            self.displayBet(player.seat,player.current_bet)
             self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
             break;
 
             case'call':
+            self.displayBet(player.seat,player.current_bet)
             self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
              break;
 
             case 'raise':
+            self.displayBet(player.seat,player.current_bet)
             self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
             break;
 
             case'post_blind':
+            self.displayBet(player.seat,player.current_bet)
             self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
             break;
 
