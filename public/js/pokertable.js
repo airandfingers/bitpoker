@@ -351,6 +351,9 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 //-----------functions below this line ---------------------
 this.images.setDefaults = function(){
     
+    var canvasWidth = document.getElementById('canvas').width
+     var canvasHeight = document.getElementById('canvas').height
+
       var cardWidth = 46
             var cardHeight = 62
             var sideButtonWidth = 185
@@ -528,6 +531,11 @@ this.images.setDefaults = function(){
         this.stand = new this.Item(0,0,actionButtonWidth,actionButtonHeight/2,2, ['stand'])
          this.itemAsRectangle(this.stand, 'black')
  this.addItemText(this.stand,'stand up','10px Arial','white')
+
+ //upper right side Buttons
+ this.addChips = new this.Item(canvasWidth-actionButtonWidth, 0, actionButtonWidth, actionButtonHeight/2, 2, ['get_add_chips_info'])
+ this.itemAsRectangle(this.addChips, 'black')
+ this.addItemText(this.addChips, 'Get Chips', '10px Arial', 'white')
 
         //----------------not in hand action buttons------------------
         this.sitIn = new this.Item(205,419,actionButtonWidth,actionButtonHeight,2, ['sit_in'])
@@ -1174,6 +1182,7 @@ for (var i = 0; i < openSeats.length; i = i + 1)
         this.hideChildren(this.images.rightSideButtons[0].button)
          this.hideChildren(this.images.rightSideButtons[1].button)
           this.hideChildren(this.images.rightSideButtons[2].button)
+          this.hideChildren(this.images.addChips)
     }
 
     this.showBetSlider =function(minBet, maxBet, minIncrement){
@@ -1717,6 +1726,10 @@ this.restoreActiveContainers=function(activeContainerArray){
          if(table_state.seats[i].is_you){ 
          this.gameState.userSeatNumber = table_state.seats[i].seat 
 
+         console.log(self.images.addChips.position.z)
+         self.displayButton(self.images.addChips)
+         
+
          //show options available if player is user
          self.displayButton(self.images.rightSideButtons[1].button)
          if(table_state.seats[i].sitting_out == true){
@@ -1917,6 +1930,7 @@ this.restoreActiveContainers=function(activeContainerArray){
             self.gameState.userSeatNumber = player.seat
             socket.emit('get_add_chips_info')
             self.displayButton(self.images.stand, false, ['stand'])
+            self.displayButton(self.images.addChips)
             //console.log(self.images.leftSideButtons[1].button.image)
                     
 }
@@ -2006,12 +2020,8 @@ jQuery(document).ready(function(){
 })
 
     jQuery(window).load(function (){
-        holdemCanvas.loadTableOnConnect()
-      /*
-   for(var i= 0;i<holdemCanvas.images.containers.length;i++){
-           console.log( holdemCanvas.images.containers[i].isVisible())
-        }
-        */
+        holdemCanvas.activateSockets()
+     
     })
 
 
