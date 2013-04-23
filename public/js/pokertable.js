@@ -1754,25 +1754,10 @@ this.restoreActiveContainers=function(activeContainerArray){
     }
     
   //---------------------SOCKET CODE------------------------
-  this.loadTableOnConnect =function(){
-         socket.on('user_joins', function(user,is_you){
-             if(is_you === true){   //self.displayInitialTableState()  
-              }
-            self.activateSockets()
-                
-})
-
-  }
-
     this.activateSockets = function(){
-
-
-         socket.on('table_state', function(table_state){
+      socket.once('table_state', function(table_state){
              self.displayInitialTableState(table_state)
-            
-                
-})
-
+    })
 
     //error received
        socket.on('error', function(errorString){
@@ -2001,20 +1986,17 @@ socket.on('reset_table', function(players){
 jQuery(document).ready(function(){
     holdemCanvas = new Table(10)
     holdemCanvas.initialize()
-    
-        
 })
 
-    jQuery(window).load(function (){
-        holdemCanvas.loadTableOnConnect()
+jQuery(window).load(function (){
+        holdemCanvas.activateSockets()
+        socket.emit('get_table_state');
       /*
    for(var i= 0;i<holdemCanvas.images.containers.length;i++){
            console.log( holdemCanvas.images.containers[i].isVisible())
         }
         */
     })
-
-
  /*  
 asdf = new createjs.Container()
 holdemCanvas.stage.addChild(asdf)

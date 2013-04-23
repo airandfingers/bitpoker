@@ -131,8 +131,12 @@ h1 {
 #welcome {
     text-align: center;
     font-size: 1.25em;
+    display: inline;
 }
 
+#maobucks form{
+    display: inline;
+}
 #chat {
     position: relative;
     display: table-cell;
