@@ -12,6 +12,7 @@
     // self.stage.removeChild(self.stage.getObjectUnderPoint(event.stageX,event.stageY))
   
         this.gameState = {}
+        this.gameState.displaySize = 'normal'
         this.gameState.secondsToAct
         this.gameState.seatNuseumberToAct
         this.gameState.seats = []
@@ -38,15 +39,16 @@
             call: 'img/call.jpg',
             check: 'img/check.jpg',
             raise: 'img/raise.jpg',
-            hiddenCard: 'img/hidden_card.jpg',
-            shownCard: 'img/shown_card.jpg',
+            hiddenCard: 'img/fourColorDeck/back.png',
+            hiddenCardSmall:'img/fourColorDeck/resize/back.png',
             seat: 'img/empty_seat.jpg',
             blankSeat : 'img/blank_seat.jpg',
             bet: 'img/bet.jpg',
             community: 'img/card_back.jpg',
             fold: 'img/fold.jpg',
             sideButton :'img/side_button.jpg',
-            background: 'img/table_background.jpg'
+            background: 'img/table_background.jpg',
+            fourColorDeck: 'img/4colorsheet.png'
             }
 
             this.images.background = {}
@@ -290,8 +292,20 @@ this.images.setDefaults = function(){
     var canvasWidth = document.getElementById('canvas').width
      var canvasHeight = document.getElementById('canvas').height
 
-      var cardWidth = 46
-            var cardHeight = 62
+     //small cards are 37 x 45
+     //big cards are 48 x 76
+     var cardWidth
+     var cardHeight
+
+     if(self.gameState.displaySize == 'mobile'){
+         cardWidth = 37
+       cardHeight = 45
+
+            }
+            else{
+                cardWidth = 48
+                cardHeight = 76
+            }
             var sideButtonWidth = 185
             var sideButtonHeight = 16
             var actionButtonWidth = 80
@@ -368,11 +382,11 @@ this.images.setDefaults = function(){
      }
      //------------------hole cards-----------------------------
         for (var i = 0; i < this.seats.length; i = i + 1){
-            this.seats[i].hiddenCard0 = new this.Item(this.seats[i].seat.position.x - 1, this.seats[i].seat.position.y - 48, cardWidth, cardHeight,1)
-            this.seats[i].hiddenCard1 = new this.Item(this.seats[i].seat.position.x + 45, this.seats[i].seat.position.y - 48, cardWidth, cardHeight,1)
+            this.seats[i].hiddenCard0 = new this.Item(this.seats[i].seat.position.x +this.seats[i].seat.size.x/2- cardWidth, this.seats[i].seat.position.y - cardHeight*0.9, cardWidth, cardHeight,1)
+            this.seats[i].hiddenCard1 = new this.Item(this.seats[i].seat.position.x + this.seats[i].seat.size.x/2, this.seats[i].seat.position.y - cardHeight*0.9, cardWidth, cardHeight,1)
 
-            this.seats[i].shownCard0 = new this.Item(this.seats[i].seat.position.x - 1, this.seats[i].seat.position.y - 48, cardWidth, cardHeight,1)
-            this.seats[i].shownCard1 = new this.Item(this.seats[i].seat.position.x + 45, this.seats[i].seat.position.y - 48, cardWidth, cardHeight,1)
+            this.seats[i].shownCard0 = new this.Item(this.seats[i].seat.position.x +this.seats[i].seat.size.x/2- cardWidth, this.seats[i].seat.position.y - cardHeight*0.9, cardWidth, cardHeight,1)
+            this.seats[i].shownCard1 = new this.Item(this.seats[i].seat.position.x + this.seats[i].seat.size.x/2, this.seats[i].seat.position.y - cardHeight*0.9, cardWidth, cardHeight,1)
           }
 
 
@@ -388,10 +402,17 @@ this.images.setDefaults = function(){
             //disabled SEats
             this.itemAsRectangle(this.seats[i].disabledSeat, "#000000")
             //hole cards
+            if(self.gameState.displaySize == 'mobile'){
+                       this.itemAsBitmap(this.seats[i].hiddenCard0, this.sources.hiddenCardSmall)
+            this.itemAsBitmap(this.seats[i].hiddenCard1, this.sources.hiddenCardSmall)
+
+            }
+            else{
             this.itemAsBitmap(this.seats[i].hiddenCard0, this.sources.hiddenCard)
             this.itemAsBitmap(this.seats[i].hiddenCard1, this.sources.hiddenCard)
-            this.itemAsRectangle(this.seats[i].shownCard0, "#00FFFF")
-            this.itemAsRectangle(this.seats[i].shownCard1, "#00FFFF")
+            }
+         //   this.itemAsRectangle(this.seats[i].shownCard0, "#00FFFF")
+          //  this.itemAsRectangle(this.seats[i].shownCard1, "#00FFFF")
             this.addItemText(this.seats[i].shownCard0,'','12px Arial','#000000')
             this.addItemText(this.seats[i].shownCard1,'','12px Arial','#000000')
             //player name
@@ -483,6 +504,17 @@ this.addItemText(this.sitIn,'Deal Me In','10px Arial','white')
  this.itemAsRectangle(this.getChips,'black')
 this.addItemText(this.getChips,'Get Chips','10px Arial','white')
 
+//========================4 color deck sprite sheet=============================
+
+var fourColorDeckData = {
+
+     images: [this.sources.fourColorDeck],
+     frames: {width:37, height:45}
+
+}
+
+this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
+
 //======================CASHIER=======================================
 
  var cashierImageContainerIndex = 4
@@ -559,258 +591,9 @@ this.addItemText(this.getChips,'Get Chips','10px Arial','white')
         this.cashier.closeWindow.image.graphics.lineTo(this.cashier.closeWindow.position.x+this.cashier.closeWindow.size.x*.12,this.cashier.closeWindow.position.y+this.cashier.closeWindow.size.y*.88)
         this.cashier.closeWindow.image.onClick = self.hideCashier
 
-/*
-       //===========================MESSAGE BOX================================
-
-
-        var messageBoxImageContainerIndex = 6
-        var messageBoxWindowWidth = 400
-        var messageBoxWindowHeight = 200
-        //declare size variables
-        var textLeftOffset = 10
-         var outerTopHeight = messageBoxWindowHeight*.08
-                var outerBottomHeight = messageBoxWindowHeight*.03
-        var outerSideWidth = messageBoxWindowWidth*.02
-
-        var asdf = document.getElementById('canvas')
-        var stageWidth = asdf.width
-        var stageHeight = asdf.height
-        var messageBoxWindowX = stageWidth/2 - messageBoxWindowWidth/2
-        var messageBoxWindowY = stageHeight/2 - messageBoxWindowHeight/2
-        
-
-        var innerMessageBoxX = messageBoxWindowX+outerSideWidth
-        var innerMessageBoxY = messageBoxWindowY+outerTopHeight
-        var innerMessageBoxWidth = messageBoxWindowWidth-2*outerSideWidth -2
-        var innerMessageBoxHeight = messageBoxWindowHeight-outerBottomHeight-outerTopHeight
-
-        var textX = innerMessageBoxX + textLeftOffset
-        
-
-        this.messageBox[messageBoxImageContainerIndex].window = new this.Item(messageBoxWindowX,messageBoxWindowY,messageBoxWindowWidth,messageBoxWindowHeight,messageBoxImageContainerIndex)
-        this.messageBox[messageBoxImageContainerIndex].window.image = new createjs.Shape()
-        //outer blue rim
-        this.messageBox[messageBoxImageContainerIndex].window.image.graphics.setStrokeStyle(1).beginFill('blue').beginStroke('#FF00FF').rect(messageBoxWindowX,messageBoxWindowY,messageBoxWindowWidth,messageBoxWindowHeight)
-        this.messageBox[messageBoxImageContainerIndex].window.image.graphics.setStrokeStyle(1).beginFill('#C0C0C0').beginStroke('#FF00FF').rect(innerMessageBoxX,innerMessageBoxY,innerMessageBoxWidth,innerMessageBoxHeight)
-
-        this.messageBox[messageBoxImageContainerIndex].windowTitle = new this.Item (messageBoxWindowX+1,messageBoxWindowY+1, messageBoxWindowWidth,outerTopHeight-2,messageBoxImageContainerIndex)
-         this.addItemText(this.messageBox[messageBoxImageContainerIndex].windowTitle, '', '13px arial', '#000000')
-
-        this.messageBox[messageBoxImageContainerIndex].message = new this.Item (textX,innerMessageBoxY+15, innerMessageBoxWidth,25,messageBoxImageContainerIndex)
-        this.addItemText(this.messageBox[messageBoxImageContainerIndex].message, '', '13px arial', '#000000')
-
-   
-
-        
-        this.messageBox[messageBoxImageContainerIndex].okay =  new this.Item (messageBoxWindowX + 10,messageBoxWindowY+messageBoxWindowHeight-40, 50,25,messageBoxImageContainerIndex) 
-        this.itemAsRectangle( this.messageBox[messageBoxImageContainerIndex].okay, '#0000FF')
-        this.addItemText( this.messageBox[messageBoxImageContainerIndex].okay, 'Okay', '13px arial', '#000000')
-        this.messageBox[messageBoxImageContainerIndex].okay.image.onClick = self.events.onButtonClick
-        this.messageBox[messageBoxImageContainerIndex].okay.image.onClick = this.hideMessageBox
-
-       
-
-        
-        this.messageBox[messageBoxImageContainerIndex].cancel =  new this.Item (messageBoxWindowX + 100,messageBoxWindowY+messageBoxWindowHeight-40, 50,25,messageBoxImageContainerIndex) 
-        this.itemAsRectangle( this.messageBox[messageBoxImageContainerIndex].cancel, '#0000FF')
-        this.addItemText( this.messageBox[messageBoxImageContainerIndex].cancel, 'cancel', '13px arial', '#000000')
-        this.messageBox[messageBoxImageContainerIndex].cancel.image.onClick = this.hidemessageBox
-       
-
-         this.messageBox[messageBoxImageContainerIndex].closeWindow =  new this.Item (innerMessageBoxX + innerMessageBoxWidth*.9,messageBoxWindowY+1, innerMessageBoxWidth*.1,innerMessageBoxY-messageBoxWindowY-2,messageBoxImageContainerIndex) 
-        this.messageBox[messageBoxImageContainerIndex].closeWindow.image  = new createjs.Shape() 
-        this.messageBox[messageBoxImageContainerIndex].closeWindow.image.graphics.beginFill('#CD0000').rect(this.messageBox[messageBoxImageContainerIndex].closeWindow.position.x,this.messageBox[messageBoxImageContainerIndex].closeWindow.position.y, this.messageBox[messageBoxImageContainerIndex].closeWindow.size.x,this.messageBox[messageBoxImageContainerIndex].closeWindow.size.y)
-        this.messageBox[messageBoxImageContainerIndex].closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
-        this.messageBox[messageBoxImageContainerIndex].closeWindow.image.graphics.moveTo(this.messageBox[messageBoxImageContainerIndex].closeWindow.position.x+this.messageBox[messageBoxImageContainerIndex].closeWindow.size.x*.12,this.messageBox[messageBoxImageContainerIndex].closeWindow.position.y+this.messageBox[messageBoxImageContainerIndex].closeWindow.size.y*.12)
-        this.messageBox[messageBoxImageContainerIndex].closeWindow.image.graphics.lineTo(this.messageBox[messageBoxImageContainerIndex].closeWindow.position.x+this.messageBox[messageBoxImageContainerIndex].closeWindow.size.x*.88,this.messageBox[messageBoxImageContainerIndex].closeWindow.position.y+this.messageBox[messageBoxImageContainerIndex].closeWindow.size.y*.88)
-        this.messageBox[messageBoxImageContainerIndex].closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
-        this.messageBox[messageBoxImageContainerIndex].closeWindow.image.graphics.moveTo(this.messageBox[messageBoxImageContainerIndex].closeWindow.position.x+this.messageBox[messageBoxImageContainerIndex].closeWindow.size.x*.88,this.messageBox[messageBoxImageContainerIndex].closeWindow.position.y+this.messageBox[messageBoxImageContainerIndex].closeWindow.size.y*.12)
-        this.messageBox[messageBoxImageContainerIndex].closeWindow.image.graphics.lineTo(this.messageBox[messageBoxImageContainerIndex].closeWindow.position.x+this.messageBox[messageBoxImageContainerIndex].closeWindow.size.x*.12,this.messageBox[messageBoxImageContainerIndex].closeWindow.position.y+this.messageBox[messageBoxImageContainerIndex].closeWindow.size.y*.88)
-        this.messageBox[messageBoxImageContainerIndex].closeWindow.image.onClick = this.hideMessageBox
-        */
 }
 
 
-  this.images.setDefaultItems = function (){
-
-            var cardWidth = 46
-            var cardHeight = 62
-            var sideButtonWidth = 185
-            var sideButtonHeight = 16
-            var actionButtonWidth = 80
-            var actionButtonHeight = 25
-            var seatWidth = 90
-            var seatHeight = 33
-
-            //initial positions and sizes of graphics of the poker table
-            this.pot = new this.Item(290,138,110,24,2)
-
-            //side buttons
-            this.leftSideButtons[0].button = new this.Item(7.5,419,sideButtonWidth,sideButtonHeight,2)
-            this.leftSideButtons[1].button = new this.Item(7.5,439,sideButtonWidth,sideButtonHeight,2)
-            this.leftSideButtons[2].button = new this.Item(7.5,459,sideButtonWidth,sideButtonHeight,2)
-            this.rightSideButtons[0].button = new this.Item(497.5,419,sideButtonWidth,sideButtonHeight,2)
-            this.rightSideButtons[1].button = new this.Item(497.5,439,sideButtonWidth,sideButtonHeight,2)
-            this.rightSideButtons[2].button = new this.Item(497.5,459,sideButtonWidth,sideButtonHeight,2)
-
-            //seats
-           this.seats[0].seat = new this.Item(300,371,seatWidth,seatHeight,2)
-           this.seats[1].seat = new this.Item(170,371,seatWidth,seatHeight,2)
-           this.seats[2].seat = new this.Item(27,301,seatWidth,seatHeight,2)
-           this.seats[3].seat = new this.Item(27,153,seatWidth,seatHeight,2)
-           this.seats[4].seat = new this.Item(170,77,seatWidth,seatHeight,2)
-           this.seats[5].seat = new this.Item(300,77,seatWidth,seatHeight,2)
-           this.seats[6].seat = new this.Item(430,77,seatWidth,seatHeight,2)
-            this.seats[7].seat = new this.Item(573,153,seatWidth,seatHeight,2)
-             this.seats[8].seat = new this.Item(573,301,seatWidth,seatHeight,2)
-     this.seats[9].seat = new this.Item(430,371,seatWidth,seatHeight,2)
-
-     //empty seats and action
-     for(var i=0;i<this.seats.length;i=i+1){
-         
-         this.seats[i].openSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,2)
-
-         this.seats[i].action = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,2)
-         this.seats[i].countdown = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,2)
-         this.seats[i].winner = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,2)
-
-         //horizontal middle divider of the seat box
-         this.seats[i].horizontalDivider = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,1,2)
-         this.seats[i].playerName = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,2)
-         this.seats[i].status = new this.Item(this.seats[i].horizontalDivider.position.x, this.seats[i].horizontalDivider.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,2)
-
-     }
-     //corresponding hole cards
-        for (var i = 0; i < this.seats.length; i = i + 1){
-            this.seats[i].hiddenCard0 = new this.Item(this.seats[i].seat.position.x - 1, this.seats[i].seat.position.y - 48, cardWidth, cardHeight,1)
-            this.seats[i].hiddenCard1 = new this.Item(this.seats[i].seat.position.x + 45, this.seats[i].seat.position.y - 48, cardWidth, cardHeight,1)
-
-            this.seats[i].shownCard0 = new this.Item(this.seats[i].seat.position.x - 1, this.seats[i].seat.position.y - 48, cardWidth, cardHeight,1)
-            this.seats[i].shownCard1 = new this.Item(this.seats[i].seat.position.x + 45, this.seats[i].seat.position.y - 48, cardWidth, cardHeight,1)
-          }
-
-     // initial positions of player's chips entering pot
-      this.seats[0].bet = new this.Item(345,291,20,10,2)
-      this.seats[1].bet = new this.Item(215,291,20,10,2)
-      this.seats[2].bet = new this.Item(137,227,20,10,2)
-      this.seats[3].bet = new this.Item(137,153,20,10,2)
-      this.seats[4].bet = new this.Item(215,121,20,10,2)
-      this.seats[5].bet = new this.Item(345,121,20,10,2)
-      this.seats[6].b1et = new this.Item(475,121,20,10,2)
-      this.seats[7].bet = new this.Item(553,153,20,10,2)
-      this.seats[8].bet = new this.Item(553,227,20,10,2)
-      this.seats[9].bet = new this.Item(475,291,20,10,2)
-
-        // initial positions of action buttons
-      this.fold = new this.Item(205,419,actionButtonWidth,actionButtonHeight,2, ['act','fold'])
-      this.call = new this.Item(305,419,actionButtonWidth,actionButtonHeight,2, ['act','call'])
-      this.check = new this.Item(305,419,actionButtonWidth,actionButtonHeight,2, ['act','check'])
-      this.raise = new this.Item(405,419,actionButtonWidth,actionButtonHeight,2, ['act','raise'])
-      this.bet = new this.Item(405,419,actionButtonWidth,actionButtonHeight,2, ['act','bet'])
-
-      this.betSlider.horizontal = new this.Item (215,458,240,1,2)
-      this.betSlider.vertical = new this.Item(215,448,4,20,2)
-      this.betSlider.betSize = new this.Item(470,448,30,50,2)
-      
-        //set initial positions of community cards
-        this.community[0] = new this.Item(222,169,cardWidth, cardHeight,2)
-        this.community[1] = new this.Item(272,169,cardWidth, cardHeight,2)
-        this.community[2] = new this.Item(322,169,cardWidth, cardHeight,2)
-        this.community[3] = new this.Item(372,169,cardWidth, cardHeight,2)
-        this.community[4] = new this.Item(422,169,cardWidth, cardHeight,2)
-
-
-        //upper left side button
-        this.stand = new this.Item(0,0,actionButtonWidth,actionButtonHeight/2,2, ['stand'])
-
-        //not in hand action buttons
-        this.sitIn = new this.Item(205,419,actionButtonWidth,actionButtonHeight,2, ['sit_in'])
-        this.getChips = new this.Item(205,419,actionButtonWidth,actionButtonHeight,2, ['get_add_chips_info'])
-
-      }
-
-
-    this.images.setDefaultImages = function (){
-      
-        //pot ****no image yet****
-        this.addItemText(this.pot, '',"14px Arial", "#100D08")
-        //this.itemAsBitmap(this.pot, this.sources.pot)
-
-        //side buttons
-        for (var i = 0; i < 3; i = i + 1){
-            this.itemAsRectangle(this.leftSideButtons[i].button, "#000000")
-            this.addItemText(this.leftSideButtons[i].button, '',"12px Arial", "#FFFFFF")
-            this.itemAsRectangle(this.rightSideButtons[i].button, "#000000")
-            this.addItemText(this.rightSideButtons[i].button, '',"12px Arial", "#FFFFFF")
-         }
-         this.rightSideButtons[0].button.text.text = 'fold to any bet'
-         this.rightSideButtons[1].button.text.text = 'sit out next hand'
-         this.rightSideButtons[2].button.text.text = 'sit out next blind'
-         //seats 
-        for (var i = 0; i < this.seats.length; i = i + 1){
-            //filled seats
-            this.itemAsRectangle(this.seats[i].seat, "#000000")
-            this.seats[i].seat.image.graphics.beginStroke("#FFFFFF").moveTo(this.seats[i].horizontalDivider.position.x,this.seats[i].horizontalDivider.position.y).lineTo(this.seats[i].horizontalDivider.position.x+this.seats[i].horizontalDivider.size.x,this.seats[i].horizontalDivider.position.y)
-            //Empty Seats
-            this.itemAsRectangle(this.seats[i].openSeat, "#000000")
-            this.addItemText(this.seats[i].openSeat,'Open Seat','15px arial','#FFFFFF' )
-            //hole cards
-            this.itemAsBitmap(this.seats[i].hiddenCard0, this.sources.hiddenCard)
-            this.itemAsBitmap(this.seats[i].hiddenCard1, this.sources.hiddenCard)
-            this.itemAsRectangle(this.seats[i].shownCard0, "#00FFFF")
-            this.itemAsRectangle(this.seats[i].shownCard1, "#00FFFF")
-            this.addItemText(this.seats[i].shownCard0,'','12px Arial','#000000')
-            this.addItemText(this.seats[i].shownCard1,'','12px Arial','#000000')
-            //player name
-            this.addItemText(this.seats[i].playerName,'','11px arial','#FFFFFF' )
-            //player's status
-            this.addItemText(this.seats[i].status,'','11px arial','#FFFFFF' )
-            //bets
-            this.addItemText(this.seats[i].bet,'', "11px Arial", "#FFFFFF")
-            //action
-            this.addItemText(this.seats[i].action,'','11px Arial','#FFFFFF')
-            //countdown
-            this.addItemText(this.seats[i].countdown,'','11px Arial','#FFFFFF')
-            //winner
-             this.addItemText(this.seats[i].winner,'','11px Arial','#FFFFFF')
-             //horizontal divider
-            
-        }
-        
-        //action buttons
-        this.itemAsRectangle(this.fold,  'red')
-        this.addItemText(this.fold, 'fold','12px Arial','#000000')
-        this.itemAsRectangle(this.call, 'red')
-        this.addItemText(this.call, 'call','12px Arial','#000000')
-        this.itemAsRectangle(this.check, 'red')
-        this.addItemText(this.check, 'check','12px Arial','#000000')
-        this.itemAsRectangle(this.raise, 'red')
-        this.addItemText(this.raise, 'raise', '12px Arial','#000000')
-        this.itemAsRectangle(this.bet, 'red')
-        this.addItemText(this.bet, 'bet','12px Arial','#000000')
-
-        //bet slider
-        this.itemAsRectangle(this.betSlider.horizontal, 'black')
-        this.itemAsRectangle(this.betSlider.vertical, 'blue')
-        this.addItemText(this.betSlider.betSize, 0, '14px Arial', 'black')
-            
-        //community cards
-        for (var i = 0; i < 5; i = i + 1){
- this.itemAsRectangle(this.community[i], "#00FFFF")
- this.addItemText(this.community[i],'','12px Arial','black')
- }
- //upper left button
- this.itemAsRectangle(this.stand, 'black')
- this.addItemText(this.stand,'stand up','10px Arial','white')
-
- //options (when not to act)
- this.itemAsRectangle(this.sitIn,'black')
-this.addItemText(this.sitIn,'Deal Me In','10px Arial','white')
-
- this.itemAsRectangle(this.getChips,'black')
-this.addItemText(this.getChips,'Get Chips','10px Arial','white')
-
-    }
 
         this.setBackground = function(){    
         var asdf = new Image ()
@@ -884,7 +667,69 @@ this.addItemText(this.getChips,'Get Chips','10px Arial','white')
     
     this.displayShownCard = function (cardText,parentOfImageObject){
         
-        parentOfImageObject.text.text= cardText
+      //  parentOfImageObject.text.text= cardText
+      //sprite sheet order numerical first starting with 2, then the same order as bridge suits
+
+      /*
+       var suit = cardText.charAt(1)
+      var temp = cardText.charAt(0)
+      var rank;
+      if(isNaN(temp)){
+
+      if(temp == 't' || 'T'){
+           rank = 10
+      }
+      else if(temp == 'j' || 'J'){
+           rank = 11
+      }
+            else if(temp == 'q' || 'Q'){
+           rank = 12
+      }
+      else if(temp == 'k' || 'K'){
+           rank = 13
+      }
+        else if(temp == 'a' || 'A'){
+           rank = 14
+      }
+      }
+
+      var suitOrder
+      if(suitOrder == 'c' || 'C'){
+           suitOrder = 0
+      }
+     else if(suitOrder == 'd' || 'D'){
+           suitOrder = 1
+      }
+       else if(suitOrder == 'h' || 'H'){
+           suitOrder = 2
+      }
+             else if(suitOrder == 's' || 'S'){
+           suitOrder = 3
+      }
+
+      var cardFrameNumber = (rank-2)*4+suitOrder
+      var cardImage = this.images.fourColorSprite.getFrame(cardFrameNumber)
+
+      parentOfImageObject.bitmapAnimation = new createjs.BitmapAnimation(this.images.fourColorSprite)
+      parentOfImageObject.bitmapAnimation.x = parentOfImageObject.position.x
+      parentOfImageObject.bitmapAnimation.y = parentOfImageObject.position.y
+
+      parentOfImageObject.bitmapAnimation.gotoAndStop()
+
+      */
+      var cardImage = new Image()
+     if(this.gameState.displaySize == 'mobile') {
+         imageSource = 'img/fourColorDeck/resize/'+cardText+'.png'
+         }
+         else{
+              imageSource = 'img/fourColorDeck/'+cardText+'.png'
+         }
+
+  //    parentOfImageObject.image = new createjs.Bitmap(cardImage)
+  //    parentOfImageObject.image.x = parentOfImageObject.position.x
+  //    parentOfImageObject.image.y = parentOfImageObject.position.y
+
+      this.images.itemAsBitmap(parentOfImageObject,imageSource)
             this.displayChildren(parentOfImageObject)
     }
 
