@@ -924,6 +924,9 @@ this.images.pot.text.text = 'pot: '+potSize
         if(typeof chips == 'number' && chips>0){
         this.images.seats[seatNumber].status.text.text =  chips
         }
+        else if( chips == 0){
+             this.images.seats[seatNumber].status.text.text =  'adding chips'
+        }
 
            
         this.displayCorrectSeatMessage(seatNumber)
