@@ -280,71 +280,6 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
  }
   //=============END BET SLIDER===================
-/*
-  //===========START ADD CHIPS SLIDER ======================
-    this.events.addChipsSliderVerticalMouseDown = function(event){
-          
-
-          var unRounded
-         var addPercent
-         var rounded
-  
-      //set minX and maxX
-      var minX = self.images.cashier.horizontalSlider.position.x
-   var maxX = self.images.cashier.horizontalSlider.position.x +self.images.cashier.horizontalSlider.size.x
-    event.onMouseMove = function(event){
-         event.target.graphics.clear()
-
-    //if mouse outside bounds of slider, set addSize to min max
- if(event.stageX>maxX){
-        event.target.graphics.beginFill('red').drawRect(maxX,event.target.parentOfImageObject.position.y,event.target.parentOfImageObject.size.x,event.target.parentOfImageObject.size.y)
-        rounded = self.gameState.cashier.max}
-  else if(event.stageX<minX){
-      event.target.graphics.beginFill('red').drawRect(minX,event.target.parentOfImageObject.position.y,event.target.parentOfImageObject.size.x,event.target.parentOfImageObject.size.y)
-  rounded = self.gameState.cashier.min}
-
-    //if mouse is inside the dimensions of the horizontal slider, proportionally display add size
-        else if(event.stageX>=minX && event.stageX<=maxX) {
-     event.target.graphics.beginFill('red').drawRect(event.stageX,event.target.parentOfImageObject.position.y,event.target.parentOfImageObject.size.x,event.target.parentOfImageObject.size.y)
-   addPercent = (event.stageX-minX)/(maxX-minX)
-      unRounded =  addPercent*(self.gameState.cashier.max-self.gameState.cashier.min)+self.gameState.cashier.min
-      rounded =  Math.round(unRounded*1000)/1000
-  }
-
-    self.images.cashier.addChipsAmount.text.text = rounded
-       self.images.cashier.addChips.messages = ['add_chips',rounded]
-  self.stage.update()  
-  }
- 
-
- event.onMouseUp = function(event){
-     event.target.graphics.clear()
-     if(event.stageX>maxX){
-        event.target.graphics.beginFill('blue').drawRect(maxX,event.target.parentOfImageObject.position.y,event.target.parentOfImageObject.size.x,event.target.parentOfImageObject.size.y)
-        addChipsAmount = self.gameState.cashier.max}
-  else if(event.stageX<minX){
-      event.target.graphics.beginFill('blue').drawRect(minX,event.target.parentOfImageObject.position.y,event.target.parentOfImageObject.size.x,event.target.parentOfImageObject.size.y)
-  rounded = self.gameState.cashier.min}
-
-    //if mouse is inside the dimensions of the horizontal slider, proportionally display bet size
-        else if(event.stageX>=minX && event.stageX<=maxX) {
-     event.target.graphics.beginFill('blue').drawRect(event.stageX,event.target.parentOfImageObject.position.y,event.target.parentOfImageObject.size.x,event.target.parentOfImageObject.size.y)
-   addPercent = (event.stageX-minX)/(maxX-minX)
-      unRounded =  addPercent*(self.gameState.cashier.max-self.gameState.cashier.min)+self.gameState.cashier.min
-     rounded =    Math.round(unRounded*1000)/1000
-
-  }
-   self.images.cashier.addChipsAmount.text.text = rounded
-   self.images.cashier.addChips.messages =['add_chips',rounded]
-  self.stage.update()
-
- }
- 
-
-
-    }
-  //===========END ADD CHIPS SLIDER ======================
-  */
 
 //--------------END EVENTS----------------------------
 
@@ -1012,13 +947,33 @@ this.images.pot.text.text = 'pot: '+potSize
 
     this.displayBet =function(seatNumber, betSize){
         
-        var x = this.images.seats[seatNumber].bet.position.x
-        var y = this.images.seats[seatNumber].bet.position.y - 16
+        var initialX = this.images.seats[seatNumber].bet.position.x
+        var initialY = this.images.seats[seatNumber].bet.position.y - 16
+        var x = initialX
+        var y = initialY
         var chipIncrementY = 3
-
+        var totalChips = 0
 
         while(betSize>=1){
-        if(betSize>=50){
+             if(betSize>=1000){
+            
+            this.drawChip(1000,x,y, seatNumber)
+            y =y-chipIncrementY
+            betSize = betSize -1000
+        }
+              else    if(betSize>=500){
+            
+            this.drawChip(500,x,y, seatNumber)
+            y =y-chipIncrementY
+            betSize = betSize -500
+        }
+           else    if(betSize>=100){
+            
+            this.drawChip(100,x,y, seatNumber)
+            y =y-chipIncrementY
+            betSize = betSize -100
+        }
+        else if(betSize>=50){
             
             this.drawChip(50,x,y, seatNumber)
             y =y-chipIncrementY
@@ -1031,11 +986,6 @@ this.images.pot.text.text = 'pot: '+potSize
             betSize = betSize -25
 
         }
-      else  if(betSize >=10){
-             this.drawChip(10,x,y, seatNumber)
-            y =y-chipIncrementY
-            betSize = betSize -10
-        }
       else   if(betSize >=5){
              this.drawChip(5,x,y, seatNumber)
             y =y-chipIncrementY
@@ -1046,6 +996,13 @@ this.images.pot.text.text = 'pot: '+potSize
             y =y-chipIncrementY
             betSize = betSize -1
         }
+
+        if(totalChips>0 && totalChips%5==0){
+            x=x+24
+            y = initialY
+        }
+
+        totalChips = totalChips +1
         }
     }
 
@@ -1054,14 +1011,21 @@ this.images.pot.text.text = 'pot: '+potSize
        var diameter = 20
        
        //different chip values have different colors
-       if(chipValue == 50){
+        if(chipValue == 1000){
+           chipColor = '#CC6600'
+           chipValue = "1k"
+       }
+       else if(chipValue == 500){
+           chipColor = 'black'
+       }
+       else if(chipValue == 100){
+           chipColor = 'yellow'
+       }
+      else if(chipValue == 50){
            chipColor = 'red'
        }
        else if(chipValue == 25){
            chipColor = 'green'
-       }
-       else if(chipValue == 10){
-           chipColor = 'black'
        }
       else  if(chipValue == 5){
            chipColor = '#F52887'
@@ -1070,6 +1034,7 @@ this.images.pot.text.text = 'pot: '+potSize
            chipColor = 'blue'
        }
 
+       
         this.gameState.seats[seatNumber].bet.push(new this.images.Item(x,y,diameter,diameter,2))
          this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].image = new createjs.Shape()
  this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].image.graphics.beginStroke(chipColor).beginFill('gray').drawCircle(x+diameter/2, y+diameter/2, diameter/2)
@@ -1281,6 +1246,7 @@ for (var i = 0; i < openSeats.length; i = i + 1)
          this.hideChildren(this.images.rightSideButtons[1].button)
           this.hideChildren(this.images.rightSideButtons[2].button)
           this.hideChildren(this.images.addChips)
+          this.hideChildren(this.images.sitIn)
     }
 
     this.showBetSlider =function(minBet, maxBet, minIncrement){
@@ -1718,6 +1684,10 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
                  $('#maxRadio').prop('checked', false)
           $('#autoRebuyRadio').prop('checked', false)
           $('#otherAmountRadio').prop('checked', true)
+          if(typeof $("#otherAmount").val() == 'number' && $("#otherAmount").val()>=this.gameState.cashier.min){}
+          else{
+          $("#otherAmount").val(self.gameState.cashier.min)
+          }
         })
 
             $("#autoRebuy").focus(function() {
