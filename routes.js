@@ -353,7 +353,7 @@ module.exports = (function () {
       , table = Table.getTable(table_id)
       , username = req.user.username;
     if (table instanceof Table) {
-      var table_state = table.getCurrentRound().serialize(username)
+      var table_state = table.getCurrentHand().serialize(username)
         , users = table.room.getUsernames()
         , room_state = { users: users };
       res.render('table', {
@@ -373,10 +373,10 @@ module.exports = (function () {
   app.get('/table_state/:id', auth.ensureAuthenticated, function(req, res) {
     var table_id = req.params.id
       , table = Table.getTable(table_id)
-      , round_include = req.query.fields || 'all';
+      , hand_include = req.query.fields || 'all';
 
     if (table instanceof Table) {
-      table.getTableState(req.user, round_include, function(err, table_state) {
+      table.getTableState(req.user, hand_include, function(err, table_state) {
         if (err) {
           res.json({ error: err });
         }

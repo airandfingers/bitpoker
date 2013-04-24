@@ -31,17 +31,17 @@ module.exports = (function () {
     , flags: { type: Schema.Types.Mixed, default: function() { return {}; } }
       // the seat number this player is currently sitting in, if any
     , seat: Number
-      // which stages this player has acted in, in the current round
+      // which stages this player has acted in, in the current hand
     , has_acted: { type: Schema.Types.Mixed, default: function() { return {}; } }
-      // the number of chips thie player won this round, if any
+      // the number of chips thie player won this hand, if any
     , chips_won: { type: Number, default: 0 }
-      // a reference to the Round class this player is playing
-    , Round: Schema.Types.Mixed
+      // a reference to the game class which describes the game this player is playing
+    , game: Schema.Types.Mixed
       // a reference to the table on which this player is playing
     , table: Schema.Types.Mixed
       // whether this player is currently participating in a hand
     , in_hand: Boolean
-      // actions this player will perform once the current round is over
+      // actions this player will perform once the current hand is over
     , pending_actions: { type: Schema.Types.Mixed, default: function() { return {}; } }
       // whether this player is currently sitting out (not participating in future hands)
     , sitting_out: Boolean
@@ -74,9 +74,10 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.makeBet = function(amount) {
-    var rounded_amount = this.Round.roundNumChips(amount);
+    var game = this.game
+      , rounded_amount = game.roundNumChips(amount);
     if (rounded_amount !== amount) {
-      console.error('Invalid amount:', amount, this.Round.MIN_INCREMENT);
+      console.error('Invalid amount:', amount, game.MIN_INCREMENT);
       amount = rounded_amount;
     }
     if (this.chips < amount) {
@@ -96,9 +97,10 @@ module.exports = (function () {
 
   // only called when we've raised beyond another player's chipstack
   PlayerSchema.methods.getBet = function(amount) {
-    var rounded_amount = this.Round.roundNumChips(amount);
+    var game = this.game
+      , rounded_amount = game.roundNumChips(amount);
     if (rounded_amount !== amount) {
-      console.error('Invalid amount:', amount, this.Round.MIN_INCREMENT);
+      console.error('Invalid amount:', amount, game.MIN_INCREMENT);
       amount = rounded_amount;
     }
     this.chips += amount;
@@ -159,7 +161,7 @@ module.exports = (function () {
     return this.has_acted[stage] || false;
   };
 
-  PlayerSchema.methods.roundOver = function() {
+  PlayerSchema.methods.handOver = function() {
     var self = this
       , action_order = ['addChips', 'sitOut', 'vacateSeat']
       , complete_events = {
@@ -220,11 +222,12 @@ module.exports = (function () {
 
   static_properties.messages.sit = 'handleSit';
   PlayerSchema.methods.handleSit = function(seat_num) {
-    var error;
+    var error
+      , game = this.game;
     if (! _.isNumber(seat_num)) {
       error = 'sit message received with non-Number seat_num: ' + seat_num;
     }
-    else if (seat_num < 0 || seat_num >= this.Round.MAX_PLAYERS) {
+    else if (seat_num < 0 || seat_num >= game.MAX_PLAYERS) {
       error = 'sit message received with invalid seat_num: ' + seat_num;
     }
     else if (this.table.seats[seat_num] !== undefined) {
@@ -275,6 +278,7 @@ module.exports = (function () {
 
   PlayerSchema.methods.vacateSeat = function() {
     var self = this
+      , game = self.game
       , seat_num = self.seat;
     self.seat = undefined;
     // clear the sit-out timer, if any
@@ -299,7 +303,7 @@ module.exports = (function () {
           self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);
           return;
         }
-        var stack_in_maobucks = self.chips * self.Round.MAOBUCKS_PER_CHIP
+        var stack_in_maobucks = self.chips * game.MAOBUCKS_PER_CHIP
           , new_maobucks = user.maobucks + stack_in_maobucks;
         user.update({ $set: { maobucks: new_maobucks } }, function(save_err) {
           if (save_err) {
@@ -307,11 +311,11 @@ module.exports = (function () {
             return;
           }
           else {
-            if (self.chips > self.Round.MIN_CHIPS) {
+            if (self.chips > game.MIN_CHIPS) {
               self.min_buyin = self.chips;
               self.min_buyin_timeout = setTimeout(function() {
                 delete self.min_buyin;
-              }, self.Round.MIN_BUYIN_TIME_ENFORCED);
+              }, game.MIN_BUYIN_TIME_ENFORCED);
             }
             self.chips = 0;
             // emit the "stand" event
@@ -338,17 +342,18 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.sitOut = function() {
-    var self = this;
+    var self = this
+      , game = self.game;
     if (! self.sitting_out) {
       self.sitting_out = true;
       self.setFlag('post_blind', false);
       // set sit-out timer
-      console.log('setting sit_out_timer', self.Round.SIT_OUT_TIME_ALLOWED);
+      console.log('setting sit_out_timer', game.SIT_OUT_TIME_ALLOWED);
       self.full_table_check = setInterval(function() {
         if (self.table.isFull()) {
           self.vacateSeat();
         }
-      }, self.Round.SIT_OUT_TIME_ALLOWED);
+      }, game.SIT_OUT_TIME_ALLOWED);
       // emit the "sit_out" event
       self.emit('sit_out');
     }
@@ -373,17 +378,18 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.calculateAddChipsInfo = function(cb) {
-    var self = this;
+    var self = this
+      , game = self.game;
     self.socket.user.maobucks_inquire(function(err, maobucks) {
       if (err) {
         cb(err);
       }
       else {
-        var maobucks_per_chip = self.Round.MAOBUCKS_PER_CHIP
-          , balance_in_chips = self.Round.roundNumChips(maobucks / maobucks_per_chip)
+        var maobucks_per_chip = game.MAOBUCKS_PER_CHIP
+          , balance_in_chips = game.roundNumChips(maobucks / maobucks_per_chip)
           , stack = self.chips
-          , num_to_min = self.Round.MIN_CHIPS - stack
-          , num_to_max = self.Round.MAX_CHIPS - stack
+          , num_to_min = game.MIN_CHIPS - stack
+          , num_to_max = game.MAX_CHIPS - stack
           , add_chips_info = {
               balance: maobucks
             , balance_in_chips: balance_in_chips
@@ -415,6 +421,7 @@ module.exports = (function () {
   static_properties.messages.add_chips = 'handleAddChips';
   PlayerSchema.methods.handleAddChips = function(num_chips) {
     var self = this
+      , game = self.game
       , error
       , rounded_num_chips
       , add_chips_info = self.add_chips_info;
@@ -423,9 +430,9 @@ module.exports = (function () {
       error = 'add_chips message received with non-Number num_chips: ' + num_chips;
     }
     else {
-      rounded_num_chips = self.Round.roundNumChips(num_chips);
+      rounded_num_chips = game.roundNumChips(num_chips);
       if (rounded_num_chips !== num_chips) {
-        console.error('add_chips message sent with unrounded num_chips:', num_chips, self.Round.MIN_INCREMENT);
+        console.error('add_chips message sent with unrounded num_chips:', num_chips, game.MIN_INCREMENT);
         num_chips = rounded_num_chips;
       }
     }
@@ -446,8 +453,9 @@ module.exports = (function () {
 
   PlayerSchema.methods.addChips = function(num_chips) {
     var self = this
+      , game = self.game
       , stack = self.chips
-      , num_to_max = self.Round.MAX_CHIPS - stack // current max buyin
+      , num_to_max = game.MAX_CHIPS - stack // current max buyin
       , sent_min = self.add_chips_info.min // min sent in last add_chips_info message
       , sent_balance_in_chips = self.add_chips_info.balance_in_chips // balance sent in last add_chips_info message
       , error;
@@ -474,7 +482,7 @@ module.exports = (function () {
         self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);
         return;
       }
-      var num_maobucks = num_chips * self.Round.MAOBUCKS_PER_CHIP
+      var num_maobucks = num_chips * game.MAOBUCKS_PER_CHIP
         , new_maobucks = user.maobucks - num_maobucks;
       if (new_maobucks < 0) {
         self.sendMessage('error', 'player no longer has enough maobucks to add ' + num_chips + ' chips!');
@@ -556,7 +564,7 @@ module.exports = (function () {
     if (this.in_hand) {
       this.pending_actions[method_name] = args_array;
       // notify user that the requested action has been delayed
-      var message = 'You will ' + action_to_english[method_name] + ' as soon as the round is over.';
+      var message = 'You will ' + action_to_english[method_name] + ' as soon as the hand is over.';
       this.sendMessage('error', message);
     }
     else {
