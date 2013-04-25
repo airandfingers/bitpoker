@@ -8,8 +8,8 @@
         this.stage.eventsEnabled = true
         this.stage.enableMouseOver()
             this.events = {}
-       // this.canvas.addEventListener("mouseup", this.filler, false)
-    // self.stage.removeChild(self.stage.getObjectUnderPoint(event.stageX,event.stageY))
+
+           
   
         this.gameState = {}
         this.gameState.displaySize = 'normal'
@@ -611,6 +611,12 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
         this.cashier.closeWindow.image.graphics.lineTo(this.cashier.closeWindow.position.x+this.cashier.closeWindow.size.x*.12,this.cashier.closeWindow.position.y+this.cashier.closeWindow.size.y*.88)
         this.cashier.closeWindow.image.onClick = self.hideCashier
 
+
+   // =============================================SOUNDS========================================
+
+    createjs.Sound.registerSound("sounds/deal_card.swf", "dealCard")
+            createjs.Sound.registerSound("sounds/player_checks.swf", "check")
+
 }
 
 
@@ -1108,13 +1114,15 @@ this.displayBet(potSize)
 
             
             for(var i =0;i<playerArray;i++){
-                
+
+                 createjs.Sound.play("dealCard");
                 dealSingleCard(playerArray[i],0)
                 
             }
 
             for(var i =0;i<playerArray;i++){
-                
+
+                 createjs.Sound.play("dealCard");
                 dealSingleCard(playerArray[i],1)
                 
             }
@@ -1970,6 +1978,7 @@ this.restoreActiveContainers=function(activeContainerArray){
             break;
 
             case 'check':
+             createjs.Sound.play("check")
             break;
 
             case'bet':
