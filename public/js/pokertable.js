@@ -1451,6 +1451,15 @@ self.displayCorrectSeatMessage(seatNumber)
 
         self.gameState.cashier.visible = false
 
+      
+                 $('#maxRadio').prop('checked', false)
+          $('#autoRebuyRadio').prop('checked', false)
+          $('#otherAmountRadio').prop('checked', false)
+          
+          $("#otherAmount").val(null)
+           $('#autoRebuyAmount').val(null)
+
+
     }
 
     this.hideMessageBox = function(){
@@ -1630,13 +1639,17 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
     htmlcashier.style.top = this.images.cashier.addChipsTextBox.position.y + 'px'
     
     $("#otherAmount").focus(function() {
-        
                  $('#maxRadio').prop('checked', false)
           $('#autoRebuyRadio').prop('checked', false)
           $('#otherAmountRadio').prop('checked', true)
-          if(typeof $("#otherAmount").val() == 'number' && $("#otherAmount").val()>=this.gameState.cashier.min){}
+          if(typeof parseFloat($("#otherAmount").val()) == 'number' &&  parseFloat($("#otherAmount").val()) >self.gameState.cashier.min){}
           else{
           $("#otherAmount").val(self.gameState.cashier.min)
+
+          //select text on clicking
+           $("#otherAmount").one('mouseup', function(event){
+        event.preventDefault();
+       }).select()
           }
         })
 
