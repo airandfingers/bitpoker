@@ -52,7 +52,8 @@
             }
 
             this.images.background = {}
-            this.images.pot = {text:{}}
+            this.images.potSize = {text:{}}
+            this.images.potChips = []
             this.images.fold = {text:{},messages:[]}
             this.images.call = {text:{},messages:[]}
             this.images.bet = {text:{},messages:[]}
@@ -306,6 +307,7 @@ this.images.setDefaults = function(){
                 cardWidth = 48
                 cardHeight = 76
             }
+
             var sideButtonWidth = 185
             var sideButtonHeight = 16
             var actionButtonWidth = 80
@@ -327,11 +329,16 @@ this.images.setDefaults = function(){
 
             var distanceBetweenSeatsX
 
+            var communityY =270
+            var distanceBetweenCommunityCards = 2
+
+            var potHeight = 24
+            var potWidth = 100
 
             //---------pot-------------------
-            this.pot = new this.Item(290,138,110,24,2)
-             this.addItemText(this.pot, '',"14px Arial", "#100D08")
-           //this.itemAsBitmap(this.pot, this.sources.pot)
+            this.potSize = new this.Item(canvasWidth/2-potWidth/2,communityY+cardHeight+potHeight,potWidth,potHeight,2)
+             this.addItemText(this.potSize, '',"14px Arial", "#100D08")
+           //this.itemAsBitmap(this.potSize, this.sources.potSize)
 
            //--------side buttons---------------------
             this.leftSideButtons[0].button = new this.Item(7.5,419,sideButtonWidth,sideButtonHeight,2)
@@ -472,11 +479,11 @@ this.images.setDefaults = function(){
         this.addItemText(this.betSlider.betSize, 0, '14px Arial', 'black')
 
   //------------------------------community cards---------------------------
-        this.community[0] = new this.Item(222,169,cardWidth, cardHeight,2)
-        this.community[1] = new this.Item(272,169,cardWidth, cardHeight,2)
-        this.community[2] = new this.Item(322,169,cardWidth, cardHeight,2)
-        this.community[3] = new this.Item(372,169,cardWidth, cardHeight,2)
-        this.community[4] = new this.Item(422,169,cardWidth, cardHeight,2)
+        this.community[0] = new this.Item(canvasWidth/2-cardWidth/2-cardWidth*2-distanceBetweenCommunityCards*2,communityY,cardWidth, cardHeight,2)
+        this.community[1] = new this.Item(canvasWidth/2-cardWidth/2-cardWidth-distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,2)
+        this.community[2] = new this.Item(canvasWidth/2-cardWidth/2,communityY,cardWidth, cardHeight,2)
+        this.community[3] = new this.Item(canvasWidth/2+cardWidth/2+distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,2)
+        this.community[4] = new this.Item(canvasWidth/2+cardWidth/2+cardWidth+2*distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,2)
 
          for (var i = 0; i < 5; i = i + 1){
  this.itemAsRectangle(this.community[i], "#00FFFF")
@@ -757,9 +764,9 @@ this.hideChildren(this.images.seats[seatNumber].shownCard0)
 
     }
 
-    this.displayPot = function (potSize){
-this.images.pot.text.text = 'pot: '+potSize
-   this.displayChildren(this.images.pot)
+    this.updatePotSize = function (potSize){
+this.images.potSize.text.text = 'pot: '+potSize
+   this.displayChildren(this.images.potSize)
     }
 
     this.playerSits = function(seatNumber, playerName, chips){
@@ -793,10 +800,19 @@ this.images.pot.text.text = 'pot: '+potSize
 
     }
 
-    this.displayBet =function(seatNumber, betSize){
-        
+    //if no seat number, will display chips in Pot
+    this.displayBet =function(betSize,seatNumber){
+        var initialX
+        var initialY
+        if(seatNumber){
         var initialX = this.images.seats[seatNumber].bet.position.x
         var initialY = this.images.seats[seatNumber].bet.position.y - 16
+        }
+        else{
+            initialX = this.images.community[2].position.x
+            initialY = this.images.community[2].position.y
+            seatNumber = false
+        }
         var x = initialX
         var y = initialY
         var chipIncrementY = 3
@@ -854,6 +870,7 @@ this.images.pot.text.text = 'pot: '+potSize
         }
     }
 
+    //if no seatNumber, will display chips in pot
     this.drawChip =function(chipValue, x, y, seatNumber){
 
        var diameter = 20
@@ -882,8 +899,9 @@ this.images.pot.text.text = 'pot: '+potSize
            chipColor = 'blue'
        }
 
-       
-        this.gameState.seats[seatNumber].bet.push(new this.images.Item(x,y,diameter,diameter,2))
+       if(seatNumber){
+
+       this.gameState.seats[seatNumber].bet.push(new this.images.Item(x,y,diameter,diameter,2))
          this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].image = new createjs.Shape()
  this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].image.graphics.beginStroke(chipColor).beginFill('gray').drawCircle(x+diameter/2, y+diameter/2, diameter/2)
 
@@ -901,9 +919,91 @@ for(var i   = 0; i<this.gameState.seats[seatNumber].bet.length-1;i++){
 
 }
  this.displayChildren(this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1])
+ }
 
+ //display chipsin pot if no seat given
+ else{
+
+
+       this.images.potChips.push(new this.images.Item(x,y,diameter,diameter,2))
+         this.images.potChips[this.images.potChips.length-1].image = new createjs.Shape()
+this.images.potChips[this.images.potChips.length-1].image.graphics.beginStroke(chipColor).beginFill('gray').drawCircle(x+diameter/2, y+diameter/2, diameter/2)
+
+this.images.potChips[this.images.potChips.length-1].text =  new createjs.Text(chipValue, '8px Arial', 'white')
+this.images.potChips[this.images.potChips.length-1].text.x = this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].position.x + this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].size.x/2
+this.images.potChips[this.images.potChips.length-1].y = this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].position.y+6
+this.images.potChips[this.images.potChips.length-1].text.baseline = 'top'
+this.images.potChips[this.images.potChips.length-1].text.textAlign = 'center'
+this.images.potChips[this.images.potChips.length-1].text.maxWidth = this.images.potChips[this.images.potChips.length-1].size.x*.8
+
+//remove previous text instances
+for(var i   = 0; i<this.images.potChips.length-1;i++){
+    this.hideText(this.images.potChips[i])
+   this.images.potChips[i].text = null
+
+}
+ this.displayChildren(this.images.potChips.length-1])
+ }
 
     }
+
+    //move bets into center of pot
+     this.steetEnds=function(potSize){
+
+         interval = 50
+
+           var centerPotX = this.images.community[1].position.x
+            var centerPotY = this.images.community[0].position.y - 5
+            var seatNumberArray = []
+            var distancePerTickArrayX = []
+            var distancePerTickArrayY = []
+
+            var fractionDistancePerTick = .05
+            var totalTicks = 1/fractionDistancePerTick
+            var tick = 0
+
+            for(var i =0;i<this.gameState.seats.length;i++){
+                
+                if(this.gameState.seats[i].chips && typeof this.gameState.seats[i].chips == 'array' && this.gameState.seats[i].chips.length>0){
+                    
+                    seatNumberArray.push(i)
+                    var totalDistance = Math.sqrt(Math.pow(centerPotX-this.gameState.seats[i].chips[0].image.position.x,2)+Math.pow(centerPotY-this.gameState.seats[i].chips[0].image.position.y,2))
+                    var slope = (centerPotY-this.gameState.seats[i].chips[0].image.position.y) /(centerPotX-this.gameState.seats[i].chips[0].image.position.x)
+                    var distancePerTick = fractionDistancePerTick*totalDistance
+                    distancePerTickArrayX =  Math.sqrt(distancePerTick*distancePerTick/(slope*slope+1))
+                    distancePerTickArrayY = distancePerTickArrayX*slope
+                }
+
+            }
+
+
+        var chipAnimation =   setInterval(function() {
+
+            var deltaX
+            var deltaY
+          
+            for(var i =0;i<seatNumberArray.length;i++){
+                
+                 for(var n =0;n<this.gameState.seats[i].chips.length;n++){
+
+                     this.gameState.seats[i].chips[n].image.x= this.gameState.seats[i].chips[n].image.x+distancePerTickArrayX[i]
+                      this.gameState.seats[i].chips[n].image.y = this.gameState.seats[i].chips[n].image.y+distancePerTickArrayY[i]
+                 }
+                
+            }
+            
+            tick++
+            if(tick == totalTicks){clearInterval(chipAnimation)}
+
+            
+            
+
+}, interval)
+     
+this.displayBet(potSize)
+
+ }
+
 
      this.playerStands = function(seatNumber){
           this.gameState.seats[seatNumber].displayMessageType = 'openSeat'
@@ -1053,6 +1153,8 @@ this.hideChildren(this.images.betSlider)
 
  }
 
+
+
  this.roundEnds = function(){
      
      //hide community cards
@@ -1072,7 +1174,7 @@ this.hideChildren(this.images.betSlider)
      //remove all player's bets
         self.removeAllBets()
         //hide the pot
-        self.hideChildren(self.images.pot)
+        self.hideChildren(self.images.potSize)
 
  }
 
@@ -1666,12 +1768,12 @@ this.restoreActiveContainers=function(activeContainerArray){
         //comunity cards
         this.displayAllCommunity(table_state.community)
         //pot
-        if(table_state.pot&&table_state.pot>0){this.displayPot(table_state.pot)}
+        if(table_state.pot&&table_state.pot>0){this.updatePotSize(table_state.pot)}
 
          //current bets
          for (var i=0;i<table_state.players.length;i=i+1) { 
          this.playerPutsChipsInPot(table_state.players[i].seat,table_state.players[i].current_bet, table_state.players[i].chips)
-         this.displayBet(table_state.players[i].seat,table_state.players[i].current_bet)
+         this.displayBet(table_state.players[i].current_bet,table_state.players[i].seat)
          }
 
           //empty seats
@@ -1731,7 +1833,7 @@ this.restoreActiveContainers=function(activeContainerArray){
 
         self.playerActs(player.seat, action, 2)
     //display updated potsize if necessary
-        if(pot){self.displayPot(pot)}
+        if(pot){self.updatePotSize(pot)}
 
         switch(action){
         case 'fold':
@@ -1746,22 +1848,22 @@ this.restoreActiveContainers=function(activeContainerArray){
             break;
 
             case'bet':
-            self.displayBet(player.seat,player.current_bet)
+            self.displayBet(player.current_bet,player.seat)
             self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
             break;
 
             case'call':
-            self.displayBet(player.seat,player.current_bet)
+            self.displayBet(player.current_bet,player.seat)
             self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
              break;
 
             case 'raise':
-            self.displayBet(player.seat,player.current_bet)
+            self.displayBet(player.current_bet,player.seat)
             self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
             break;
 
             case'post_blind':
-            self.displayBet(player.seat,player.current_bet)
+            self.displayBet(player.current_bet,player.seat)
             self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
             break;
 
