@@ -24,6 +24,17 @@
         this.gameState.cashier = {}
         this.gameState.messageBox = {}
         this.gameState.messageBox.activeContainers = []
+        this.gameState.containerImageIndexes = {
+            
+            cashier:5,
+            background:0,
+            holeCard:1,
+            cardAnimation:2,
+            chips:2,
+            button:3,
+            initialMessageBox:7
+        }
+
         this.images = {}
         this.images.containers = []
         for (var i = 0;i<16;i++){
@@ -117,6 +128,7 @@ this.positionImage=function(){
     item.image = new createjs.Bitmap(tempImage)
     item.positionImage()
     item.image.parentOfImageObject = item
+    item.bitmapSource = imageSource
             }
     
             //actually a rectangle with rounded edges
@@ -336,17 +348,17 @@ this.images.setDefaults = function(){
             var potWidth = 100
 
             //---------pot-------------------
-            this.potSize = new this.Item(canvasWidth/2-potWidth/2,communityY+cardHeight+potHeight,potWidth,potHeight,2)
+            this.potSize = new this.Item(canvasWidth/2-potWidth/2,communityY+cardHeight+potHeight,potWidth,potHeight,self.gameState.containerImageIndexes.chips)
              this.addItemText(this.potSize, '',"14px Arial", "#100D08")
            //this.itemAsBitmap(this.potSize, this.sources.potSize)
 
            //--------side buttons---------------------
-            this.leftSideButtons[0].button = new this.Item(7.5,419,sideButtonWidth,sideButtonHeight,2)
-            this.leftSideButtons[1].button = new this.Item(7.5,439,sideButtonWidth,sideButtonHeight,2)
-            this.leftSideButtons[2].button = new this.Item(7.5,459,sideButtonWidth,sideButtonHeight,2)
-            this.rightSideButtons[0].button = new this.Item(497.5,419,sideButtonWidth,sideButtonHeight,2)
-            this.rightSideButtons[1].button = new this.Item(497.5,439,sideButtonWidth,sideButtonHeight,2)
-            this.rightSideButtons[2].button = new this.Item(497.5,459,sideButtonWidth,sideButtonHeight,2)
+            this.leftSideButtons[0].button = new this.Item(7.5,419,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button)
+            this.leftSideButtons[1].button = new this.Item(7.5,439,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button)
+            this.leftSideButtons[2].button = new this.Item(7.5,459,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button)
+            this.rightSideButtons[0].button = new this.Item(497.5,419,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button)
+            this.rightSideButtons[1].button = new this.Item(497.5,439,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button)
+            this.rightSideButtons[2].button = new this.Item(497.5,459,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button)
 
         for (var i = 0; i < 3; i = i + 1){
             this.itemAsRectangle(this.leftSideButtons[i].button, "#000000")
@@ -359,32 +371,32 @@ this.images.setDefaults = function(){
          this.rightSideButtons[2].button.text.text = 'sit out next blind'
 
            //----------------------seats-------------------------------
-           this.seats[0].seat = new this.Item(thirdColumnX,fourthRowY,seatWidth,seatHeight,2)
-           this.seats[1].seat = new this.Item(secondColumnX,fourthRowY,seatWidth,seatHeight,2)
-           this.seats[2].seat = new this.Item(firstColumnX,thirdRowY,seatWidth,seatHeight,2)
-           this.seats[3].seat = new this.Item(firstColumnX,secondRowY,seatWidth,seatHeight,2)
-           this.seats[4].seat = new this.Item(secondColumnX,firstRowY,seatWidth,seatHeight,2)
-           this.seats[5].seat = new this.Item(thirdColumnX,firstRowY,seatWidth,seatHeight,2)
-           this.seats[6].seat = new this.Item(fourthColumnX,firstRowY,seatWidth,seatHeight,2)
-            this.seats[7].seat = new this.Item(fifthColumnX,secondRowY,seatWidth,seatHeight,2)
-             this.seats[8].seat = new this.Item(fifthColumnX,thirdRowY,seatWidth,seatHeight,2)
-     this.seats[9].seat = new this.Item(fourthColumnX,fourthRowY,seatWidth,seatHeight,2)
+           this.seats[0].seat = new this.Item(thirdColumnX,fourthRowY,seatWidth,seatHeight,self.gameState.containerImageIndexes.button)
+           this.seats[1].seat = new this.Item(secondColumnX,fourthRowY,seatWidth,seatHeight,self.gameState.containerImageIndexes.button)
+           this.seats[2].seat = new this.Item(firstColumnX,thirdRowY,seatWidth,seatHeight,self.gameState.containerImageIndexes.button)
+           this.seats[3].seat = new this.Item(firstColumnX,secondRowY,seatWidth,seatHeight,self.gameState.containerImageIndexes.button)
+           this.seats[4].seat = new this.Item(secondColumnX,firstRowY,seatWidth,seatHeight,self.gameState.containerImageIndexes.button)
+           this.seats[5].seat = new this.Item(thirdColumnX,firstRowY,seatWidth,seatHeight,self.gameState.containerImageIndexes.button)
+           this.seats[6].seat = new this.Item(fourthColumnX,firstRowY,seatWidth,seatHeight,self.gameState.containerImageIndexes.button)
+            this.seats[7].seat = new this.Item(fifthColumnX,secondRowY,seatWidth,seatHeight,self.gameState.containerImageIndexes.button)
+             this.seats[8].seat = new this.Item(fifthColumnX,thirdRowY,seatWidth,seatHeight,self.gameState.containerImageIndexes.button)
+     this.seats[9].seat = new this.Item(fourthColumnX,fourthRowY,seatWidth,seatHeight,self.gameState.containerImageIndexes.button)
 
      //--------------------empty seats and text-----------------
      for(var i=0;i<this.seats.length;i=i+1){
          
-         this.seats[i].openSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,2)
+         this.seats[i].openSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,self.gameState.containerImageIndexes.button)
 
-          this.seats[i].disabledSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,2)
+          this.seats[i].disabledSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,self.gameState.containerImageIndexes.button)
 
 
-         this.seats[i].action = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,2)
-         this.seats[i].countdown = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,2)
-         this.seats[i].winner = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,2)
+         this.seats[i].action = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,self.gameState.containerImageIndexes.button)
+         this.seats[i].countdown = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,self.gameState.containerImageIndexes.button)
+         this.seats[i].winner = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,self.gameState.containerImageIndexes.button)
 
-         this.seats[i].horizontalDivider = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,1,2)
-         this.seats[i].playerName = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,2)
-         this.seats[i].status = new this.Item(this.seats[i].horizontalDivider.position.x, this.seats[i].horizontalDivider.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,2)
+         this.seats[i].horizontalDivider = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,1,self.gameState.containerImageIndexes.button)
+         this.seats[i].playerName = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,self.gameState.containerImageIndexes.button)
+         this.seats[i].status = new this.Item(this.seats[i].horizontalDivider.position.x, this.seats[i].horizontalDivider.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,self.gameState.containerImageIndexes.button)
 
      }
      //------------------hole cards-----------------------------
@@ -437,26 +449,26 @@ this.images.setDefaults = function(){
         }
 
              //---------player's bets-----------------
-      this.seats[0].bet = new this.Item(345,291,20,10,2)
-      this.seats[1].bet = new this.Item(215,291,20,10,2)
-      this.seats[2].bet = new this.Item(137,227,20,10,2)
-      this.seats[3].bet = new this.Item(137,153,20,10,2)
-      this.seats[4].bet = new this.Item(215,121,20,10,2)
-      this.seats[5].bet = new this.Item(345,121,20,10,2)
-      this.seats[6].bet = new this.Item(475,121,20,10,2)
-      this.seats[7].bet = new this.Item(553,153,20,10,2)
-      this.seats[8].bet = new this.Item(553,227,20,10,2)
-      this.seats[9].bet = new this.Item(475,291,20,10,2)
+      this.seats[0].bet = new this.Item(345,291,20,10,self.gameState.containerImageIndexes.chips)
+      this.seats[1].bet = new this.Item(215,291,20,10,self.gameState.containerImageIndexes.chips)
+      this.seats[2].bet = new this.Item(137,227,20,10,self.gameState.containerImageIndexes.chips)
+      this.seats[3].bet = new this.Item(137,153,20,10,self.gameState.containerImageIndexes.chips)
+      this.seats[4].bet = new this.Item(215,121,20,10,self.gameState.containerImageIndexes.chips)
+      this.seats[5].bet = new this.Item(345,121,20,10,self.gameState.containerImageIndexes.chips)
+      this.seats[6].bet = new this.Item(475,121,20,10,self.gameState.containerImageIndexes.chips)
+      this.seats[7].bet = new this.Item(553,153,20,10,self.gameState.containerImageIndexes.chips)
+      this.seats[8].bet = new this.Item(553,227,20,10,self.gameState.containerImageIndexes.chips)
+      this.seats[9].bet = new this.Item(475,291,20,10,self.gameState.containerImageIndexes.chips)
 
       for(var i = 0; i < this.seats.length; i = i + 1){
        this.addItemText(this.seats[i].bet,'', "11px Arial", "#FFFFFF")}
 
          //---------------action buttons------------------
-      this.fold = new this.Item(205,419,actionButtonWidth,actionButtonHeight,2, ['act','fold'])
-      this.call = new this.Item(305,419,actionButtonWidth,actionButtonHeight,2, ['act','call'])
-      this.check = new this.Item(305,419,actionButtonWidth,actionButtonHeight,2, ['act','check'])
-      this.raise = new this.Item(405,419,actionButtonWidth,actionButtonHeight,2, ['act','raise'])
-      this.bet = new this.Item(405,419,actionButtonWidth,actionButtonHeight,2, ['act','bet'])
+      this.fold = new this.Item(205,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','fold'])
+      this.call = new this.Item(305,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','call'])
+      this.check = new this.Item(305,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','check'])
+      this.raise = new this.Item(405,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','raise'])
+      this.bet = new this.Item(405,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','bet'])
 
         this.itemAsRectangle(this.fold,  'red')
         this.addItemText(this.fold, 'fold','12px Arial','#000000')
@@ -470,20 +482,20 @@ this.images.setDefaults = function(){
         this.addItemText(this.bet, 'bet','12px Arial','#000000')
 
         //-----------------bet slider-----------------------------
-              this.betSlider.horizontal = new this.Item (215,458,240,1,2)
-      this.betSlider.vertical = new this.Item(215,448,4,20,2)
-      this.betSlider.betSize = new this.Item(470,448,30,50,2)
+              this.betSlider.horizontal = new this.Item (215,458,240,1,self.gameState.containerImageIndexes.button)
+      this.betSlider.vertical = new this.Item(215,448,4,20,self.gameState.containerImageIndexes.button)
+      this.betSlider.betSize = new this.Item(470,448,30,50,self.gameState.containerImageIndexes.button)
 
         this.itemAsRectangle(this.betSlider.horizontal, 'black')
         this.itemAsRectangle(this.betSlider.vertical, 'blue')
         this.addItemText(this.betSlider.betSize, 0, '14px Arial', 'black')
 
   //------------------------------community cards---------------------------
-        this.community[0] = new this.Item(canvasWidth/2-cardWidth/2-cardWidth*2-distanceBetweenCommunityCards*2,communityY,cardWidth, cardHeight,2)
-        this.community[1] = new this.Item(canvasWidth/2-cardWidth/2-cardWidth-distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,2)
-        this.community[2] = new this.Item(canvasWidth/2-cardWidth/2,communityY,cardWidth, cardHeight,2)
-        this.community[3] = new this.Item(canvasWidth/2+cardWidth/2+distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,2)
-        this.community[4] = new this.Item(canvasWidth/2+cardWidth/2+cardWidth+2*distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,2)
+        this.community[0] = new this.Item(canvasWidth/2-cardWidth/2-cardWidth*2-distanceBetweenCommunityCards*2,communityY,cardWidth, cardHeight,self.gameState.containerImageIndexes.button)
+        this.community[1] = new this.Item(canvasWidth/2-cardWidth/2-cardWidth-distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,self.gameState.containerImageIndexes.button)
+        this.community[2] = new this.Item(canvasWidth/2-cardWidth/2,communityY,cardWidth, cardHeight,self.gameState.containerImageIndexes.button)
+        this.community[3] = new this.Item(canvasWidth/2+cardWidth/2+distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,self.gameState.containerImageIndexes.button)
+        this.community[4] = new this.Item(canvasWidth/2+cardWidth/2+cardWidth+2*distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,self.gameState.containerImageIndexes.button)
 
          for (var i = 0; i < 5; i = i + 1){
  this.itemAsRectangle(this.community[i], "#00FFFF")
@@ -492,18 +504,19 @@ this.images.setDefaults = function(){
 
 
         //--------------upper left side button---------------------
-        this.stand = new this.Item(0,0,actionButtonWidth,actionButtonHeight/2,2, ['stand'])
+        this.stand = new this.Item(0,0,actionButtonWidth,actionButtonHeight/2,self.gameState.containerImageIndexes.button, ['stand'])
          this.itemAsRectangle(this.stand, 'black')
  this.addItemText(this.stand,'stand up','10px Arial','white')
 
  //upper right side Buttons
- this.addChips = new this.Item(canvasWidth-actionButtonWidth, 0, actionButtonWidth, actionButtonHeight/2, 2, ['get_add_chips_info'])
+
+ this.addChips = new this.Item(canvasWidth-actionButtonWidth, 0, actionButtonWidth, actionButtonHeight/2, self.gameState.containerImageIndexes.button, ['get_add_chips_info'])
  this.itemAsRectangle(this.addChips, 'black')
  this.addItemText(this.addChips, 'Get Chips', '10px Arial', 'white')
 
         //----------------not in hand action buttons------------------
-        this.sitIn = new this.Item(205,419,actionButtonWidth,actionButtonHeight,2, ['sit_in'])
-        this.getChips = new this.Item(205,419,actionButtonWidth,actionButtonHeight,2, ['get_add_chips_info'])
+        this.sitIn = new this.Item(205,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['sit_in'])
+        this.getChips = new this.Item(205,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['get_add_chips_info'])
 
          this.itemAsRectangle(this.sitIn,'black')
 this.addItemText(this.sitIn,'Deal Me In','10px Arial','white')
@@ -524,7 +537,7 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
 
 //======================CASHIER=======================================
 
- var cashierImageContainerIndex = 4
+ var cashierImageContainerIndex = self.gameState.containerImageIndexes.cashier
 
 
         var cashierWindowWidth = 265
@@ -577,17 +590,17 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
 // location of html textboxes for adding chips
      this.cashier.addChipsTextBox = new this.Item (textX,this.cashier.accountBalance.position.y +25, innerCashierWidth,25,cashierImageContainerIndex)
 
-      this.cashier.addChips =  new this.Item (cashierWindowX + 10,cashierWindowY+cashierWindowHeight-40, 50,25,4) 
+      this.cashier.addChips =  new this.Item (cashierWindowX + 10,cashierWindowY+cashierWindowHeight-40, 50,25,cashierImageContainerIndex) 
         this.itemAsRectangle( this.cashier.addChips, '#0000FF')
         this.addItemText( this.cashier.addChips, 'add chips', '13px arial', '#000000')
         this.cashier.addChips.image.onClick = self.events.onAddChipsClick
 
-        this.cashier.cancel =  new this.Item (cashierWindowX + 100,cashierWindowY+cashierWindowHeight-40, 50,25,4) 
+        this.cashier.cancel =  new this.Item (cashierWindowX + 100,cashierWindowY+cashierWindowHeight-40, 50,25,cashierImageContainerIndex) 
         this.itemAsRectangle( this.cashier.cancel, '#0000FF')
         this.addItemText( this.cashier.cancel, 'cancel', '13px arial', '#000000')
         this.cashier.cancel.image.onClick = self.hideCashier
 
-         this.cashier.closeWindow =  new this.Item (innerCashierX + innerCashierWidth*.9,cashierWindowY+1, innerCashierWidth*.1,innerCashierY-cashierWindowY-2,4) 
+         this.cashier.closeWindow =  new this.Item (innerCashierX + innerCashierWidth*.9,cashierWindowY+1, innerCashierWidth*.1,innerCashierY-cashierWindowY-2,cashierImageContainerIndex) 
         this.cashier.closeWindow.image  = new createjs.Shape() 
         this.cashier.closeWindow.image.graphics.beginFill('#CD0000').rect(this.cashier.closeWindow.position.x,this.cashier.closeWindow.position.y, this.cashier.closeWindow.size.x,this.cashier.closeWindow.size.y)
         this.cashier.closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
@@ -901,7 +914,7 @@ this.images.potSize.text.text = 'pot: '+potSize
 
        if(seatNumber){
 
-       this.gameState.seats[seatNumber].bet.push(new this.images.Item(x,y,diameter,diameter,2))
+       this.gameState.seats[seatNumber].bet.push(new this.images.Item(x,y,diameter,diameter,chips))
          this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].image = new createjs.Shape()
  this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].image.graphics.beginStroke(chipColor).beginFill('gray').drawCircle(x+diameter/2, y+diameter/2, diameter/2)
 
@@ -925,7 +938,7 @@ for(var i   = 0; i<this.gameState.seats[seatNumber].bet.length-1;i++){
  else{
 
 
-       this.images.potChips.push(new this.images.Item(x,y,diameter,diameter,2))
+       this.images.potChips.push(new this.images.Item(x,y,diameter,diameter,chips))
          this.images.potChips[this.images.potChips.length-1].image = new createjs.Shape()
 this.images.potChips[this.images.potChips.length-1].image.graphics.beginStroke(chipColor).beginFill('gray').drawCircle(x+diameter/2, y+diameter/2, diameter/2)
 
@@ -948,7 +961,7 @@ for(var i   = 0; i<this.images.potChips.length-1;i++){
     }
 
     //move bets into center of pot
-     this.steetEnds=function(potSize){
+this.steetEnds=function(potSize){
 
          interval = 50
 
@@ -959,7 +972,7 @@ for(var i   = 0; i<this.images.potChips.length-1;i++){
             var distancePerTickArrayY = []
 
             var fractionDistancePerTick = .05
-            var totalTicks = 1/fractionDistancePerTick
+            var lastTick = 1/fractionDistancePerTick - 1
             var tick = 0
 
             for(var i =0;i<this.gameState.seats.length;i++){
@@ -970,17 +983,17 @@ for(var i   = 0; i<this.images.potChips.length-1;i++){
                     var totalDistance = Math.sqrt(Math.pow(centerPotX-this.gameState.seats[i].chips[0].image.position.x,2)+Math.pow(centerPotY-this.gameState.seats[i].chips[0].image.position.y,2))
                     var slope = (centerPotY-this.gameState.seats[i].chips[0].image.position.y) /(centerPotX-this.gameState.seats[i].chips[0].image.position.x)
                     var distancePerTick = fractionDistancePerTick*totalDistance
-                    distancePerTickArrayX =  Math.sqrt(distancePerTick*distancePerTick/(slope*slope+1))
-                    distancePerTickArrayY = distancePerTickArrayX*slope
+                    var distancePerTickX =  Math.sqrt(distancePerTick*distancePerTick/(slope*slope+1))
+                    var distancePerTickY = distancePerTickArrayX*slope
+                    distancePerTickArrayX.push(distancePerTickX)
+                    distancePerTickArrayY.push(distancePerTickY)
+
                 }
 
             }
 
 
         var chipAnimation =   setInterval(function() {
-
-            var deltaX
-            var deltaY
           
             for(var i =0;i<seatNumberArray.length;i++){
                 
@@ -992,8 +1005,9 @@ for(var i   = 0; i<this.images.potChips.length-1;i++){
                 
             }
             
-            tick++
-            if(tick == totalTicks){clearInterval(chipAnimation)}
+            
+            if(tick >= lastTick){clearInterval(chipAnimation)}
+            else{tick++}
 
             
             
@@ -1003,6 +1017,112 @@ for(var i   = 0; i<this.images.potChips.length-1;i++){
 this.displayBet(potSize)
 
  }
+
+ this.dealHoleCards = function(smallBlindSeatNumber, playerArray, holeCardArray){
+     
+     var initialX = document.getElementById('canvas').width/2-this.images.community[0].size.x
+     var initialY = this.images.community[0].position.y+this.images.community[0].size.y+77
+     
+         interval = 50
+
+            var card0DistancePerTickArrayX = []
+           var card0DistancePerTickArrayY = []
+
+           var card1DistancePerTickArrayX = []
+           var card1DistancePerTickArrayY = []
+
+
+            var fractionDistancePerTick = .05
+            var lastTick = 1/fractionDistancePerTick -1 
+
+            for(var i =0;i<playerArray;i++){
+
+                    var totalDistance0 = Math.sqrt(Math.pow(initialX-this.images.seats[i].hiddenCard0.position.x,2)+Math.pow(initialY-this.images.seats[i].hiddenCard0.position.y,2))
+                    var slope0 = (initialY-this.images.seats[i].hiddenCard0.position.y) /(initialX-this.images.seats[i].hiddenCard0.position.x)
+                    var distancePerTick0 = fractionDistancePerTick*totalDistance
+                    var distancePerTickX0 =  Math.sqrt(distancePerTick*distancePerTick/(slope*slope+1))
+                    var distancePerTickY0 = distancePerTickArrayX*slope
+
+                     card0DistancePerTickArrayX.push(distancePerTickX0) 
+                     card0DistancePerTickArrayY.push(distancePerTickY0)
+
+                    var totalDistance1 = Math.sqrt(Math.pow(initialX-this.images.seats[i].hiddenCard1.position.x,2)+Math.pow(initialY-this.images.seats[i].hiddenCard1.position.y,2))
+                    var slope1 = (initialY-this.images.seats[i].hiddenCard1.position.y) /(initialX-this.images.seats[i].hiddenCard1.position.x)
+                    var distancePerTick1 = fractionDistancePerTick*totalDistance
+                    var distancePerTickX1 =  Math.sqrt(distancePerTick*distancePerTick/(slope*slope+1))
+                    var distancePerTickY1 = distancePerTickArrayX*slope
+
+                    card1DistancePerTickArrayX.push(distancePerTickX1) 
+                     card1DistancePerTickArrayY.push(distancePerTickY1)
+
+            }
+
+            var dealSingleCard = function(seatNumber, cardNumber){
+                var tick = 0
+                var cardAnimation =   setInterval(function() {
+
+            var deltaX
+            var deltaY
+
+          //create temporary card image for animation
+          var animatedCard = new this.images.Item(initialX, initialY, this.images.seats[seatNumber].hiddenCard0.size.x, this.images.seats[seatNumber].hiddenCard0.size.y, this.gameState.containerImageIndexes.cardAnimation)
+          this.images.itemAsBitmap(animatedCard, this.images.seats[seatNumber].hiddenCard0.bitmapSource)
+
+          this.displayChildren(animatedCard)
+            
+          if(cardNumber == 0){
+          animatedCard.image.x =animatedCard.image.x+card0DistancePerTickArrayX[i]
+          animatedCard.image.y =animatedCard.image.y+card0DistancePerTickArrayY[i]
+          }
+
+          else if(cardNumber == 1){
+              
+          animatedCard.image.x =animatedCard.image.x+card1DistancePerTickArrayX[i]
+          animatedCard.image.y =animatedCard.image.y+card1DistancePerTickArrayY[i]
+          }
+
+            
+            if(tick >= lastTick){
+                clearInterval(cardAnimation)
+                if(cardNumber == 0){
+                    
+                    if(holeCardArray){this.displayShownCard(holeCardArray[0],this.seats[seatNumber].shownCard0)}
+                    else{this.displayChildren(this.images.seats[seatNumber].hiddenCard0)}
+
+                }
+
+                else if(cardNumber ==1){
+
+                     if(holeCardArray){this.displayShownCard(holeCardArray[1],this.seats[seatNumber].shownCard1)}
+                    else{this.displayChildren(this.images.seats[seatNumber].hiddenCard1)}
+
+                }
+                }
+            else{tick++}
+
+            
+            
+
+}, interval)
+            }
+
+            
+            for(var i =0;i<playerArray;i++){
+                
+                dealSingleCard(playerArray[i],0)
+                
+            }
+
+            for(var i =0;i<playerArray;i++){
+                
+                dealSingleCard(playerArray[i],1)
+                
+            }
+
+        
+
+
+ } 
 
 
      this.playerStands = function(seatNumber){
@@ -1441,7 +1561,6 @@ self.displayCorrectSeatMessage(seatNumber)
     
     this.hideCashier = function(){
 
-       var cashierImageContainerIndex = 4
 
                 self.hideChildren(self.images.cashier)
                 var htmlcashier = document.getElementById('cashier')
@@ -1466,7 +1585,7 @@ self.displayCorrectSeatMessage(seatNumber)
 
 
         self.hideChildren(self.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex])
-        if(self.gameState.messageBox.messageBoxImageContainerIndex == 6){
+        if(self.gameState.messageBox.messageBoxImageContainerIndex == self.gameState.containerImageIndexes.initialMessageBox){
             
 
         if(self.gameState.cashier.display === true){
@@ -1485,9 +1604,9 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
     this.displayMessageBox = function(messageInfo){
        
     
-       var messageBoxImageContainerIndex = 6
+       var messageBoxImageContainerIndex = this.gameState.containerImageIndexes.initialMessageBox
 
-           for(var i= 6;i<self.images.containers.length;i++){
+           for(var i= this.gameState.containerImageIndexes.initialMessageBox;i<self.images.containers.length;i++){
            if(self.images.containers[i] && self.images.containers[i].isVisible()== false){
                 messageBoxImageContainerIndex = i
                 i=self.images.containers.length
@@ -1495,7 +1614,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         }
 
         self.images.messageBox[messageBoxImageContainerIndex] = {}
-        if(messageBoxImageContainerIndex == 6){
+        if(messageBoxImageContainerIndex == this.gameState.containerImageIndexes.initialMessageBox){
        //hide html cashier(if visible)
         var htmlcashier = document.getElementById('cashier')
 
@@ -1609,7 +1728,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
     {
         
 
-      var cashierImageContainerIndex =4
+      var cashierImageContainerIndex = this.gameState.containerImageIndexes.cashier
 
         this.gameState.cashier.min = info.min
         this.gameState.cashier.max = info.max
@@ -1670,18 +1789,6 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
        this.images.cashier.cancel.text.text = 'cancel'
 
 
-/*
-      this.images.cashier.horizontalSlider = new this.images.Item (this.images.cashier.addChips.position.x,this.images.cashier.addChips.position.y-25,cashierWindowWidth-30,1,4)
-      this.images.cashier.verticalSlider = new this.images.Item(this.images.cashier.horizontalSlider.position.x,this.images.cashier.horizontalSlider.position.y-10,5,20,4)
-      this.images.cashier.addChipsAmount = new this.images.Item(this.images.cashier.horizontalSlider.position.x+this.images.cashier.horizontalSlider.size.x/2,this.images.cashier.horizontalSlider.position.y-35,35,30,4)
-              this.images.itemAsRectangle(this.images.cashier.horizontalSlider, 'black')
-        this.images.itemAsRectangle(this.images.cashier.verticalSlider, 'blue')
-        this.images.addItemText(this.images.cashier.addChipsAmount, '0', '14px Arial', 'black')
-
-
-
-        this.images.cashier.verticalSlider.image.onPress = self.events.addChipsSliderVerticalMouseDown
-*/
 
 self.gameState.cashier.activeContainers = this.storeActiveContainers()
 
@@ -1757,7 +1864,6 @@ this.restoreActiveContainers=function(activeContainerArray){
          if(table_state.seats[i].is_you){ 
          this.gameState.userSeatNumber = table_state.seats[i].seat 
 
-         console.log(self.images.addChips.position.z)
          self.displayButton(self.images.addChips)
          
 
