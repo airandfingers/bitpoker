@@ -279,14 +279,13 @@ module.exports = (function () {
     player = self.currentPlayer();
 
     async.whilst(
-      function shouldRunBody() { // test
+      function shouldRunBody() { // test called before body - determines whether to run or skip
         console.log('testing:',
                       '# of players: ' + self.players.length + ' vs. MIN_PLAYERS: ' + game.MIN_PLAYERS,
                       'Has player acted yet? ' + player.hasActedIn(self.stage_num),
                       'current_bet: ' + player.current_bet + ' vs. high_bet: ' + self.high_bet);
         if (player.current_bet > self.high_bet) {
           // adjust player's current bet to be the high bet
-          // (SHOULD NEVER HAPPEN, DUE TO HIGH_STACK ENFORCEMENT)
           var refund = player.current_bet - self.high_bet;
           console.error('giving player', refund);
           player.getBet(refund);
@@ -326,10 +325,6 @@ module.exports = (function () {
         min_bet = self.high_bet + last_raise;
         max_bet = player.current_bet + player.chips; // how much this player can raise to
         //console.log('high_bet', self.high_bet, 'to_call', to_call, 'min_bet', min_bet, 'max_bet', max_bet);
-        if (max_bet > high_stack) {
-          // don't let players bet higher than other players can call
-          max_bet = high_stack;
-        }
         if (max_bet < min_bet) {
           // player can't afford to raise at minimum raise level
           min_bet = max_bet;

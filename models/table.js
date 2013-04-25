@@ -17,8 +17,30 @@ module.exports = (function () {
 
   var static_properties = {
   // static properties (attached below) - Model.property_name
-    // the number of tables to initialize in setup
-    NUM_TABLES: 2
+  TABLE_CONSTANTS: ['SMALL_BLIND', 'MIN_CHIPS', 'MAX_CHIPS',
+                     'MAOBUCKS_PER_CHIP', 'MIN_PLAYERS', 'MAX_PLAYERS'],
+  // describes the constants to initialize tables with,
+  // listing constants in TABLE_CONSTANTS' order
+  TABLE_TYPES: [
+// small blind   max stack
+//         min stack    maobucks/chip    MAXP
+    // SB    MIN    MAX    MB/C   MINP
+      [ 10,   50, 10000, .0001,     2,    10] // .001/.002   maobucks
+    , [ 10,   50, 10000, .0001,     4,    10] // .001/.002   maobucks
+    , [ 50,  250, 50000, .0001,     2,    10] // .005/.01    maobucks
+    , [ 50,  250, 50000, .0001,     4,    10] // .005/.01    maobucks
+    , [250, 1000,  2000, .0001,     2,    10] // .025/.05    maobucks
+    , [ 10,   50, 10000,   .01,     2,    10] // .1/.2       maobucks
+    , [ 50,  250, 50000,   .01,     2,    10] // .5/1        maobucks
+    , [  1,   10,   250,     1,     2,    10] // 1/2         maobucks
+    , [  5,   50,  1000,     1,     2,    10] // 5/10        maobucks
+    , [ 25,  250,  5000,     1,     2,    10] // 25/50       maobucks
+    , [  1,   10,   250,   100,     2,    10] // 100/200     maobucks
+    , [  5,   50,  1000,   100,     2,    10] // 500/1000    maobucks
+    , [ 25,  250,  5000,   100,     2,    10] // 2500/5000   maobucks
+    , [100,  500, 10000,   100,     2,    10] // 10000/20000 maobucks
+    , [100,  500, 10000,   100,     2,     2] // 10000/20000 maobucks
+    ]
     // [this string] + table_id = room_name
   , TABLE_PREFIX: 'table_'
     // the events a Table should react to, on its room
@@ -39,6 +61,8 @@ module.exports = (function () {
     table_id : String
     // readable name for this table (Table.TABLE_PREFIX + table_id)
   , name     : String
+    // the game that this table creates hands of (e.g. NoLimitGame instance)
+  , game     : { type: Schema.Types.Mixed }
     // the corresponding room
   , room     : { type: Schema.Types.Mixed }
     // the hands this table has gone through (oldest to newest)
@@ -53,11 +77,19 @@ module.exports = (function () {
 
   // static methods - Model.method()
   TableSchema.statics.setup = function() {
-    for (var i = 1; i <= Table.NUM_TABLES; i++) {
+    var game
+      , i = 0;
+      //, sb_min_max_mbpc;
+    _.each( Table.TABLE_TYPES, function(constants) {
+      //sb_min_max_mbpc = constants.join('_');
+      constants = _.object(Table.TABLE_CONSTANTS, constants);
+      game = new NoLimitGame(constants);
       Table.createTable({
-        table_id: i
+        //table_id: sb_min_max_mbpc + '_a' // constants plus a (first table of this type)
+        table_id: ++i
+      , game: game
       });
-    }
+    });
   };
 
   TableSchema.statics.createTable = function(spec) {
@@ -76,6 +108,20 @@ module.exports = (function () {
   TableSchema.statics.getTableNames = function() {
     // console.log('getting tables');
     return _.keys(Table.tables);
+  };
+
+  TableSchema.statics.getTableGames = function() {
+    // console.log('getting table games');
+    var table_games = []
+      , table_game;
+    _.each(Table.tables, function(table, table_name) {
+      table_game = table.game.constants();
+      table_game.table_name = table_name;
+      console.log('Pushing table_game:', table_game);
+      table_games.push(table_game);
+    });
+    console.log('Returning table_games:', table_games);
+    return table_games;
   };
 
   // instance methods - document.method()
@@ -114,7 +160,7 @@ module.exports = (function () {
     var self = this
       , hand_num = this.hands.length + 1
       , hand = HoldEmHand.createHoldEmHand({
-          game: NoLimitGame
+          game: self.game
         , seats: this.seats
         , broadcast: function() { self.room.broadcast.apply(self.room, arguments); }
         , dealer: this.dealer
@@ -148,7 +194,7 @@ module.exports = (function () {
       // create a new player
       player = Player.createPlayer({
             username: username
-          , game: NoLimitGame
+          , game: self.game
           , table: self
       });
       self.players[username] = player;
@@ -211,7 +257,7 @@ module.exports = (function () {
 
   static_properties.player_events.sit_out = 'playerSitsOut';
   TableSchema.methods.playerSitsOut = function(player) {
-    this.room.broadcast('player_sits_out', player.serialize(), NoLimitGame.SIT_OUT_TIME_ALLOWED);
+    this.room.broadcast('player_sits_out', player.serialize(), this.game.SIT_OUT_TIME_ALLOWED);
   };
 
   static_properties.player_events.sit_in = 'playerSitsIn';
@@ -256,12 +302,12 @@ module.exports = (function () {
   TableSchema.methods.sendAddChipsInfo = function(player) {
     var add_chips_info = {
           table_name: this.name
-        , small_blind:   NoLimitGame.SMALL_BLIND
-        , big_blind:     NoLimitGame.BIG_BLIND
-        , table_min:     NoLimitGame.MIN_CHIPS
-        , table_max:     NoLimitGame.MAX_CHIPS
-        , currency:      NoLimitGame.CURRENCY
-        , min_increment: NoLimitGame.MIN_INCREMENT
+        , small_blind:   this.game.SMALL_BLIND
+        , big_blind:     this.game.BIG_BLIND
+        , table_min:     this.game.MIN_CHIPS
+        , table_max:     this.game.MAX_CHIPS
+        , currency:      this.game.CURRENCY
+        , min_increment: this.game.MIN_INCREMENT
     };
     player.calculateAddChipsInfo(function(err, player_add_chips_info) {
       if (err) {
@@ -284,7 +330,7 @@ module.exports = (function () {
 
   TableSchema.methods.isFull = function() {
     var num_players = _.keys(this.seats).length;
-    return num_players === NoLimitGame.MAX_PLAYERS;
+    return num_players === this.game.MAX_PLAYERS;
   }
 
   /* the model - a fancy constructor compiled from the schema:

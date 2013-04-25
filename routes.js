@@ -348,6 +348,41 @@ module.exports = (function () {
     });
   });
 
+  // Example usage of getTableGames
+  /*Returns:
+  {
+    table_1: {
+      _id: 5178e48bdb1f8f5812000002,
+    , MIN_INCREMENT: 1
+    , CURRENCY: 'maobucks'
+    , MAOBUCKS_PER_CHIP: 0.0001
+    , BIG_BLIND: 20
+    , SMALL_BLIND: 10
+    , MAX_CHIPS: 10000
+    , MIN_CHIPS: 50
+    , MAX_PLAYERS: 10
+    , MIN_PLAYERS: 
+    }
+  ... ... ...
+  , table_15: {
+      _id: 5178e48bdb1f8f5812000048
+    , MIN_INCREMENT: 1
+    , CURRENCY: 'maobucks'
+    , MAOBUCKS_PER_CHIP: 100
+    , BIG_BLIND: 20
+    , SMALL_BLIND: 100
+    , MAX_CHIPS: 10000
+    , MIN_CHIPS: 500
+    , MAX_PLAYERS: 2
+    , MIN_PLAYERS: 2
+    }
+  }*/
+  app.get('/get_table_games', function(req, res) {
+    var table_games = Table.getTableGames();
+    console.log('Got table_games:', table_games);
+    res.json(table_games);
+  });
+
   app.get('/' + Table.TABLE_PREFIX + ':id', auth.ensureAuthenticated, function(req, res, next) {
     var table_id = req.params.id
       , table = Table.getTable(table_id)
