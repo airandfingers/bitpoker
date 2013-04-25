@@ -942,7 +942,7 @@ for(var i   = 0; i<this.images.potChips.length-1;i++){
    this.images.potChips[i].text = null
 
 }
- this.displayChildren(this.images.potChips.length-1])
+ this.displayChildren(this.images.potChips[this.images.potChipslength-1])
  }
 
     }
@@ -1789,6 +1789,12 @@ this.restoreActiveContainers=function(activeContainerArray){
     this.activateSockets = function(){
       socket.once('table_state', function(table_state){
              self.displayInitialTableState(table_state)
+    })
+
+    socket.on('street_ends', function (potSize){
+        
+        this.streetEnds(potSize)
+
     })
 
     //error received
