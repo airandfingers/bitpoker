@@ -130,6 +130,23 @@ this.positionImage=function(){
     item.image.parentOfImageObject = item
     item.bitmapSource = imageSource
             }
+
+            this.images.cardAsBitmap = function(item,cardText){
+                 var cardImage = new Image()
+     if(self.gameState.displaySize == 'mobile') {
+         var imageSource = 'img/fourColorDeck/resize/'+cardText+'.png'
+         }
+         else{
+              var imageSource = 'img/fourColorDeck/'+cardText+'.png'
+         }
+
+  //    parentOfImageObject.image = new createjs.Bitmap(cardImage)
+  //    parentOfImageObject.image.x = parentOfImageObject.position.x
+  //    parentOfImageObject.image.y = parentOfImageObject.position.y
+
+      this.itemAsBitmap(item,imageSource)
+
+            }
     
             //actually a rectangle with rounded edges
              this.images.itemAsRectangle = function (item,fillColor){
@@ -352,6 +369,8 @@ this.images.setDefaults = function(){
              this.addItemText(this.potSize, '',"14px Arial", "#100D08")
            //this.itemAsBitmap(this.potSize, this.sources.potSize)
 
+          
+
            //--------side buttons---------------------
             this.leftSideButtons[0].button = new this.Item(7.5,419,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button)
             this.leftSideButtons[1].button = new this.Item(7.5,439,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button)
@@ -501,6 +520,10 @@ this.images.setDefaults = function(){
  this.itemAsRectangle(this.community[i], "#00FFFF")
  this.addItemText(this.community[i],'','12px Arial','black')
  }
+
+  //------------------card spawn location---------------------------------
+
+           this.startingCard = new this.Item(canvas.width/2-this.community[0].size.x/2, this.community[0].position.y+this.community[0].size.y+77 , cardWidth, cardHeight, self.gameState.containerImageIndexes.cardAnimation)
 
 
         //--------------upper left side button---------------------
@@ -690,7 +713,7 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
     this.images.rotateSeats = function (n){
 
     }
-    
+
     this.displayShownCard = function (cardText,parentOfImageObject){
         
       //  parentOfImageObject.text.text= cardText
@@ -743,19 +766,8 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
       parentOfImageObject.bitmapAnimation.gotoAndStop()
 
       */
-      var cardImage = new Image()
-     if(this.gameState.displaySize == 'mobile') {
-         imageSource = 'img/fourColorDeck/resize/'+cardText+'.png'
-         }
-         else{
-              imageSource = 'img/fourColorDeck/'+cardText+'.png'
-         }
-
-  //    parentOfImageObject.image = new createjs.Bitmap(cardImage)
-  //    parentOfImageObject.image.x = parentOfImageObject.position.x
-  //    parentOfImageObject.image.y = parentOfImageObject.position.y
-
-      this.images.itemAsBitmap(parentOfImageObject,imageSource)
+      this.images.cardAsBitmap(parentOfImageObject,cardText)
+     
             this.displayChildren(parentOfImageObject)
     }
 
@@ -920,7 +932,7 @@ this.images.potSize.text.text = 'pot: '+potSize
 
        if(seatNumber){
 
-       this.gameState.seats[seatNumber].bet.push(new this.images.Item(x,y,diameter,diameter,chips))
+       this.gameState.seats[seatNumber].bet.push(new this.images.Item(x,y,diameter,diameter,this.gameState.containerImageIndexes.chips))
          this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].image = new createjs.Shape()
  this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].image.graphics.beginStroke(chipColor).beginFill('gray').drawCircle(x+diameter/2, y+diameter/2, diameter/2)
 
@@ -944,7 +956,7 @@ for(var i   = 0; i<this.gameState.seats[seatNumber].bet.length-1;i++){
  else{
 
 
-       this.images.potChips.push(new this.images.Item(x,y,diameter,diameter,chips))
+       this.images.potChips.push(new this.images.Item(x,y,diameter,diameter,self.gameState.containerImageIndexes.chips))
          this.images.potChips[this.images.potChips.length-1].image = new createjs.Shape()
 this.images.potChips[this.images.potChips.length-1].image.graphics.beginStroke(chipColor).beginFill('gray').drawCircle(x+diameter/2, y+diameter/2, diameter/2)
 
@@ -969,8 +981,7 @@ for(var i   = 0; i<this.images.potChips.length-1;i++){
     //move bets into center of pot
 this.steetEnds=function(potSize){
 
-         interval = 50
-
+    var animationTime = 1000
            var centerPotX = this.images.community[1].position.x
             var centerPotY = this.images.community[0].position.y - 5
             var seatNumberArray = []
@@ -981,25 +992,50 @@ this.steetEnds=function(potSize){
             var lastTick = 1/fractionDistancePerTick - 1
             var tick = 0
 
+            
+           var   interval = fractionDistancePerTick*animationTime
+
             for(var i =0;i<this.gameState.seats.length;i++){
                 
                 if(this.gameState.seats[i].chips && typeof this.gameState.seats[i].chips == 'array' && this.gameState.seats[i].chips.length>0){
                     
                     seatNumberArray.push(i)
-                    var totalDistance = Math.sqrt(Math.pow(centerPotX-this.gameState.seats[i].chips[0].image.position.x,2)+Math.pow(centerPotY-this.gameState.seats[i].chips[0].image.position.y,2))
-                    var slope = (centerPotY-this.gameState.seats[i].chips[0].image.position.y) /(centerPotX-this.gameState.seats[i].chips[0].image.position.x)
-                    var distancePerTick = fractionDistancePerTick*totalDistance
-                    var distancePerTickX =  Math.sqrt(distancePerTick*distancePerTick/(slope*slope+1))
-                    var distancePerTickY = distancePerTickArrayX*slope
+                    
+                    var totalDistanceX = centerPotX-this.gameState.seats[i].chips[0].image.position.x
+                    var totalDistanceY = centerPotY-this.gameState.seats[i].chips[0].image.position.y
+                   
+                    var distancePerTickX =  totalDistanceX*fractionDistancePerTick
+                    var distancePerTickY = totalDistanceY*fractionDistancePerTick
+
                     distancePerTickArrayX.push(distancePerTickX)
                     distancePerTickArrayY.push(distancePerTickY)
 
                 }
 
             }
+             for(var i =0;i<seatNumberArray.length;i++){
+                
+                 for(var n =0;n<this.gameState.seats[seatNumberArray[i]].chips.length;n++){
+                     this.animateImage(this.gameState.seats[seatNumberArray[i]].chips[n].position.x, this.gameState.seats[seatNumberArray[i]].chips[n].position.y, animationTime, lastTick+1,this.gameState.seats[seatNumberArray[i]].chips[n], centerPotX, centerPotY)
 
+                 }
+                
+            }
+ 
+            setTimeout(function(){
 
-        var chipAnimation =   setInterval(function() {
+                 for(var i =0;i<seatNumberArray.length;i++){
+                
+                 for(var n =0;n<this.gameState.seats[seatNumberArray[i]].chips.length;n++){
+                     this.hideChildren(this.gameState.seats[seatNumberArray[i]].chips[n])
+                     this.gameState.seats[seatNumberArray[i]].chips[n] = null
+                 }
+                
+            }
+                this.displayBet(potSize)
+            }, animationTime)
+
+    /*    var chipAnimation =   setInterval(function() {
           
             for(var i =0;i<seatNumberArray.length;i++){
                 
@@ -1018,18 +1054,121 @@ this.steetEnds=function(potSize){
             
             
 
-}, interval)
-     
-this.displayBet(potSize)
+}, interval) */
+
 
  }
 
+ this.animateImage =function(initialX, initialY, totalTime, ticks, parentOfImageObject, finalX, finalY, hideOnEnd){
+
+     var initialX = this.images.startingCard.position.x
+     var initialY = this.images.startingCard.position.Y
+
+
+            var fractionDistancePerTick = 1/ticks
+            var lastTick = ticks -1 
+           var   interval = totalTime/ticks
+    
+
+                    
+                    var totalDistanceX = initialX-finalX
+                     var totalDistanceY = initialY-finalY
+                   
+                   var distancePerTickX =  totalDistanceX*fractionDistancePerTick
+                   var distancePerTickY = totalDistanceY*fractionDistancePerTick
+       
+parentOfImageObject.image.x = initialX
+parentOfImageObject.image.y = initialY
+                   this.displayChildren(parentOfImageObject)
+
+                   var tick = 0
+       var imageAnimation =   setInterval(function() {
+
+               parentOfImageObject.image.x =parentOfImageObject.image.x+distancePerTickX
+          parentOfImageObject.image.y =parentOfImageObject.image.y+distancePerTickY
+            
+            if(tick >= lastTick){
+                if(hideOnEnd){
+                    
+                    this.hideChildren(parentOfImageObject)
+
+                }
+                clearInterval(imageAnimation)
+                }
+
+            else{tick++}
+
+            
+            
+
+}, interval)
+
+ }
+
+ //must include false or undefined slots for already dealt cards
+ this.dealCommunity = function (communityArray){
+     
+     var initialX = this.images.startingCard.position.x
+     var initialY = this.images.startingCard.position.Y
+     var animationTime = 1000
+     var fractionDistancePerTick = .05
+     var lastTick = 1/fractionDistancePerTick -1 
+     var   interval = fractionDistancePerTick*animationTime
+
+     //play deal sound
+     createjs.Sound.play('dealCard')
+     //flop animation
+if(communityArray[0]&&communityArray[1]&communityArray[2]){
+    
+    //create TEMPORARY face down card to animate
+    var animatedCard = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
+     this.images.itemAsBitmap(animatedCard, this.images.seats[0].hiddenCard0.bitmapSource)
+
+    this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.community[0].position.x,this.images.community[0].position.y, true)
+
+    //turn cards face up
+    for(var i =0;i<2;i++){
+    this.images.cardAsBitmap(this.images.community[i],communityArray[i])
+    this.images.community[i].image.x = this.images.community[0].position.x
+      this.images.containers[this.images.community[this.images.community[i].position.z]].addChild( this.images.community[i].image)
+      }
+
+      //move cards from community[0] position to final destinations
+      this.animateImage(this.images.community[1].image.x, this.images.community[1].image.y,animationTime, lastTick+1, this.images.community[1],this.images.community[1].position.x, this.images.community[1].position.y)
+     this.animateImage(this.images.community[2].image.x, this.images.community[2].image.y,animationTime*2, lastTick+1, this.images.community[2],this.images.community[2].position.x, this.images.community[2].position.y)
+     for(var i =0;i<2;i++){
+    this.images.community[i].image.x = this.images.community[i].position.x
+      }
+      this.stage.update()
+}
+//turn animation
+else if(communityArray[3]){
+    //create TEMPORARY face down card to animate
+    var animatedCard = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
+     this.images.itemAsBitmap(animatedCard, this.images.seats[0].hiddenCard0.bitmapSource)
+
+     
+    this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.community[3].position.x,this.images.community[3].position.y, true)
+     this.displayChildren(this.images.community[3])
+}
+else if(communityArray[4]){
+    //create TEMPORARY face down card to animate
+    var animatedCard = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
+     this.images.itemAsBitmap(animatedCard, this.images.seats[0].hiddenCard0.bitmapSource)
+
+     
+    this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.community[4].position.x,this.images.community[4].position.y, true)
+     this.displayChildren(this.images.community[4])
+}
+}
+ 
+
  this.dealHoleCards = function(smallBlindSeatNumber, playerArray, holeCardArray){
      
-     var initialX = document.getElementById('canvas').width/2-this.images.community[0].size.x
-     var initialY = this.images.community[0].position.y+this.images.community[0].size.y+77
-     
-         interval = 50
+     var initialX = this.images.startingCard.position.x
+     var initialY = this.images.startingCard.position.Y
+     var animationTime = 1000
+      
 
             var card0DistancePerTickArrayX = []
            var card0DistancePerTickArrayY = []
@@ -1041,20 +1180,19 @@ this.displayBet(potSize)
             var fractionDistancePerTick = .05
             var lastTick = 1/fractionDistancePerTick -1 
 
+            var   interval = fractionDistancePerTick*animationTime
+
+
             for(var i =0;i<playerArray;i++){
 
-                    var totalDistance0 = Math.sqrt(Math.pow(initialX-this.images.seats[i].hiddenCard0.position.x,2)+Math.pow(initialY-this.images.seats[i].hiddenCard0.position.y,2))
-                    var slope0 = (initialY-this.images.seats[i].hiddenCard0.position.y) /(initialX-this.images.seats[i].hiddenCard0.position.x)
-                    var distancePerTick0 = fractionDistancePerTick*totalDistance
+                   
                     var distancePerTickX0 =  Math.sqrt(distancePerTick*distancePerTick/(slope*slope+1))
                     var distancePerTickY0 = distancePerTickArrayX*slope
 
                      card0DistancePerTickArrayX.push(distancePerTickX0) 
                      card0DistancePerTickArrayY.push(distancePerTickY0)
 
-                    var totalDistance1 = Math.sqrt(Math.pow(initialX-this.images.seats[i].hiddenCard1.position.x,2)+Math.pow(initialY-this.images.seats[i].hiddenCard1.position.y,2))
-                    var slope1 = (initialY-this.images.seats[i].hiddenCard1.position.y) /(initialX-this.images.seats[i].hiddenCard1.position.x)
-                    var distancePerTick1 = fractionDistancePerTick*totalDistance
+           
                     var distancePerTickX1 =  Math.sqrt(distancePerTick*distancePerTick/(slope*slope+1))
                     var distancePerTickY1 = distancePerTickArrayX*slope
 
@@ -1063,74 +1201,50 @@ this.displayBet(potSize)
 
             }
 
-            var dealSingleCard = function(seatNumber, cardNumber){
-                var tick = 0
-                var cardAnimation =   setInterval(function() {
+            var cardsDealt =0
+            var animatedCards = []
 
-            var deltaX
-            var deltaY
-
-          //create temporary card image for animation
-          var animatedCard = new this.images.Item(initialX, initialY, this.images.seats[seatNumber].hiddenCard0.size.x, this.images.seats[seatNumber].hiddenCard0.size.y, this.gameState.containerImageIndexes.cardAnimation)
+            //deal first round of hole cards
+            for(var i =0;i<playerArray;i++){
+                setTimeout(function(){
+                    
+                    createjs.Sound.play("dealCard")
+                    animatedCards[i] = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
           this.images.itemAsBitmap(animatedCard, this.images.seats[seatNumber].hiddenCard0.bitmapSource)
 
-          this.displayChildren(animatedCard)
-            
-          if(cardNumber == 0){
-          animatedCard.image.x =animatedCard.image.x+card0DistancePerTickArrayX[i]
-          animatedCard.image.y =animatedCard.image.y+card0DistancePerTickArrayY[i]
-          }
+              this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.seats[playerArray[i]].position.x,this.images.seats[playerArray[i]].position.y, true)
 
-          else if(cardNumber == 1){
               
-          animatedCard.image.x =animatedCard.image.x+card1DistancePerTickArrayX[i]
-          animatedCard.image.y =animatedCard.image.y+card1DistancePerTickArrayY[i]
-          }
+               if(holeCardArray){this.displayShownCard(holeCardArray[0],this.seats[playerArray[i]].shownCard0)}
+                    else{this.displayChildren(this.images.seats[playerArray[i]].hiddenCard0)}
 
-            
-            if(tick >= lastTick){
-                clearInterval(cardAnimation)
-                if(cardNumber == 0){
+                },cardsDealt*animationTime)
+                 cardsDealt++
+  
+            }
+
+            //deal second round of hole cards
+
+                    for(var i =0;i<playerArray;i++){
+                setTimeout(function(){
                     
-                    if(holeCardArray){this.displayShownCard(holeCardArray[0],this.seats[seatNumber].shownCard0)}
-                    else{this.displayChildren(this.images.seats[seatNumber].hiddenCard0)}
+                    createjs.Sound.play("dealCard")
+                    animatedCards[i] = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
+          this.images.itemAsBitmap(animatedCard, this.images.seats[seatNumber].hiddenCard0.bitmapSource)
 
-                }
+              this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.seats[playerArray[i]].position.x,this.images.seats[playerArray[i]].position.y, true)
+       
+              
+  if(holeCardArray){this.displayShownCard(holeCardArray[1],this.seats[playerArray[i]].shownCard1)}
+                    else{this.displayChildren(this.images.seats[playerArray[i]].hiddenCard1)}
 
-                else if(cardNumber ==1){
-
-                     if(holeCardArray){this.displayShownCard(holeCardArray[1],this.seats[seatNumber].shownCard1)}
-                    else{this.displayChildren(this.images.seats[seatNumber].hiddenCard1)}
-
-                }
-                }
-            else{tick++}
-
-            
-            
-
-}, interval)
+                },cardsDealt*animationTime)
+                 cardsDealt++
+  
             }
 
-            
-            for(var i =0;i<playerArray;i++){
-
-                 createjs.Sound.play("dealCard");
-                dealSingleCard(playerArray[i],0)
-                
             }
 
-            for(var i =0;i<playerArray;i++){
-
-                 createjs.Sound.play("dealCard");
-                dealSingleCard(playerArray[i],1)
-                
-            }
-
-        
-
-
- } 
 
 
      this.playerStands = function(seatNumber){
