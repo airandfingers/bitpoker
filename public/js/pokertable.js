@@ -59,7 +59,8 @@
             fold: 'img/fold.jpg',
             sideButton :'img/side_button.jpg',
             background: 'img/table_background.jpg',
-            fourColorDeck: 'img/4colorsheet.png'
+            fourColorDeck: 'img/4colorsheet.png',
+            dealerButton: 'img/dealer_button.png'
             }
 
             this.images.background = {}
@@ -253,6 +254,8 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
       //set minX and maxX
       var minX = self.images.betSlider.horizontal.position.x
    var maxX = self.images.betSlider.horizontal.position.x +self.images.betSlider.horizontal.size.x
+
+   //if mouse is moved
     event.onMouseMove = function(event){
          event.target.graphics.clear()
 
@@ -360,6 +363,21 @@ this.images.setDefaults = function(){
 
             var communityY =270
             var distanceBetweenCommunityCards = 2
+
+            var dealerButtonWidth = 25
+            var dealerButtonHeight = 26
+
+            var topRowSeatDealerButtonX = dealerButtonWidth/2
+            var topRowSeatDealerButtonY = seatHeight+dealerButtonHeight*.1
+
+            var leftColumnSeatDealerButtonX = seatWidth+dealerButtonWidth*.1
+            var leftColumnSeatDealerButtonY = 0
+
+              var bottomRowSeatDealerButtonX = dealerButtonWidth/2
+            var bottomRowSeatDealerButtonY = -dealerButtonHeight*.1
+
+            var rightColumnSeatDealerButtonX = seatWidth-dealerButtonWidth*1.1
+            var rightColumnSeatDealerButtonY = 0
 
             var potHeight = 24
             var potWidth = 100
@@ -482,6 +500,57 @@ this.images.setDefaults = function(){
       for(var i = 0; i < this.seats.length; i = i + 1){
        this.addItemText(this.seats[i].bet,'', "11px Arial", "#FFFFFF")}
 
+
+       //----------------------dealer button--------------------------------------
+
+for(var i = 0; i < this.seats.length; i = i + 1){
+
+    //check if seat is on top
+    if(this.seats[i].position.y == firstRowY){
+        
+        var dealerButtonX = this.seats[i].position.x+topRowSeatDealerButtonX
+        var dealerButtonY = this.seats[i].position.y+topRowSeatDealerButtonY
+
+        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,self.gameState.containerImageIndexes.chips)
+
+
+    }
+    else if(this.seats[i].position.x == firstColumnX){
+        
+        var dealerButtonX = this.seats[i].position.x+leftColumnSeatDealerButtonX
+        var dealerButtonY = this.seats[i].position.y+leftColumnSeatDealerButtonY
+
+        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,self.gameState.containerImageIndexes.chips)
+
+
+    }
+
+    else if(this.seats[i].position.y == thirdRowY){
+        
+        var dealerButtonX = this.seats[i].position.x+bottomRowSeatDealerButtonX
+        var dealerButtonY = this.seats[i].position.y+bottomRowSeatDealerButtonY
+
+        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,self.gameState.containerImageIndexes.chips)
+
+
+    }
+        else if(this.seats[i].position.x == secondColumnX){
+        
+        var dealerButtonX = this.seats[i].position.x+rightColumnSeatDealerButtonX
+        var dealerButtonY = this.seats[i].position.y+rightColumnSeatDealerButtonY
+
+        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,self.gameState.containerImageIndexes.chips)
+
+
+    }
+
+     this.itemAsBitmap(this.seats[i].dealerButton, this.sources.dealerButton)
+    }
+
+   
+       
+
+
          //---------------action buttons------------------
       this.fold = new this.Item(205,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','fold'])
       this.call = new this.Item(305,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','call'])
@@ -502,7 +571,7 @@ this.images.setDefaults = function(){
 
         //-----------------bet slider-----------------------------
               this.betSlider.horizontal = new this.Item (215,458,240,1,self.gameState.containerImageIndexes.button)
-      this.betSlider.vertical = new this.Item(215,448,4,20,self.gameState.containerImageIndexes.button)
+      this.betSlider.vertical = new this.Item(215,448,6,13,self.gameState.containerImageIndexes.button)
       this.betSlider.betSize = new this.Item(470,448,30,50,self.gameState.containerImageIndexes.button)
 
         this.itemAsRectangle(this.betSlider.horizontal, 'black')
@@ -2022,8 +2091,7 @@ this.restoreActiveContainers=function(activeContainerArray){
              
              this.displayCorrectSeatMessage(i)
          }
-        
-  
+
     }
     
   //---------------------SOCKET CODE------------------------
