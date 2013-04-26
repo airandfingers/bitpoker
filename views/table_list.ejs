@@ -1,14 +1,61 @@
 <div id="table_list">
-  <h3>Tables</h3>
-  <ul>
-    <% for (var i = 0, len = table_names.length; i < len; i++) {
-    var table_name = table_names[i]; %>
-      <li>
-        <a href="/<%= table_name %>"
-           onClick="return popup(this, '<%= table_name %>')">
-           <%= table_name %>
-        </a>
-      </li>
-    <% }; %>
-  </ul>
+    <table id="table_id">
+      <thead>
+        <tr>
+          <th>Table</th>
+          <th>Currency</th>
+          <th>Maobucks/Chip</th>
+          <th>Big Blind</th>
+          <th>Small Blind</th>
+          <th>Max Chips</th>
+          <th>Min Chips</th>
+          <th>Max Players</th>
+          <th>Min Players</th>
+          <th>Min Increment</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% 
+          var i
+            , len
+            , MIN_INCREMENT
+            , CURRENCY
+            , MAOBUCKS_PER_CHIP
+            , BIG_BLIND
+            , SMALL_BLIND
+            , MAX_CHIPS
+            , MIN_CHIPS
+            , MAX_PLAYERS
+            , MIN_PLAYERS
+            , table_name;
+
+          for (i=0, len = table_games.length; i<len; i++ ) {
+            MIN_INCREMENT = table_games[i].MIN_INCREMENT;
+            CURRENCY= table_games[i].CURRENCY;
+            MAOBUCKS_PER_CHIP= table_games[i].MAOBUCKS_PER_CHIP;
+            BIG_BLIND= table_games[i].BIG_BLIND;
+            SMALL_BLIND= table_games[i].SMALL_BLIND;
+            MAX_CHIPS = table_games[i].MAX_CHIPS;
+            MIN_CHIPS= table_games[i].MIN_CHIPS;
+            MAX_PLAYERS= table_games[i].MAX_PLAYERS;
+            MIN_PLAYERS = table_games[i].MIN_PLAYERS;
+            table_name= table_games[i].table_name; 
+        %>
+          <tr id="<%=table_name %>">
+            <td> <%= table_name %> </td>
+            <td> <%= MIN_INCREMENT %> </td>
+            <td> <%= CURRENCY %></td>
+            <td> <%= MAOBUCKS_PER_CHIP %> </td>
+            <td> <%= BIG_BLIND %> </td>
+            <td> <%= SMALL_BLIND %> </td>
+            <td> <%= MAX_CHIPS %> </td>
+            <td> <%= MIN_CHIPS %> </td>          
+            <td> <%= MAX_PLAYERS %> </td>
+            <td> <%= MIN_PLAYERS %> </td>
+          </tr> 
+       <% } %>
+     </tbody>
+    </table>
 </div>
+
+

@@ -4,7 +4,13 @@
         <h1 id="welcome">
             Hello Bitcoin Poker world! You are in the lobby.
         </h1>
-        <div id="chat">
+
+
+        <!--displays list of tables-->
+        <% include table_list %>
+
+        <!--display chat -->
+        <div id="chat_lobby">
             <div id="chat_messages">
             </div>
             <form id="chat_form">
@@ -18,16 +24,37 @@
             </form>
         </div>
 
-        <!--displays list of tables-->
-        <% include table_list %>
 
         <!--displays list of users-->
-        <% include users %>
+        <div id="users_lobby_wrapper">
+            <% include users %>           
+        </div>
 
         <!--include values to expose to scripts-->
         <input type="hidden" id="server_values" data-room_state="<%= room_state %>" />
 
     </div> <!-- container-->
         <% include plugins %>
+        <script src="/js/jquery.dataTables.js"></script>
         <script src="/js/chat.js"></script>
+
+        <!-- Datatable -->
+        <script>
+          $(document).ready(function() {
+            $('#table_id').dataTable({
+              "bJQueryUI": true,
+              "sPaginationType": "full_numbers"
+            });
+          } );
+        
+        console.log($('#table_id tbody'));
+
+        $('#table_id tbody').on('click', 'tr', function(e) {
+          var table_name = $(this).attr('id');
+          console.log(table_name);
+          return popup(table_name, 'table_name');
+        });
+
+        </script>
+
 <% include foot %>
