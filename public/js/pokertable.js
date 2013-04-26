@@ -99,6 +99,7 @@
         this.images.seats[i].hiddenCard1={}
         this.images.seats[i].shownCard0={}
         this.images.seats[i].shownCard1={}
+        this.images.seats[i].dealerButton={}
         
         }
                 
@@ -506,45 +507,45 @@ this.images.setDefaults = function(){
 for(var i = 0; i < this.seats.length; i = i + 1){
 
     //check if seat is on top
-    if(this.seats[i].position.y == firstRowY){
+    if(this.seats[i].seat.position.y == firstRowY){
         
-        var dealerButtonX = this.seats[i].position.x+topRowSeatDealerButtonX
-        var dealerButtonY = this.seats[i].position.y+topRowSeatDealerButtonY
+        var dealerButtonX = this.seats[i].seat.position.x+topRowSeatDealerButtonX
+        var dealerButtonY = this.seats[i].seat.position.y+topRowSeatDealerButtonY
+
+        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,self.gameState.containerImageIndexes.chips)
+
+    }
+    else if(this.seats[i].seat.position.x == firstColumnX){
+        
+        var dealerButtonX = this.seats[i].seat.position.x+leftColumnSeatDealerButtonX
+        var dealerButtonY = this.seats[i].seat.position.y+leftColumnSeatDealerButtonY
+
+        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,self.gameState.containerImageIndexes.chips)
+    }
+
+    else if(this.seats[i].seat.position.y == fourthRowY){
+        
+        var dealerButtonX = this.seats[i].seat.position.x+bottomRowSeatDealerButtonX
+        var dealerButtonY = this.seats[i].seat.position.y+bottomRowSeatDealerButtonY
 
         this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,self.gameState.containerImageIndexes.chips)
 
 
     }
-    else if(this.seats[i].position.x == firstColumnX){
+        else if(this.seats[i].seat.position.x == fifthColumnX){
         
-        var dealerButtonX = this.seats[i].position.x+leftColumnSeatDealerButtonX
-        var dealerButtonY = this.seats[i].position.y+leftColumnSeatDealerButtonY
+        var dealerButtonX = this.seats[i].seat.position.x+rightColumnSeatDealerButtonX
+        var dealerButtonY = this.seats[i].seat.position.y+rightColumnSeatDealerButtonY
 
         this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,self.gameState.containerImageIndexes.chips)
 
 
     }
 
-    else if(this.seats[i].position.y == thirdRowY){
-        
-        var dealerButtonX = this.seats[i].position.x+bottomRowSeatDealerButtonX
-        var dealerButtonY = this.seats[i].position.y+bottomRowSeatDealerButtonY
-
-        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,self.gameState.containerImageIndexes.chips)
-
-
-    }
-        else if(this.seats[i].position.x == secondColumnX){
-        
-        var dealerButtonX = this.seats[i].position.x+rightColumnSeatDealerButtonX
-        var dealerButtonY = this.seats[i].position.y+rightColumnSeatDealerButtonY
-
-        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,self.gameState.containerImageIndexes.chips)
-
-
-    }
-
+    if(this.seats[i].dealerButton instanceof this.Item){
      this.itemAsBitmap(this.seats[i].dealerButton, this.sources.dealerButton)
+     }
+     else{console.log(i+' is not a seat')}
     }
 
    
@@ -1030,8 +1031,8 @@ for(var i   = 0; i<this.gameState.seats[seatNumber].bet.length-1;i++){
 this.images.potChips[this.images.potChips.length-1].image.graphics.beginStroke(chipColor).beginFill('gray').drawCircle(x+diameter/2, y+diameter/2, diameter/2)
 
 this.images.potChips[this.images.potChips.length-1].text =  new createjs.Text(chipValue, '8px Arial', 'white')
-this.images.potChips[this.images.potChips.length-1].text.x = this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].position.x + this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].size.x/2
-this.images.potChips[this.images.potChips.length-1].y = this.gameState.seats[seatNumber].bet[this.gameState.seats[seatNumber].bet.length-1].position.y+6
+this.images.potChips[this.images.potChips.length-1].text.x = this.images.potChips[this.images.potChips.length-1].position.x + this.images.potChips[this.images.potChips.length-1].size.x/2
+this.images.potChips[this.images.potChips.length-1].y = this.images.potChips[this.images.potChips.length-1].position.y+6
 this.images.potChips[this.images.potChips.length-1].text.baseline = 'top'
 this.images.potChips[this.images.potChips.length-1].text.textAlign = 'center'
 this.images.potChips[this.images.potChips.length-1].text.maxWidth = this.images.potChips[this.images.potChips.length-1].size.x*.8
