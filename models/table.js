@@ -18,28 +18,28 @@ module.exports = (function () {
   var static_properties = {
   // static properties (attached below) - Model.property_name
   TABLE_CONSTANTS: ['SMALL_BLIND', 'MIN_CHIPS', 'MAX_CHIPS',
-                     'MAOBUCKS_PER_CHIP', 'MIN_PLAYERS', 'MAX_PLAYERS'],
+                     'MAOBUCKS_PER_CHIP', 'MAX_PLAYERS'],
   // describes the constants to initialize tables with,
   // listing constants in TABLE_CONSTANTS' order
   TABLE_TYPES: [
-// small blind   max stack
-//         min stack    maobucks/chip    MAXP
-    // SB    MIN    MAX    MB/C   MINP
-      [ 10,   50, 10000, .0001,     2,    10] // .001/.002   maobucks
-    , [ 10,   50, 10000, .0001,     4,    10] // .001/.002   maobucks
-    , [ 50,  250, 50000, .0001,     2,    10] // .005/.01    maobucks
-    , [ 50,  250, 50000, .0001,     4,    10] // .005/.01    maobucks
-    , [250, 1000,  2000, .0001,     2,    10] // .025/.05    maobucks
-    , [ 10,   50, 10000,   .01,     2,    10] // .1/.2       maobucks
-    , [ 50,  250, 50000,   .01,     2,    10] // .5/1        maobucks
-    , [  1,   10,   250,     1,     2,    10] // 1/2         maobucks
-    , [  5,   50,  1000,     1,     2,    10] // 5/10        maobucks
-    , [ 25,  250,  5000,     1,     2,    10] // 25/50       maobucks
-    , [  1,   10,   250,   100,     2,    10] // 100/200     maobucks
-    , [  5,   50,  1000,   100,     2,    10] // 500/1000    maobucks
-    , [ 25,  250,  5000,   100,     2,    10] // 2500/5000   maobucks
-    , [100,  500, 10000,   100,     2,    10] // 10000/20000 maobucks
-    , [100,  500, 10000,   100,     2,     2] // 10000/20000 maobucks
+// small blind   max stack      max players
+//         min stack    maobucks/chip
+    // SB    MIN    MAX    MB/C   MAXP
+      [ 10,   50, 10000, .0001,    10] // .001/.002   maobucks
+    , [ 10,   50, 10000, .0001,    10] // .001/.002   maobucks
+    , [ 50,  250, 50000, .0001,    10] // .005/.01    maobucks
+    , [ 50,  250, 50000, .0001,    10] // .005/.01    maobucks
+    , [250, 1000,  2000, .0001,    10] // .025/.05    maobucks
+    , [ 10,   50, 10000,   .01,    10] // .1/.2       maobucks
+    , [ 50,  250, 50000,   .01,    10] // .5/1        maobucks
+    , [  1,   10,   250,     1,    10] // 1/2         maobucks
+    , [  5,   50,  1000,     1,    10] // 5/10        maobucks
+    , [ 25,  250,  5000,     1,    10] // 25/50       maobucks
+    , [  1,   10,   250,   100,    10] // 100/200     maobucks
+    , [  5,   50,  1000,   100,    10] // 500/1000    maobucks
+    , [ 25,  250,  5000,   100,    10] // 2500/5000   maobucks
+    , [100,  500, 10000,   100,    10] // 10000/20000 maobucks
+    , [100,  500, 10000,   100,     2] // 10000/20000 maobucks
     ]
     // [this string] + table_id = room_name
   , TABLE_PREFIX: 'table_'
