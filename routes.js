@@ -29,6 +29,18 @@ module.exports = (function () {
     });
   });
 
+  app.get('/deposit_bitcoins', function(req, res) {
+    res.render('deposit_bitcoins', {
+      title: 'deposit_bitcoins', 
+    });
+  });
+
+  app.get('/withdraw_bitcoins', function(req, res) {
+    res.render('withdraw_bitcoins', {
+     title: 'withdraw_bitcoins', 
+    });
+  });
+
     //home, index and "/" link to the same page
    app.get('/', function(req, res) {
     res.render('index', {
