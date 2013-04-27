@@ -29,6 +29,18 @@ module.exports = (function () {
     });
   });
 
+  app.get('/deposit_bitcoins', function(req, res) {
+    res.render('deposit_bitcoins', {
+      title: 'deposit_bitcoins', 
+    });
+  });
+
+  app.get('/withdraw_bitcoins', function(req, res) {
+    res.render('withdraw_bitcoins', {
+     title: 'withdraw_bitcoins', 
+    });
+  });
+
     //home, index and "/" link to the same page
    app.get('/', function(req, res) {
     res.render('index', {
@@ -339,12 +351,14 @@ module.exports = (function () {
   });
 
   app.get('/lobby', function(req, res) {
-    var table_names = Table.getTableNames()
-      , users = Room.getRoom('lobby').getUsernames()
-      , room_state = { users: users };
+    var users = Room.getRoom('lobby').getUsernames()
+      , room_state = { users: users }
+      , table_games = Table.getTableGames();
+    console.log('Got table_games:', table_games);
+    console.log('Table games.length is ', table_games.length);
     res.render('lobby', {
-      table_names: table_names
-    , room_state : JSON.stringify(room_state)
+      room_state : JSON.stringify(room_state)
+    , table_games: table_games
     });
   });
 
@@ -418,7 +432,7 @@ module.exports = (function () {
         else {
           res.json(table_state);
         }
-      })
+      });
     }
     else {
       res.json({ error: 'No table with ID ' + table_id });

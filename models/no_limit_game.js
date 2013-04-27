@@ -26,6 +26,18 @@ module.exports = (function () {
   , CURRENCY: { type: String, default: 'maobucks' }
     // the minimum difference between two possible chip amounts at this table
   , MIN_INCREMENT: { type: Number, default: 1 }
+
+  // CONSTANT FOR ALL GAMES
+    // how many ms to wait between polling to see how many players are ready
+  , WAIT_POLL_INTERVAL: { type: Number, default: 1000 }
+    // how long (in ms) to wait for players to respond to prompts
+  , ACT_TIMEOUT: { type: Number, default: 10000 }
+    // how long (in ms) to wait for players to respond to prompts
+  , DISPLAY_HANDS_DURATION: { type: Number, default: 5000 }
+    // how long (in ms) players can sit out before being forced from their seats
+  , SIT_OUT_TIME_ALLOWED: { type: Number, default: 30000 } // 30 seconds (for testing)
+    // how long (in ms) players are forced to wait before buying with less than they stood up with
+  , MIN_BUYIN_TIME_ENFORCED: { type: Number, default: 30000 } // 30 seconds (for testing)
   });
 
   NoLimitGameSchema.statics.createNoLimitGame = function(spec) {
@@ -34,7 +46,6 @@ module.exports = (function () {
     }
     console.log('creating NoLimitGame:', spec);
     var game = new NoLimitGame(spec);
-    //game.initialize();
 
     return game;
   };
@@ -64,16 +75,6 @@ module.exports = (function () {
 
   var static_properties = {
   // static properties (attached below) - Model.property_name
-    // how many ms to wait between polling to see how many players are ready
-    WAIT_POLL_INTERVAL: 1000
-    // how long (in ms) to wait for players to respond to prompts
-  , ACT_TIMEOUT: 10000
-    // how long (in ms) to wait for players to respond to prompts
-  , DISPLAY_HANDS_DURATION: 5000
-    // how long (in ms) players can sit out before being forced from their seats
-  , SIT_OUT_TIME_ALLOWED: 30000 // 30 seconds (for testing)
-    // how long (in ms) players are forced to wait before buying with less than they stood up with
-  , MIN_BUYIN_TIME_ENFORCED: 30000 // 30 seconds (for testing)
   };
 
   /* the model - a fancy constructor compiled from the schema:

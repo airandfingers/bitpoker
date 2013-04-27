@@ -83,7 +83,7 @@ module.exports = (function () {
     _.each( Table.TABLE_TYPES, function(constants) {
       //sb_min_max_mbpc = constants.join('_');
       constants = _.object(Table.TABLE_CONSTANTS, constants);
-      game = new NoLimitGame(constants);
+      game = NoLimitGame.createNoLimitGame(constants);
       Table.createTable({
         //table_id: sb_min_max_mbpc + '_a' // constants plus a (first table of this type)
         table_id: ++i
@@ -117,7 +117,8 @@ module.exports = (function () {
     _.each(Table.tables, function(table, table_name) {
       table_game = table.game.constants();
       table_game.table_name = table_name;
-      console.log('Pushing table_game:', table_game);
+      table_game.table_id = table.table_id;
+      table_game.seats_taken = table.getNumSeatsTaken();
       table_games.push(table_game);
     });
     console.log('Returning table_games:', table_games);
@@ -328,8 +329,13 @@ module.exports = (function () {
     socket.emit('player_adds_chips', player.serialize(), true);
   };
 
-  TableSchema.methods.isFull = function() {
+  TableSchema.methods.getNumSeatsTaken = function() {
     var num_players = _.keys(this.seats).length;
+    return num_players;
+  };
+
+  TableSchema.methods.isFull = function() {
+    var num_players = this.getNumSeatsTaken();
     return num_players === this.game.MAX_PLAYERS;
   }
 

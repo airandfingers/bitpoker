@@ -7,7 +7,7 @@
                href = mylink;
             else
                href = mylink.href;
-            window.open(href, windowname, 'width=800,height=770 ,left=200,top=200,location=no,toolbar=no,menubar=no,titlebar=no,directories=no,scrollbars=yes');
+            window.open(href, windowname, 'width=800,height=770 ,left=200,top=200,location=0,toolbar=no,menubar=no,titlebar=no,directories=no,scrollbars=yes');
             return false;
           }
         </script>
@@ -35,32 +35,35 @@
 
         <!-- Hide/Show Login functionality -->
         <script>
+          var $login = $('#login');
           $(document).ready(function() {
-            $('#login').hide();
-            $('#login_trigger').click(function() {
+            $login.hide();
+            $('#login_trigger').click(function(e) {
+              $login.stop(true, true);
               if (! $(this).hasClass('active')) {
                 // add active class
                 $(this)
                   .addClass('active');
                 // hide login form
-                $('#login')
+                $login
                   .css({
-                  left: $(this).position().left - $(this).width(), 
-                  top: $(this).position().top + $(this).height()
+                    left: $(this).position().left - $(this).width()
+                  , top: $(this).position().top + $(this).height()
                   })
-                  .slideDown();
+                  .show('slide', { direction: 'up' }, 500)
+                  .find('input:first').focus();
               }
               else {
                 // remove active class
                 $(this)
                   .removeClass('active');
                 // hide login form
-                $('#login')
-                  .slideUp();
+                $login
+                  .hide('slide', { direction: 'up' }, 500);
               }
             });
 
-            $('#login form :submit').click(function() {
+            $login.find('form :submit').click(function() {
               $(this)
                 .parent()
                 .prev('a')
@@ -71,31 +74,34 @@
 
         <!-- Hide/Show Register functionality -->
         <script>
+          var $register = $('#register');
           $(document).ready(function() {
-            $('#register').hide();
+            $register.hide();
             $('#register_trigger').click(function() {
+              $register.stop(true, true);
               if (! $(this).hasClass('active')) {
                 // add active class
                 $(this)
                   .addClass('active');
                 // hide register form
-                $('#register')
+                $register
                   .css({
-                  left: $(this).position().left - $(this).width(), 
-                  top: $(this).position().top + $(this).height()
+                    left: $(this).position().left - $(this).width()
+                  , top: $(this).position().top + $(this).height()
                   })
-                  .slideDown();
+                  .show('slide', { direction: 'up' }, 500)
+                  .find('input:first').focus();
               }
               else {
                 // remove active class
                 $(this)
                   .removeClass('active');
                 // hide register form
-                $('#register')
-                  .slideUp();
+                $register
+                  .hide('slide', { direction: 'up' }, 500);
               }
             });
-            $('#register form :submit').click(function() {
+            $register.find('form :submit').click(function() {
               $(this)
                 .parent()
                 .prev('a')
@@ -104,6 +110,7 @@
           });
         </script>
       <% } %> 
+        
         <!-- Hide/Show "options" functionality -->
         <script>
           $(document).ready(function() {
@@ -112,6 +119,7 @@
             });
           });
         </script>
+
         <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
         <script>
             var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];

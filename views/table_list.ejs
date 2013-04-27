@@ -1,14 +1,44 @@
-<div id="table_list">
-  <h3>Tables</h3>
-  <ul>
-    <% for (var i = 0, len = table_names.length; i < len; i++) {
-    var table_name = table_names[i]; %>
-      <li>
-        <a href="/<%= table_name %>"
-           onClick="return popup(this, '<%= table_name %>')">
-           <%= table_name %>
-        </a>
-      </li>
-    <% }; %>
-  </ul>
-</div>
+<table id="table_list">
+  <thead>
+    <tr>
+      <th>Table</th>
+      <th>Chip Value</th>
+      <th>Blinds</th>
+      <th>Buyin Limits</th>
+      <th># Players</th>
+    </tr>
+  </thead>
+  <tbody>
+    <%
+    var i, len
+      , table_game, table_name, table_id
+      , CURRENCY, MAOBUCKS_PER_CHIP
+      , SMALL_BLIND, BIG_BLIND, MIN_CHIPS, MAX_CHIPS
+      , seats_taken, MAX_PLAYERS;
+
+    for (i = 0, len = table_games.length; i < len; i++ ) {
+      table_game = table_games[i];
+      table_name = table_game.table_name;
+      table_id = table_game.table_id;
+      CURRENCY = table_game.CURRENCY;
+      chip_value = table_game.MAOBUCKS_PER_CHIP + ' ' + CURRENCY;
+      SMALL_BLIND = table_game.SMALL_BLIND;
+      BIG_BLIND = table_game.BIG_BLIND;
+      MIN_CHIPS = table_game.MIN_CHIPS;
+      MAX_CHIPS = table_game.MAX_CHIPS;
+
+      seats_taken = table_game.seats_taken;
+      MAX_PLAYERS = table_game.MAX_PLAYERS;
+
+      //MIN_PLAYERS = table_game.MIN_PLAYERS;
+    %>
+      <tr id="<%=table_name %>">
+        <td> <%= table_id %> </td>
+        <td> <%= chip_value %></td>
+        <td> <%= SMALL_BLIND %> / <%= BIG_BLIND %> </td>
+        <td> <%= MIN_CHIPS %> - <%= MAX_CHIPS %> </td>
+        <td> <%= seats_taken %> / <%= MAX_PLAYERS %> </td>
+      </tr> 
+   <% } %>
+  </tbody>
+</table>
