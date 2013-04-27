@@ -351,15 +351,13 @@ module.exports = (function () {
   });
 
   app.get('/lobby', function(req, res) {
-    var table_names = Table.getTableNames()
-      , users = Room.getRoom('lobby').getUsernames()
-      , room_state = { users: users };
-      var table_games = Table.getTableGames();
-      console.log('Got table_games:', table_games);
-      console.log('Table games.length is ', table_games.length);
+    var users = Room.getRoom('lobby').getUsernames()
+      , room_state = { users: users }
+      , table_games = Table.getTableGames();
+    console.log('Got table_games:', table_games);
+    console.log('Table games.length is ', table_games.length);
     res.render('lobby', {
-      table_names: table_names
-    , room_state : JSON.stringify(room_state)
+      room_state : JSON.stringify(room_state)
     , table_games: table_games
     });
   });

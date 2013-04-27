@@ -1,60 +1,37 @@
 <% var title = 'Welcome to Bitcoin Poker!'; %>
 <% include head %>
     <div id="container">
-        <h1 id="welcome">
-            Hello Bitcoin Poker world! You are in the lobby.
-        </h1>
-
-
-        <!--displays list of tables-->
-        <% include table_list %>
-
-        <!--display chat -->
-        <div id="chat_lobby">
-            <div id="chat_messages">
-            </div>
-            <form id="chat_form">
-                <input type="text" id="chat_sender" placeholder="My Name" 
-                    <% if (locals !== undefined && locals.username) { %>
-                        value="<%= locals.username %>"
-                    <% } %>
-                />
-                <input type="text" id="chat_message" placeholder="Message" />
-                <input type="submit" id="chat_submit" value="Send Message" />
-            </form>
+        <!-- display list of tables -->
+        <div id="table_list_lobby">
+            <% include table_list %>
         </div>
 
-
-        <!--displays list of users-->
-        <div id="users_lobby_wrapper">
-            <% include users %>           
+        <!-- display chat -->
+        <div id="chat_lobby" class="chat_container">
+            <% include chat %>
         </div>
 
-        <!--include values to expose to scripts-->
+        <!-- include values to expose to scripts -->
         <input type="hidden" id="server_values" data-room_state="<%= room_state %>" />
 
     </div> <!-- container-->
-        <% include plugins %>
-        <script src="/js/jquery.dataTables.js"></script>
-        <script src="/js/chat.js"></script>
+    <% include plugins %>
+    <!-- DataTable -->
+    <script src="/js/jquery.dataTables.js"></script>
+    <script>
+    //$(document).ready(function() {
+    $('#table_list').dataTable({
+        bJQueryUI: true,
+        sPaginationType: 'full_numbers',
+        iDisplayLength: 20
+    });
+      //});
 
-        <!-- Datatable -->
-        <script>
-          $(document).ready(function() {
-            $('#table_id').dataTable({
-              "bJQueryUI": true,
-              "sPaginationType": "full_numbers"
-            });
-          } );
-        
-        console.log($('#table_id tbody'));
+    $('#table_list tbody').on('click', 'tr', function(e) {
+      var table_name = $(this).attr('id');
+      return popup(table_name);
+    });
+    </script>
 
-        $('#table_id tbody').on('click', 'tr', function(e) {
-          var table_name = $(this).attr('id');
-          console.log(table_name);
-          return popup(table_name, 'table_name');
-        });
-
-        </script>
-
+    <script src="/js/chat.js"></script>
 <% include foot %>
