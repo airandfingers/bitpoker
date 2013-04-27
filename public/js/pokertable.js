@@ -449,15 +449,34 @@ this.images.setDefaults = function(){
 
             //------------seat images----------------------
         for (var i = 0; i < this.seats.length; i = i + 1){
+            
             //filled seats
-            this.itemAsRectangle(this.seats[i].seat, "#000000")
-            this.seats[i].seat.image.graphics.beginStroke("#FFFFFF").moveTo(this.seats[i].horizontalDivider.position.x,this.seats[i].horizontalDivider.position.y).lineTo(this.seats[i].horizontalDivider.position.x+this.seats[i].horizontalDivider.size.x,this.seats[i].horizontalDivider.position.y)
+this.seats[i].seat.image = new createjs.Shape()
+this.seats[i].seat.image.snapToPixel = true
+this.seats[i].seat.image.graphics.setStrokeStyle(2,'square').beginStroke("#FFFFFF").beginFill('black').drawRect(this.seats[i].seat.position.x, this.seats[i].seat.position.y, this.seats[i].seat.size.x, this.seats[i].seat.size.y)
+            this.seats[i].seat.image.graphics.setStrokeStyle(1).beginStroke("#FFFFFF").moveTo(this.seats[i].horizontalDivider.position.x,this.seats[i].horizontalDivider.position.y).lineTo(this.seats[i].horizontalDivider.position.x+this.seats[i].horizontalDivider.size.x,this.seats[i].horizontalDivider.position.y)
+          this.seats[i].seat.image.parentOfImageObject = this.seats[i].seat
             //Empty Seats
-            this.itemAsRectangle(this.seats[i].openSeat, "#000000")
-            this.addItemText(this.seats[i].openSeat,'Open Seat','15px arial','#FFFFFF' )
+            this.seats[i].openSeat.image = new createjs.Shape()
+this.seats[i].openSeat.image.snapToPixel = true
+this.seats[i].openSeat.image.graphics.setStrokeStyle(2,'square').beginStroke("#FFFFFF").beginFill('black').drawRect(this.seats[i].openSeat.position.x, this.seats[i].openSeat.position.y, this.seats[i].openSeat.size.x, this.seats[i].openSeat.size.y)
+this.seats[i].openSeat.image.parentOfImageObject = this.seats[i].openSeat                
 
-            //disabled SEats
-            this.itemAsRectangle(this.seats[i].disabledSeat, "#000000")
+                this.seats[i].openSeat.text = new createjs.Text('Open Seat', '15px Arial', "#FFFFFF")
+this.seats[i].openSeat.text.x=this.seats[i].openSeat.position.x + this.seats[i].openSeat.size.x/2 
+this.seats[i].openSeat.text.y=this.seats[i].openSeat.position.y + 4
+this.seats[i].openSeat.text.baseline = 'top'
+this.seats[i].openSeat.text.textAlign = 'center'
+this.seats[i].openSeat.text.maxWidth = this.seats[i].openSeat.size.x*.9
+this.seats[i].openSeat.textColor = "#FFFFFF"       
+
+            //disabled Seats
+            this.seats[i].disabledSeat.image = new createjs.Shape()
+this.seats[i].disabledSeat.image.snapToPixel = true
+this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke("#544E4F").beginFill('black').drawRect(this.seats[i].disabledSeat.position.x, this.seats[i].disabledSeat.position.y, this.seats[i].disabledSeat.size.x, this.seats[i].disabledSeat.size.y)
+         this.seats[i].disabledSeat.image.parentOfImageObject = this.seats[i].disabledSeat       
+
+
             //hole cards
             if(self.gameState.displaySize == 'mobile'){
                        this.itemAsBitmap(this.seats[i].hiddenCard0, this.sources.hiddenCardSmall)
@@ -730,7 +749,6 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
 
         //mouse events for clicking on empty seats
              for (var i = 0; i < this.seats.length; i = i + 1){
-          this.seats[i].openSeat.image.onPress = self.events.buttonMouseDown
          this.seats[i].openSeat.image.onClick = self.events.onButtonClick
         }
 
