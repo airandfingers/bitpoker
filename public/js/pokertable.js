@@ -1258,86 +1258,39 @@ else if(communityArray.length == 3){
  this.dealHoleCards = function(smallBlindSeatNumber, playerArray, holeCardArray){
      
      var initialX = this.images.startingCard.position.x
-     var initialY = this.images.startingCard.position.Y
-     var animationTime = 1000
-      
+     var initialY = this.images.startingCard.position.y
+     var animationTime = 2000
 
-            var card0DistancePerTickArrayX = []
-           var card0DistancePerTickArrayY = []
-
-           var card1DistancePerTickArrayX = []
-           var card1DistancePerTickArrayY = []
-
+     console.log(initialX+','+initialY)
 
             var fractionDistancePerTick = .05
             var lastTick = 1/fractionDistancePerTick -1 
 
             var   interval = fractionDistancePerTick*animationTime
 
+            var animatedCards0 = []
+             var animatedCards1 = []
 
-            for(var i =0;i<playerArray;i++){
-
-                   
-                    var distancePerTickX0 =  Math.sqrt(distancePerTick*distancePerTick/(slope*slope+1))
-                    var distancePerTickY0 = distancePerTickArrayX*slope
-
-                     card0DistancePerTickArrayX.push(distancePerTickX0) 
-                     card0DistancePerTickArrayY.push(distancePerTickY0)
-
-           
-                    var distancePerTickX1 =  Math.sqrt(distancePerTick*distancePerTick/(slope*slope+1))
-                    var distancePerTickY1 = distancePerTickArrayX*slope
-
-                    card1DistancePerTickArrayX.push(distancePerTickX1) 
-                     card1DistancePerTickArrayY.push(distancePerTickY1)
-
-            }
-
-            var cardsDealt =0
-            var animatedCards = []
-
+            // this.displayShownCard(holeCardArray[0],this.images.seats[playerArray[0]].shownCard0)
             //deal first round of hole cards
-            for(var i =0;i<playerArray;i++){
-                setTimeout(function(){
-                    
+            for(var i =0;i<playerArray.length;i++){
+
                     createjs.Sound.play("dealCard")
-                    animatedCards[i] = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
-          this.images.itemAsBitmap(animatedCard, this.images.seats[seatNumber].hiddenCard0.bitmapSource)
+                    animatedCards0[i] = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
+          this.images.itemAsBitmap(animatedCards0[i], this.images.seats[playerArray[i]].hiddenCard0.bitmapSource)
 
-              this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.seats[playerArray[i]].position.x,this.images.seats[playerArray[i]].position.y, true)
+          animatedCards1[i] = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
+          this.images.itemAsBitmap(animatedCards1[i], this.images.seats[playerArray[i]].hiddenCard0.bitmapSource)
 
-              
-               if(holeCardArray){this.displayShownCard(holeCardArray[0],this.seats[playerArray[i]].shownCard0)}
-                    else{this.displayChildren(this.images.seats[playerArray[i]].hiddenCard0)}
-
-                },cardsDealt*animationTime)
-                 cardsDealt++
-  
-            }
-
-            //deal second round of hole cards
-
-                    for(var i =0;i<playerArray;i++){
-                setTimeout(function(){
-                    
-                    createjs.Sound.play("dealCard")
-                    animatedCards[i] = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
-          this.images.itemAsBitmap(animatedCard, this.images.seats[seatNumber].hiddenCard0.bitmapSource)
-
-              this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.seats[playerArray[i]].position.x,this.images.seats[playerArray[i]].position.y, true)
-       
-              
-  if(holeCardArray){this.displayShownCard(holeCardArray[1],this.seats[playerArray[i]].shownCard1)}
-                    else{this.displayChildren(this.images.seats[playerArray[i]].hiddenCard1)}
-
-                },cardsDealt*animationTime)
-                 cardsDealt++
-  
-            }
+              this.animateImage(initialX,initialY,animationTime, lastTick+1,  animatedCards0[i], this.images.seats[playerArray[i]].hiddenCard0.position.x,this.images.seats[playerArray[i]].hiddenCard0.position.y)
+               this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCards1[i], this.images.seats[playerArray[i]].hiddenCard1.position.x,this.images.seats[playerArray[i]].hiddenCard1.position.y)
+ 
+               if(playerArray[i] == self.gameState.userSeatNumber){  this.displayHoleCards(holeCardArray, playerArray[i])  }
+                    else{  this.displayHiddenCards(playerArray[i])  }
 
             }
 
-
+}
 
      this.playerStands = function(seatNumber){
           this.gameState.seats[seatNumber].displayMessageType = 'openSeat'
@@ -2145,26 +2098,23 @@ this.restoreActiveContainers=function(activeContainerArray){
        //     self.displayAllCommunity(community)
                 
 })
-        
-//hands dealt to non-user players
-       socket.on('hands_dealt', function(players){
-           var playerArray = []
-           for(var i = 0; i<players.length;i++){
-               playerArray.push(playerArray.seat)
-               if(players[i].seat!=self.gameState.userSeatNumber){
-        self.displayHiddenCards(players[i].seat)
-     }
-      }
+
+socket.on('hands_dealt', function(players){
+    var playerArray = []
+    for(var i = 0; i<players.length;i++){playerArray.push(players[i].seat)}
+
+    if(self.gameState.holeCards) { self.dealHoleCards(playerArray[0],playerArray, self.gameState.holeCards)}
+    else{self.dealHoleCards(playerArray[0],playerArray)}
+    self.gameState.holeCards = null
 })
 
 
 //hand dealt to user
        socket.on('hole_cards_dealt', function(hand){
-      
-           self.displayHoleCards(hand, self.gameState.userSeatNumber)
-                   self.displayInHandOptions()
-        });
-     
+         // socket.removeListener('hands_dealt')
+         self.gameState.holeCards = hand
+
+     })
 
 
 //player acts
@@ -2366,13 +2316,13 @@ jQuery(document).ready(function(){
     holdemCanvas.initialize()
 
 
-      holdemCanvas.activateSockets()
-        socket.emit('get_table_state');
+
 })
 
 
 jQuery(window).load(function (){
-       
+             holdemCanvas.activateSockets()
+        socket.emit('get_table_state');
       /*
    for(var i= 0;i<holdemCanvas.images.containers.length;i++){
            console.log( holdemCanvas.images.containers[i].isVisible())
