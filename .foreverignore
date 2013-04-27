@@ -16,3 +16,6 @@
 **/*.log
 **/*.html
 **/*.css
+
+**/*.sublime-project
+**/*.sublime-workspace

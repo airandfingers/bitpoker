@@ -1,61 +1,44 @@
-<div id="table_list">
-    <table id="table_id">
-      <thead>
-        <tr>
-          <th>Table</th>
-          <th>Currency</th>
-          <th>Maobucks/Chip</th>
-          <th>Big Blind</th>
-          <th>Small Blind</th>
-          <th>Max Chips</th>
-          <th>Min Chips</th>
-          <th>Max Players</th>
-          <th>Min Players</th>
-          <th>Min Increment</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% 
-          var i
-            , len
-            , MIN_INCREMENT
-            , CURRENCY
-            , MAOBUCKS_PER_CHIP
-            , BIG_BLIND
-            , SMALL_BLIND
-            , MAX_CHIPS
-            , MIN_CHIPS
-            , MAX_PLAYERS
-            , MIN_PLAYERS
-            , table_name;
+<table id="table_list">
+  <thead>
+    <tr>
+      <th>Table</th>
+      <th>Chip Value</th>
+      <th>Blinds</th>
+      <th>Buyin Limits</th>
+      <th># Players</th>
+    </tr>
+  </thead>
+  <tbody>
+    <%
+    var i, len
+      , table_game, table_name, table_id
+      , CURRENCY, MAOBUCKS_PER_CHIP
+      , SMALL_BLIND, BIG_BLIND, MIN_CHIPS, MAX_CHIPS
+      , seats_taken, MAX_PLAYERS;
 
-          for (i=0, len = table_games.length; i<len; i++ ) {
-            MIN_INCREMENT = table_games[i].MIN_INCREMENT;
-            CURRENCY= table_games[i].CURRENCY;
-            MAOBUCKS_PER_CHIP= table_games[i].MAOBUCKS_PER_CHIP;
-            BIG_BLIND= table_games[i].BIG_BLIND;
-            SMALL_BLIND= table_games[i].SMALL_BLIND;
-            MAX_CHIPS = table_games[i].MAX_CHIPS;
-            MIN_CHIPS= table_games[i].MIN_CHIPS;
-            MAX_PLAYERS= table_games[i].MAX_PLAYERS;
-            MIN_PLAYERS = table_games[i].MIN_PLAYERS;
-            table_name= table_games[i].table_name; 
-        %>
-          <tr id="<%=table_name %>">
-            <td> <%= table_name %> </td>
-            <td> <%= MIN_INCREMENT %> </td>
-            <td> <%= CURRENCY %></td>
-            <td> <%= MAOBUCKS_PER_CHIP %> </td>
-            <td> <%= BIG_BLIND %> </td>
-            <td> <%= SMALL_BLIND %> </td>
-            <td> <%= MAX_CHIPS %> </td>
-            <td> <%= MIN_CHIPS %> </td>          
-            <td> <%= MAX_PLAYERS %> </td>
-            <td> <%= MIN_PLAYERS %> </td>
-          </tr> 
-       <% } %>
-     </tbody>
-    </table>
-</div>
+    for (i = 0, len = table_games.length; i < len; i++ ) {
+      table_game = table_games[i];
+      table_name = table_game.table_name;
+      table_id = table_game.table_id;
+      CURRENCY = table_game.CURRENCY;
+      chip_value = table_game.MAOBUCKS_PER_CHIP + ' ' + CURRENCY;
+      SMALL_BLIND = table_game.SMALL_BLIND;
+      BIG_BLIND = table_game.BIG_BLIND;
+      MIN_CHIPS = table_game.MIN_CHIPS;
+      MAX_CHIPS = table_game.MAX_CHIPS;
 
+      seats_taken = table_game.seats_taken;
+      MAX_PLAYERS = table_game.MAX_PLAYERS;
 
+      //MIN_PLAYERS = table_game.MIN_PLAYERS;
+    %>
+      <tr id="<%=table_name %>">
+        <td> <%= table_id %> </td>
+        <td> <%= chip_value %></td>
+        <td> <%= SMALL_BLIND %> / <%= BIG_BLIND %> </td>
+        <td> <%= MIN_CHIPS %> - <%= MAX_CHIPS %> </td>
+        <td> <%= seats_taken %> / <%= MAX_PLAYERS %> </td>
+      </tr> 
+   <% } %>
+  </tbody>
+</table>

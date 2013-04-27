@@ -11,10 +11,11 @@
         <meta name="viewport" content="width=device-width">
 
         <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
-        <link rel="stylesheet" href="/css/normalize.css">
+        <link rel="stylesheet" href="/css/normalize.css" />
         <link rel="stylesheet" href="/css/header.css" />
-        <link rel="stylesheet" href="/css/main.css">
-        <link rel="stylesheet" href="/css/datatables/jquery.dataTables_themeroller.css">
+        <link rel="stylesheet" href="/css/main.css" />
+        <link rel="stylesheet" href="/css/jquery-ui-custom-dark/jquery-ui-1.10.2.custom.min.css" />
+        <link rel="stylesheet" href="/css/datatables/jquery.dataTables_themeroller.css" />
 
         <script src="/js/vendor/modernizr-2.6.2.min.js"></script>
     </head>
@@ -30,17 +31,10 @@
                 var pages = [
                     { name: 'bitcoin', href: '/' },                  
                     { name: 'lobby', href: '/lobby' },
-                    { name: 'tables', 
-                      href: '#', 
-                      dropdown: [
-                        { name: '1', href: '/table_1' },
-                        { name: '2', href: '/table_2' },
-                      ],
-                    },
                     { name: 'account', href: '/account' },
-                    { name: 'bitcoin_info', href: '/bitcoin_info' },
-                    { name: 'site_info', href: '/site_info' },
-                    { name: 'legal_info', href: '/legal_info' },
+                    { name: 'bitcoins', href: '/bitcoin_info' },
+                    { name: 'about', href: '/site_info' },
+                    { name: 'legal', href: '/legal_info' },
                     { name: 'promotions', href: '/promo' }                      
                 ],
                     i,

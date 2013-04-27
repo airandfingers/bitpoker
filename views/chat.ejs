@@ -1,0 +1,15 @@
+<!-- display chat messages and form -->
+<div id="chat_messages">
+</div>
+              
+<form id="chat_form">
+    <input type="text" id="chat_sender" placeholder="My Name" 
+        <% if (locals.username) { %>
+            value="<%= locals.username %>"
+        <% } %>
+    />
+    <input type="text" id="chat_message" placeholder="Message" />
+    <input type="submit" id="chat_submit" value="Send Message" />
+</form>
+<!-- display list of users -->
+<% include users %>
