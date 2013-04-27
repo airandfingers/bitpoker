@@ -362,7 +362,7 @@ this.images.setDefaults = function(){
 
             var distanceBetweenSeatsX
 
-            var communityY =270
+            var communityY = 175
             var distanceBetweenCommunityCards = 2
 
             var dealerButtonWidth = 25
@@ -586,14 +586,14 @@ for(var i = 0; i < this.seats.length; i = i + 1){
         this.community[3] = new this.Item(canvasWidth/2+cardWidth/2+distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,self.gameState.containerImageIndexes.button)
         this.community[4] = new this.Item(canvasWidth/2+cardWidth/2+cardWidth+2*distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,self.gameState.containerImageIndexes.button)
 
-         for (var i = 0; i < 5; i = i + 1){
+    /*     for (var i = 0; i < 5; i = i + 1){
  this.itemAsRectangle(this.community[i], "#00FFFF")
  this.addItemText(this.community[i],'','12px Arial','black')
  }
-
+ */
   //------------------card spawn location---------------------------------
 
-           this.startingCard = new this.Item(canvas.width/2-this.community[0].size.x/2, this.community[0].position.y+this.community[0].size.y+77 , cardWidth, cardHeight, self.gameState.containerImageIndexes.cardAnimation)
+           this.startingCard = new this.Item(canvas.width/2-this.community[0].size.x/2, this.community[0].position.y+this.community[0].size.y+40 , cardWidth, cardHeight, self.gameState.containerImageIndexes.cardAnimation)
 
 
         //--------------upper left side button---------------------
@@ -1131,39 +1131,37 @@ this.steetEnds=function(potSize){
 
  this.animateImage =function(initialX, initialY, totalTime, ticks, parentOfImageObject, finalX, finalY, hideOnEnd){
 
-     var initialX = this.images.startingCard.position.x
-     var initialY = this.images.startingCard.position.Y
-
-
             var fractionDistancePerTick = 1/ticks
             var lastTick = ticks -1 
            var   interval = totalTime/ticks
-    
-
-                    
-                    var totalDistanceX = initialX-finalX
-                     var totalDistanceY = initialY-finalY
+     
+                    var totalDistanceX = finalX - initialX
+                     var totalDistanceY = finalY - initialY
                    
                    var distancePerTickX =  totalDistanceX*fractionDistancePerTick
                    var distancePerTickY = totalDistanceY*fractionDistancePerTick
        
 parentOfImageObject.image.x = initialX
 parentOfImageObject.image.y = initialY
-                   this.displayChildren(parentOfImageObject)
-
+                   this.displayImage(parentOfImageObject)
                    var tick = 0
+
        var imageAnimation =   setInterval(function() {
 
                parentOfImageObject.image.x =parentOfImageObject.image.x+distancePerTickX
           parentOfImageObject.image.y =parentOfImageObject.image.y+distancePerTickY
-            
+            self.stage.update()
+
             if(tick >= lastTick){
                 if(hideOnEnd){
                     
-                    this.hideChildren(parentOfImageObject)
+                    self.hideImage(parentOfImageObject)
 
                 }
+                parentOfImageObject.image.x = finalX
+parentOfImageObject.image.y = finalY
                 clearInterval(imageAnimation)
+                self.stage.update()
                 }
 
             else{tick++}
@@ -1179,37 +1177,28 @@ parentOfImageObject.image.y = initialY
  this.dealCommunity = function (communityArray){
      
      var initialX = this.images.startingCard.position.x
-     var initialY = this.images.startingCard.position.Y
-     var animationTime = 1000
+     var initialY = this.images.startingCard.position.y
+     var animationTime = 10000
      var fractionDistancePerTick = .05
      var lastTick = 1/fractionDistancePerTick -1 
      var   interval = fractionDistancePerTick*animationTime
 
+     console.log(initialX)
+     console.log(initialY)
+
      //play deal sound
      createjs.Sound.play('dealCard')
-     //flop animation
-if(communityArray[0]&&communityArray[1]&communityArray[2]){
-    
+     
+
+     //river animation
+if(communityArray[4]){
     //create TEMPORARY face down card to animate
     var animatedCard = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
      this.images.itemAsBitmap(animatedCard, this.images.seats[0].hiddenCard0.bitmapSource)
 
-    this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.community[0].position.x,this.images.community[0].position.y, true)
-
-    //turn cards face up
-    for(var i =0;i<2;i++){
-    this.images.cardAsBitmap(this.images.community[i],communityArray[i])
-    this.images.community[i].image.x = this.images.community[0].position.x
-      this.images.containers[this.images.community[this.images.community[i].position.z]].addChild( this.images.community[i].image)
-      }
-
-      //move cards from community[0] position to final destinations
-      this.animateImage(this.images.community[1].image.x, this.images.community[1].image.y,animationTime, lastTick+1, this.images.community[1],this.images.community[1].position.x, this.images.community[1].position.y)
-     this.animateImage(this.images.community[2].image.x, this.images.community[2].image.y,animationTime*2, lastTick+1, this.images.community[2],this.images.community[2].position.x, this.images.community[2].position.y)
-     for(var i =0;i<2;i++){
-    this.images.community[i].image.x = this.images.community[i].position.x
-      }
-      this.stage.update()
+     
+    this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.community[4].position.x,this.images.community[4].position.y, true)
+     this.displayShownCard(communityArray[4], this.images.community[4])
 }
 //turn animation
 else if(communityArray[3]){
@@ -1219,17 +1208,36 @@ else if(communityArray[3]){
 
      
     this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.community[3].position.x,this.images.community[3].position.y, true)
-     this.displayChildren(this.images.community[3])
+     this.displayShownCard(communityArray[3],this.images.community[3])
 }
-else if(communityArray[4]){
-    //create TEMPORARY face down card to animate
+
+//flop animation
+else if(communityArray.length == 3){
+    
+    //create TEMPORARY face down card to animate to animate to community[0] position
     var animatedCard = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
      this.images.itemAsBitmap(animatedCard, this.images.seats[0].hiddenCard0.bitmapSource)
 
-     
-    this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.community[4].position.x,this.images.community[4].position.y, true)
-     this.displayChildren(this.images.community[4])
+    this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.community[0].position.x,this.images.community[0].position.y, true)
+
+
+    //turn cards face up on community [0] position
+    for(var i =0;i<=2;i++){
+    this.images.cardAsBitmap(this.images.community[i],communityArray[i])
+    this.images.community[i].image.x = this.images.community[0].position.x
+      this.images.containers[this.images.community[i].position.z].addChild( this.images.community[i].image)
+      }
+      this.stage.update()
+      //move cards from community[0] position to final destinations
+      this.animateImage(this.images.community[1].image.x, this.images.community[1].image.y,animationTime, lastTick+1, this.images.community[1],this.images.community[1].position.x, this.images.community[1].position.y)
+      console.log(this.images.community[2].image)
+     this.animateImage(this.images.community[2].image.x, this.images.community[2].image.y,animationTime*2, lastTick+1, this.images.community[2],this.images.community[2].position.x, this.images.community[2].position.y)
+     for(var i =0;i<2;i++){
+    this.images.community[i].image.x = this.images.community[i].position.x
+      }
+      this.stage.update()
 }
+
 }
  
 
@@ -1471,8 +1479,6 @@ this.hideChildren(this.images.betSlider)
      
      //hide community cards
      for(var i=0; i<this.images.community.length;i++){ this.hideChildren(this.images.community[i])}
-
-
 
      //hide players' hands
        for(var i=0; i<this.images.seats.length;i++){
@@ -2121,7 +2127,8 @@ this.restoreActiveContainers=function(activeContainerArray){
     //community cards are dealt
        socket.on('community_dealt', function(community){
             self.removeAllBets()
-            self.displayAllCommunity(community)
+            self.dealCommunity(community)
+       //     self.displayAllCommunity(community)
                 
 })
         
@@ -2341,12 +2348,15 @@ socket.on('reset_table', function(players){
 jQuery(document).ready(function(){
     holdemCanvas = new Table(10)
     holdemCanvas.initialize()
+
+
+      holdemCanvas.activateSockets()
+        socket.emit('get_table_state');
 })
 
 
 jQuery(window).load(function (){
-        holdemCanvas.activateSockets()
-        socket.emit('get_table_state');
+       
       /*
    for(var i= 0;i<holdemCanvas.images.containers.length;i++){
            console.log( holdemCanvas.images.containers[i].isVisible())
