@@ -1129,7 +1129,7 @@ this.steetEnds=function(potSize){
 
  }
 
- this.animateImage =function(initialX, initialY, totalTime, ticks, parentOfImageObject, finalX, finalY, hideOnEnd){
+ this.animateImage =function(initialX, initialY, totalTime, ticks, parentOfImageObject, finalX, finalY, performOnEnd){
 
             var fractionDistancePerTick = 1/ticks
             var lastTick = ticks -1 
@@ -1143,7 +1143,8 @@ this.steetEnds=function(potSize){
        
 parentOfImageObject.image.x = initialX
 parentOfImageObject.image.y = initialY
-                   this.displayImage(parentOfImageObject)
+this.displayChildren(parentOfImageObject)
+
                    var tick = 0
 
        var imageAnimation =   setInterval(function() {
@@ -1153,15 +1154,13 @@ parentOfImageObject.image.y = initialY
             self.stage.update()
 
             if(tick >= lastTick){
-                if(hideOnEnd){
-                    
-                    self.hideImage(parentOfImageObject)
-
-                }
-                parentOfImageObject.image.x = finalX
+           parentOfImageObject.image.x = finalX
 parentOfImageObject.image.y = finalY
-                clearInterval(imageAnimation)
-                self.stage.update()
+self.stage.update()
+clearInterval(imageAnimation)
+                if(performOnEnd){           
+                //    performOnEnd
+                }     
                 }
 
             else{tick++}
@@ -1178,20 +1177,17 @@ parentOfImageObject.image.y = finalY
      
      var initialX = this.images.startingCard.position.x
      var initialY = this.images.startingCard.position.y
-     var animationTime = 10000
+     var animationTime = 3000
      var fractionDistancePerTick = .05
      var lastTick = 1/fractionDistancePerTick -1 
      var   interval = fractionDistancePerTick*animationTime
 
-     console.log(initialX)
-     console.log(initialY)
-
      //play deal sound
      createjs.Sound.play('dealCard')
-     
+     console.log('deal card sound should play now')
 
      //river animation
-if(communityArray[4]){
+if(communityArray.length ==5){
     //create TEMPORARY face down card to animate
     var animatedCard = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
      this.images.itemAsBitmap(animatedCard, this.images.seats[0].hiddenCard0.bitmapSource)
@@ -1201,7 +1197,7 @@ if(communityArray[4]){
      this.displayShownCard(communityArray[4], this.images.community[4])
 }
 //turn animation
-else if(communityArray[3]){
+else if(communityArray.length ==4){
     //create TEMPORARY face down card to animate
     var animatedCard = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
      this.images.itemAsBitmap(animatedCard, this.images.seats[0].hiddenCard0.bitmapSource)
@@ -1227,14 +1223,14 @@ else if(communityArray.length == 3){
     this.images.community[i].image.x = this.images.community[0].position.x
       this.images.containers[this.images.community[i].position.z].addChild( this.images.community[i].image)
       }
+
       this.stage.update()
       //move cards from community[0] position to final destinations
-      this.animateImage(this.images.community[1].image.x, this.images.community[1].image.y,animationTime, lastTick+1, this.images.community[1],this.images.community[1].position.x, this.images.community[1].position.y)
-      console.log(this.images.community[2].image)
-     this.animateImage(this.images.community[2].image.x, this.images.community[2].image.y,animationTime*2, lastTick+1, this.images.community[2],this.images.community[2].position.x, this.images.community[2].position.y)
-     for(var i =0;i<2;i++){
-    this.images.community[i].image.x = this.images.community[i].position.x
-      }
+      this.animateImage(this.images.community[0].position.x, this.images.community[1].position.y,animationTime, lastTick+1, this.images.community[1],this.images.community[1].position.x, this.images.community[1].position.y)
+     this.animateImage(this.images.community[0].position.x, this.images.community[2].position.y,animationTime, lastTick+1, this.images.community[2],this.images.community[2].position.x, this.images.community[2].position.y)
+   // for(var i =0;i<2;i++){
+   // this.images.community[i].image.x = this.images.community[i].position.x
+   //   }
       this.stage.update()
 }
 
@@ -2134,17 +2130,20 @@ this.restoreActiveContainers=function(activeContainerArray){
         
 //hands dealt to non-user players
        socket.on('hands_dealt', function(players){
-           
+           var playerArray = []
            for(var i = 0; i<players.length;i++){
+               playerArray.push(playerArray.seat)
                if(players[i].seat!=self.gameState.userSeatNumber){
         self.displayHiddenCards(players[i].seat)
      }
+    self.dealHoleCards(self.gameState.userSeatNumber,)
       }
 })
 
 
 //hand dealt to user
        socket.on('hole_cards_dealt', function(hand){
+      
            self.displayHoleCards(hand, self.gameState.userSeatNumber)
                    self.displayInHandOptions()
         });
