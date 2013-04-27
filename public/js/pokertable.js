@@ -2136,7 +2136,6 @@ this.restoreActiveContainers=function(activeContainerArray){
                if(players[i].seat!=self.gameState.userSeatNumber){
         self.displayHiddenCards(players[i].seat)
      }
-    self.dealHoleCards(self.gameState.userSeatNumber,)
       }
 })
 
