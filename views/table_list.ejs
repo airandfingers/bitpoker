@@ -5,6 +5,7 @@
       <th>Blinds</th>
       <th>Buyin Limits</th>
       <th># Players</th>
+      <th>Max Players</th>
     </tr>
   </thead>
   <tbody>
@@ -35,7 +36,8 @@
         <td> <%= table_id %> </td>
         <td> <%= SMALL_BLIND %> / <%= BIG_BLIND %> <%= CURRENCY %> </td>
         <td> <%= MIN_CHIPS %> - <%= MAX_CHIPS %> <%= CURRENCY %> </td>
-        <td> <%= seats_taken %> / <%= MAX_PLAYERS %> </td>
+        <td> <%= seats_taken %> </td>
+        <td> <%= MAX_PLAYERS %> </td>
       </tr> 
    <% } %>
   </tbody>

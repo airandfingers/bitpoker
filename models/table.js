@@ -173,7 +173,7 @@ module.exports = (function () {
     hand.onStage('done', function() {
       self.room.broadcast('reset_table');
       console.log('Hand is over! Creating a new hand in 1 second...');
-      self.dealer = hand.small_blind_seat || hand.dealer;
+      self.dealer = hand.dealer + 1;
       setTimeout(function() {
         self.newHand();
       }, 1000);

@@ -176,7 +176,7 @@ module.exports = (function () {
     self.calculatePlayers();
     while (SMALL_BLIND_PAID === false && 
            self.players.length >= game.MIN_PLAYERS) {
-      player = self.players[this.to_act];
+      player = self.players[self.to_act];
       //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
       if (! player.isFlagSet('post_blind') || player.disconnected) {
         console.log('Player\'s post_blind flag is unset, or player is disconnected - sitting player out!');
@@ -187,6 +187,7 @@ module.exports = (function () {
         console.log('player will post blind:', player, game.SMALL_BLIND);
         player.makeBet(game.SMALL_BLIND);
         self.broadcast('player_acts', player.serialize(), 'post_blind', self.calculatePot());
+        self.small_blind_seat = player.seat;
         SMALL_BLIND_PAID = true;
       }
       self.nextPlayer();
@@ -231,7 +232,7 @@ module.exports = (function () {
       player.receiveHand(first_card, second_card);
       player.sendMessage('hole_cards_dealt', player.hand);
     });
-    this.broadcast('hands_dealt', player_objs);
+    this.broadcast('hands_dealt', player_objs, { dealer: self.dealer, small_blind_seat: self.small_blind_seat });
     this.nextStage();
   };
 
@@ -247,6 +248,7 @@ module.exports = (function () {
       , min_bet
       , max_bet
       , high_stack
+      , refund
       , actions
       , free_action
       , free_action_obj
@@ -263,14 +265,14 @@ module.exports = (function () {
         console.log('Not in betting_preflop, so resetting high_bet and to_act');
         last_raise = game.SMALL_BLIND;
         this.high_bet = 0;
-        this.to_act = this.first_to_act;
+        this.to_act = 0;
         break;
       case 'betting_preriver':
       case 'betting_postriver':
         console.log('Not in betting_preflop, so resetting high_bet and to_act');
         last_raise = game.BIG_BLIND;
         this.high_bet = 0;
-        this.to_act = this.first_to_act;
+        this.to_act = 0;
         break;
       default:
         console.error('bettingRound called when stage_name is', this.stage_name);
@@ -284,14 +286,20 @@ module.exports = (function () {
                       '# of players: ' + self.players.length + ' vs. MIN_PLAYERS: ' + game.MIN_PLAYERS,
                       'Has player acted yet? ' + player.hasActedIn(self.stage_num),
                       'current_bet: ' + player.current_bet + ' vs. high_bet: ' + self.high_bet);
-        if (player.current_bet > self.high_bet) {
+        high_stack = self.calculateHighestStack(player); // how high other players can/have called to
+        if (player.current_bet > high_stack) {
           // adjust player's current bet to be the high bet
-          var refund = player.current_bet - self.high_bet;
-          console.error('giving player', refund);
+          refund = player.current_bet - high_stack;
           player.getBet(refund);
+          // notify everyone that this player received a refund
+          self.broadcast('player_gets_refund', player.serialize(), refund);
         }
-        return self.players.length >= game.MIN_PLAYERS &&
-               ((! player.hasActedIn(self.stage_num)) || player.current_bet < self.high_bet);
+        else {
+          refund = 0;
+        }
+        return self.players.length >= game.MIN_PLAYERS && // don't run body if we have too few people to continue
+               (! player.hasActedIn(self.stage_num) || // run if player hasn't acted yet
+               (player.current_bet < self.high_bet && refund === 0)); // run if player hasn't bet enough yet
       },
       function loopBody(cb) {
         // handle "no chips" condition
@@ -301,21 +309,20 @@ module.exports = (function () {
             actions = [{ check: true}];
             performAction('check', undefined);
             cb();
-          }, 1000);
+          }, game.SKIP_PLAYER_DELAY);
           return;
         }
         else if (game.roundNumChips(player.chips) !== player.chips) {
           console.error('player has an invalid chips value:', player.chips, game.MIN_INCREMENT );
         }
         // handle "everyone else out of chips" condition
-        high_stack = self.calculateHighestStack(player); // how high other players can call to
         if (high_stack === 0) {
           console.log('all other players are out of chips, so skipping!', player);
           setTimeout(function() {
             actions = [{ check: true}];
             performAction('check', undefined);
             cb();
-          }, 1000);
+          }, game.SKIP_PLAYER_DELAY);
           return;
         }
         // calculate/set actions and free_action to be used in prompt
@@ -372,8 +379,11 @@ module.exports = (function () {
       function loopComplete() {
         if (self.players.length >= game.MIN_PLAYERS) {
           console.log('Betting round completed!', self.pot, self.players);
-          self.takeBets();
-          self.nextStage();
+          setTimeout(function() {
+            self.broadcast('street_ends');
+            self.takeBets();
+            self.nextStage();
+          }, game.STREET_END_DELAY);
         }
         else {
           console.log('Not enough players to continue to next stage!', self.players);
@@ -438,21 +448,30 @@ module.exports = (function () {
   };
 
   static_properties.stage_handlers.flopping = function() {
-    this.community.push(this.deck.deal(), this.deck.deal(), this.deck.deal());
-    this.broadcast('community_dealt', this.community);
-    this.nextStage();
+    var self = this;
+    setTimeout(function() {
+      self.community.push(self.deck.deal(), self.deck.deal(), self.deck.deal());
+      self.broadcast('community_dealt', self.community);
+      self.nextStage();
+    }, self.game.PRE_DEAL_DELAY);
   };
 
   static_properties.stage_handlers.turning = function() {
-    this.community.push(this.deck.deal());
-    this.broadcast('community_dealt', this.community);
-    this.nextStage();
+    var self = this;
+    setTimeout(function() {
+      self.community.push(self.deck.deal());
+      self.broadcast('community_dealt', self.community);
+      self.nextStage();
+    }, self.game.PRE_DEAL_DELAY);
   };
 
   static_properties.stage_handlers.rivering = function() {
-    this.community.push(this.deck.deal());
-    this.broadcast('community_dealt', this.community);
-    this.nextStage();
+    var self = this;
+    setTimeout(function() {
+      self.community.push(self.deck.deal());
+      self.broadcast('community_dealt', self.community);
+      self.nextStage();
+    }, self.game.PRE_DEAL_DELAY);
   };
 
   static_properties.stage_handlers.showing_down = function() {
@@ -576,25 +595,28 @@ module.exports = (function () {
   HoldEmHandSchema.methods.calculatePlayers = function() {
     var self = this
       , game = self.game
-      , player
-      , num_players = _.keys(self.seats).length
-      , first_to_blind = (num_players > 2 ? self.dealer + 1 : self.dealer) % game.MAX_PLAYERS
       , seat_counter
+      , player
+      , calculated_dealer
       , first_round = true;
-    for (seat_counter = first_to_blind;
-         first_round || seat_counter !== first_to_blind;
+    for (seat_counter = self.dealer;
+         first_round || seat_counter !== self.dealer;
          first_round = false,
          seat_counter = (seat_counter + 1) % game.MAX_PLAYERS) {
       player = self.seats[seat_counter];
       if (player instanceof Player && ! player.sitting_out) {
         self.players.push(player);
         player.in_hand = true;
-        if (_.isUndefined(self.small_blind_seat)) {
-          self.small_blind_seat = seat_counter;
+        if (_.isUndefined(calculated_dealer)) {
+          calculated_dealer = player.seat;
+          self.dealer = calculated_dealer;
         }
       }
     }
-    self.first_to_act = self.players.length > 2 ? 0 : 1;
+    if (self.players.length > 2) {
+      // don't start with dealer when calculating blinds
+      self.players.push(self.players.shift());
+    }
     //console.log('calculated players:', self.players, 'small_blind_seat:', self.small_blind_seat);
   };
 

@@ -30,6 +30,12 @@ module.exports = (function () {
   // CONSTANT FOR ALL GAMES
     // how many ms to wait between polling to see how many players are ready
   , WAIT_POLL_INTERVAL: { type: Number, default: 1000 }
+    // how long (in ms) between last betting action and street_ends message
+  , STREET_END_DELAY: { type: Number, default: 1000 }
+    // how long (in ms) between street_ends and community_dealt messages
+  , PRE_DEAL_DELAY: { type: Number, default: 1000 }
+    // how long (in ms) to wait before automatically skipping players who should be skipped
+  , SKIP_PLAYER_DELAY : { type: Number, default: 1000 }
     // how long (in ms) to wait for players to respond to prompts
   , ACT_TIMEOUT: { type: Number, default: 10000 }
     // how long (in ms) to wait for players to respond to prompts
