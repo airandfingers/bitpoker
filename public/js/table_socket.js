@@ -13,4 +13,17 @@
 
 
         this.images.cashier.verticalSlider.image.onPress = self.events.addChipsSliderVerticalMouseDown
+
+
+        ////////////////drawing chip with a createjs shape
+
+          parentOfChipArray.chips[parentOfChipArray.chips.length-1].image = new createjs.Shape()
+ parentOfChipArray.chips[parentOfChipArray.chips.length-1].image.graphics.beginStroke(chipColor).beginFill('gray').drawCircle(x+diameter/2, y+diameter/2, diameter/2)
+
+parentOfChipArray.chips[parentOfChipArray.chips.length-1].text =  new createjs.Text(chipValue, '8px Arial', 'white')
+parentOfChipArray.chips[parentOfChipArray.chips.length-1].text.x = parentOfChipArray.chips[parentOfChipArray.chips.length-1].position.x + parentOfChipArray.chips[parentOfChipArray.chips.length-1].size.x/2
+parentOfChipArray.chips[parentOfChipArray.chips.length-1].text.y = parentOfChipArray.chips[parentOfChipArray.chips.length-1].position.y+6
+parentOfChipArray.chips[parentOfChipArray.chips.length-1].text.baseline = 'top'
+parentOfChipArray.chips[parentOfChipArray.chips.length-1].text.textAlign = 'center'
+parentOfChipArray.chips[parentOfChipArray.chips.length-1].text.maxWidth = parentOfChipArray.chips[parentOfChipArray.chips.length-1].size.x*.8
 */
