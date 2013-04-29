@@ -347,20 +347,21 @@ this.images.setDefaults = function(){
             var actionButtonHeight = 25
             var seatWidth = 90
             var seatHeight = 33
+            var distanceBetweenSeatsX = 40
+            var distanceBetweenSeatsY = 123
 
             var firstRowY = 77
             var secondRowY =153
-            var thirdRowY =301
+            var thirdRowY = secondRowY + seatHeight + distanceBetweenSeatsY
             var fourthRowY =371
 
-
             var firstColumnX = 27
-            var secondColumnX = 170
-            var thirdColumnX = 300
-            var fourthColumnX = 430
-            var fifthColumnX = 573
+            var fifthColumnX = canvasWidth - firstColumnX - seatWidth
 
-            var distanceBetweenSeatsX
+            var secondColumnX = canvasWidth/2 - seatWidth/2 - seatWidth - distanceBetweenSeatsX
+            var thirdColumnX = canvasWidth/2 - seatWidth/2 
+            var fourthColumnX = thirdColumnX + seatWidth + distanceBetweenSeatsX
+
 
             var communityY = 175
             var distanceBetweenCommunityCards = 2
@@ -374,7 +375,7 @@ this.images.setDefaults = function(){
             var leftColumnSeatDealerButtonX = seatWidth+dealerButtonWidth*.1
             var leftColumnSeatDealerButtonY = 0
 
-              var bottomRowSeatDealerButtonX = dealerButtonWidth/2
+            var bottomRowSeatDealerButtonX = dealerButtonWidth/2
             var bottomRowSeatDealerButtonY = -dealerButtonHeight*.1
 
             var rightColumnSeatDealerButtonX = seatWidth-dealerButtonWidth*1.1
@@ -386,9 +387,6 @@ this.images.setDefaults = function(){
             //---------pot-------------------
             this.potSize = new this.Item(canvasWidth/2-potWidth/2,communityY+cardHeight+potHeight,potWidth,potHeight,self.gameState.containerImageIndexes.chips)
              this.addItemText(this.potSize, '',"14px Arial", "#100D08")
-           //this.itemAsBitmap(this.potSize, this.sources.potSize)
-
-          
 
            //--------side buttons---------------------
             this.leftSideButtons[0].button = new this.Item(7.5,419,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button)
@@ -1147,7 +1145,7 @@ this.steetEnds=function(potSize){
 
  }
 
- this.animateImage =function(initialX, initialY, totalTime, ticks, parentOfImageObject, finalX, finalY, performOnEnd){
+ this.animateImage =function(initialX, initialY, totalTime, ticks, parentOfImageObject, finalX, finalY){
 
             var fractionDistancePerTick = 1/ticks
             var lastTick = ticks -1 
@@ -1161,7 +1159,7 @@ this.steetEnds=function(potSize){
        
 parentOfImageObject.image.x = initialX
 parentOfImageObject.image.y = initialY
-this.displayChildren(parentOfImageObject)
+self.displayChildren(parentOfImageObject)
 
                    var tick = 0
 
@@ -1171,14 +1169,14 @@ this.displayChildren(parentOfImageObject)
           parentOfImageObject.image.y =parentOfImageObject.image.y+distancePerTickY
             self.stage.update()
 
+           console.log(parentOfImageObject.bitmapSource + parentOfImageObject.image.x+', '+parentOfImageObject.image.y)
+
             if(tick >= lastTick){
            parentOfImageObject.image.x = finalX
 parentOfImageObject.image.y = finalY
 self.stage.update()
 clearInterval(imageAnimation)
-                if(performOnEnd){           
-                //    performOnEnd
-                }     
+               
                 }
 
             else{tick++}
@@ -1195,7 +1193,7 @@ clearInterval(imageAnimation)
      
      var initialX = this.images.startingCard.position.x
      var initialY = this.images.startingCard.position.y
-     var animationTime = 3000
+     var animationTime = 7000
      var fractionDistancePerTick = .05
      var lastTick = 1/fractionDistancePerTick -1 
      var   interval = fractionDistancePerTick*animationTime
@@ -1211,7 +1209,7 @@ if(communityArray.length ==5){
      this.images.itemAsBitmap(animatedCard, this.images.seats[0].hiddenCard0.bitmapSource)
 
      
-    this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.community[4].position.x,this.images.community[4].position.y, true)
+    this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.community[4].position.x,this.images.community[4].position.y)
      this.displayShownCard(communityArray[4], this.images.community[4])
 }
 //turn animation
@@ -1221,35 +1219,80 @@ else if(communityArray.length ==4){
      this.images.itemAsBitmap(animatedCard, this.images.seats[0].hiddenCard0.bitmapSource)
 
      
-    this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.community[3].position.x,this.images.community[3].position.y, true)
+    this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.community[3].position.x,this.images.community[3].position.y)
      this.displayShownCard(communityArray[3],this.images.community[3])
 }
 
 //flop animation
 else if(communityArray.length == 3){
-    
-    //create TEMPORARY face down card to animate to animate to community[0] position
-    var animatedCard = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
-     this.images.itemAsBitmap(animatedCard, this.images.seats[0].hiddenCard0.bitmapSource)
+        //create TEMPORARY face down card to animate to animate to community[0] position
+    var animatedCard = new self.images.Item(initialX, initialY, self.images.community[0].size.x, self.images.community[0].size.y, self.gameState.containerImageIndexes.cardAnimation)
+     self.images.itemAsBitmap(animatedCard, self.images.seats[0].hiddenCard0.bitmapSource)
 
-    this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.community[0].position.x,this.images.community[0].position.y, true)
+      async.series([
 
+    function(callback){
+          self.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, self.images.community[0].position.x,self.images.community[0].position.y)
+   callback(null, 1)
+    },
 
-    //turn cards face up on community [0] position
-    for(var i =0;i<=2;i++){
-    this.images.cardAsBitmap(this.images.community[i],communityArray[i])
-    this.images.community[i].image.x = this.images.community[0].position.x
-      this.images.containers[this.images.community[i].position.z].addChild( this.images.community[i].image)
+    function(callback){
+        console.log(2)
+        //turn cards face up on community [0] position
+         for(var i =0;i<=2;i++){
+    self.images.cardAsBitmap(self.images.community[i],communityArray[i])
+    self.images.community[i].image.x = self.images.community[0].position.x
+      self.images.containers[self.images.community[i].position.z].addChild( self.images.community[i].image)
+      self.stage.update()
       }
+ //hide face down card images
+     //   self.hideChildren(animatedCard)
+        callback(null, 2)
+    },
 
-      this.stage.update()
-      //move cards from community[0] position to final destinations
-      this.animateImage(this.images.community[0].position.x, this.images.community[1].position.y,animationTime, lastTick+1, this.images.community[1],this.images.community[1].position.x, this.images.community[1].position.y)
-     this.animateImage(this.images.community[0].position.x, this.images.community[2].position.y,animationTime, lastTick+1, this.images.community[2],this.images.community[2].position.x, this.images.community[2].position.y)
-   // for(var i =0;i<2;i++){
-   // this.images.community[i].image.x = this.images.community[i].position.x
-   //   }
-      this.stage.update()
+    function(callback){
+
+ //move cards from community[0] position to final destinations
+      self.animateImage(self.images.community[0].position.x, self.images.community[1].position.y,animationTime, lastTick+1, self.images.community[1],self.images.community[1].position.x, self.images.community[1].position.y)
+     self.animateImage(self.images.community[0].position.x, self.images.community[2].position.y,animationTime, lastTick+1, self.images.community[2],self.images.community[2].position.x, self.images.community[2].position.y)
+       callback(null, 3) 
+    }
+    
+    ]
+)
+
+
+
+/*
+    async.series({
+    one: function(callback){
+          self.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, self.images.community[0].position.x,self.images.community[0].position.y)
+   callback(null, 1)
+    },
+    two: function(callback){
+
+        //turn cards face up on community [0] position
+         for(var i =0;i<=2;i++){
+    self.images.cardAsBitmap(self.images.community[i],communityArray[i])
+    self.images.community[i].image.x = self.images.community[0].position.x
+      self.images.containers[self.images.community[i].position.z].addChild( self.images.community[i].image)
+      self.stage.update()
+      }
+ //hide face down card images
+        self.hideChildren(animatedCard)
+        callback(null, 2)
+    },
+    three: function(callback){
+
+ //move cards from community[0] position to final destinations
+      self.animateImage(self.images.community[0].position.x, self.images.community[1].position.y,animationTime, lastTick+1, self.images.community[1],self.images.community[1].position.x, self.images.community[1].position.y)
+     self.animateImage(self.images.community[0].position.x, self.images.community[2].position.y,animationTime, lastTick+1, self.images.community[2],self.images.community[2].position.x, self.images.community[2].position.y)
+       callback(null, 2) 
+    }
+    }
+    
+)
+*/
 }
 
 }
@@ -1258,86 +1301,39 @@ else if(communityArray.length == 3){
  this.dealHoleCards = function(smallBlindSeatNumber, playerArray, holeCardArray){
      
      var initialX = this.images.startingCard.position.x
-     var initialY = this.images.startingCard.position.Y
-     var animationTime = 1000
-      
+     var initialY = this.images.startingCard.position.y
+     var animationTime = 2000
 
-            var card0DistancePerTickArrayX = []
-           var card0DistancePerTickArrayY = []
-
-           var card1DistancePerTickArrayX = []
-           var card1DistancePerTickArrayY = []
-
+     console.log(initialX+','+initialY)
 
             var fractionDistancePerTick = .05
             var lastTick = 1/fractionDistancePerTick -1 
 
             var   interval = fractionDistancePerTick*animationTime
 
+            var animatedCards0 = []
+             var animatedCards1 = []
 
-            for(var i =0;i<playerArray;i++){
-
-                   
-                    var distancePerTickX0 =  Math.sqrt(distancePerTick*distancePerTick/(slope*slope+1))
-                    var distancePerTickY0 = distancePerTickArrayX*slope
-
-                     card0DistancePerTickArrayX.push(distancePerTickX0) 
-                     card0DistancePerTickArrayY.push(distancePerTickY0)
-
-           
-                    var distancePerTickX1 =  Math.sqrt(distancePerTick*distancePerTick/(slope*slope+1))
-                    var distancePerTickY1 = distancePerTickArrayX*slope
-
-                    card1DistancePerTickArrayX.push(distancePerTickX1) 
-                     card1DistancePerTickArrayY.push(distancePerTickY1)
-
-            }
-
-            var cardsDealt =0
-            var animatedCards = []
-
+            // this.displayShownCard(holeCardArray[0],this.images.seats[playerArray[0]].shownCard0)
             //deal first round of hole cards
-            for(var i =0;i<playerArray;i++){
-                setTimeout(function(){
-                    
+            for(var i =0;i<playerArray.length;i++){
+
                     createjs.Sound.play("dealCard")
-                    animatedCards[i] = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
-          this.images.itemAsBitmap(animatedCard, this.images.seats[seatNumber].hiddenCard0.bitmapSource)
+                    animatedCards0[i] = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
+          this.images.itemAsBitmap(animatedCards0[i], this.images.seats[playerArray[i]].hiddenCard0.bitmapSource)
 
-              this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.seats[playerArray[i]].position.x,this.images.seats[playerArray[i]].position.y, true)
+          animatedCards1[i] = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
+          this.images.itemAsBitmap(animatedCards1[i], this.images.seats[playerArray[i]].hiddenCard0.bitmapSource)
 
-              
-               if(holeCardArray){this.displayShownCard(holeCardArray[0],this.seats[playerArray[i]].shownCard0)}
-                    else{this.displayChildren(this.images.seats[playerArray[i]].hiddenCard0)}
-
-                },cardsDealt*animationTime)
-                 cardsDealt++
-  
-            }
-
-            //deal second round of hole cards
-
-                    for(var i =0;i<playerArray;i++){
-                setTimeout(function(){
-                    
-                    createjs.Sound.play("dealCard")
-                    animatedCards[i] = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
-          this.images.itemAsBitmap(animatedCard, this.images.seats[seatNumber].hiddenCard0.bitmapSource)
-
-              this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, this.images.seats[playerArray[i]].position.x,this.images.seats[playerArray[i]].position.y, true)
-       
-              
-  if(holeCardArray){this.displayShownCard(holeCardArray[1],this.seats[playerArray[i]].shownCard1)}
-                    else{this.displayChildren(this.images.seats[playerArray[i]].hiddenCard1)}
-
-                },cardsDealt*animationTime)
-                 cardsDealt++
-  
-            }
+              this.animateImage(initialX,initialY,animationTime, lastTick+1,  animatedCards0[i], this.images.seats[playerArray[i]].hiddenCard0.position.x,this.images.seats[playerArray[i]].hiddenCard0.position.y)
+               this.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCards1[i], this.images.seats[playerArray[i]].hiddenCard1.position.x,this.images.seats[playerArray[i]].hiddenCard1.position.y)
+ 
+               if(playerArray[i] == self.gameState.userSeatNumber){  this.displayHoleCards(holeCardArray, playerArray[i])  }
+                    else{  this.displayHiddenCards(playerArray[i])  }
 
             }
 
-
+}
 
      this.playerStands = function(seatNumber){
           this.gameState.seats[seatNumber].displayMessageType = 'openSeat'
@@ -2145,26 +2141,23 @@ this.restoreActiveContainers=function(activeContainerArray){
        //     self.displayAllCommunity(community)
                 
 })
-        
-//hands dealt to non-user players
-       socket.on('hands_dealt', function(players){
-           var playerArray = []
-           for(var i = 0; i<players.length;i++){
-               playerArray.push(playerArray.seat)
-               if(players[i].seat!=self.gameState.userSeatNumber){
-        self.displayHiddenCards(players[i].seat)
-     }
-      }
+
+socket.on('hands_dealt', function(players){
+    var playerArray = []
+    for(var i = 0; i<players.length;i++){playerArray.push(players[i].seat)}
+
+    if(self.gameState.holeCards) { self.dealHoleCards(playerArray[0],playerArray, self.gameState.holeCards)}
+    else{self.dealHoleCards(playerArray[0],playerArray)}
+    self.gameState.holeCards = null
 })
 
 
 //hand dealt to user
        socket.on('hole_cards_dealt', function(hand){
-      
-           self.displayHoleCards(hand, self.gameState.userSeatNumber)
-                   self.displayInHandOptions()
-        });
-     
+         // socket.removeListener('hands_dealt')
+         self.gameState.holeCards = hand
+
+     })
 
 
 //player acts
@@ -2366,13 +2359,13 @@ jQuery(document).ready(function(){
     holdemCanvas.initialize()
 
 
-      holdemCanvas.activateSockets()
-        socket.emit('get_table_state');
+
 })
 
 
 jQuery(window).load(function (){
-       
+             holdemCanvas.activateSockets()
+        socket.emit('get_table_state');
       /*
    for(var i= 0;i<holdemCanvas.images.containers.length;i++){
            console.log( holdemCanvas.images.containers[i].isVisible())
