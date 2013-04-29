@@ -678,6 +678,7 @@ for(var i = 0; i < this.seats.length; i = i + 1){
       this.betSlider.betSize = new this.Item(470,448,30,50,self.gameState.containerImageIndexes.button)
 
         this.itemAsRectangle(this.betSlider.horizontal, 'black')
+
         this.itemAsRectangle(this.betSlider.vertical, 'blue')
         this.addItemText(this.betSlider.betSize, 0, '14px Arial', 'black')
 
@@ -1026,7 +1027,7 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
         }
         else     if(chipAmount>=1000){
             
-            this.displayChip(1000,x,y, parentOfChipArray)
+            this.displayChip('1k',x,y, parentOfChipArray)
             y =y+chipIncrementY
             chipAmount = chipAmount -1000
         }
