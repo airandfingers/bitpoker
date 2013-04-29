@@ -2,10 +2,10 @@
   <thead>
     <tr>
       <th>Table</th>
-      <th>Chip Value</th>
       <th>Blinds</th>
       <th>Buyin Limits</th>
       <th># Players</th>
+      <th>Max Players</th>
     </tr>
   </thead>
   <tbody>
@@ -20,12 +20,12 @@
       table_game = table_games[i];
       table_name = table_game.table_name;
       table_id = table_game.table_id;
-      CURRENCY = table_game.CURRENCY;
-      chip_value = table_game.MAOBUCKS_PER_CHIP + ' ' + CURRENCY;
-      SMALL_BLIND = table_game.SMALL_BLIND;
-      BIG_BLIND = table_game.BIG_BLIND;
-      MIN_CHIPS = table_game.MIN_CHIPS;
-      MAX_CHIPS = table_game.MAX_CHIPS;
+      CURRENCY = table_game.CURRENCY === 'maobucks' ? 'MB' : 'unknown';
+      MAOBUCKS_PER_CHIP = table_game.MAOBUCKS_PER_CHIP;
+      SMALL_BLIND = table_game.SMALL_BLIND * MAOBUCKS_PER_CHIP;
+      BIG_BLIND = table_game.BIG_BLIND * MAOBUCKS_PER_CHIP;
+      MIN_CHIPS = table_game.MIN_CHIPS * MAOBUCKS_PER_CHIP;
+      MAX_CHIPS = table_game.MAX_CHIPS * MAOBUCKS_PER_CHIP;
 
       seats_taken = table_game.seats_taken;
       MAX_PLAYERS = table_game.MAX_PLAYERS;
@@ -34,10 +34,10 @@
     %>
       <tr id="<%=table_name %>">
         <td> <%= table_id %> </td>
-        <td> <%= chip_value %></td>
-        <td> <%= SMALL_BLIND %> / <%= BIG_BLIND %> </td>
-        <td> <%= MIN_CHIPS %> - <%= MAX_CHIPS %> </td>
-        <td> <%= seats_taken %> / <%= MAX_PLAYERS %> </td>
+        <td> <%= SMALL_BLIND %> / <%= BIG_BLIND %> <%= CURRENCY %> </td>
+        <td> <%= MIN_CHIPS %> - <%= MAX_CHIPS %> <%= CURRENCY %> </td>
+        <td> <%= seats_taken %> </td>
+        <td> <%= MAX_PLAYERS %> </td>
       </tr> 
    <% } %>
   </tbody>

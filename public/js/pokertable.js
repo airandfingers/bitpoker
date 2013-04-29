@@ -449,15 +449,34 @@ this.images.setDefaults = function(){
 
             //------------seat images----------------------
         for (var i = 0; i < this.seats.length; i = i + 1){
+            
             //filled seats
-            this.itemAsRectangle(this.seats[i].seat, "#000000")
-            this.seats[i].seat.image.graphics.beginStroke("#FFFFFF").moveTo(this.seats[i].horizontalDivider.position.x,this.seats[i].horizontalDivider.position.y).lineTo(this.seats[i].horizontalDivider.position.x+this.seats[i].horizontalDivider.size.x,this.seats[i].horizontalDivider.position.y)
+this.seats[i].seat.image = new createjs.Shape()
+this.seats[i].seat.image.snapToPixel = true
+this.seats[i].seat.image.graphics.setStrokeStyle(2,'square').beginStroke("#FFFFFF").beginFill('black').drawRect(this.seats[i].seat.position.x, this.seats[i].seat.position.y, this.seats[i].seat.size.x, this.seats[i].seat.size.y)
+            this.seats[i].seat.image.graphics.setStrokeStyle(1).beginStroke("#FFFFFF").moveTo(this.seats[i].horizontalDivider.position.x,this.seats[i].horizontalDivider.position.y).lineTo(this.seats[i].horizontalDivider.position.x+this.seats[i].horizontalDivider.size.x,this.seats[i].horizontalDivider.position.y)
+          this.seats[i].seat.image.parentOfImageObject = this.seats[i].seat
             //Empty Seats
-            this.itemAsRectangle(this.seats[i].openSeat, "#000000")
-            this.addItemText(this.seats[i].openSeat,'Open Seat','15px arial','#FFFFFF' )
+            this.seats[i].openSeat.image = new createjs.Shape()
+this.seats[i].openSeat.image.snapToPixel = true
+this.seats[i].openSeat.image.graphics.setStrokeStyle(2,'square').beginStroke("#FFFFFF").beginFill('black').drawRect(this.seats[i].openSeat.position.x, this.seats[i].openSeat.position.y, this.seats[i].openSeat.size.x, this.seats[i].openSeat.size.y)
+this.seats[i].openSeat.image.parentOfImageObject = this.seats[i].openSeat                
 
-            //disabled SEats
-            this.itemAsRectangle(this.seats[i].disabledSeat, "#000000")
+                this.seats[i].openSeat.text = new createjs.Text('Open Seat', '15px Arial', "#FFFFFF")
+this.seats[i].openSeat.text.x=this.seats[i].openSeat.position.x + this.seats[i].openSeat.size.x/2 
+this.seats[i].openSeat.text.y=this.seats[i].openSeat.position.y + 4
+this.seats[i].openSeat.text.baseline = 'top'
+this.seats[i].openSeat.text.textAlign = 'center'
+this.seats[i].openSeat.text.maxWidth = this.seats[i].openSeat.size.x*.9
+this.seats[i].openSeat.textColor = "#FFFFFF"       
+
+            //disabled Seats
+            this.seats[i].disabledSeat.image = new createjs.Shape()
+this.seats[i].disabledSeat.image.snapToPixel = true
+this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke("#544E4F").beginFill('black').drawRect(this.seats[i].disabledSeat.position.x, this.seats[i].disabledSeat.position.y, this.seats[i].disabledSeat.size.x, this.seats[i].disabledSeat.size.y)
+         this.seats[i].disabledSeat.image.parentOfImageObject = this.seats[i].disabledSeat       
+
+
             //hole cards
             if(self.gameState.displaySize == 'mobile'){
                        this.itemAsBitmap(this.seats[i].hiddenCard0, this.sources.hiddenCardSmall)
@@ -730,7 +749,6 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
 
         //mouse events for clicking on empty seats
              for (var i = 0; i < this.seats.length; i = i + 1){
-          this.seats[i].openSeat.image.onPress = self.events.buttonMouseDown
          this.seats[i].openSeat.image.onClick = self.events.onButtonClick
         }
 
@@ -1129,7 +1147,7 @@ this.steetEnds=function(potSize){
 
  }
 
- this.animateImage =function(initialX, initialY, totalTime, ticks, parentOfImageObject, finalX, finalY, hideOnEnd){
+ this.animateImage =function(initialX, initialY, totalTime, ticks, parentOfImageObject, finalX, finalY, performOnEnd){
 
             var fractionDistancePerTick = 1/ticks
             var lastTick = ticks -1 
@@ -1143,7 +1161,8 @@ this.steetEnds=function(potSize){
        
 parentOfImageObject.image.x = initialX
 parentOfImageObject.image.y = initialY
-                   this.displayImage(parentOfImageObject)
+this.displayChildren(parentOfImageObject)
+
                    var tick = 0
 
        var imageAnimation =   setInterval(function() {
@@ -1153,15 +1172,13 @@ parentOfImageObject.image.y = initialY
             self.stage.update()
 
             if(tick >= lastTick){
-                if(hideOnEnd){
-                    
-                    self.hideImage(parentOfImageObject)
-
-                }
-                parentOfImageObject.image.x = finalX
+           parentOfImageObject.image.x = finalX
 parentOfImageObject.image.y = finalY
-                clearInterval(imageAnimation)
-                self.stage.update()
+self.stage.update()
+clearInterval(imageAnimation)
+                if(performOnEnd){           
+                //    performOnEnd
+                }     
                 }
 
             else{tick++}
@@ -1178,20 +1195,17 @@ parentOfImageObject.image.y = finalY
      
      var initialX = this.images.startingCard.position.x
      var initialY = this.images.startingCard.position.y
-     var animationTime = 10000
+     var animationTime = 3000
      var fractionDistancePerTick = .05
      var lastTick = 1/fractionDistancePerTick -1 
      var   interval = fractionDistancePerTick*animationTime
 
-     console.log(initialX)
-     console.log(initialY)
-
      //play deal sound
      createjs.Sound.play('dealCard')
-     
+     console.log('deal card sound should play now')
 
      //river animation
-if(communityArray[4]){
+if(communityArray.length ==5){
     //create TEMPORARY face down card to animate
     var animatedCard = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
      this.images.itemAsBitmap(animatedCard, this.images.seats[0].hiddenCard0.bitmapSource)
@@ -1201,7 +1215,7 @@ if(communityArray[4]){
      this.displayShownCard(communityArray[4], this.images.community[4])
 }
 //turn animation
-else if(communityArray[3]){
+else if(communityArray.length ==4){
     //create TEMPORARY face down card to animate
     var animatedCard = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.containerImageIndexes.cardAnimation)
      this.images.itemAsBitmap(animatedCard, this.images.seats[0].hiddenCard0.bitmapSource)
@@ -1227,14 +1241,14 @@ else if(communityArray.length == 3){
     this.images.community[i].image.x = this.images.community[0].position.x
       this.images.containers[this.images.community[i].position.z].addChild( this.images.community[i].image)
       }
+
       this.stage.update()
       //move cards from community[0] position to final destinations
-      this.animateImage(this.images.community[1].image.x, this.images.community[1].image.y,animationTime, lastTick+1, this.images.community[1],this.images.community[1].position.x, this.images.community[1].position.y)
-      console.log(this.images.community[2].image)
-     this.animateImage(this.images.community[2].image.x, this.images.community[2].image.y,animationTime*2, lastTick+1, this.images.community[2],this.images.community[2].position.x, this.images.community[2].position.y)
-     for(var i =0;i<2;i++){
-    this.images.community[i].image.x = this.images.community[i].position.x
-      }
+      this.animateImage(this.images.community[0].position.x, this.images.community[1].position.y,animationTime, lastTick+1, this.images.community[1],this.images.community[1].position.x, this.images.community[1].position.y)
+     this.animateImage(this.images.community[0].position.x, this.images.community[2].position.y,animationTime, lastTick+1, this.images.community[2],this.images.community[2].position.x, this.images.community[2].position.y)
+   // for(var i =0;i<2;i++){
+   // this.images.community[i].image.x = this.images.community[i].position.x
+   //   }
       this.stage.update()
 }
 
@@ -2134,8 +2148,9 @@ this.restoreActiveContainers=function(activeContainerArray){
         
 //hands dealt to non-user players
        socket.on('hands_dealt', function(players){
-           
+           var playerArray = []
            for(var i = 0; i<players.length;i++){
+               playerArray.push(playerArray.seat)
                if(players[i].seat!=self.gameState.userSeatNumber){
         self.displayHiddenCards(players[i].seat)
      }
@@ -2145,6 +2160,7 @@ this.restoreActiveContainers=function(activeContainerArray){
 
 //hand dealt to user
        socket.on('hole_cards_dealt', function(hand){
+      
            self.displayHoleCards(hand, self.gameState.userSeatNumber)
                    self.displayInHandOptions()
         });

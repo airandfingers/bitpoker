@@ -47,6 +47,8 @@ module.exports = (function () {
     , sitting_out: Boolean
       // whether this player is currently disconnected
     , disconnected: Boolean
+      // the outstanding prompt to the player, if any
+    , current_prompt: Schema.Types.Mixed
     });
 
   var static_properties = {
@@ -136,14 +138,17 @@ module.exports = (function () {
     else {
       console.log('prompting', self.username, 'for next action', actions, timeout);
       self.sendMessage('act_prompt', actions, timeout);
+      self.current_prompt = [actions, timeout, new Date()];
       self.socket.once('act', function(action, num_chips) {
         console.log(self.username, 'responds with', action, num_chips);
+        self.current_prompt = undefined;
         self.idle = false;
         clearTimeout(act_timeout);
         cb(action, num_chips);
       });
       act_timeout = setTimeout(function() {
         console.log(self.username, 'fails to respond within', timeout, 'ms');
+        self.current_prompt = undefined;
         self.idle = true;
         self.socket.removeAllListeners('act');
         cb(default_action);
@@ -541,6 +546,14 @@ module.exports = (function () {
         $emit.apply(self.socket, arguments);
       }
     };
+
+    // send outstanding prompt, if any
+    if (self.current_prompt) {
+      var current_prompt = self.current_prompt
+        , elapsed_timeout = new Date() - current_prompt[2]
+        , remaining_timeout = current_prompt[1] - elapsed_timeout;
+      self.sendMessage('act_prompt', current_prompt[0], remaining_timeout);
+    }
 
     // attach handlers for messages as defined in Player.messages
     io.bindMessageHandlers.call(this, this.socket, static_properties.messages);

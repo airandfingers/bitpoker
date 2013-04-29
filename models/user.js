@@ -37,10 +37,7 @@ module.exports = (function() {
     model.findOne({
       username: username,
       password: shasum
-    }, function(err, result) {
-      if (err) cb(error);
-      else cb(null, result)
-    });
+    }, cb);
   };
 
   UserSchema.statics.generateConfirmationCode = function(callback) {
