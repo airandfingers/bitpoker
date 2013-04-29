@@ -426,6 +426,7 @@ this.images.setDefaults = function(){
 
              this.pots[0].firstChip = new this.Item(canvasWidth/2-cardWidth/2-cardWidth,communityY+potDistanceToCommunity,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
               this.pots[0].secondChip = new this.Item(this.pots[0].firstChip.position.x,this.pots[0].firstChip.position.y-distanceBetweenChipsY,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
+              this.pots[0].secondColumnChip = new this.Item(this.pots[0].firstChip.position.x+chipDiameter+self.imageData.distanceBetweenChipColumns,this.pots[0].firstChip.position.y,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
 
 
            //--------side buttons---------------------
@@ -866,7 +867,6 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
     this.removeAllBets  = function(){
 
     for (var i=0;i<this.images.seats.length;i=i+1){
-        if(this.stage.contains(this.images.seats[i].bet.text)){this.hideChildren(this.images.seats[i].bet)}
          this.hideBet(i)
         }
         
@@ -991,9 +991,12 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
 
     this.hideBet = function (seatNumber){
    
-            this.hideChildren(this.gameState.seats[seatNumber].bet)
-
-        this.gameState.seats[seatNumber].bet = []
+            this.hideChildren(this.images.seats[seatNumber].bet)
+            for(var i = 0;i<this.images.seats[seatNumber].chips.length;i++){
+                this.hideChildren(this.images.seats[seatNumber].chips[i])
+                
+            }
+            this.images.seats[seatNumber].chips = []
 
     }
 
@@ -1011,7 +1014,17 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
 
 
         while(chipAmount>=1){
-             if(chipAmount>=1000){
+            if(chipAmount>=10000){
+            this.displayChip('10k',x,y, parentOfChipArray)
+            y =y+chipIncrementY
+            chipAmount = chipAmount -10000
+        }
+           else if(chipAmount>=5000){
+            this.displayChip('5k',x,y, parentOfChipArray)
+            y =y+chipIncrementY
+            chipAmount = chipAmount -5000
+        }
+        else     if(chipAmount>=1000){
             
             this.displayChip(1000,x,y, parentOfChipArray)
             y =y+chipIncrementY
@@ -2164,22 +2177,41 @@ this.restoreActiveContainers=function(activeContainerArray){
     socket.on('street_ends', function (potSize){
         var animationTime = 800
         var ticks = 40
+        var chipIntoPotAnimationArray = []
+        var callBackNumber = 0
+        //push animateImages into an array
+        _.each(_.range(self.images.seats.length), function(seatNumber) {
 
-        for(var i =0;i<self.images.seats.length;i++){
-            if(self.images.seats[i].chips && Array.isArray( self.images.seats[i].chips) && self.images.seats[i].chips[0]  && self.images.seats[i].chips[0].image && self.stage.contains(self.images.seats[i].chips[0].image) ){
+            if(self.images.seats[seatNumber].chips && Array.isArray( self.images.seats[seatNumber].chips) && self.images.seats[seatNumber].chips[0]  && self.images.seats[seatNumber].chips[0].image && self.stage.contains(self.images.seats[seatNumber].chips[0].image) )
+            {
                 
-                var animationDistanceX = self.images.pots[0].firstChip.position.x -  self.images.seats[i].firstChip.position.x
-                var animationDistanceY = self.images.pots[0].firstChip.position.y  - self.images.seats[i].firstChip.position.y
+                var animationDistanceX = self.images.pots[0].firstChip.position.x -  self.images.seats[seatNumber].firstChip.position.x
+                var animationDistanceY = self.images.pots[0].firstChip.position.y  - self.images.seats[seatNumber].firstChip.position.y
 
-                for(var n =0;n<self.images.seats[i].chips.length;n++){
-
-                   self.animateImage(self.images.seats[i].chips[n].position.x, self.images.seats[i].chips[n].position.y, animationTime, ticks, self.images.seats[i].chips[n], self.images.seats[i].chips[n].position.x + animationDistanceX, self.images.seats[i].chips[n].position.y+ animationDistanceY)
-
+                 _.each(_.range(self.images.seats[seatNumber].chips.length), function(n)
+                 {
+chipIntoPotAnimationArray.push(function(callback){
+      self.animateImage(self.images.seats[seatNumber].chips[n].position.x, self.images.seats[seatNumber].chips[n].position.y, animationTime, ticks, self.images.seats[seatNumber].chips[n], self.images.seats[seatNumber].chips[n].position.x + animationDistanceX, self.images.seats[seatNumber].chips[n].position.y+ animationDistanceY, function(){callback(null, callBackNumber)})
+     
+                }) 
+                })
                 }
+                })
+            
 
-            }
+        
+        
+async.series([
+function(next){
+    async.parallel(chipIntoPotAnimationArray, function(err, results){next(null, 1)})
+},
 
-        }
+function(next){
+    self.displayChipStack(potSize, self.images.pots[0], self.images.pots[0].firstChip.position.x, self.images.pots[0].firstChip.position.y)
+    self.removeAllBets()
+    next(null, 2)
+}
+  ])
 
     })
 
