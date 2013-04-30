@@ -960,7 +960,6 @@ this.displayChildren(this.images.background)
          this.images.seats[seatNumber].status.text.text = stackSize
 
            this.displayChildren(this.images.seats[seatNumber].bet)
-           this.stage.update()
 
     }
 
@@ -1104,6 +1103,7 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
         var y = initialY
         var chipIncrementY = this.images.pots[0].secondChip.position.y-this.images.pots[0].firstChip.position.y
         var totalChips = 0
+
                     var distanceBetweenColumns = parentOfChipArray.secondColumnChip.position.x-parentOfChipArray.firstChip.position.x
 
 
@@ -2447,6 +2447,7 @@ this.restoreActiveContainers=function(activeContainerArray){
     
     this.activateSockets = function(){
      
+        
 
     socket.on('street_ends', function (potSize){
         var animationTime = 800
@@ -2498,6 +2499,16 @@ function(next){
                 
 })
         
+ //player is refunded chips
+       socket.on('player_gets_refund', function(player){
+           var stackSize = player.chips
+           var betSize = player.current_bet
+           var seatNumber = player.seat
+
+          self.playerPutsChipsInPot(seatNumber, betSize, stackSize)
+           self.displayChipStack(betSize, self.images.seats[seatNumber], self.images.seats[seatNumber].firstChip.position.x, self.images.seats[seatNumber].firstChip.position.y)
+                
+})
 
 
     //community cards are dealt
@@ -2797,6 +2808,7 @@ jQuery(window).load(function (){
      
     holdemCanvas.createAllItems()
    holdemCanvas.receiveTableState()
+
     })
  /*  
 asdf = new createjs.Container()
