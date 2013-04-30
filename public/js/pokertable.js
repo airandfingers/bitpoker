@@ -26,13 +26,14 @@
         this.gameState.messageBox.activeContainers = []
         this.gameState.containerImageIndexes = {
             
-            cashier:5,
+            cashier:6,
             background:0,
             holeCard:1,
             cardAnimation:2,
             chips:2,
             button:3,
-            initialMessageBox:7
+            chat:4,
+            initialMessageBox:8
         }
 
         this.images = {}
@@ -353,7 +354,7 @@ this.images.setDefaults = function(){
             var spaceBetweenHoleCards = -10
 
             //percentage of vertical card to show
-            var shownCardY = 0.7
+            var shownCardY = 0.85
 
             var sideButtonWidth = 185
             var sideButtonHeight = 16
@@ -406,6 +407,13 @@ this.images.setDefaults = function(){
             var betTextWidth =  20
             var absoluteDistanceBetweenBetTextAndChipImages = 5
 
+            //space between player chat and seat
+            var chatBoxWidth = seatWidth
+            var chatBoxHeight = seatHeight/3
+            var chatDistanceFromSeatX = 0
+            var chatDistanceFromSeatY = seatHeight/6
+
+
             //space between player's cards/seats, and chip images in play, relative to the upper left seat corner
             var bottomChipOffsetX = chipDiameter
             var bottomChipOffsetY = -cardHeight*shownCardY - chipDiameter*1.5
@@ -456,11 +464,26 @@ this.images.setDefaults = function(){
              this.seats[8].seat = new this.Item(fifthColumnX,thirdRowY,seatWidth,seatHeight,self.gameState.containerImageIndexes.button)
      this.seats[9].seat = new this.Item(fourthColumnX,fourthRowY,seatWidth,seatHeight,self.gameState.containerImageIndexes.button)
 
-     //--------------------empty seats and text-----------------
-     for(var i=0;i<this.seats.length;i=i+1){
-         
-         this.seats[i].openSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,self.gameState.containerImageIndexes.button)
+      //---filled seats------
 
+      _.each(_.range(this.seats.length), function(i) {
+self.images.seats[i].seat.image = new createjs.Shape()
+self.images.seats[i].seat.image.drawSeat = function(borderColor, fillColor, middleDividerColor){
+    self.images.seats[i].seat.image.graphics.clear()
+    self.images.seats[i].seat.image.snapToPixel = true
+self.images.seats[i].seat.image.graphics.setStrokeStyle(2,'square').beginStroke(borderColor).beginFill(fillColor).drawRect(self.images.seats[i].seat.position.x, self.images.seats[i].seat.position.y, self.images.seats[i].seat.size.x, self.images.seats[i].seat.size.y)
+            self.images.seats[i].seat.image.graphics.setStrokeStyle(1).beginStroke(middleDividerColor).moveTo(self.images.seats[i].horizontalDivider.position.x,self.images.seats[i].horizontalDivider.position.y).lineTo(self.images.seats[i].horizontalDivider.position.x+self.images.seats[i].horizontalDivider.size.x,self.images.seats[i].horizontalDivider.position.y)
+          self.images.seats[i].seat.image.parentOfImageObject = self.images.seats[i].seat
+          self.images.seats[i].seat.image.borderColor = borderColor
+          self.images.seats[i].seat.image.fillColor = fillColor
+          self.images.seats[i].seat.image.middleDividerColor = middleDividerColor
+}
+})
+
+
+     //--------------------empty seats and text-----------------   
+for(var i =0;i<this.seats.length;i++){
+         this.seats[i].openSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,self.gameState.containerImageIndexes.button)
           this.seats[i].disabledSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,self.gameState.containerImageIndexes.button)
 
 
@@ -472,9 +495,7 @@ this.images.setDefaults = function(){
          this.seats[i].playerName = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,self.gameState.containerImageIndexes.button)
          this.seats[i].status = new this.Item(this.seats[i].horizontalDivider.position.x, this.seats[i].horizontalDivider.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,self.gameState.containerImageIndexes.button)
 
-     }
      //------------------hole cards-----------------------------
-        for (var i = 0; i < this.seats.length; i = i + 1){
             var middleOfSeat = this.seats[i].seat.position.x +this.seats[i].seat.size.x/2
             var card0X = middleOfSeat - cardWidth - spaceBetweenHoleCards/2
             var cardY = this.seats[i].seat.position.y - cardHeight*shownCardY
@@ -485,18 +506,11 @@ this.images.setDefaults = function(){
 
             this.seats[i].shownCard0 = new this.Item(card0X, cardY, cardWidth, cardHeight,1)
             this.seats[i].shownCard1 = new this.Item(card1X, cardY, cardWidth, cardHeight,1)
-          }
 
+             //=================-seat images=========================================
 
-            //------------seat images----------------------
-        for (var i = 0; i < this.seats.length; i = i + 1){
-            
-            //filled seats
-this.seats[i].seat.image = new createjs.Shape()
-this.seats[i].seat.image.snapToPixel = true
-this.seats[i].seat.image.graphics.setStrokeStyle(2,'square').beginStroke("#FFFFFF").beginFill('black').drawRect(this.seats[i].seat.position.x, this.seats[i].seat.position.y, this.seats[i].seat.size.x, this.seats[i].seat.size.y)
-            this.seats[i].seat.image.graphics.setStrokeStyle(1).beginStroke("#FFFFFF").moveTo(this.seats[i].horizontalDivider.position.x,this.seats[i].horizontalDivider.position.y).lineTo(this.seats[i].horizontalDivider.position.x+this.seats[i].horizontalDivider.size.x,this.seats[i].horizontalDivider.position.y)
-          this.seats[i].seat.image.parentOfImageObject = this.seats[i].seat
+this.seats[i].seat.image.drawSeat('#FFFFFF','#000000', '#FFFFFF')
+
             //Empty Seats
             this.seats[i].openSeat.image = new createjs.Shape()
 this.seats[i].openSeat.image.snapToPixel = true
@@ -537,19 +551,9 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
             this.addItemText(this.seats[i].countdown,'','11px Arial','#FFFFFF')
             //winner
              this.addItemText(this.seats[i].winner,'','11px Arial','#FFFFFF')
-
-            
-        }
-
-             //---------player's bets-----------------
-
-      for(var i = 0; i < this.seats.length; i = i + 1){
-       }
-
+        
 
        //----------------------dealer button----Player's bets----------------------------------
-
-for(var i = 0; i < this.seats.length; i = i + 1){
 
     //check if seat is on top
     if(this.seats[i].seat.position.y == firstRowY){
@@ -645,10 +649,14 @@ for(var i = 0; i < this.seats.length; i = i + 1){
      else{console.log(i+' is not a seat')}
 
     
+        // -----------------player's chat -----------------
+        var chatX = this.seats[i].seat.position.x+chatDistanceFromSeatX
+        var chatY = this.seats[i].seat.position.y + chatDistanceFromSeatY
+   this.seats[i].chat = new this.Item(chatX, chatY, chatBoxWidth, chatBoxHeight, self.gameState.containerImageIndexes.chat)
+
     }
 
-   
-       
+ 
 
 
          //---------------action buttons------------------
@@ -1178,8 +1186,6 @@ self.displayChildren(parentOfImageObject)
           }
             self.stage.update()
 
-      //    console.log(parentOfImageObject.image.x+', '+parentOfImageObject.image.y)
-
             if(tick >= lastTick){
    if(parentOfImageObject.image)   {    
     parentOfImageObject.image.x = finalX
@@ -1359,7 +1365,7 @@ _.each(_.range(playerArray.length * 2), function(cardsDealt) {
                        if(cardsDealt==playerArrayNumber){
                        self.displayShownCard(holeCardArray[0], self.images.seats[playerArray[playerArrayNumber]].shownCard0)  }
                        else if (cardsDealt>playerArrayNumber){
-                           self.displayShownCard(holeCardArray[0], self.images.seats[playerArray[playerArrayNumber]].shownCard1)  
+                           self.displayShownCard(holeCardArray[1], self.images.seats[playerArray[playerArrayNumber]].shownCard1)  
                        }
                        }
                     else{ 
@@ -1589,7 +1595,7 @@ this.hideAllActionButtons()
     }
 
     this.displayCorrectSeatMessage = function(seatNumber){
-        
+
         switch (this.gameState.seats[seatNumber].displayMessageType){
 
             case 'seat':
@@ -1644,15 +1650,17 @@ this.hideAllActionButtons()
 
             case 'openSeat':
             
-            if(!this.gameState.userSeatNumber){
+            if(isNaN(this.gameState.userSeatNumber)){
                 this.hideChildren(this.images.seats[seatNumber].disabledSeat)
             this.displayChildren(this.images.seats[seatNumber].openSeat)
+
             }
-            else if(this.gameState.userSeatNumber){
+            else {
+                
                 this.hideChildren(this.images.seats[seatNumber].openSeat)
                 this.displayChildren(this.images.seats[seatNumber].disabledSeat)
             }
-
+             
             
               this.hideChildren(this.images.seats[seatNumber].seat)
             this.hideChildren(this.images.seats[seatNumber].status)
@@ -1664,14 +1672,17 @@ this.hideAllActionButtons()
 
             default:
 
- if(!this.gameState.userSeatNumber){
+                if(isNaN(this.gameState.userSeatNumber)){
                 this.hideChildren(this.images.seats[seatNumber].disabledSeat)
             this.displayChildren(this.images.seats[seatNumber].openSeat)
+
             }
-            else if(this.gameState.userSeatNumber){
+            else {
+                
                 this.hideChildren(this.images.seats[seatNumber].openSeat)
                 this.displayChildren(this.images.seats[seatNumber].disabledSeat)
             }
+           
 
             
               this.hideChildren(this.images.seats[seatNumber].seat)
@@ -1770,6 +1781,162 @@ self.displayCorrectSeatMessage(seatNumber)
 
     }
 
+    this.playerToAct =function(seatNumber){
+
+        //function that will convert hex to RGB
+    var hexToRGB =     function(hex) {
+    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i
+    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+        return r + r + g + g + b + b;
+    })
+
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null
+}
+
+//-function for extracting RGB  from a colorString
+  var extractRGB = function(color){
+      //check if fill color is in rgb format
+           if(color.charAt(0) == ('r'||'R')){
+               var colorsArray = []
+               colorsArray = color.replace(/[^\d,]/g, '').split(',')
+               red = parseInt(colorsArray[0])
+               green = parseInt(colorsArray[1])
+               blue = parseInt(colorsArray[2])
+               
+           }
+           //check if fill color is in hexadecimal format
+           else if(color.charAt(0)=='#'){
+               var colorsObject = hexToRGB(color)
+                red  = parseInt(colorsObject.r)
+                green = parseInt(colorsObject.g)
+               blue = parseInt(colorsObject.b)
+             
+           }
+        return[red, green, blue]   
+}
+
+//function for converting [r,g,b] array to:  rgb(r,g,b) format
+var rgbArrayToString = function(rgbArray){
+    
+        colorString = 'rgb('+rgbArray[0]+','+rgbArray[1]+','+rgbArray[2]+')'
+        return colorString
+}
+
+        var timeToChangeColors = 2000
+        var ticksPerColorChange = 35
+        var interval = timeToChangeColors/ticksPerColorChange
+        var lastTick = ticksPerColorChange-1
+         var tick = 0
+         var originalFillColor = self.images.seats[seatNumber].seat.image.fillColor
+         var targetFillColorsArray = [[255,0,0],[0,0,0]]
+         var lastCompletedFillColorCounter = -1
+
+
+         self.gameState.seats[seatNumber].toAct = true
+
+//-----------start swapping colors until toAct becomes false----------------
+              var countdown = setInterval(function() {
+                 //get RGBA fill color of seat
+           var currentFillColor =  self.images.seats[seatNumber].seat.image.fillColor
+          var red; var green; var blue
+          var previousTargetRed; var previousTargetGreen; var previousTargetBlue
+          var targetRed; var targetGreen; var targetBlue
+         var redIncreasePerTick; var greenIncreasePerTick; var blueIncreasePerTick
+         var nextRed; var nextGreen; var nextBlue
+         
+//===================extract RGB values from current fill color ==================
+var currentColors = extractRGB(currentFillColor)
+red = currentColors[0]
+green = currentColors[1]
+blue = currentColors[2]
+
+//==============previous fill colorRGB exraction===================
+
+//use original fill color as last fill color if havent reached first "target color"
+if(lastCompletedFillColorCounter == -1){
+
+   var lastColors = extractRGB(originalFillColor)
+   previousTargetRed = lastColors[0]
+   previousTargetGreen = lastColors[1]
+   previousTargetBlue = lastColors[2]
+}
+
+//use last fill color of iteration as last fill color
+else{
+    var previousArrayNumber = lastCompletedFillColorCounter%targetFillColorsArray.length
+    var lastColorString = rgbArrayToString(targetFillColorsArray[previousArrayNumber])
+    var lastColors = extractRGB(lastColorString)
+    previousTargetRed = lastColors[0]
+   previousTargetGreen = lastColors[1]
+   previousTargetBlue = lastColors[2]
+   }
+//================Target fill color RGB extraction =======================
+var targetArrayNumber = (lastCompletedFillColorCounter+1)%targetFillColorsArray.length
+var targetColorString = rgbArrayToString(targetFillColorsArray[targetArrayNumber])
+var targetColors =     extractRGB(targetColorString)
+    targetRed = targetColors[0]
+    targetGreen = targetColors[1]
+    targetBlue = targetColors[2]
+  
+    //calculate difference per tick per tick of each color
+     redIncreasePerTick = (targetRed-previousTargetRed)/ticksPerColorChange
+     greenIncreasePerTick = (targetGreen-previousTargetGreen)/ticksPerColorChange 
+     blueIncreasePerTick = (targetBlue-previousTargetBlue)/ticksPerColorChange
+
+     //calculate next RGB colors
+nextRed = parseInt(red + redIncreasePerTick)
+nextGreen = parseInt(green + greenIncreasePerTick)
+nextBlue = parseInt(blue + blueIncreasePerTick)
+//if target color has been reached, increase lastCompletedFillColorCounter
+var nextCounter = lastCompletedFillColorCounter+1
+    if(redIncreasePerTick < 0){
+        if(nextRed<=targetRed){ lastCompletedFillColorCounter = nextCounter}
+    }
+    if(redIncreasePerTick > 0){
+        if(nextRed>=targetRed){ lastCompletedFillColorCounter = nextCounter}
+    }
+   if(greenIncreasePerTick < 0){
+        if(nextGreen<=targetGreen){lastCompletedFillColorCounter = nextCounter}
+    }
+    if(greenIncreasePerTick > 0){
+        if(nextGreen>=targetGreen){ lastCompletedFillColorCounter = nextCounter}
+    }
+   if(blueIncreasePerTick < 0){
+        if(nextBlue<=targetBlue){ lastCompletedFillColorCounter = nextCounter}
+    }
+    if(blueIncreasePerTick > 0){
+        if(nextBlue>=targetBlue){ lastCompletedFillColorCounter = nextCounter}
+    }
+
+//make sure next colors do notgo higher or lower than 255/0
+    if(nextRed>255){nextRed = 255}
+    if(nextGreen>255){nextGreen = 255}
+    if(nextBlue >255){nextBlue = 255}
+     if(nextRed<0){nextRed = 0}
+    if(nextGreen<0){nextGreen = 0}
+    if(nextBlue <0){nextBlue = 0}
+
+    //concatanate to create new fill color
+    newFillColor = rgbArrayToString([nextRed, nextGreen, nextBlue])
+
+    self.images.seats[seatNumber].seat.image.drawSeat(self.images.seats[seatNumber].seat.image.borderColor, newFillColor, self.images.seats[seatNumber].seat.image.middleDividerColor)
+    self.stage.update()
+    
+                if (self.gameState.seats[seatNumber].toAct==false)
+                  {
+                      clearInterval(countdown)
+                     self.images.seats[seatNumber].seat.image.drawSeat(self.images.seats[seatNumber].seat.image.borderColor, originalFillColor, self.images.seats[seatNumber].seat.image.middleDividerColor)
+                      }
+        },interval)
+
+    }
+    
 
  this.startCountdown = function(seatNumber, secondsToAct){
 
@@ -2168,7 +2335,8 @@ this.restoreActiveContainers=function(activeContainerArray){
 
           //empty seats
          for (var i = 0; i<table_state.max_players;i++){
-             
+
+             console.log(i+this.gameState.seats[i].displayMessageType)
              this.displayCorrectSeatMessage(i)
          }
 
@@ -2218,7 +2386,7 @@ function(next){
 },
 
 function(next){
-    self.displayChipStack(potSize, self.images.pots[0], self.images.pots[0].firstChip.position.x, self.images.pots[0].firstChip.position.y)
+    self.displayChipStack(parseFloat(self.images.pots[0].potSize.text.text), self.images.pots[0], self.images.pots[0].firstChip.position.x, self.images.pots[0].firstChip.position.y)
     self.removeAllBets()
     next(null, 2)
 }
@@ -2315,6 +2483,7 @@ socket.on('hands_dealt', function(players){
  socket.on('act_prompt', function(actions, timeout){
 
      self.startCountdown(self.gameState.userSeatNumber,Math.round(timeout/1000))
+self.playerToAct(self.gameState.userSeatNumber)
      for (var i = 0; i < actions.length; i++){
      if (typeof actions[i].fold !== 'undefined'){
          self.displayButton(self.images.fold, false, ['act','fold'])
@@ -2339,8 +2508,15 @@ socket.on('hands_dealt', function(players){
 
 //player to act (not the user)
  socket.on('player_to_act', function(player, timeout){
+    
+     self.playerToAct(player.seat)
+  //   self.startCountdown(player.seat,Math.round(timeout/1000))
+     
+})
 
-     self.startCountdown(player.seat,Math.round(timeout/1000))
+//player to act (not the user)
+ socket.on('chatmessage', function(chatInfo){
+
      
 })
 //player sits in
@@ -2477,7 +2653,6 @@ jQuery(document).ready(function(){
 
 jQuery(window).load(function (){
     holdemCanvas.receiveTableState()
-
     })
  /*  
 asdf = new createjs.Container()
