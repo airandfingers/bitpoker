@@ -359,11 +359,12 @@ else if(i==13){cardRank = 'k'}
         fileSourceArray.push(this.images.sources.cardImageFolder+cardRank+'s.png')
     }
     console.log(fileSourceArray)
-                var preload = new createjs.LoadQueue()
+    // must set to false or wo't work.  dont know whay...
+                var preload = new createjs.LoadQueue(false)
     preload.addEventListener("complete", handleComplete)
      preload.addEventListener("fileload", handleFileLoad)
    preload.loadManifest(fileSourceArray)
-   createjs.Ticker.setFPS(30)
+ //  createjs.Ticker.setFPS(30)
 
    var handleFileLoad=  function  (event){
        
@@ -456,10 +457,9 @@ this.images.setDefaults = function(){
             var absoluteDistanceBetweenBetTextAndChipImages = 5
 
             //space between player chat and seat
-            var chatBoxWidth = seatWidth
+            var chatBoxWidth = seatWidth*1.4
             var chatBoxHeight = seatHeight/2.3
-            var absoluteChatDistanceFromSeatX = 0
-            var absoluteabsoluteChatDistanceFromSeatY = seatHeight/6
+            var absoluteabsoluteChatDistanceFromSeatY = seatHeight/5
              var chatBoxBorderColor = '#FFFFFF'
 
             //space between player's cards/seats, and chip images in play, relative to the upper left seat corner
@@ -698,7 +698,7 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
 
     
         // -----------------player's chat -----------------
-        var chatX = this.seats[i].seat.position.x+absoluteChatDistanceFromSeatX
+        var chatX =  this.seats[i].seat.position.x +this.seats[i].seat.size.x/2 - chatBoxWidth/2  
         var chatY = this.seats[i].seat.position.y - absoluteabsoluteChatDistanceFromSeatY
    this.seats[i].chat = new this.Item(chatX, chatY, chatBoxWidth, chatBoxHeight, self.gameState.containerImageIndexes.chat)
    
@@ -713,12 +713,13 @@ this.seats[i].chat.image.graphics.setStrokeStyle(1,'round').beginStroke(chatBoxB
 this.seats[i].chat.image.alpha = 0.75
 
 //player chat text
- this.seats[i].chat.text = new createjs.Text('', '9px Arial', '#FFFFFF')
+ this.seats[i].chat.text = new createjs.Text('', '10px Arial', '#FFFFFF')
 this.seats[i].chat.text.x=this.seats[i].chat.position.x +  this.seats[i].chat.size.x/2 
  this.seats[i].chat.text.y= this.seats[i].chat.position.y
  this.seats[i].chat.text.baseline = 'top'
  this.seats[i].chat.text.textAlign = 'center'
- this.seats[i].chat.text.maxWidth = this.seats[i].chat.size.x*.9
+ this.seats[i].chat.text.lineWidth = this.seats[i].chat.size.x*.92
+ this.seats[i].chat.text.maxWidth = this.seats[i].chat.size.x*.85
 
 
     }
@@ -1282,7 +1283,22 @@ clearInterval(imageAnimation)
 }, interval)
 
  }
-
+ //get Width of a line of text from its parent Item, returns [width, fontSize]
+ this.getTextWidthAndFontSize = function (parentOfTextObject, fontSize){
+     if(parentOfTextObject instanceof this.images.Item){
+         if(!fontSize){
+           var pIndex =   parentOfTextObject.text.font.indexOf('p')
+           var PIndex =  parentOfTextObject.text.font.indexOf('P')
+           if(pIndex>=PIndex){var pLocation = pIndex}
+           else if(pIndex<PIndex){var pLocation = pIndex}
+           var fontSize = parentOfTextObject.text.font.substring(0,pLocation-1)
+         }
+     }
+     var context = this.stage.canvas.getContext('2d')
+     context.font = parentOfTextObject.text.font
+     var textData = context.measureText(parentOfTextObject.text.text)
+     return [textData.width, fontSize]
+ }
  //must include false or undefined slots for already dealt cards
  this.dealCommunity = function (communityArray){
      
@@ -2575,14 +2591,30 @@ self.playerToAct(self.gameState.userSeatNumber)
 
 //player to act (not the user)
  socket.on('chatMessage', function(chatInfo){
-     createjs.Ticker.setFPS(20);
-		createjs.Ticker.addEventListener("tick", self.stage);
-
-     chatInfo.seat = 2
+  chatInfo.seat = 2
      self.images.seats[chatInfo.seat].chat.text.text = chatInfo.message
      originalImageAlpha = self.images.seats[chatInfo.seat].chat.image.alpha
-     self.displayChildren(self.images.seats[chatInfo.seat].chat)
 
+     var textShortened = false
+     var width = self.getTextWidthAndFontSize(self.images.seats[chatInfo.seat].chat)[0]
+     console.log(width)
+     console.log('maxwidth is '+self.images.seats[chatInfo.seat].chat.text.maxWidth)
+    while(width>self.images.seats[chatInfo.seat].chat.text.maxWidth){
+        //remove last character of text
+        console.log(self.images.seats[chatInfo.seat].chat.text.text)
+        self.images.seats[chatInfo.seat].chat.text.text = self.images.seats[chatInfo.seat].chat.text.text.substring(0,self.images.seats[chatInfo.seat].chat.text.text.length-1) 
+        console.log('shortened to'+ self.images.seats[chatInfo.seat].chat.text.text)
+        width = self.getTextWidthAndFontSize(self.images.seats[chatInfo.seat].chat)[0]
+   textShortened = true
+    }
+
+    //add elipses .... to end of text if text was shortened
+    if(textShortened == true){
+        self.images.seats[chatInfo.seat].chat.text.text = self.images.seats[chatInfo.seat].chat.text.text + '...'
+    }
+
+     self.displayChildren(self.images.seats[chatInfo.seat].chat)
+     
       //tween image
      createjs.Tween.get(self.images.seats[chatInfo.seat].chat.image,{loop:false})
     .to({alpha:0, }, 5000)
