@@ -10,16 +10,18 @@
             this.events = {}
   this.imageData = {
       maxChipsPerColumn:5,
-      distanceBetweenChipColumns:4
+      distanceBetweenChipColumns:4,
+      chatBoxAlpha:0.75
   }
         this.gameState = {}
         this.gameState.displaySize = 'normal'
         this.gameState.secondsToAct
-        this.gameState.seatNuseumberToActi
+        this.gameState.userSeatNumber = false
         this.gameState.seats = []
         for(var i = 0;i<maxSeats;i++){
              this.gameState.seats[i]={}
              this.gameState.seats[i].displayMessageType = 'openSeat'
+             this.gameState.seats[i].toAct = false
         }
         this.gameState.cashier = {}
         this.gameState.messageBox = {}
@@ -515,12 +517,16 @@ this.images.setDefaults = function(){
       //---filled seats------
 
       _.each(_.range(this.seats.length), function(i) {
-self.images.seats[i].seat.image = new createjs.Shape()
+          var x = self.images.seats[i].seat.position.x
+          var y = self.images.seats[i].seat.position.y
+          var width = self.images.seats[i].seat.size.x
+          var height = self.images.seats[i].seat.size.y
+          self.images.seats[i].seat.image = new createjs.Shape()
 self.images.seats[i].seat.image.drawSeat = function(borderColor, fillColor, middleDividerColor){
     self.images.seats[i].seat.image.graphics.clear()
     self.images.seats[i].seat.image.snapToPixel = true
-self.images.seats[i].seat.image.graphics.setStrokeStyle(2,'square').beginStroke(borderColor).beginFill(fillColor).drawRect(self.images.seats[i].seat.position.x, self.images.seats[i].seat.position.y, self.images.seats[i].seat.size.x, self.images.seats[i].seat.size.y)
-            self.images.seats[i].seat.image.graphics.setStrokeStyle(1).beginStroke(middleDividerColor).moveTo(self.images.seats[i].horizontalDivider.position.x,self.images.seats[i].horizontalDivider.position.y).lineTo(self.images.seats[i].horizontalDivider.position.x+self.images.seats[i].horizontalDivider.size.x,self.images.seats[i].horizontalDivider.position.y)
+self.images.seats[i].seat.image.graphics.setStrokeStyle(2,'square').beginStroke(borderColor).beginFill(fillColor).drawRect(x, y, width, height)
+            self.images.seats[i].seat.image.graphics.setStrokeStyle(1).beginStroke(middleDividerColor).moveTo(x,y+height/2).lineTo(x+width,y+height/2)
           self.images.seats[i].seat.image.parentOfImageObject = self.images.seats[i].seat
           self.images.seats[i].seat.image.borderColor = borderColor
           self.images.seats[i].seat.image.fillColor = fillColor
@@ -529,8 +535,13 @@ self.images.seats[i].seat.image.graphics.setStrokeStyle(2,'square').beginStroke(
 })
 
 
-     //--------------------empty seats and text-----------------   
+  //=================-seat images=========================================
+   
 for(var i =0;i<this.seats.length;i++){
+
+this.seats[i].seat.image.drawSeat('#FFFFFF','#000000', '#FFFFFF')
+
+    //--------------------empty seats and text----------------- 
          this.seats[i].openSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,self.gameState.containerImageIndexes.button)
           this.seats[i].disabledSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,self.gameState.containerImageIndexes.button)
 
@@ -539,9 +550,9 @@ for(var i =0;i<this.seats.length;i++){
          this.seats[i].countdown = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,self.gameState.containerImageIndexes.button)
          this.seats[i].winner = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,self.gameState.containerImageIndexes.button)
 
-         this.seats[i].horizontalDivider = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,1,self.gameState.containerImageIndexes.button)
+       
          this.seats[i].playerName = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,self.gameState.containerImageIndexes.button)
-         this.seats[i].status = new this.Item(this.seats[i].horizontalDivider.position.x, this.seats[i].horizontalDivider.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,self.gameState.containerImageIndexes.button)
+         this.seats[i].status = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,self.gameState.containerImageIndexes.button)
 
      //------------------hole cards-----------------------------
             var middleOfSeat = this.seats[i].seat.position.x +this.seats[i].seat.size.x/2
@@ -555,9 +566,7 @@ for(var i =0;i<this.seats.length;i++){
             this.seats[i].shownCard0 = new this.Item(card0X, cardY, cardWidth, cardHeight,1)
             this.seats[i].shownCard1 = new this.Item(card1X, cardY, cardWidth, cardHeight,1)
 
-             //=================-seat images=========================================
 
-this.seats[i].seat.image.drawSeat('#FFFFFF','#000000', '#FFFFFF')
 
             //Empty Seats
             this.seats[i].openSeat.image = new createjs.Shape()
@@ -696,33 +705,51 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
      }
      else{console.log(i+' is not a seat')}
 
-    
-        // -----------------player's chat -----------------
-        var chatX =  this.seats[i].seat.position.x +this.seats[i].seat.size.x/2 - chatBoxWidth/2  
-        var chatY = this.seats[i].seat.position.y - absoluteabsoluteChatDistanceFromSeatY
-   this.seats[i].chat = new this.Item(chatX, chatY, chatBoxWidth, chatBoxHeight, self.gameState.containerImageIndexes.chat)
+      }  
+
+
+             // -----------------player's chat -----------------
+
+             _.each(_.range(this.seats.length), function(i) {
+
+        var chatX =  self.images.seats[i].seat.position.x +self.images.seats[i].seat.size.x/2 - chatBoxWidth/2  
+        var chatY = self.images.seats[i].seat.position.y - absoluteabsoluteChatDistanceFromSeatY
+   self.images.seats[i].chat = new self.images.Item(chatX, chatY, chatBoxWidth, chatBoxHeight, self.gameState.containerImageIndexes.chat)
    
   
-   this.seats[i].chat.image = new createjs.Shape()
-this.seats[i].chat.image.parentOfImageObject = this.seats[i].chat
-this.seats[i].chat.image.graphics.clear()
-    this.seats[i].chat.image.snapToPixel = true
-this.seats[i].chat.image.graphics.setStrokeStyle(1,'round').beginStroke(chatBoxBorderColor).beginFill('#000000')
-.drawRoundRect(this.seats[i].chat.position.x, this.seats[i].chat.position.y, this.seats[i].chat.size.x, this.seats[i].chat.size.y,  this.seats[i].chat.size.y*.20)
+   self.images.seats[i].chat.image = new createjs.Shape()
 
-this.seats[i].chat.image.alpha = 0.75
+   //----------function to redraw chat box anytime with a new width
+self.images.seats[i].chat.image.drawChat = function(width){
+
+    //make sure width is <= maxWidth
+    if(width == undefined){var width = self.images.seats[i].chat.size.x}
+   else if(width>self.images.seats[i].chat.size.x){width = self.images.seats[i].chat.size.x}
+   //clear previous graphics
+   self.images.seats[i].chat.image.graphics.clear()
+   //define parent
+self.images.seats[i].chat.image.parentOfImageObject = self.images.seats[i].chat
+//get new X coordinates of chat box
+var x = self.images.seats[i].seat.position.x + self.images.seats[i].seat.size.x/2 - width/2
+var y = self.images.seats[i].chat.position.y
+    self.images.seats[i].chat.image.snapToPixel = true
+self.images.seats[i].chat.image.graphics.setStrokeStyle(1,'round').beginStroke(chatBoxBorderColor).beginFill('#000000')
+.drawRoundRect(x, y, width, self.images.seats[i].chat.size.y,  self.images.seats[i].chat.size.y*.20)
+
+self.images.seats[i].chat.image.alpha = self.imageData.chatBoxAlpha
+}
 
 //player chat text
- this.seats[i].chat.text = new createjs.Text('', '10px Arial', '#FFFFFF')
-this.seats[i].chat.text.x=this.seats[i].chat.position.x +  this.seats[i].chat.size.x/2 
- this.seats[i].chat.text.y= this.seats[i].chat.position.y
- this.seats[i].chat.text.baseline = 'top'
- this.seats[i].chat.text.textAlign = 'center'
- this.seats[i].chat.text.lineWidth = this.seats[i].chat.size.x*.92
- this.seats[i].chat.text.maxWidth = this.seats[i].chat.size.x*.85
+ self.images.seats[i].chat.text = new createjs.Text('', '10px Arial', '#FFFFFF')
+self.images.seats[i].chat.text.x=self.images.seats[i].chat.position.x +  self.images.seats[i].chat.size.x/2 
+ self.images.seats[i].chat.text.y= self.images.seats[i].chat.position.y
+ self.images.seats[i].chat.text.baseline = 'top'
+ self.images.seats[i].chat.text.textAlign = 'center'
+ self.images.seats[i].chat.text.lineWidth = self.images.seats[i].chat.size.x*.92
+ self.images.seats[i].chat.text.maxWidth = self.images.seats[i].chat.size.x*.85
 
+ })
 
-    }
 
  
 
@@ -1656,6 +1683,7 @@ for (var i = 0; i < openSeats.length; i = i + 1)
          this.hideChildren(this.images.rightSideButtons[1].button)
           this.hideChildren(this.images.rightSideButtons[2].button)
           this.hideChildren(this.images.addChips)
+          this.hideChildren(this.images.getChips)
           this.hideChildren(this.images.sitIn)
 this.hideAllActionButtons()
     }
@@ -1732,17 +1760,16 @@ this.hideAllActionButtons()
 
             case 'openSeat':
             
-            if(isNaN(this.gameState.userSeatNumber)){
+              if((this.gameState.userSeatNumber == false) || _.isNull(this.gameState.userSeatNumber)||_.isUndefined(this.gameState.userSeatNumber)){
                 this.hideChildren(this.images.seats[seatNumber].disabledSeat)
             this.displayChildren(this.images.seats[seatNumber].openSeat)
 
             }
-            else {
+          else if(_.isNumber(this.gameState.userSeatNumber)) {
                 
                 this.hideChildren(this.images.seats[seatNumber].openSeat)
                 this.displayChildren(this.images.seats[seatNumber].disabledSeat)
             }
-             
             
               this.hideChildren(this.images.seats[seatNumber].seat)
             this.hideChildren(this.images.seats[seatNumber].status)
@@ -1754,18 +1781,16 @@ this.hideAllActionButtons()
 
             default:
 
-                if(isNaN(this.gameState.userSeatNumber)){
+              if((this.gameState.userSeatNumber == false) || _.isNull(this.gameState.userSeatNumber)||_.isUndefined(this.gameState.userSeatNumber)){
                 this.hideChildren(this.images.seats[seatNumber].disabledSeat)
             this.displayChildren(this.images.seats[seatNumber].openSeat)
 
             }
-            else {
+          else if(_.isNumber(this.gameState.userSeatNumber)) {
                 
                 this.hideChildren(this.images.seats[seatNumber].openSeat)
                 this.displayChildren(this.images.seats[seatNumber].disabledSeat)
             }
-           
-
             
               this.hideChildren(this.images.seats[seatNumber].seat)
             this.hideChildren(this.images.seats[seatNumber].status)
@@ -2349,9 +2374,6 @@ this.restoreActiveContainers=function(activeContainerArray){
             this.gameState.seats[i] = null
 
         }
-
-
-
         
                 //display seats and assign userSeatNumber
          for (var i in table_state.seats) { 
@@ -2398,8 +2420,6 @@ this.restoreActiveContainers=function(activeContainerArray){
          self.displayButton(self.images.rightSideButtons[2].button)
         }
         }
-
-
 
         //comunity cards
         this.displayAllCommunity(table_state.community)
@@ -2591,42 +2611,59 @@ self.playerToAct(self.gameState.userSeatNumber)
 
 //player to act (not the user)
  socket.on('chatMessage', function(chatInfo){
+
   chatInfo.seat = 2
+  //remove previous tweens that may be running:
+  createjs.Tween.removeTweens(self.images.seats[chatInfo.seat].chat.image)
+  createjs.Tween.removeTweens(self.images.seats[chatInfo.seat].chat.text)
+
      self.images.seats[chatInfo.seat].chat.text.text = chatInfo.message
-     originalImageAlpha = self.images.seats[chatInfo.seat].chat.image.alpha
+     originalImageAlpha = self.imageData.chatBoxAlpha
 
      var textShortened = false
      var width = self.getTextWidthAndFontSize(self.images.seats[chatInfo.seat].chat)[0]
-     console.log(width)
-     console.log('maxwidth is '+self.images.seats[chatInfo.seat].chat.text.maxWidth)
-    while(width>self.images.seats[chatInfo.seat].chat.text.maxWidth){
+
+     //loop to start excising end offscreenBuffering String if t
+     if(width>self.images.seats[chatInfo.seat].chat.text.maxWidth){
+    while(width>self.images.seats[chatInfo.seat].chat.text.maxWidth-3){
         //remove last character of text
-        console.log(self.images.seats[chatInfo.seat].chat.text.text)
         self.images.seats[chatInfo.seat].chat.text.text = self.images.seats[chatInfo.seat].chat.text.text.substring(0,self.images.seats[chatInfo.seat].chat.text.text.length-1) 
-        console.log('shortened to'+ self.images.seats[chatInfo.seat].chat.text.text)
         width = self.getTextWidthAndFontSize(self.images.seats[chatInfo.seat].chat)[0]
    textShortened = true
     }
-
+    }
     //add elipses .... to end of text if text was shortened
     if(textShortened == true){
         self.images.seats[chatInfo.seat].chat.text.text = self.images.seats[chatInfo.seat].chat.text.text + '...'
+        width = self.getTextWidthAndFontSize(self.images.seats[chatInfo.seat].chat)[0]
     }
+    //determind ratio of chat.text to chat.image
+   var imageToTextWidthRatio =  self.images.seats[chatInfo.seat].chat.size.x/self.images.seats[chatInfo.seat].chat.text.maxWidth
 
+    //determine width of chatBox
+    var chatBoxWidth = imageToTextWidthRatio*width+2.5
+
+    //draw new chatBox and set alpha to original alpha
+    self.images.seats[chatInfo.seat].chat.image.drawChat(chatBoxWidth) // drawChat function resets alpha automatically
+self.images.seats[chatInfo.seat].chat.text.alpha = 1
+
+//display chat image and text
      self.displayChildren(self.images.seats[chatInfo.seat].chat)
      
       //tween image
-     createjs.Tween.get(self.images.seats[chatInfo.seat].chat.image,{loop:false})
-    .to({alpha:0, }, 5000)
+     createjs.Tween.get(self.images.seats[chatInfo.seat].chat.image,{loop:false, override:true})
+     .to({alpha:originalImageAlpha})
+    .to({alpha:0}, 10000)
     .call(self.hideImage,[self.images.seats[chatInfo.seat].chat], self)
     .to({alpha:originalImageAlpha})
 
     //tween text
-     createjs.Tween.get(self.images.seats[chatInfo.seat].chat.text,{loop:false})
-    .to({alpha:0}, 5000)
+     createjs.Tween.get(self.images.seats[chatInfo.seat].chat.text,{loop:false, override:true})
+     .to({alpha:1})
+    .to({alpha:0}, 10000)
     .call(self.hideText,[self.images.seats[chatInfo.seat].chat], self)
     .to({alpha:1})
-     
+
 })
 //player sits in
        socket.on('player_sits_in', function(player){
