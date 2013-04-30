@@ -15,7 +15,7 @@
         this.gameState = {}
         this.gameState.displaySize = 'normal'
         this.gameState.secondsToAct
-        this.gameState.seatNuseumberToAct
+        this.gameState.seatNuseumberToActi
         this.gameState.seats = []
         for(var i = 0;i<maxSeats;i++){
              this.gameState.seats[i]={}
@@ -26,14 +26,15 @@
         this.gameState.messageBox.activeContainers = []
         this.gameState.containerImageIndexes = {
             
-            cashier:6,
+           
             background:0,
             holeCard:1,
-            cardAnimation:2,
             chips:2,
-            button:3,
-            chat:4,
-            initialMessageBox:8
+            cardAnimation:3,
+            button:4,
+            chat:5,
+             cashier:7,
+            initialMessageBox:9
         }
 
         this.images = {}
@@ -64,8 +65,8 @@
                 black: 'img/chips/black_chip.png'
             }
             }
-            if(this.gameState.displaySize == 'mobile'){'img/fourColorDeck/resize/'}
-            else {this.images.sources.cardImageFolder = this.images.sources.cardImageFolder = 'img/fourColorDeck/'}
+            if(this.gameState.displaySize == 'mobile'){this.images.sources.cardImageFolder = 'img/fourColorDeck/resize/'}
+            else {this.images.sources.cardImageFolder = 'img/fourColorDeck/'}
 
             this.images.background = {}
             this.images.pots = []
@@ -331,6 +332,53 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
 
 //-----------functions below this line ---------------------
+this.initialize= function(){
+
+    var fileSourceArray = []
+
+    for(var i in this.images.sources){
+        for(var n in this.images.sources[i][n]){
+            if(typeof this.images.sources[i][n] == 'string'){
+                fileSourceArray.push({src: this.images.sources[i][n], id:fileSourceArray.length-1})
+            }
+        }
+       if((typeof this.images.sources[i] == 'string') && (this.images.sources[i].indexOf('fourColorDeck') == -1)){
+           fileSourceArray.push({src: this.images.sources[i], id:fileSourceArray.length-1})
+    }
+    }
+    for(var i = 2;i<=14;i++){
+        var cardRank
+        if(i==11){cardRank = 'j'}
+     else   if(i==12){cardRank = 'q'}
+else if(i==13){cardRank = 'k'}
+    else    if(i==14){cardRank = 'a'}
+    else{cardRank = i}
+        fileSourceArray.push(this.images.sources.cardImageFolder+cardRank+'c.png')
+        fileSourceArray.push(this.images.sources.cardImageFolder+cardRank+'d.png')
+        fileSourceArray.push(this.images.sources.cardImageFolder+cardRank+'h.png')
+        fileSourceArray.push(this.images.sources.cardImageFolder+cardRank+'s.png')
+    }
+    console.log(fileSourceArray)
+                var preload = new createjs.LoadQueue()
+    preload.addEventListener("complete", handleComplete)
+     preload.addEventListener("fileload", handleFileLoad)
+   preload.loadManifest(fileSourceArray)
+   createjs.Ticker.setFPS(30)
+
+   var handleFileLoad=  function  (event){
+       
+       console.log(event.item.src)
+   }
+
+           function handleComplete(event) {
+               console.log('loading completed')
+          //  self.createAllItems()
+        }
+
+
+}
+
+
 this.images.setDefaults = function(){
     
     var canvasWidth = document.getElementById('canvas').width
@@ -409,10 +457,10 @@ this.images.setDefaults = function(){
 
             //space between player chat and seat
             var chatBoxWidth = seatWidth
-            var chatBoxHeight = seatHeight/3
-            var chatDistanceFromSeatX = 0
-            var chatDistanceFromSeatY = seatHeight/6
-
+            var chatBoxHeight = seatHeight/2.3
+            var absoluteChatDistanceFromSeatX = 0
+            var absoluteabsoluteChatDistanceFromSeatY = seatHeight/6
+             var chatBoxBorderColor = '#FFFFFF'
 
             //space between player's cards/seats, and chip images in play, relative to the upper left seat corner
             var bottomChipOffsetX = chipDiameter
@@ -650,9 +698,28 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
 
     
         // -----------------player's chat -----------------
-        var chatX = this.seats[i].seat.position.x+chatDistanceFromSeatX
-        var chatY = this.seats[i].seat.position.y + chatDistanceFromSeatY
+        var chatX = this.seats[i].seat.position.x+absoluteChatDistanceFromSeatX
+        var chatY = this.seats[i].seat.position.y - absoluteabsoluteChatDistanceFromSeatY
    this.seats[i].chat = new this.Item(chatX, chatY, chatBoxWidth, chatBoxHeight, self.gameState.containerImageIndexes.chat)
+   
+  
+   this.seats[i].chat.image = new createjs.Shape()
+this.seats[i].chat.image.parentOfImageObject = this.seats[i].chat
+this.seats[i].chat.image.graphics.clear()
+    this.seats[i].chat.image.snapToPixel = true
+this.seats[i].chat.image.graphics.setStrokeStyle(1,'round').beginStroke(chatBoxBorderColor).beginFill('#000000')
+.drawRoundRect(this.seats[i].chat.position.x, this.seats[i].chat.position.y, this.seats[i].chat.size.x, this.seats[i].chat.size.y,  this.seats[i].chat.size.y*.20)
+
+this.seats[i].chat.image.alpha = 0.75
+
+//player chat text
+ this.seats[i].chat.text = new createjs.Text('', '9px Arial', '#FFFFFF')
+this.seats[i].chat.text.x=this.seats[i].chat.position.x +  this.seats[i].chat.size.x/2 
+ this.seats[i].chat.text.y= this.seats[i].chat.position.y
+ this.seats[i].chat.text.baseline = 'top'
+ this.seats[i].chat.text.textAlign = 'center'
+ this.seats[i].chat.text.maxWidth = this.seats[i].chat.size.x*.9
+
 
     }
 
@@ -820,10 +887,9 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
 }
 
         this.setBackground = function(){    
-        var asdf = new Image ()
-        asdf.src  = this.images.sources.background
-        this.images.background.image = new createjs.Bitmap(asdf)
-        this.images.containers[0].addChild(this.images.background.image)
+        this.images.background = new this.images.Item(0,0,9999,9999,this.gameState.containerImageIndexes.background)
+        this.images.itemAsBitmap(this.images.background, this.images.sources.background)
+this.displayChildren(this.images.background)
     }
 
     this.images.setDefaultEvents = function(){
@@ -849,8 +915,8 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
           this.seats[i].openSeat.messages = ['sit',i]
         }
     }
-
-    this.initialize = function(){
+    
+    this.createAllItems = function(){
         this.setBackground()
         this.images.setDefaults()
        this.images.setDefaultEvents()
@@ -2220,10 +2286,7 @@ self.gameState.cashier.activeContainers = this.storeActiveContainers()
 
         for(var i = 0; i<cashierImageContainerIndex;i++){
             this.images.containers[i].mouseEnabled = false
-
         }
-
-
                 this.displayChildren(this.images.cashier)
 
 }
@@ -2511,8 +2574,26 @@ self.playerToAct(self.gameState.userSeatNumber)
 })
 
 //player to act (not the user)
- socket.on('chatmessage', function(chatInfo){
+ socket.on('chatMessage', function(chatInfo){
+     createjs.Ticker.setFPS(20);
+		createjs.Ticker.addEventListener("tick", self.stage);
 
+     chatInfo.seat = 2
+     self.images.seats[chatInfo.seat].chat.text.text = chatInfo.message
+     originalImageAlpha = self.images.seats[chatInfo.seat].chat.image.alpha
+     self.displayChildren(self.images.seats[chatInfo.seat].chat)
+
+      //tween image
+     createjs.Tween.get(self.images.seats[chatInfo.seat].chat.image,{loop:false})
+    .to({alpha:0, }, 5000)
+    .call(self.hideImage,[self.images.seats[chatInfo.seat].chat], self)
+    .to({alpha:originalImageAlpha})
+
+    //tween text
+     createjs.Tween.get(self.images.seats[chatInfo.seat].chat.text,{loop:false})
+    .to({alpha:0}, 5000)
+    .call(self.hideText,[self.images.seats[chatInfo.seat].chat], self)
+    .to({alpha:1})
      
 })
 //player sits in
@@ -2563,7 +2644,6 @@ self.playerToAct(self.gameState.userSeatNumber)
 //player stands, checks if player is the user
        socket.on('player_stands', function(player, seatNumber, is_you){
 
-        
         if(is_you){
             self.gameState.userSeatNumber = false
             self.hideSeatedOptions()
@@ -2585,7 +2665,7 @@ self.playerToAct(self.gameState.userSeatNumber)
         self.displayCashier(info)
         
         }
-  );   
+  )
   
 
 //player adds chips to his stack
@@ -2640,15 +2720,14 @@ socket.on('reset_table', function(players){
 
 jQuery(document).ready(function(){
     holdemCanvas = new Table(10)
-    holdemCanvas.initialize()
-
-
-
+   holdemCanvas.initialize()
 })
 
 
 jQuery(window).load(function (){
-    holdemCanvas.receiveTableState()
+     
+    holdemCanvas.createAllItems()
+   holdemCanvas.receiveTableState()
     })
  /*  
 asdf = new createjs.Container()
