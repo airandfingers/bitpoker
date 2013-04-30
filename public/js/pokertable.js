@@ -2334,11 +2334,7 @@ this.restoreActiveContainers=function(activeContainerArray){
          }
 
           //empty seats
-         for (var i = 0; i<table_state.max_players;i++){
-
-             console.log(i+this.gameState.seats[i].displayMessageType)
-             this.displayCorrectSeatMessage(i)
-         }
+         for (var i = 0; i<table_state.max_players;i++){    this.displayCorrectSeatMessage(i)    }
 
     }
     
@@ -2476,7 +2472,7 @@ socket.on('hands_dealt', function(players){
             break;
 
         }
-             
+             self.gameState.seats[player.seat].toAct = false
 })
 
 //user to act 
