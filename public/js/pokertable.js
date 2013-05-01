@@ -2699,16 +2699,19 @@ if(self.images.messageBox[messageBoxImageContainerIndex][i].image){
         this.gameState.cashier.table_name = info.table_name
         this.gameState.cashier.small_blind = info.small_blind
         this.gameState.cashier.big_blind = info.big_blind
+        //set defaults
+        if(_.isUndefined(info.currency_per_chip)||_.isNull(info.currency_per_chip)){info.currency_per_chip = 1}
+        if(_.isUndefined(info.currency)||_.isNull(info.currency)){info.currency = 'Chips'}
 
        this.images.cashier.blinds.text.text = info.currency_per_chip*info.small_blind+'/'+info.currency_per_chip*info.big_blind
 
          this.images.cashier.tableNameValue.text.text = info.table_name
 
-        this.images.cashier.tableMinValue.text.text = info.table_min
+        this.images.cashier.tableMinValue.text.text = info.currency_per_chip*info.table_min
 
-        this.images.cashier.tableMaxValue.text.text = info.table_max
+        this.images.cashier.tableMaxValue.text.text = info.currency_per_chip*info.table_max
 
-        this.images.cashier.playerMinValue.text.text = info.min
+        this.images.cashier.playerMinValue.text.text = info.currency_per_chip*info.min
 
        this.images.cashier.accountBalanceValue.text.text = info.balance
 
