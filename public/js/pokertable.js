@@ -63,8 +63,10 @@
             fourColorDeck: 'img/4colorsheet.png',
             dealerButton: 'img/dealer_button.png',
             verticalSlider: 'img/raise_slider.png',
+            horizontalSlider: 'img/small_slider_bg.png',
             cashierBackground: 'img/cashier_background.png',
             closeWindowX: 'img/closeWindowX.jpg',
+
             chips: {
                 red:'img/chips/red_chip.png',
                 black: 'img/chips/black_chip.png'
@@ -473,6 +475,16 @@ this.images.setDefaults = function(){
             var htmlTableChatBoxWidth = 65
             var htmlTableChatBoxHeight = 20
 
+            var verticalBetSliderWidth = 6
+            var verticalBetSliderHeight = 13            
+            var horizontalBetSliderWidth = 200
+            var horizontalBetSliderHeight = 7
+            var horizontalBetSliderX = 215
+            var horizontalBetSliderOffsetBottom =  19
+            var distanceBetweenBetSizeAndHorizontalSlider = 35
+            var betSizeWidth = 35
+            var betSizeHeight = 20
+         
             //space between player chat and seat
             var chatBoxWidth = seatWidth*1.4
             var chatBoxHeight = seatHeight/2.3
@@ -792,14 +804,18 @@ self.images.seats[i].chat.text.x=self.images.seats[i].chat.position.x +  self.im
         this.addItemText(this.bet, 'bet','12px Arial','#000000')
 
         //-----------------bet slider-----------------------------
-              this.betSlider.horizontal = new this.Item (215,458,240,1,self.gameState.containerImageIndexes.button)
-      this.betSlider.vertical = new this.Item(215,448,6,13,self.gameState.containerImageIndexes.button)
-      this.betSlider.betSize = new this.Item(470,448,30,50,self.gameState.containerImageIndexes.button)
+              this.betSlider.horizontal = new this.Item (horizontalBetSliderX,canvasHeight-horizontalBetSliderOffsetBottom-horizontalBetSliderHeight,horizontalBetSliderWidth,horizontalBetSliderHeight,self.gameState.containerImageIndexes.button)
+              var verticalY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.size.y/2-verticalBetSliderHeight/2
+      this.betSlider.vertical = new this.Item(this.betSlider.horizontal.position.x,verticalY,verticalBetSliderWidth,verticalBetSliderHeight,self.gameState.containerImageIndexes.button)
+var betSizeX = this.betSlider.horizontal.position.x+this.betSlider.horizontal.size.x + distanceBetweenBetSizeAndHorizontalSlider
+var betSizeY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.size.y/2-betSizeHeight/2
+      this.betSlider.betSize = new this.Item(betSizeX,betSizeY,betSizeWidth,betSizeWidth,self.gameState.containerImageIndexes.button)
 
-        this.itemAsRectangle(this.betSlider.horizontal, 'black')
+      //  this.itemAsRectangle(this.betSlider.horizontal, 'black')
+      this.itemAsBitmap(this.betSlider.horizontal, this.sources.horizontalSlider)
         this.itemAsBitmap(this.betSlider.vertical, this.sources.verticalSlider)
       //  this.itemAsRectangle(this.betSlider.vertical, 'blue')
-        this.addItemText(this.betSlider.betSize, 0, '14px Arial', 'black')
+        this.addItemText(this.betSlider.betSize, 0, '14px Arial', '#FFFFFF')
 
   //------------------------------community cards---------------------------
         this.community[0] = new this.Item(canvasWidth/2-cardWidth/2-cardWidth*2-distanceBetweenCommunityCards*2,communityY,cardWidth, cardHeight,self.gameState.containerImageIndexes.button)
