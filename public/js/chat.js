@@ -29,8 +29,8 @@ socket.$emit = function() {
 };
 
 
-socket.on('chatMessage', function(data) {
-  console.log('chatMessage message received: ', data);
+socket.on('user_chats', function(data) {
+  console.log('user_chats message received: ', data);
   var sender = data.sender
     , message = data.message
     , $message = $(_.template(chat_message_template, { sender: sender, message: message }));
@@ -50,8 +50,8 @@ $chat_form.submit(function(e) {
   , message: $chat_message.val()
   };
   $chat_message.val('');
-  console.log('Emitting message', 'chatMessage', data);
-  socket.emit('chatMessage', data);
+  console.log('Emitting message', 'chat', data);
+  socket.emit('chat', data);
 });
 
 $(document).on('keydown', function(e) {

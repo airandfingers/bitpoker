@@ -30,7 +30,7 @@ module.exports = (function () {
     // the messages a Table should react to, on each player's socket
     // {String message_name: {handler: Function, pass_socket: Boolean, pass_message_name: Boolean}}
   , messages: {
-      chatMessage: { handler: 'broadcast', pass_message_name: true }
+      chat: { handler: 'broadcastChatMessage', pass_socket: true }
     , fold: 'broadcast'
     }
   };
@@ -117,6 +117,17 @@ module.exports = (function () {
     socket_list.emit.apply(socket_list, arguments);
   };
 
+  RoomSchema.methods.broadcastChatMessage = function(socket, chat_obj) {
+    var username = socket.user && socket.user.username || 'Guest'
+      , seat_num = socket.player && socket.player.seat;
+    if (username !== chat_obj.sender) {
+      console.error(username, 'tried to send a message as', chat_obj.sender);
+      chat_obj.sender = username;
+    }
+    if (_.isNumber(seat_num)) { chat_obj.seat = seat_num; }
+    this.broadcast('user_chats', chat_obj);
+  };
+
   RoomSchema.methods.getUsernames = function() {
     var sockets = _.compact(io.sockets.clients(this.room_id))
       , users = _.compact(_.pluck(sockets, 'user'))
@@ -174,14 +185,13 @@ module.exports = (function () {
       , room = Room.getRoom(room_id);
     if (room !== undefined) {
       room.join(socket);
+      socket.on('disconnect', function() {
+        room.leave(socket);
+      });
     }
     else {
       console.error('no room with room_id', room_id);
     }
-
-    socket.on('disconnect', function() {
-      room.leave(socket);
-    });
   });
 
   return Room;
