@@ -13,6 +13,13 @@
       distanceBetweenChipColumns:4,
       chatBoxAlpha:0.75
   }
+  this.userPreferences = {
+      
+      bigBlindsPerHorizontalSliderTick : 3,
+      timePerHorizontalSliderTick: 500,
+      animate: true
+
+  }
         this.gameState = {}
         this.gameState.displaySize = 'normal'
         this.gameState.secondsToAct
@@ -65,7 +72,17 @@
             verticalSlider: 'img/raise_slider.png',
             horizontalSlider: 'img/small_slider_bg.png',
             cashierBackground: 'img/cashier_background.png',
-            closeWindowX: 'img/closeWindowX.jpg',
+            cashierCloseX: 'img/cashier_closeWindowX.jpg',
+            cashierButton: 'img/cashier.png',
+            cashierButtonOver: 'img/cashier_over.png',
+            cashierButtonPress: 'img/cashier_press.png',
+            cashierButtonSprite: 'img/cashier_button_sprite.png',
+            getChips: 'img/get_chips.png',
+            viewLobby: 'img/view_lobby.png',
+            exitTable: 'img/exit_table.png',
+            messageBoxBackground: 'img/messagebox.png',
+            messageBoxCloseX:'img/messageBox_closeWindowX.jpg',
+            
 
             chips: {
                 red:'img/chips/red_chip.png',
@@ -231,8 +248,8 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
             if(isNaN(amount)){
                 var info = {}
                 info.okay = true
-                info.message = "amount must be a number"
-                self.displayMessageBox(info)
+                var message = "amount must be a number"
+                self.displayMessageBox(message,info)
             }
             else{
                 
@@ -245,8 +262,8 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
             if(isNaN(otherAmount)){
                 var info = {}
                 info.okay = true
-                info.message = "Amount must be a number"
-                self.displayMessageBox(info)
+                var message = "Amount must be a number"
+                self.displayMessageBox(message, info)
             }
             else{
                 
@@ -258,8 +275,8 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
         else if(!$("input[name='addChipsRadio']:checked").val()){
             var info = {}
                 info.okay = true
-                info.message = "Please select either: max, other amount, or auto-rebuy"
-                self.displayMessageBox(info)
+                var message = "Please select either: max, other amount, or auto-rebuy"
+                self.displayMessageBox(message, info)
         }
 
     }
@@ -271,7 +288,123 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
     }
 
+    //==============cashier Button Pressed ==============
+    /*
+    this.events.cashierButtonMouseOver = function(event){
+        
+        var cashierOverImage = new Image(self.images.sources.cashierButtonOver)
+
+        self.images.cashierButton.image.image = cashierOverImage
+        self.stage.update()
+
+    }
+
+    this.events.cashierButtonMouseOut = function(event){
+        
+        var cashierDefaultImage = new Image(self.images.sources.cashierButton)
+
+        self.images.cashierButton.image.image = cashierOverImage
+        self.stage.update()
+
+    }
+
+    this.events.cashierButtonMouseDown = function(event){
+        
+        var cashierDownImage = new Image(self.images.sources.cashierButtonPress)
+
+        self.images.cashierButton.image.image = cashierOverImage
+        self.stage.update()
+
+        onMouseUp = function(event){
+            
+
+        }
+
+    }
+    */
      //===============START BET SLIDER===================
+
+     this.events.horizontalSliderMouseDown = function(event){
+
+        var minX = self.images.betSlider.horizontal.position.x
+         var maxX = self.images.betSlider.horizontal.position.x + self.images.betSlider.horizontal.size.x-self.images.betSlider.vertical.size.x
+         var pixelsPerTick = self.gameState.maxBet*self.userPreferences.bigBlindsPerHorizontalSliderTick/(maxX-minX)
+         
+         //takes vertical slider location and proportionaly shows bet size
+           var adjustBetSize = function (){
+
+      betSizePercent = (self.images.betSlider.vertical.image.x-minX)/(maxX-minX)
+     unroundedBetAmount =  betSizePercent*(self.gameState.maxBet-self.gameState.minBet)+self.gameState.minBet
+     roundedBet = Math.round(unroundedBetAmount/self.gameState.minIncrement)*self.gameState.minIncrement
+
+    self.images.betSlider.betSize.text.text = roundedBet
+    if(self.stage.contains(self.images.bet.text)){
+        self.images.bet.text.text = 'Bet '+roundedBet
+        self.images.bet.messages = ['act','bet',roundedBet]}
+    
+    else if(self.stage.contains(self.images.raise.text)){
+        self.images.raise.text.text = 'Raise to '+roundedBet
+    self.images.raise.messages = ['act','raise',roundedBet]}
+    self.stage.update()
+         }
+
+
+         //define function that moves slider one tick
+         var moveSlider = function (event){
+             //remove any existing tweens on vertical bet slider
+             createjs.Tween.removeTweens(self.images.betSlider.vertical.image)
+             var pixelDirection
+         //check if click is to the right of the vertical slider
+         if(event.stageX>self.images.betSlider.vertical.image.x+self.images.betSlider.vertical.size.x){
+             pixelDirection = 1 
+             //move slider to the right
+            self.images.betSlider.vertical.image.x = self.images.betSlider.vertical.image.x+pixelsPerTick
+             //if slider is too far to the right adjust to maximum
+             if(self.images.betSlider.vertical.image.x>maxX){
+                 self.images.betSlider.vertical.image.x=maxX
+               
+             }
+             adjustBetSize()
+
+             self.stage.update()
+         }
+         //check if click is to the left of the vertical slider
+        else  if(event.stageX<self.images.betSlider.vertical.image.x){
+            pixelDirection = -1
+             //move slider to the left
+             self.images.betSlider.vertical.image.x-pixelsPerTick
+             //if slider is too far to the left adjust to minimum
+             if(self.images.betSlider.vertical.image.x<minX){
+                 self.images.betSlider.vertical.image.x=minX
+
+             }
+             adjustBetSize()
+             self.stage.update()
+         }
+         else{pixelDirection = 0}
+         if(pixelDirection>0||pixelDirection<0)
+         {
+             createjs.Tween.get(self.images.betSlider.vertical.image,{override:true, loop:true})
+.wait(self.userPreferences.timePerHorizontalSliderTick)
+.call(moveSlider, [event])
+         }
+         }
+
+       moveSlider(event)
+
+       event.onMouseMove=function(event){
+           moveSlider(event)
+
+       }
+
+       event.onMouseUp=function(event){
+           //remove any existing tweens on vertical bet slider
+             createjs.Tween.removeTweens(self.images.betSlider.vertical.image)
+       }
+
+ 
+     }
+
      this.events.betSliderVerticalMouseDown = function(event){
   
          var roundedBet
@@ -280,7 +413,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
       //set minX and maxX
       var minX = self.images.betSlider.horizontal.position.x
-   var maxX = self.images.betSlider.horizontal.position.x +self.images.betSlider.horizontal.size.x
+   var maxX = self.images.betSlider.horizontal.position.x +self.images.betSlider.horizontal.size.x-self.images.betSlider.vertical.size.x
 
    //if mouse is moved
     event.onMouseMove = function(event){
@@ -484,6 +617,8 @@ this.images.setDefaults = function(){
             var distanceBetweenBetSizeAndHorizontalSlider = 35
             var betSizeWidth = 35
             var betSizeHeight = 20
+
+            
          
             //space between player chat and seat
             var chatBoxWidth = seatWidth*1.4
@@ -500,6 +635,37 @@ this.images.setDefaults = function(){
             var topChipOffsetY = seatHeight + chipDiameter*1.5
             var rightChipOffsetX = -chipDiameter*1.5
             var rightChipOffsetY = seatHeight - chipDiameter/2
+
+            //cashier Button width and height
+            var cashierButtonWidth = 132
+            var cashierButtonHeight = 52
+
+            //define dimensions for upper right and upper left buttons
+            var viewLobbyWidth = 169
+            var viewLobbyHeight = 26
+            var viewLobbyHitAreaUpperLeftOffsetX  = 10 //distance from left of viewlobby image and mouse events
+            var viewLobbyHitAreaLowerLeftOffsetX = 37
+            var viewLobbyHitAreaTopOffset  = 3 // distance from top of viewlobby image and mouse event clicks
+            var viewLobbyHitAreaBottomOffset  = 3 
+            var viewLobbyHitAreaRightOffset  = 2  // distance from rightside of image and hit area
+
+            var exitTableWidth = 150
+            var exitTableHeight = 32
+
+             var exitTableHitAreaUpperLeftOffsetX  = 25 //distance from left of ExitTable image and mouse events
+            var exitTableHitAreaLowerLeftOffsetX = 52
+            var exitTableHitAreaTopOffset  = 2 // distance from top of ExitTable image and mouse event clicks
+             var exitTableHitAreaBottomOffset  = 8
+            var exitTableHitAreaRightOffset  = 2  // distance from ExitTable of image and hit area
+            
+            var getChipsWidth = 153
+            var getChipsHeight = 42
+
+             var getChipsHitAreaLeftOffset  = 25 //distance from left of getChips image and mouse events
+            var getChipsHitAreaTopOffset  = 2 // distance from top of getChips image and mouse event clicks
+             var getChipsHitAreaBottomOffset  = 10
+            var getChipsHitAreaUpperRightOffset  = 12  
+            var getChipsHitAreaLowerRightOffset  = 41
 
             //---------pot-------------------
 
@@ -735,9 +901,7 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
      this.itemAsBitmap(this.seats[i].dealerButton, this.sources.dealerButton)
      }
      else{console.log(i+' is not a seat')}
-
       }  
-
 
              // -----------------player's chat -----------------
 
@@ -780,10 +944,6 @@ self.images.seats[i].chat.text.x=self.images.seats[i].chat.position.x +  self.im
  self.images.seats[i].chat.text.maxWidth = self.images.seats[i].chat.size.x*.85
 
  })
-
-
- 
-
 
          //---------------action buttons------------------
       this.fold = new this.Item(205,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','fold'])
@@ -835,20 +995,96 @@ var betSizeY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.si
  this.addItemText(this.stand,'stand up','10px Arial','white')
 
  //upper right side Buttons
+ //this.cashierButton = new this.Item(canvasWidth-cashierButtonWidth, canvasHeight-cashierButtonHeight, cashierButtonWidth, cashierButtonHeight, self.gameState.containerImageIndexes.button)
+// this.itemAsBitmap(this.cashierButton, this.sources.cashierButton)
+ //this.cashierButton.image.onMouseOver = self.events.cashierButtonMouseOver
 
- this.addChips = new this.Item(canvasWidth-actionButtonWidth, 0, actionButtonWidth, actionButtonHeight/2, self.gameState.containerImageIndexes.button, ['get_add_chips_info'])
- this.itemAsRectangle(this.addChips, 'black')
- this.addItemText(this.addChips, 'Get Chips', '10px Arial', 'white')
+ this.cashierButton = new this.Item(canvasWidth-80,0, cashierButtonWidth, cashierButtonHeight, self.gameState.containerImageIndexes.button)
+  
+  var cashierButtonSpriteData = {
+
+     images: [this.sources.cashierButtonSprite],
+     frames:{
+         width: 80,
+         height:31
+     },
+     animations: {
+         mouseOut: [0],
+         mouseOver: [1],
+         mouseDown: [2]
+     }
+}
+
+var spriteSheet = new createjs.SpriteSheet(cashierButtonSpriteData)
+this.cashierButton.bitmapAnimation = new createjs.BitmapAnimation(spriteSheet)
+this.cashierButton.bitmapAnimation.x = this.cashierButton.position.x
+this.cashierButton.bitmapAnimation.y = this.cashierButton.position.y
+this.cashierButton.bitmapAnimation.gotoAndStop(0)
+this.cashierButton.button = new createjs.ButtonHelper(this.cashierButton.bitmapAnimation, 'mouseOut', 'mouseOver', 'mouseDown', false)
+//this.cashierButton.button.initialize()
+
+
+ //------------upper right view lobby--------------
+ this.viewLobby = new this.Item(canvasWidth - viewLobbyWidth, 0, viewLobbyWidth, viewLobbyHeight, self.gameState.containerImageIndexes.button)
+   this.itemAsBitmap(this.viewLobby, this.sources.viewLobby)
+   //define shape for hit area of  viewLobby
+   var viewLobbyHit = new createjs.Shape()
+   var topY = this.viewLobby.position.y + viewLobbyHitAreaTopOffset
+   var bottomY = this.viewLobby.position.y+ this.viewLobby.size.y - viewLobbyHitAreaBottomOffset
+
+viewLobbyHit.graphics.beginFill('white').beginStroke(0)
+.moveTo(this.viewLobby.position.x+viewLobbyHitAreaUpperLeftOffsetX, topY)
+.lineTo(this.viewLobby.position.x+viewLobbyHitAreaLowerLeftOffsetX, bottomY)
+.lineTo(this.viewLobby.position.x+this.viewLobby.size.x-viewLobbyHitAreaRightOffset, bottomY)
+.lineTo(this.viewLobby.position.x+ this.viewLobby.size.x-viewLobbyHitAreaRightOffset, topY)
+.lineTo(this.viewLobby.position.x+viewLobbyHitAreaUpperLeftOffsetX, topY)
+this.viewLobby.image.hitArea = viewLobbyHit
+
+//-------------------------upper left Get Chips-------
+ this.getChips = new this.Item(0, 0, getChipsWidth, getChipsHeight, self.gameState.containerImageIndexes.button, ['get_add_chips_info'])
+ this.itemAsBitmap(this.getChips, this.sources.getChips)
+
+  //define shape of hit area
+    var getChipsHit = new createjs.Shape()
+   var topY = this.getChips.position.y + exitTableHitAreaTopOffset
+   var bottomY = this.getChips.position.y+ this.getChips.size.y - exitTableHitAreaBottomOffset
+
+getChipsHit.graphics.beginFill('white').beginStroke(0)
+.moveTo(this.getChips.position.x+getChipsHitAreaLeftOffset, topY)
+.lineTo(this.getChips.position.x+getChipsHitAreaLeftOffset, bottomY)
+.lineTo(this.getChips.position.x+this.getChips.size.x-getChipsHitAreaLowerRightOffset, bottomY)
+.lineTo(this.getChips.position.x+ this.getChips.size.x-getChipsHitAreaUpperRightOffset, topY)
+.lineTo(this.getChips.position.x+getChipsHitAreaLeftOffset, topY)
+
+this.getChips.image.hitArea = getChipsHit
+
+
+   //--------------upper right exit Table--------------
+ this.exitTable = new this.Item(canvasWidth - exitTableWidth, viewLobbyHeight, exitTableWidth, exitTableHeight, self.gameState.containerImageIndexes.button)
+   this.itemAsBitmap(this.exitTable, this.sources.exitTable)
+   //define shape of hit area
+    var exitTableHit = new createjs.Shape()
+   var topY = this.exitTable.position.y + exitTableHitAreaTopOffset
+   var bottomY = this.exitTable.position.y+ this.exitTable.size.y - exitTableHitAreaBottomOffset
+
+exitTableHit.graphics.beginFill('white').beginStroke(0)
+.moveTo(this.exitTable.position.x+exitTableHitAreaUpperLeftOffsetX, topY)
+.lineTo(this.exitTable.position.x+exitTableHitAreaLowerLeftOffsetX, bottomY)
+.lineTo(this.exitTable.position.x+this.exitTable.size.x-exitTableHitAreaRightOffset, bottomY)
+.lineTo(this.exitTable.position.x+ this.exitTable.size.x-exitTableHitAreaRightOffset, topY)
+.lineTo(this.exitTable.position.x+exitTableHitAreaUpperLeftOffsetX, topY)
+
+this.exitTable.image.hitArea = exitTableHit
 
         //----------------not in hand action buttons------------------
         this.sitIn = new this.Item(205,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['sit_in'])
-        this.getChips = new this.Item(205,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['get_add_chips_info'])
+        this.rebuy = new this.Item(205,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['get_add_chips_info'])
 
          this.itemAsRectangle(this.sitIn,'black')
 this.addItemText(this.sitIn,'Deal Me In','10px Arial','white')
 
- this.itemAsRectangle(this.getChips,'black')
-this.addItemText(this.getChips,'Get Chips','10px Arial','white')
+ this.itemAsRectangle(this.rebuy,'black')
+this.addItemText(this.rebuy,'Get Chips','10px Arial','white')
 
 //========================4 color deck sprite sheet=============================
 
@@ -996,7 +1232,7 @@ this.cashier[cashierItems[i].name].text.maxWidth = this.cashier[cashierItems[i].
         this.cashier.cancel.image.onClick = self.hideCashier
 
          this.cashier.closeWindow =  new this.Item (closeWindowX,closeWindowY, closeWindowWidth,closeWindowHeight,cashierImageContainerIndex) 
-       this.itemAsBitmap(this.cashier.closeWindow, this.sources.closeWindowX)
+       this.itemAsBitmap(this.cashier.closeWindow, this.sources.cashierCloseX)
        this.cashier.closeWindow.image.onClick = self.hideCashier
 
 
@@ -1017,7 +1253,7 @@ this.displayChildren(this.images.background)
 
         //mouse events for changing bet sizes
          this.betSlider.vertical.image.onPress = self.events.betSliderVerticalMouseDown
-         //this.betSlider.horizontal.image.onPress 
+         this.betSlider.horizontal.image.onPress = self.events.horizontalSliderMouseDown
 
         //mouse events for clicking on empty seats
              for (var i = 0; i < this.seats.length; i = i + 1){
@@ -1297,6 +1533,13 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
         }
     }
 
+    this.addChildToContainer = function (child, containerIndex){
+        
+        this.images.containers[containerIndex].addChild(child)
+
+    }
+
+
     //this.images.seats[i] is parent for players bets, this.images.pots[i] is parent for pots
     this.displayChip = function(chipValue, x, y, parentOfChipArray){
 
@@ -1527,7 +1770,7 @@ else if(communityArray.length == 3){
          for(var i =0;i<=2;i++){
     self.images.cardAsBitmap(self.images.community[i],communityArray[i])
     self.images.community[i].image.x = self.images.community[0].position.x
-      self.images.containers[self.images.community[i].position.z].addChild( self.images.community[i].image)
+    self.addChildToContainer(self.images.community[i].image, self.images.community[i].position.z)
       }
       //update stage to display face up cards
       self.stage.update()
@@ -1636,7 +1879,7 @@ callback(null, callBackNumber)
     this.hideSeatedOptions=function(){
         this.hideInHandOptions()
         this.hideChildren(this.images.stand)
-         this.hideChildren(this.images.getChips)
+         this.hideChildren(this.images.rebuy)
  this.hideChildren(this.images.sitIn)
     }
 
@@ -1653,20 +1896,20 @@ callback(null, callBackNumber)
     //parameter is parent of the actual Image object
     this.displayImage = function (parentOfImageObject){
         if(parentOfImageObject.image){
-this.images.containers[parentOfImageObject.position.z].addChild(parentOfImageObject.image)
+this.addChildToContainer(parentOfImageObject.image, parentOfImageObject.position.z)
             this.stage.update()
             }
     }
     
     this.displayText = function (parentOfTextObject){
         if(parentOfTextObject.text){
-            this.images.containers[parentOfTextObject.position.z+1].addChild(parentOfTextObject.text)
+            this.addChildToContainer(parentOfTextObject.text, parentOfTextObject.position.z+1)
             this.stage.update()
             }
     }
 
     this.displayChildren = function(parentOrGrandparent){
-
+        
         //check if input is parent
         if(parentOrGrandparent instanceof this.images.Item){
             this.displayImage(parentOrGrandparent)
@@ -1809,8 +2052,8 @@ for (var i = 0; i < openSeats.length; i = i + 1)
         this.hideChildren(this.images.rightSideButtons[0].button)
          this.hideChildren(this.images.rightSideButtons[1].button)
           this.hideChildren(this.images.rightSideButtons[2].button)
-          this.hideChildren(this.images.addChips)
           this.hideChildren(this.images.getChips)
+          this.hideChildren(this.images.rebuy)
           this.hideChildren(this.images.sitIn)
 this.hideAllActionButtons()
     }
@@ -2204,12 +2447,18 @@ self.displayCorrectSeatMessage(seatNumber)
     //make sure to set buttonText as FALSE if you want to display the default text
   this.displayButton =  function (parentOfImageObject, buttonText, messages){
 
-      if(buttonText){parentOfImageObject.text.text = buttonText}
+      if(buttonText){
+          if(parentOfImageObject.text && parentOfImageObject.text.text){parentOfImageObject.text.text = buttonText}}
       if(messages){parentOfImageObject.messages = messages}
-
-      parentOfImageObject.image.onClick = self.events.onButtonClick
+      if(parentOfImageObject.button && parentOfImageObject.bitmapAnimation && parentOfImageObject.button instanceof createjs.ButtonHelper){
+          this.addChildToContainer(parentOfImageObject.bitmapAnimation, parentOfImageObject.position.z)
+          parentOfImageObject.bitmapAnimation.gotoAndStop(0)
+      }
+    else if( parentOfImageObject.image){  parentOfImageObject.image.onClick = self.events.onButtonClick
       parentOfImageObject.image.onPress = self.events.buttonMouseDown
+      
      this.displayChildren(parentOfImageObject)
+     }
  
     }
 
@@ -2263,26 +2512,24 @@ self.displayCorrectSeatMessage(seatNumber)
 
         }
 
-        
-
 self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.gameState.messageBox.messageBoxImageContainerIndex])
-
         self.gameState.messageBox.messageBoxImageContainerIndex = self.gameState.messageBox.messageBoxImageContainerIndex -2 
     }
 
-    this.displayMessageBox = function(messageInfo){
-       
-    
+    this.displayMessageBox = function(messageString, messageInfo){
+
        var messageBoxImageContainerIndex = this.gameState.containerImageIndexes.initialMessageBox
 
            for(var i= this.gameState.containerImageIndexes.initialMessageBox;i<self.images.containers.length;i++){
-           if(self.images.containers[i] && self.images.containers[i].isVisible()== false){
+           if(self.images.containers[i] && self.images.containers[i].isVisible() == false){
                 messageBoxImageContainerIndex = i
                 i=self.images.containers.length
            }
         }
 
         self.images.messageBox[messageBoxImageContainerIndex] = {}
+
+        //check if this is the first(bottom) messagebox displayed
         if(messageBoxImageContainerIndex == this.gameState.containerImageIndexes.initialMessageBox){
        //hide html cashier(if visible)
         var htmlcashier = document.getElementById('cashier')
@@ -2301,17 +2548,24 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
        }
        }
 
-      //  title,message,okay, okayMessages, cancel, cancelMessages
 
+       //set current messageBox as top messageBoxImagContainerIndex
         self.gameState.messageBox.messageBoxImageContainerIndex = messageBoxImageContainerIndex
+
+        //store active containers for retreival later
         self.gameState.messageBox.activeContainers[messageBoxImageContainerIndex] = self.storeActiveContainers()
-        var messageBoxWindowWidth = 400
-        var messageBoxWindowHeight = 200
+        var messageBoxWindowWidth = 516
+        var messageBoxWindowHeight = 199
         //declare size variables
-        var textLeftOffset = 10
-         var outerTopHeight = messageBoxWindowHeight*.08
-                var outerBottomHeight = messageBoxWindowHeight*.03
-        var outerSideWidth = messageBoxWindowWidth*.02
+  
+        var closeXWidth = 31
+        var closeXHeight = 20
+        var closeXTopOffset = 1
+        var closeXRightOffset = 7
+
+         var outerTopHeight = 31
+                var outerBottomHeight = 8
+        var outerSideWidth = 8
 
         var asdf = document.getElementById('canvas')
         var stageWidth = asdf.width
@@ -2322,79 +2576,105 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
 
         var innerMessageBoxX = messageBoxWindowX+outerSideWidth
         var innerMessageBoxY = messageBoxWindowY+outerTopHeight
-        var innerMessageBoxWidth = messageBoxWindowWidth-2*outerSideWidth -2
+        var innerMessageBoxWidth = messageBoxWindowWidth-2*outerSideWidth 
         var innerMessageBoxHeight = messageBoxWindowHeight-outerBottomHeight-outerTopHeight
 
+        var textHeight = 30
+        var textLeftOffset = 10
+        var textTopOffset = 10
         var textX = innerMessageBoxX + textLeftOffset
-        
 
+        var buttonWidth = 50
+        var buttonHeight = 22
+
+        var distanceBetweenButtons = 30
+        var buttonButtomOffset = 15 //distance from end of gray area to bottom of button
+        var buttonY = messageBoxWindowY + messageBoxWindowHeight - outerBottomHeight - buttonButtomOffset - buttonHeight
+
+         //-------------------set defaults---------------------------
+         //set default font sizes and colors
+       if(_.isNull(messageInfo.title)||_.isUndefined(messageInfo.title)||!(_.isString(messageInfo.title)||!_.isNumber(messageInfo.title))){messageInfo.title = 'Error'}
+       if(_.isNull(messageInfo.titleSizeAndFont)||_.isUndefined(messageInfo.titleSizeAndFont)){messageInfo.titleSizeAndFont = '18px Arial'}
+       if(_.isNull(messageInfo.titleColor)||_.isUndefined(messageInfo.titleColor)){ messageInfo.titleColor = '#000000'}
+       if(_.isNull(messageInfo.sizeAndFont)||_.isUndefined(messageInfo.sizeAndFont)){messageInfo.messageSizeAndFont = '13px Arial'}
+    if(_.isNull(messageInfo.messageColor)||_.isUndefined(messageInfo.messageColor)){ messageInfo.messageColor = '#000000'}
+    if(_.isNull(messageInfo.buttonSizeAndFont)||_.isUndefined(messageInfo.buttonSizeAndFont)){messageInfo.buttonSizeAndFont = '13px Arial'}
+     if(_.isNull(messageInfo.buttonTextColor)||_.isUndefined(messageInfo.buttonTextColor)){ messageInfo.buttonTextColor = '#000000'}
+    if(_.isNull(messageInfo.buttonBackgroundColor)||_.isUndefined(messageInfo.buttonBackgroundColor)){ messageInfo.buttonBackgroundColor = '#0000FF'}
+
+    console.log(messageInfo)
+
+       //set button locations
+    if(messageInfo.cancel != true){
+        var okayX = stageWidth/2 - buttonWidth/2
+        }
+        else{
+     var okayX =    stageWidth/2 - distanceBetweenButtons/2 - buttonWidth    
+     var cancelX =  stageWidth/2 + distanceBetweenButtons/2 
+        }
+  
+        //background bitmap
         self.images.messageBox[messageBoxImageContainerIndex].window = new self.images.Item(messageBoxWindowX,messageBoxWindowY,messageBoxWindowWidth,messageBoxWindowHeight,messageBoxImageContainerIndex)
-        self.images.messageBox[messageBoxImageContainerIndex].window.image = new createjs.Shape()
-        //outer blue rim
-        self.images.messageBox[messageBoxImageContainerIndex].window.image.graphics.setStrokeStyle(1).beginFill('blue').beginStroke('#FF00FF').rect(messageBoxWindowX,messageBoxWindowY,messageBoxWindowWidth,messageBoxWindowHeight)
-        self.images.messageBox[messageBoxImageContainerIndex].window.image.graphics.setStrokeStyle(1).beginFill('#C0C0C0').beginStroke('#FF00FF').rect(innerMessageBoxX,innerMessageBoxY,innerMessageBoxWidth,innerMessageBoxHeight)
+        self.images.itemAsBitmap(self.images.messageBox[messageBoxImageContainerIndex].window, self.images.sources.messageBoxBackground)
+        
+        //title
+        self.images.messageBox[messageBoxImageContainerIndex].windowTitle = new self.images.Item (messageBoxWindowX,messageBoxWindowY, messageBoxWindowWidth,outerTopHeight,messageBoxImageContainerIndex)
+         self.images.addItemText(self.images.messageBox[messageBoxImageContainerIndex].windowTitle, messageInfo.title, messageInfo.titleSizeAndFont, messageInfo.titleColor)
 
-        self.images.messageBox[messageBoxImageContainerIndex].windowTitle = new self.images.Item (messageBoxWindowX+1,messageBoxWindowY+1, messageBoxWindowWidth,outerTopHeight-2,messageBoxImageContainerIndex)
-         self.images.addItemText(self.images.messageBox[messageBoxImageContainerIndex].windowTitle, 'error', '13px arial', '#000000')
+         //message
+        self.images.messageBox[messageBoxImageContainerIndex].message = new self.images.Item (textX,innerMessageBoxY+textTopOffset, innerMessageBoxWidth -textLeftOffset*2 ,textHeight,messageBoxImageContainerIndex)
+        self.images.addItemText(self.images.messageBox[messageBoxImageContainerIndex].message, messageString, messageInfo.messageSizeAndFont, messageInfo.messageColor)
 
-        self.images.messageBox[messageBoxImageContainerIndex].message = new self.images.Item (textX,innerMessageBoxY+15, innerMessageBoxWidth,25,messageBoxImageContainerIndex)
-        self.images.addItemText(self.images.messageBox[messageBoxImageContainerIndex].message, messageInfo.message, '13px arial', '#000000')
-
-   
-
-        if(messageInfo.okay){
-        self.images.messageBox[messageBoxImageContainerIndex].okay =  new self.images.Item (messageBoxWindowX + 10,messageBoxWindowY+messageBoxWindowHeight-40, 50,25,messageBoxImageContainerIndex) 
-        self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].okay, '#0000FF')
-        self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].okay, 'Okay', '13px arial', '#000000')
+   //OK button
+        self.images.messageBox[messageBoxImageContainerIndex].okay =  new self.images.Item (okayX,buttonY, buttonWidth,buttonHeight,messageBoxImageContainerIndex) 
+        self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].okay, messageInfo.buttonBackgroundColor )
+        self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].okay, 'OK', messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
                 self.images.messageBox[messageBoxImageContainerIndex].okay.messages = messageInfo.okayMessages
         self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = self.events.onButtonClick
         self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = self.hideMessageBox
-        }
 
+//cancel button
         if(messageInfo.cancel){
-        self.images.messageBox[messageBoxImageContainerIndex].cancel =  new self.images.Item (messageBoxWindowX + 100,messageBoxWindowY+messageBoxWindowHeight-40, 50,25,messageBoxImageContainerIndex) 
-        self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].cancel, '#0000FF')
-        self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].cancel, 'cancel', '13px arial', '#000000')
+        self.images.messageBox[messageBoxImageContainerIndex].cancel =  new self.images.Item (cancelX,buttonY, buttonWidth,buttonHeight,messageBoxImageContainerIndex) 
+        self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].cancel, messageInfo.buttonBackgroundColor )
+        self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].cancel, 'Cancel', messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
           self.images.messageBox[messageBoxImageContainerIndex].cancel.messages = messageInfo.cancelMessages
-        self.images.messageBox[messageBoxImageContainerIndex].cancel.image.onClick = self.hidemessageBox}
-
-
-
-        if(!messageInfo.okay && !messageInfo.cancel){
-            self.images.messageBox[messageBoxImageContainerIndex].okay =  new self.images.Item (messageBoxWindowX + messageBoxWindowWidth/2,messageBoxWindowY+messageBoxWindowHeight-40, 50,25,messageBoxImageContainerIndex) 
-        self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].okay, '#0000FF')
-        self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].okay, 'Okay', '13px arial', '#000000')
-                self.images.messageBox[messageBoxImageContainerIndex].okay.messages = messageInfo.okayMessages
-        self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = self.events.onButtonClick
-        self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = self.hideMessageBox
-
+          self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = self.events.onButtonClick
+        self.images.messageBox[messageBoxImageContainerIndex].cancel.image.onClick = self.hidemessageBox
         }
-
-
-
-
-
-
-
-         self.images.messageBox[messageBoxImageContainerIndex].closeWindow =  new self.images.Item (innerMessageBoxX + innerMessageBoxWidth*.9,messageBoxWindowY+1, innerMessageBoxWidth*.1,innerMessageBoxY-messageBoxWindowY-2,messageBoxImageContainerIndex) 
-        self.images.messageBox[messageBoxImageContainerIndex].closeWindow.image  = new createjs.Shape() 
-        self.images.messageBox[messageBoxImageContainerIndex].closeWindow.image.graphics.beginFill('#CD0000').rect(self.images.messageBox[messageBoxImageContainerIndex].closeWindow.position.x,self.images.messageBox[messageBoxImageContainerIndex].closeWindow.position.y, self.images.messageBox[messageBoxImageContainerIndex].closeWindow.size.x,self.images.messageBox[messageBoxImageContainerIndex].closeWindow.size.y)
-        self.images.messageBox[messageBoxImageContainerIndex].closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
-        self.images.messageBox[messageBoxImageContainerIndex].closeWindow.image.graphics.moveTo(self.images.messageBox[messageBoxImageContainerIndex].closeWindow.position.x+self.images.messageBox[messageBoxImageContainerIndex].closeWindow.size.x*.12,self.images.messageBox[messageBoxImageContainerIndex].closeWindow.position.y+self.images.messageBox[messageBoxImageContainerIndex].closeWindow.size.y*.12)
-        self.images.messageBox[messageBoxImageContainerIndex].closeWindow.image.graphics.lineTo(self.images.messageBox[messageBoxImageContainerIndex].closeWindow.position.x+self.images.messageBox[messageBoxImageContainerIndex].closeWindow.size.x*.88,self.images.messageBox[messageBoxImageContainerIndex].closeWindow.position.y+self.images.messageBox[messageBoxImageContainerIndex].closeWindow.size.y*.88)
-        self.images.messageBox[messageBoxImageContainerIndex].closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
-        self.images.messageBox[messageBoxImageContainerIndex].closeWindow.image.graphics.moveTo(self.images.messageBox[messageBoxImageContainerIndex].closeWindow.position.x+self.images.messageBox[messageBoxImageContainerIndex].closeWindow.size.x*.88,self.images.messageBox[messageBoxImageContainerIndex].closeWindow.position.y+self.images.messageBox[messageBoxImageContainerIndex].closeWindow.size.y*.12)
-        self.images.messageBox[messageBoxImageContainerIndex].closeWindow.image.graphics.lineTo(self.images.messageBox[messageBoxImageContainerIndex].closeWindow.position.x+self.images.messageBox[messageBoxImageContainerIndex].closeWindow.size.x*.12,self.images.messageBox[messageBoxImageContainerIndex].closeWindow.position.y+self.images.messageBox[messageBoxImageContainerIndex].closeWindow.size.y*.88)
+       
+        //add closeX Image
+        var closeX =messageBoxWindowX+messageBoxWindowWidth- closeXRightOffset- closeXWidth
+        var closeY =  messageBoxWindowY+ closeXTopOffset
+         self.images.messageBox[messageBoxImageContainerIndex].closeWindow =  new self.images.Item (closeX, closeY,closeXWidth,closeXHeight,messageBoxImageContainerIndex) 
+       self.images.itemAsBitmap(self.images.messageBox[messageBoxImageContainerIndex].closeWindow, self.images.sources.messageBoxCloseX)
         self.images.messageBox[messageBoxImageContainerIndex].closeWindow.image.onClick = self.hideMessageBox
 
-
+        //disable mouse events for all containers under the messageBox
         for(var i = 0; i<messageBoxImageContainerIndex;i++){
             self.images.containers[i].mouseEnabled = false
-
         }
 
                 self.displayChildren(self.images.messageBox[messageBoxImageContainerIndex])
+                console.log(self.stage.contains(self.images.containers[messageBoxImageContainerIndex]))
+                 console.log(self.images.containers[messageBoxImageContainerIndex].children)
+                 console.log(self.images.containers[messageBoxImageContainerIndex].isVisible())
+                   console.log(self.stage.contains(self.images.containers[messageBoxImageContainerIndex].children[0]))
+                   console.log(self.stage.contains(self.images.containers[messageBoxImageContainerIndex].children[1]))
+                   console.log(self.stage.contains(self.images.containers[messageBoxImageContainerIndex].children[2]))
+                   console.log(self.images.containers[messageBoxImageContainerIndex].children[0].isVisible())
 
+                 for(var i in self.images.messageBox[messageBoxImageContainerIndex]){
+if(self.images.messageBox[messageBoxImageContainerIndex][i].text) {
+    console.log(self.images.messageBox[messageBoxImageContainerIndex][i].text)
+    console.log(self.stage.contains(self.images.messageBox[messageBoxImageContainerIndex][i]))}
+if(self.images.messageBox[messageBoxImageContainerIndex][i].image){
+    console.log(self.images.messageBox[messageBoxImageContainerIndex][i].image)
+    console.log(self.images.containers[messageBoxImageContainerIndex].contains(self.images.messageBox[messageBoxImageContainerIndex][i].image))}
+
+                 }
+          /*      console.log(self.images.messageBox[messageBoxImageContainerIndex])
+                console.log(messageBoxImageContainerIndex) */
     }
 
 
@@ -2420,7 +2700,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         this.gameState.cashier.small_blind = info.small_blind
         this.gameState.cashier.big_blind = info.big_blind
 
-       this.images.cashier.blinds.text.text = info.maobucks_per_chip*info.small_blind+'/'+info.maobucks_per_chip*info.big_blind
+       this.images.cashier.blinds.text.text = info.currency_per_chip*info.small_blind+'/'+info.currency_per_chip*info.big_blind
 
          this.images.cashier.tableNameValue.text.text = info.table_name
 
@@ -2491,9 +2771,6 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
     htmlcashier.style.left = this.images.cashier.addChipsTextBox.position.x + 'px'
     htmlcashier.style.top = this.images.cashier.addChipsTextBox.position.y + 'px'
 
-
-  //  this.images.cashier.currency =  new this.images.Item (cashierWindowOffsetLeft,this.images.cashier.accountBalance.position.y+10, cashierWindowWidth,25,4) 
-   // this.images.addItemText( this.images.cashier.currency, 'Currency: '+currency, '13px arial', '#000000')
         
        this.images.cashier.addChips.text.text = 'add chips'
      
@@ -2562,7 +2839,7 @@ this.restoreActiveContainers=function(activeContainerArray){
 
          //show options available if player is user
          self.displayButton(self.images.stand)
-         self.displayButton(self.images.addChips)
+         self.displayButton(self.images.getChips)
          self.displayButton(self.images.rightSideButtons[1].button)
 
          
@@ -2614,6 +2891,11 @@ this.restoreActiveContainers=function(activeContainerArray){
           //empty seats
          for (var i = 0; i<table_state.max_players;i++){    this.displayCorrectSeatMessage(i)    }
 
+
+         //display static items
+         this.displayChildren(this.images.getChips)
+         this.displayChildren(this.images.viewLobby)
+         this.displayChildren(this.images.exitTable)
     }
     
   //---------------------SOCKET CODE------------------------
@@ -2800,9 +3082,8 @@ self.playerToAct(self.gameState.userSeatNumber)
 })
 
 //player to act (not the user)
- socket.on('chatMessage', function(chatInfo){
+ socket.on('user_chats', function(chatInfo){
 
-  chatInfo.seat = 2
   //remove previous tweens that may be running:
   createjs.Tween.removeTweens(self.images.seats[chatInfo.seat].chat.image)
   createjs.Tween.removeTweens(self.images.seats[chatInfo.seat].chat.text)
@@ -2861,7 +3142,7 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
   
         if(player.seat == self.gameState.userSeatNumber){
             self.hideChildren(self.images.sitIn)
-            self.hideChildren(self.images.getChips)
+            self.hideChildren(self.images.rebuy)
             self.displayButton(self.images.rightSideButtons[1].button,false, ['sit_out'])
 }
         self.stage.update()
@@ -2874,7 +3155,7 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
         if(player.seat == self.gameState.userSeatNumber){
 
             if(player.chips == 0){
-                self.displayButton(self.images.getChips)
+                self.displayButton(self.images.rebuy)
             }
             else{
             self.displayButton(self.images.sitIn)
@@ -2891,7 +3172,7 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
             self.gameState.userSeatNumber = player.seat
             socket.emit('get_add_chips_info')
             self.displayButton(self.images.stand, false, ['stand'])
-            self.displayButton(self.images.addChips)
+            self.displayButton(self.images.getChips)
         self.displayChildren(self.images.stand)
 
         //refresh open seats to disabled seats
@@ -2941,7 +3222,7 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
 
         if(is_you){
             self.hideCashier()
-            if(player.chips>0){self.hideChildren(self.images.getChips)
+            if(player.chips>0){self.hideChildren(self.images.rebuy)
             if (player.sitting_out == true){self.displayButton(self.images.sitIn)}
             }
         }
@@ -2987,7 +3268,7 @@ jQuery(window).load(function (){
      
     holdemCanvas.createAllItems()
    holdemCanvas.receiveTableState()
-
+   self.displayButton(self.images.cashierButton)
     })
  /*
      tick=function(event) {
