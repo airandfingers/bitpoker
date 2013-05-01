@@ -253,20 +253,6 @@ h1 {
 
 }
 
-/* lobby specific styles */
-#table_list_lobby {
-    width: 50%;
-    float: left;
-}
-
-#chat_lobby {
-    width: 50%;
-    float: right;
-    /*clear: both;
-    display: block;
-    margin: 5%;*/
-}
-
 #login {
     z-index: 1;
 }

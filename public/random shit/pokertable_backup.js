@@ -1,4 +1,76 @@
+/*var cashierImageContainerIndex = self.gameState.containerImageIndexes.cashier
 
+
+        var cashierWindowWidth = 265
+        var cashierWindowHeight = 355
+        //declare size variables
+        var textLeftOffset = 10
+         var outerTopHeight = cashierWindowHeight*.08
+                var outerBottomHeight = cashierWindowHeight*.03
+        var outerSideWidth = cashierWindowWidth*.02
+
+        var asdf = document.getElementById('canvas')
+        var stageWidth = asdf.width
+        var stageHeight = asdf.height
+        var cashierWindowX = stageWidth/2 - cashierWindowWidth/2
+        var cashierWindowY = stageHeight/2 - cashierWindowHeight/2
+        
+
+        var innerCashierX = cashierWindowX+outerSideWidth
+        var innerCashierY = cashierWindowY+outerTopHeight
+        var innerCashierWidth = cashierWindowWidth-2*outerSideWidth -2
+        var innerCashierHeight = cashierWindowHeight-outerBottomHeight-outerTopHeight
+
+        var textX = innerCashierX + textLeftOffset
+        
+        this.cashier.window = new this.Item(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight,cashierImageContainerIndex)
+        this.cashier.window.image = new createjs.Shape()
+        //outer blue rim
+        this.cashier.window.image.graphics.setStrokeStyle(1).beginFill('blue').beginStroke('#FF00FF').rect(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight)
+        this.cashier.window.image.graphics.setStrokeStyle(1).beginFill('#C0C0C0').beginStroke('#FF00FF').rect(innerCashierX,innerCashierY,innerCashierWidth,innerCashierHeight)
+
+        this.cashier.windowTitle = new this.Item (cashierWindowX+1,cashierWindowY+1, cashierWindowWidth,outerTopHeight-2,cashierImageContainerIndex)
+         this.addItemText(this.cashier.windowTitle, 'Get Chips', '13px arial', '#000000')
+
+        this.cashier.blinds = new this.Item (textX,innerCashierY+15, innerCashierWidth,25,cashierImageContainerIndex)
+        this.addItemText(this.cashier.blinds, '', '13px arial', '#000000')
+
+         this.cashier.tableName = new this.Item (textX,this.cashier.blinds.position.y+15, innerCashierWidth,25,cashierImageContainerIndex)
+        this.addItemText(this.cashier.tableName, '', '13px arial', '#000000')
+
+        this.cashier.tableMin = new this.Item (textX,this.cashier.tableName.position.y+15, innerCashierWidth,25,cashierImageContainerIndex)
+        this.addItemText(this.cashier.tableMin, '', '13px arial', '#000000')
+
+        this.cashier.tableMax = new this.Item (textX, this.cashier.tableMin.position.y+15, innerCashierWidth,25,cashierImageContainerIndex)
+        this.addItemText(this.cashier.tableMax, '', '13px arial', '#000000')
+
+        this.cashier.accountBalance = new this.Item (textX,this.cashier.tableMax.position.y +15, innerCashierWidth,25,cashierImageContainerIndex)
+        this.addItemText(this.cashier.accountBalance, '', '13px arial', '#000000')
+
+// location of html textboxes for adding chips
+     this.cashier.addChipsTextBox = new this.Item (textX,this.cashier.accountBalance.position.y +25, innerCashierWidth,25,cashierImageContainerIndex)
+
+      this.cashier.addChips =  new this.Item (cashierWindowX + 10,cashierWindowY+cashierWindowHeight-40, 50,25,cashierImageContainerIndex) 
+        this.itemAsRectangle( this.cashier.addChips, '#0000FF')
+        this.addItemText( this.cashier.addChips, 'add chips', '13px arial', '#000000')
+        this.cashier.addChips.image.onClick = self.events.onAddChipsClick
+
+        this.cashier.cancel =  new this.Item (cashierWindowX + 100,cashierWindowY+cashierWindowHeight-40, 50,25,cashierImageContainerIndex) 
+        this.itemAsRectangle( this.cashier.cancel, '#0000FF')
+        this.addItemText( this.cashier.cancel, 'cancel', '13px arial', '#000000')
+        this.cashier.cancel.image.onClick = self.hideCashier
+
+         this.cashier.closeWindow =  new this.Item (innerCashierX + innerCashierWidth*.9,cashierWindowY+1, innerCashierWidth*.1,innerCashierY-cashierWindowY-2,cashierImageContainerIndex) 
+        this.cashier.closeWindow.image  = new createjs.Shape() 
+        this.cashier.closeWindow.image.graphics.beginFill('#CD0000').rect(this.cashier.closeWindow.position.x,this.cashier.closeWindow.position.y, this.cashier.closeWindow.size.x,this.cashier.closeWindow.size.y)
+        this.cashier.closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
+        this.cashier.closeWindow.image.graphics.moveTo(this.cashier.closeWindow.position.x+this.cashier.closeWindow.size.x*.12,this.cashier.closeWindow.position.y+this.cashier.closeWindow.size.y*.12)
+        this.cashier.closeWindow.image.graphics.lineTo(this.cashier.closeWindow.position.x+this.cashier.closeWindow.size.x*.88,this.cashier.closeWindow.position.y+this.cashier.closeWindow.size.y*.88)
+        this.cashier.closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
+        this.cashier.closeWindow.image.graphics.moveTo(this.cashier.closeWindow.position.x+this.cashier.closeWindow.size.x*.88,this.cashier.closeWindow.position.y+this.cashier.closeWindow.size.y*.12)
+        this.cashier.closeWindow.image.graphics.lineTo(this.cashier.closeWindow.position.x+this.cashier.closeWindow.size.x*.12,this.cashier.closeWindow.position.y+this.cashier.closeWindow.size.y*.88)
+        this.cashier.closeWindow.image.onClick = self.hideCashier
+        */
 
   
  

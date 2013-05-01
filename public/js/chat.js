@@ -28,7 +28,6 @@ socket.$emit = function() {
   $emit.apply(socket, arguments);
 };
 
-$chat_message.focus();
 
 socket.on('user_chats', function(data) {
   console.log('user_chats message received: ', data);

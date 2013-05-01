@@ -10,30 +10,34 @@
             this.events = {}
   this.imageData = {
       maxChipsPerColumn:5,
-      distanceBetweenChipColumns:4
+      distanceBetweenChipColumns:4,
+      chatBoxAlpha:0.75
   }
         this.gameState = {}
         this.gameState.displaySize = 'normal'
         this.gameState.secondsToAct
-        this.gameState.seatNuseumberToAct
+        this.gameState.userSeatNumber = false
         this.gameState.seats = []
         for(var i = 0;i<maxSeats;i++){
              this.gameState.seats[i]={}
              this.gameState.seats[i].displayMessageType = 'openSeat'
+             this.gameState.seats[i].toAct = false
         }
         this.gameState.cashier = {}
+        this.gameState.tableChatBox = {}
         this.gameState.messageBox = {}
         this.gameState.messageBox.activeContainers = []
         this.gameState.containerImageIndexes = {
             
-            cashier:6,
+           
             background:0,
             holeCard:1,
-            cardAnimation:2,
             chips:2,
-            button:3,
-            chat:4,
-            initialMessageBox:8
+            cardAnimation:3,
+            button:4,
+            chat:5,
+             cashier:7,
+            initialMessageBox:9
         }
 
         this.images = {}
@@ -59,13 +63,15 @@
             fourColorDeck: 'img/4colorsheet.png',
             dealerButton: 'img/dealer_button.png',
             verticalSlider: 'img/raise_slider.png',
+            cashierBackground: 'img/cashier_background.png',
+            closeWindowX: 'img/closeWindowX.jpg',
             chips: {
                 red:'img/chips/red_chip.png',
                 black: 'img/chips/black_chip.png'
             }
             }
-            if(this.gameState.displaySize == 'mobile'){'img/fourColorDeck/resize/'}
-            else {this.images.sources.cardImageFolder = this.images.sources.cardImageFolder = 'img/fourColorDeck/'}
+            if(this.gameState.displaySize == 'mobile'){this.images.sources.cardImageFolder = 'img/fourColorDeck/resize/'}
+            else {this.images.sources.cardImageFolder = 'img/fourColorDeck/'}
 
             this.images.background = {}
             this.images.pots = []
@@ -256,6 +262,13 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
     }
 
+    //=======unfocus tableChatBox==================
+    this.events.unfocusChatBox = function(event){
+        
+         $('#tableChatBox').blur()
+
+    }
+
      //===============START BET SLIDER===================
      this.events.betSliderVerticalMouseDown = function(event){
   
@@ -331,6 +344,54 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
 
 //-----------functions below this line ---------------------
+this.initialize= function(){
+
+    var fileSourceArray = []
+
+    for(var i in this.images.sources){
+        for(var n in this.images.sources[i][n]){
+            if(typeof this.images.sources[i][n] == 'string'){
+                fileSourceArray.push({src: this.images.sources[i][n], id:fileSourceArray.length-1})
+            }
+        }
+       if((typeof this.images.sources[i] == 'string') && (this.images.sources[i].indexOf('fourColorDeck') == -1)){
+           fileSourceArray.push({src: this.images.sources[i], id:fileSourceArray.length-1})
+    }
+    }
+    for(var i = 2;i<=14;i++){
+        var cardRank
+        if(i==11){cardRank = 'j'}
+     else   if(i==12){cardRank = 'q'}
+else if(i==13){cardRank = 'k'}
+    else    if(i==14){cardRank = 'a'}
+    else{cardRank = i}
+        fileSourceArray.push(this.images.sources.cardImageFolder+cardRank+'c.png')
+        fileSourceArray.push(this.images.sources.cardImageFolder+cardRank+'d.png')
+        fileSourceArray.push(this.images.sources.cardImageFolder+cardRank+'h.png')
+        fileSourceArray.push(this.images.sources.cardImageFolder+cardRank+'s.png')
+    }
+    console.log(fileSourceArray)
+    // must set to false or wo't work.  dont know whay...
+                var preload = new createjs.LoadQueue(false)
+    preload.addEventListener("complete", handleComplete)
+     preload.addEventListener("fileload", handleFileLoad)
+   preload.loadManifest(fileSourceArray)
+ //  createjs.Ticker.setFPS(30)
+
+   var handleFileLoad=  function  (event){
+       
+       console.log(event.item.src)
+   }
+
+           function handleComplete(event) {
+               console.log('loading completed')
+          //  self.createAllItems()
+        }
+
+
+}
+
+
 this.images.setDefaults = function(){
     
     var canvasWidth = document.getElementById('canvas').width
@@ -407,12 +468,16 @@ this.images.setDefaults = function(){
             var betTextWidth =  20
             var absoluteDistanceBetweenBetTextAndChipImages = 5
 
-            //space between player chat and seat
-            var chatBoxWidth = seatWidth
-            var chatBoxHeight = seatHeight/3
-            var chatDistanceFromSeatX = 0
-            var chatDistanceFromSeatY = seatHeight/6
+            var htmlTableChatBoxLeftOffset = 20
+            var htmlTableChatBoxBottomOffset = 20
+            var htmlTableChatBoxWidth = 65
+            var htmlTableChatBoxHeight = 20
 
+            //space between player chat and seat
+            var chatBoxWidth = seatWidth*1.4
+            var chatBoxHeight = seatHeight/2.3
+            var absoluteabsoluteChatDistanceFromSeatY = seatHeight/5
+             var chatBoxBorderColor = '#FFFFFF'
 
             //space between player's cards/seats, and chip images in play, relative to the upper left seat corner
             var bottomChipOffsetX = chipDiameter
@@ -432,6 +497,10 @@ this.images.setDefaults = function(){
              this.pots[0].firstChip = new this.Item(canvasWidth/2-cardWidth/2-cardWidth,communityY+potDistanceToCommunity,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
               this.pots[0].secondChip = new this.Item(this.pots[0].firstChip.position.x,this.pots[0].firstChip.position.y-distanceBetweenChipsY,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
               this.pots[0].secondColumnChip = new this.Item(this.pots[0].firstChip.position.x+chipDiameter+self.imageData.distanceBetweenChipColumns,this.pots[0].firstChip.position.y,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
+
+              //---------------------player chat input---------------
+              this.htmlTableChatBox = new this.Item(htmlTableChatBoxLeftOffset,canvasHeight - htmlTableChatBoxBottomOffset,htmlTableChatBoxWidth,htmlTableChatBoxHeight,self.gameState.containerImageIndexes.button)
+           
 
 
            //--------side buttons---------------------
@@ -467,12 +536,16 @@ this.images.setDefaults = function(){
       //---filled seats------
 
       _.each(_.range(this.seats.length), function(i) {
-self.images.seats[i].seat.image = new createjs.Shape()
+          var x = self.images.seats[i].seat.position.x
+          var y = self.images.seats[i].seat.position.y
+          var width = self.images.seats[i].seat.size.x
+          var height = self.images.seats[i].seat.size.y
+          self.images.seats[i].seat.image = new createjs.Shape()
 self.images.seats[i].seat.image.drawSeat = function(borderColor, fillColor, middleDividerColor){
     self.images.seats[i].seat.image.graphics.clear()
     self.images.seats[i].seat.image.snapToPixel = true
-self.images.seats[i].seat.image.graphics.setStrokeStyle(2,'square').beginStroke(borderColor).beginFill(fillColor).drawRect(self.images.seats[i].seat.position.x, self.images.seats[i].seat.position.y, self.images.seats[i].seat.size.x, self.images.seats[i].seat.size.y)
-            self.images.seats[i].seat.image.graphics.setStrokeStyle(1).beginStroke(middleDividerColor).moveTo(self.images.seats[i].horizontalDivider.position.x,self.images.seats[i].horizontalDivider.position.y).lineTo(self.images.seats[i].horizontalDivider.position.x+self.images.seats[i].horizontalDivider.size.x,self.images.seats[i].horizontalDivider.position.y)
+self.images.seats[i].seat.image.graphics.setStrokeStyle(2,'square').beginStroke(borderColor).beginFill(fillColor).drawRect(x, y, width, height)
+            self.images.seats[i].seat.image.graphics.setStrokeStyle(1).beginStroke(middleDividerColor).moveTo(x,y+height/2).lineTo(x+width,y+height/2)
           self.images.seats[i].seat.image.parentOfImageObject = self.images.seats[i].seat
           self.images.seats[i].seat.image.borderColor = borderColor
           self.images.seats[i].seat.image.fillColor = fillColor
@@ -481,8 +554,13 @@ self.images.seats[i].seat.image.graphics.setStrokeStyle(2,'square').beginStroke(
 })
 
 
-     //--------------------empty seats and text-----------------   
+  //=================-seat images=========================================
+   
 for(var i =0;i<this.seats.length;i++){
+
+this.seats[i].seat.image.drawSeat('#FFFFFF','#000000', '#FFFFFF')
+
+    //--------------------empty seats and text----------------- 
          this.seats[i].openSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,self.gameState.containerImageIndexes.button)
           this.seats[i].disabledSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,self.gameState.containerImageIndexes.button)
 
@@ -491,9 +569,9 @@ for(var i =0;i<this.seats.length;i++){
          this.seats[i].countdown = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,self.gameState.containerImageIndexes.button)
          this.seats[i].winner = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,self.gameState.containerImageIndexes.button)
 
-         this.seats[i].horizontalDivider = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,1,self.gameState.containerImageIndexes.button)
+       
          this.seats[i].playerName = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,self.gameState.containerImageIndexes.button)
-         this.seats[i].status = new this.Item(this.seats[i].horizontalDivider.position.x, this.seats[i].horizontalDivider.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,self.gameState.containerImageIndexes.button)
+         this.seats[i].status = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,self.gameState.containerImageIndexes.button)
 
      //------------------hole cards-----------------------------
             var middleOfSeat = this.seats[i].seat.position.x +this.seats[i].seat.size.x/2
@@ -507,9 +585,7 @@ for(var i =0;i<this.seats.length;i++){
             this.seats[i].shownCard0 = new this.Item(card0X, cardY, cardWidth, cardHeight,1)
             this.seats[i].shownCard1 = new this.Item(card1X, cardY, cardWidth, cardHeight,1)
 
-             //=================-seat images=========================================
 
-this.seats[i].seat.image.drawSeat('#FFFFFF','#000000', '#FFFFFF')
 
             //Empty Seats
             this.seats[i].openSeat.image = new createjs.Shape()
@@ -648,13 +724,51 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
      }
      else{console.log(i+' is not a seat')}
 
-    
-        // -----------------player's chat -----------------
-        var chatX = this.seats[i].seat.position.x+chatDistanceFromSeatX
-        var chatY = this.seats[i].seat.position.y + chatDistanceFromSeatY
-   this.seats[i].chat = new this.Item(chatX, chatY, chatBoxWidth, chatBoxHeight, self.gameState.containerImageIndexes.chat)
+      }  
 
-    }
+
+             // -----------------player's chat -----------------
+
+             _.each(_.range(this.seats.length), function(i) {
+
+        var chatX =  self.images.seats[i].seat.position.x +self.images.seats[i].seat.size.x/2 - chatBoxWidth/2  
+        var chatY = self.images.seats[i].seat.position.y - absoluteabsoluteChatDistanceFromSeatY
+   self.images.seats[i].chat = new self.images.Item(chatX, chatY, chatBoxWidth, chatBoxHeight, self.gameState.containerImageIndexes.chat)
+   
+  
+   self.images.seats[i].chat.image = new createjs.Shape()
+
+   //----------function to redraw chat box anytime with a new width
+self.images.seats[i].chat.image.drawChat = function(width){
+
+    //make sure width is <= maxWidth
+    if(width == undefined){var width = self.images.seats[i].chat.size.x}
+   else if(width>self.images.seats[i].chat.size.x){width = self.images.seats[i].chat.size.x}
+   //clear previous graphics
+   self.images.seats[i].chat.image.graphics.clear()
+   //define parent
+self.images.seats[i].chat.image.parentOfImageObject = self.images.seats[i].chat
+//get new X coordinates of chat box
+var x = self.images.seats[i].seat.position.x + self.images.seats[i].seat.size.x/2 - width/2
+var y = self.images.seats[i].chat.position.y
+    self.images.seats[i].chat.image.snapToPixel = true
+self.images.seats[i].chat.image.graphics.setStrokeStyle(1,'round').beginStroke(chatBoxBorderColor).beginFill('#000000')
+.drawRoundRect(x, y, width, self.images.seats[i].chat.size.y,  self.images.seats[i].chat.size.y*.20)
+
+self.images.seats[i].chat.image.alpha = self.imageData.chatBoxAlpha
+}
+
+//player chat text
+ self.images.seats[i].chat.text = new createjs.Text('', '10px Arial', '#FFFFFF')
+self.images.seats[i].chat.text.x=self.images.seats[i].chat.position.x +  self.images.seats[i].chat.size.x/2 
+ self.images.seats[i].chat.text.y= self.images.seats[i].chat.position.y
+ self.images.seats[i].chat.text.baseline = 'top'
+ self.images.seats[i].chat.text.textAlign = 'center'
+ self.images.seats[i].chat.text.lineWidth = self.images.seats[i].chat.size.x*.92
+ self.images.seats[i].chat.text.maxWidth = self.images.seats[i].chat.size.x*.85
+
+ })
+
 
  
 
@@ -694,14 +808,9 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
         this.community[3] = new this.Item(canvasWidth/2+cardWidth/2+distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,self.gameState.containerImageIndexes.button)
         this.community[4] = new this.Item(canvasWidth/2+cardWidth/2+cardWidth+2*distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,self.gameState.containerImageIndexes.button)
 
-    /*     for (var i = 0; i < 5; i = i + 1){
- this.itemAsRectangle(this.community[i], "#00FFFF")
- this.addItemText(this.community[i],'','12px Arial','black')
- }
- */
   //------------------card spawn location---------------------------------
 
-           this.startingCard = new this.Item(canvas.width/2-this.community[0].size.x/2, this.community[0].position.y+this.community[0].size.y+40 , cardWidth, cardHeight, self.gameState.containerImageIndexes.cardAnimation)
+           this.startingCard = new this.Item(canvasWidth/2-this.community[0].size.x/2, this.community[0].position.y+this.community[0].size.y+40 , cardWidth, cardHeight, self.gameState.containerImageIndexes.cardAnimation)
 
 
         //--------------upper left side button---------------------
@@ -740,21 +849,34 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
 
  var cashierImageContainerIndex = self.gameState.containerImageIndexes.cashier
 
-
-        var cashierWindowWidth = 265
-        var cashierWindowHeight = 355
-        //declare size variables
-        var textLeftOffset = 10
-         var outerTopHeight = cashierWindowHeight*.08
-                var outerBottomHeight = cashierWindowHeight*.03
-        var outerSideWidth = cashierWindowWidth*.02
-
-        var asdf = document.getElementById('canvas')
-        var stageWidth = asdf.width
-        var stageHeight = asdf.height
-        var cashierWindowX = stageWidth/2 - cashierWindowWidth/2
-        var cashierWindowY = stageHeight/2 - cashierWindowHeight/2
+ //declare size variables
+        var cashierWindowWidth = 298
+        var cashierWindowHeight = 360
         
+        var textLeftOffset = 13  //distance from left of first column of text of gray cashier area
+        var textTopOffset = 4   // distance from top of gray area to first row of text
+        var textRightOffset = 136 //distance from left side of second column to right side of gray cashier area
+
+        var textHeight = 13
+        var distanceBetweenTextY = 5
+        var sizeAndFont = '12px arial'
+        var textColor = '#000000'
+
+         var outerTopHeight = 31
+        var outerBottomHeight = 8
+        var outerSideWidth = 8
+
+        var columns = 2
+        var rows = 8
+
+        var cashierWindowX = canvasWidth/2 - cashierWindowWidth/2
+        var cashierWindowY = canvasHeight/2 - cashierWindowHeight/2
+        
+        
+        var closeWindowWidth = 31
+        var closeWindowHeight = 20
+        var closeWindowY = cashierWindowY +1 
+        var closeWindowX = cashierWindowX + cashierWindowWidth - closeWindowWidth- 7
 
         var innerCashierX = cashierWindowX+outerSideWidth
         var innerCashierY = cashierWindowY+outerTopHeight
@@ -762,30 +884,87 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
         var innerCashierHeight = cashierWindowHeight-outerBottomHeight-outerTopHeight
 
         var textX = innerCashierX + textLeftOffset
+
+        var grayBoxOffsetSide = 11 //distance from gray box to end of gray background
+        var grayBoxOffsetTop = 150
+        var grayBoxOffsetBottom = 49
         
         this.cashier.window = new this.Item(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight,cashierImageContainerIndex)
-        this.cashier.window.image = new createjs.Shape()
-        //outer blue rim
-        this.cashier.window.image.graphics.setStrokeStyle(1).beginFill('blue').beginStroke('#FF00FF').rect(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight)
-        this.cashier.window.image.graphics.setStrokeStyle(1).beginFill('#C0C0C0').beginStroke('#FF00FF').rect(innerCashierX,innerCashierY,innerCashierWidth,innerCashierHeight)
+        this.itemAsBitmap(this.cashier.window, this.sources.cashierBackground)
+  
+        //define for location of column and row for easier future editing
+        var textColumnX = []
+        var textColumnWidth = []
+        var textRowY = []
+        
 
-        this.cashier.windowTitle = new this.Item (cashierWindowX+1,cashierWindowY+1, cashierWindowWidth,outerTopHeight-2,cashierImageContainerIndex)
-         this.addItemText(this.cashier.windowTitle, 'Get Chips', '13px arial', '#000000')
+        for (var i = 0;i<rows;i++){
+            textRowY.push(cashierWindowY+outerTopHeight+textTopOffset +i*(textHeight + distanceBetweenTextY))
+        }
+ for (var i = 0;i<columns;i++){
+     //push columnX
+     if(i%columns ==0){
+            textColumnX.push(cashierWindowX+outerSideWidth+textLeftOffset)
+            }
+          else   if(i%columns == 1){
+            textColumnX.push(cashierWindowX+cashierWindowWidth-outerSideWidth-textRightOffset)
+            }
+            
+        }
+           //push width
+        for (var i = 0;i<columns;i++){
+     
+           if(i%columns ==0){
+            textColumnWidth.push(textColumnX[(i+1)%columns]-textColumnX[i])
+            }
+          else   if(i%columns == 1){
+            textColumnX.push(cashierWindowX+cashierWindowWidth-outerSideWidth-textColumnX[i])
+            }
+            }
 
-        this.cashier.blinds = new this.Item (textX,innerCashierY+15, innerCashierWidth,25,cashierImageContainerIndex)
-        this.addItemText(this.cashier.blinds, '', '13px arial', '#000000')
+        //define LOCATIONS of text items [column, row]
+        var cashierItems = {}
+        cashierItems.currency = {name: 'currency', location: [0,0]}
+        cashierItems.blinds = {name: 'blinds', location: [1,0]}
+     //   cashierItems.gameType = {name:'gameType' ,location: [0,1], text: 'Game Type:'}
+     //   cashierItems.gameTypeValue = {name: 'gameTypeValue',location: [1,1]}
+        cashierItems.tableName ={name: 'tableName' ,location: [0,1], text: 'Table Name:'}
+        cashierItems.tableNameValue ={name: 'tableNameValue', location: [1,1]}
+        cashierItems.tableMin = {name:'tableMin' , location: [0,2], text: 'Table Minimum:'}
+        cashierItems.tableMinValue ={name: 'tableMinValue' ,location: [1,2]}
+        cashierItems.tableMax ={name: 'tableMax' ,location: [0,3], text: 'Table Maximum:'}
+        cashierItems.tableMaxValue ={name: 'tableMaxValue', location: [1,3]}
+        cashierItems.playerMin ={name: 'playerMin' ,location: [0,4],  text: 'Minimum Add-On:'}
+        cashierItems.playerMinValue ={name:  'playerMinValue',location: [1,4]}
+  //     cashierItems.playerMax = {name: 'playerMax',location: [0,6],  text: 'Maximum Add-On:'}
+   //     cashierItems.playerMaxValue ={name:  'playerMaxValue',location: [1,6]}
+                 cashierItems.accountBalance ={name: 'accountBalance' ,location: [0,5],  text: 'Available Balance:'}
+          cashierItems.accountBalanceValue ={name: 'accountBalanceValue' ,location: [1,5]}
+        cashierItems.autoRebuy ={name: 'autoRebuy',location:  [0,6],  text: 'Auto-Rebuy:'}
+        cashierItems.autoRebuyValue ={name: 'autoRebuyValue' ,location: [1,6]}
 
-         this.cashier.tableName = new this.Item (textX,this.cashier.blinds.position.y+15, innerCashierWidth,25,cashierImageContainerIndex)
-        this.addItemText(this.cashier.tableName, '', '13px arial', '#000000')
 
-        this.cashier.tableMin = new this.Item (textX,this.cashier.tableName.position.y+15, innerCashierWidth,25,cashierImageContainerIndex)
-        this.addItemText(this.cashier.tableMin, '', '13px arial', '#000000')
+        //iterate through cashierItems to create all texts
+        for(var i in cashierItems){
+            if(_.isArray(cashierItems[i].location)){
+                this.cashier[cashierItems[i].name] = new this.Item (textColumnX[cashierItems[i].location[0]],textRowY[cashierItems[i].location[1]], textColumnWidth[0],textHeight,cashierImageContainerIndex)
+                if(cashierItems[i].text){var text = cashierItems[i].text}
+                else{text =''}
+                    this.cashier[cashierItems[i].name].text = new createjs.Text(text, sizeAndFont, textColor)
+this.cashier[cashierItems[i].name].text.x = this.cashier[cashierItems[i].name].position.x
+this.cashier[cashierItems[i].name].text.y=this.cashier[cashierItems[i].name].position.y + 1
+this.cashier[cashierItems[i].name].text.baseline = 'top'
+this.cashier[cashierItems[i].name].text.textAlign = 'left'
+this.cashier[cashierItems[i].name].text.maxWidth = this.cashier[cashierItems[i].name].size.x*.9
+            }
+        }
 
-        this.cashier.tableMax = new this.Item (textX, this.cashier.tableMin.position.y+15, innerCashierWidth,25,cashierImageContainerIndex)
-        this.addItemText(this.cashier.tableMax, '', '13px arial', '#000000')
-
-        this.cashier.accountBalance = new this.Item (textX,this.cashier.tableMax.position.y +15, innerCashierWidth,25,cashierImageContainerIndex)
-        this.addItemText(this.cashier.accountBalance, '', '13px arial', '#000000')
+        //create Item for gray box (even tho no image or text)
+        var grayBoxX = cashierWindowX + outerSideWidth + grayBoxOffsetSide
+        var grayBoxY = cashierWindowY + outerTopHeight + grayBoxOffsetTop
+        var grayBoxWidth = cashierWindowWidth -  2*outerSideWidth - 2*grayBoxOffsetSide 
+        var grayBoxHeight = cashierWindowY + cashierWindowHeight - outerBottomHeight - grayBoxOffsetBottom - grayBoxY
+        this.cashier.grayBox = new this.Item(grayBoxX, grayBoxY, grayBoxWidth, grayBoxHeight, cashierImageContainerIndex)
 
 // location of html textboxes for adding chips
      this.cashier.addChipsTextBox = new this.Item (textX,this.cashier.accountBalance.position.y +25, innerCashierWidth,25,cashierImageContainerIndex)
@@ -800,16 +979,9 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
         this.addItemText( this.cashier.cancel, 'cancel', '13px arial', '#000000')
         this.cashier.cancel.image.onClick = self.hideCashier
 
-         this.cashier.closeWindow =  new this.Item (innerCashierX + innerCashierWidth*.9,cashierWindowY+1, innerCashierWidth*.1,innerCashierY-cashierWindowY-2,cashierImageContainerIndex) 
-        this.cashier.closeWindow.image  = new createjs.Shape() 
-        this.cashier.closeWindow.image.graphics.beginFill('#CD0000').rect(this.cashier.closeWindow.position.x,this.cashier.closeWindow.position.y, this.cashier.closeWindow.size.x,this.cashier.closeWindow.size.y)
-        this.cashier.closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
-        this.cashier.closeWindow.image.graphics.moveTo(this.cashier.closeWindow.position.x+this.cashier.closeWindow.size.x*.12,this.cashier.closeWindow.position.y+this.cashier.closeWindow.size.y*.12)
-        this.cashier.closeWindow.image.graphics.lineTo(this.cashier.closeWindow.position.x+this.cashier.closeWindow.size.x*.88,this.cashier.closeWindow.position.y+this.cashier.closeWindow.size.y*.88)
-        this.cashier.closeWindow.image.graphics.beginStroke('#FFFFFF').setStrokeStyle(1)
-        this.cashier.closeWindow.image.graphics.moveTo(this.cashier.closeWindow.position.x+this.cashier.closeWindow.size.x*.88,this.cashier.closeWindow.position.y+this.cashier.closeWindow.size.y*.12)
-        this.cashier.closeWindow.image.graphics.lineTo(this.cashier.closeWindow.position.x+this.cashier.closeWindow.size.x*.12,this.cashier.closeWindow.position.y+this.cashier.closeWindow.size.y*.88)
-        this.cashier.closeWindow.image.onClick = self.hideCashier
+         this.cashier.closeWindow =  new this.Item (closeWindowX,closeWindowY, closeWindowWidth,closeWindowHeight,cashierImageContainerIndex) 
+       this.itemAsBitmap(this.cashier.closeWindow, this.sources.closeWindowX)
+       this.cashier.closeWindow.image.onClick = self.hideCashier
 
 
    // =============================================SOUNDS========================================
@@ -820,10 +992,9 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
 }
 
         this.setBackground = function(){    
-        var asdf = new Image ()
-        asdf.src  = this.images.sources.background
-        this.images.background.image = new createjs.Bitmap(asdf)
-        this.images.containers[0].addChild(this.images.background.image)
+        this.images.background = new this.images.Item(0,0,9999,9999,this.gameState.containerImageIndexes.background)
+        this.images.itemAsBitmap(this.images.background, this.images.sources.background)
+this.displayChildren(this.images.background)
     }
 
     this.images.setDefaultEvents = function(){
@@ -841,6 +1012,8 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
         this.stand.image.onPress = self.events.buttonMouseDown
         this.stand.image.onClick = self.events.onButtonClick
 
+        self.stage.onPress = self.events.unFocusTableChatBox
+
     }
 
     this.images.setDefaultMessages = function(){
@@ -849,12 +1022,13 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
           this.seats[i].openSeat.messages = ['sit',i]
         }
     }
-
-    this.initialize = function(){
+    
+    this.createAllItems = function(){
         this.setBackground()
         this.images.setDefaults()
        this.images.setDefaultEvents()
        this.images.setDefaultMessages()
+   //    this.displayTableChatBox()
     }
      
 
@@ -866,7 +1040,6 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
          this.images.seats[seatNumber].status.text.text = stackSize
 
            this.displayChildren(this.images.seats[seatNumber].bet)
-           this.stage.update()
 
     }
 
@@ -875,13 +1048,44 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
     for (var i=0;i<this.images.seats.length;i=i+1){
          this.hideBet(i)
         }
-        
-       
-    this.stage.update()
     }
 
     //rotates positions of players seats and their hole cards n times clockwise
     this.images.rotateSeats = function (n){
+
+    }
+
+    this.displayTableChatBox = function (){
+
+var htmlTableChatBox = document.getElementById('tableChatBox')
+    htmlTableChatBox.style.display = 'inline'
+    htmlTableChatBox.style.position = 'absolute'
+    htmlTableChatBox.style.left = this.images.htmlTableChatBox.position.x + 'px'
+    htmlTableChatBox.style.top = this.images.htmlTableChatBox.position.y + 'px'
+
+    //emit chat if user pressed enter
+ $('#tableChatBox').keypress(function(event){
+      var keycode = (event.keyCode ? event.keyCode : event.which)
+    if(keycode == '13') {    
+        socket.emit('chat', $("#tableChatBox").val())
+        $("#tableChatBox").val('')
+        }
+    })
+    }
+
+    this.disableTableChatBox = function(){
+         $('#tableChatBox').attr("readonly", true)
+    }
+
+    this.enableTableChatBox = function(){
+        
+        $('#tableChatBox').attr("readonly", false)
+    }
+
+    this.hideTableChatBox = function(){
+
+        var htmlTableChatBox = document.getElementById('tableChatBox')
+    htmlcashier.style.display = 'none'
 
     }
 
@@ -1010,6 +1214,7 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
         var y = initialY
         var chipIncrementY = this.images.pots[0].secondChip.position.y-this.images.pots[0].firstChip.position.y
         var totalChips = 0
+
                     var distanceBetweenColumns = parentOfChipArray.secondColumnChip.position.x-parentOfChipArray.firstChip.position.x
 
 
@@ -1216,7 +1421,22 @@ clearInterval(imageAnimation)
 }, interval)
 
  }
-
+ //get Width of a line of text from its parent Item, returns [width, fontSize]
+ this.getTextWidthAndFontSize = function (parentOfTextObject, fontSize){
+     if(parentOfTextObject instanceof this.images.Item){
+         if(!fontSize){
+           var pIndex =   parentOfTextObject.text.font.indexOf('p')
+           var PIndex =  parentOfTextObject.text.font.indexOf('P')
+           if(pIndex>=PIndex){var pLocation = pIndex}
+           else if(pIndex<PIndex){var pLocation = pIndex}
+           var fontSize = parentOfTextObject.text.font.substring(0,pLocation-1)
+         }
+     }
+     var context = this.stage.canvas.getContext('2d')
+     context.font = parentOfTextObject.text.font
+     var textData = context.measureText(parentOfTextObject.text.text)
+     return [textData.width, fontSize]
+ }
  //must include false or undefined slots for already dealt cards
  this.dealCommunity = function (communityArray){
      
@@ -1574,6 +1794,7 @@ for (var i = 0; i < openSeats.length; i = i + 1)
          this.hideChildren(this.images.rightSideButtons[1].button)
           this.hideChildren(this.images.rightSideButtons[2].button)
           this.hideChildren(this.images.addChips)
+          this.hideChildren(this.images.getChips)
           this.hideChildren(this.images.sitIn)
 this.hideAllActionButtons()
     }
@@ -1650,17 +1871,16 @@ this.hideAllActionButtons()
 
             case 'openSeat':
             
-            if(isNaN(this.gameState.userSeatNumber)){
+              if((this.gameState.userSeatNumber == false) || _.isNull(this.gameState.userSeatNumber)||_.isUndefined(this.gameState.userSeatNumber)){
                 this.hideChildren(this.images.seats[seatNumber].disabledSeat)
             this.displayChildren(this.images.seats[seatNumber].openSeat)
 
             }
-            else {
+          else if(_.isNumber(this.gameState.userSeatNumber)) {
                 
                 this.hideChildren(this.images.seats[seatNumber].openSeat)
                 this.displayChildren(this.images.seats[seatNumber].disabledSeat)
             }
-             
             
               this.hideChildren(this.images.seats[seatNumber].seat)
             this.hideChildren(this.images.seats[seatNumber].status)
@@ -1672,18 +1892,16 @@ this.hideAllActionButtons()
 
             default:
 
-                if(isNaN(this.gameState.userSeatNumber)){
+              if((this.gameState.userSeatNumber == false) || _.isNull(this.gameState.userSeatNumber)||_.isUndefined(this.gameState.userSeatNumber)){
                 this.hideChildren(this.images.seats[seatNumber].disabledSeat)
             this.displayChildren(this.images.seats[seatNumber].openSeat)
 
             }
-            else {
+          else if(_.isNumber(this.gameState.userSeatNumber)) {
                 
                 this.hideChildren(this.images.seats[seatNumber].openSeat)
                 this.displayChildren(this.images.seats[seatNumber].disabledSeat)
             }
-           
-
             
               this.hideChildren(this.images.seats[seatNumber].seat)
             this.hideChildren(this.images.seats[seatNumber].status)
@@ -1987,6 +2205,11 @@ self.displayCorrectSeatMessage(seatNumber)
     
     this.hideCashier = function(){
 
+        //enable TableChatBox
+        if($('#tableChatBox').attr("readonly") == true){
+            this.gameState.tableChatBox.display = false
+       this.enableTableChatBox()
+       }
 
                 self.hideChildren(self.images.cashier)
                 var htmlcashier = document.getElementById('cashier')
@@ -1996,13 +2219,13 @@ self.displayCorrectSeatMessage(seatNumber)
 
         self.gameState.cashier.visible = false
 
-      
                  $('#maxRadio').prop('checked', false)
           $('#autoRebuyRadio').prop('checked', false)
           $('#otherAmountRadio').prop('checked', false)
           
-          $("#otherAmount").val(null)
-           $('#autoRebuyAmount').val(null)
+          $("#otherAmount").val('')
+           $('#autoRebuyAmount').val('')
+           $('#maxAmount').val('')
 
 
     }
@@ -2018,6 +2241,10 @@ self.displayCorrectSeatMessage(seatNumber)
             var htmlcashier = document.getElementById('cashier')
            htmlcashier.style.display = 'inline'
         }
+
+        //enable tableChatBox if necessary
+      else  if(this.gameState.tableChatBox.display == true){ this.enableTableChatBox()}
+
         }
 
         
@@ -2049,12 +2276,17 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
        htmlcashier.style.display = 'none'
        }
        else{self.gameState.cashier.display = false}
-       }
        
+       //check if tableChatBox is readonly
+      if($('#tableChatBox').attr("readonly") == true){}
+      else{
+       this.gameState.tableChatBox.display = true
+       this.disableTableChatBox()
+       }
+       }
 
       //  title,message,okay, okayMessages, cancel, cancelMessages
 
-       
         self.gameState.messageBox.messageBoxImageContainerIndex = messageBoxImageContainerIndex
         self.gameState.messageBox.activeContainers[messageBoxImageContainerIndex] = self.storeActiveContainers()
         var messageBoxWindowWidth = 400
@@ -2156,6 +2388,15 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
 
       var cashierImageContainerIndex = this.gameState.containerImageIndexes.cashier
 
+      //disable tableChatBox
+
+      if($('#tableChatBox').attr("readonly") == true){}
+      else{
+       this.gameState.tableChatBox.display = true
+       this.disableTableChatBox()
+       }
+
+
         this.gameState.cashier.min = info.min
         this.gameState.cashier.max = info.max
         this.gameState.cashier.balance = info.balance
@@ -2163,32 +2404,36 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         this.gameState.cashier.small_blind = info.small_blind
         this.gameState.cashier.big_blind = info.big_blind
 
-       this.images.cashier.windowTitle.text.text ='Get Chips'
+       this.images.cashier.blinds.text.text = info.maobucks_per_chip*info.small_blind+'/'+info.maobucks_per_chip*info.big_blind
 
-       this.images.cashier.blinds.text.text = 'blinds: '+info.small_blind+'/'+info.big_blind
+         this.images.cashier.tableNameValue.text.text = info.table_name
 
-         this.images.cashier.tableName.text.text = 'Table Name: '+info.table_name
+        this.images.cashier.tableMinValue.text.text = info.table_min
 
-        this.images.cashier.tableMin.text.text = 'Minimum Buyin: '+info.min
+        this.images.cashier.tableMaxValue.text.text = info.table_max
 
-        this.images.cashier.tableMax.text.text = 'Maximum Buyin: '+info.max
+        this.images.cashier.playerMinValue.text.text = info.min
 
-       this.images.cashier.accountBalance.text.text = 'My Available Balance: '+info.balance
+       this.images.cashier.accountBalanceValue.text.text = info.balance
 
-//display textboxes for adding chips
+       this.images.cashier.currency.text.text = info.currency+':'
 
-    var htmlcashier = document.getElementById('cashier')
-    htmlcashier.style.display = 'inline'
-    htmlcashier.style.position = 'absolute'
-    htmlcashier.style.left = this.images.cashier.addChipsTextBox.position.x + 'px'
-    htmlcashier.style.top = this.images.cashier.addChipsTextBox.position.y + 'px'
-    
+       //set initial values of text boxes
+             $("#otherAmount").val('')
+           $('#autoRebuyAmount').val('')
+       $("#maxAmount").val(info.max)
+        $("#maxAmount").attr("readonly", true)
+
+//check radio buttons when textbox is focused
+
     $("#otherAmount").focus(function() {
                  $('#maxRadio').prop('checked', false)
           $('#autoRebuyRadio').prop('checked', false)
           $('#otherAmountRadio').prop('checked', true)
-          if(typeof parseFloat($("#otherAmount").val()) == 'number' &&  parseFloat($("#otherAmount").val()) >self.gameState.cashier.min){}
+          //do nothing if amount to add is acceptable
+          if(typeof parseFloat($("#otherAmount").val()) == 'number' &&  parseFloat($("#otherAmount").val()) >=self.gameState.cashier.min){}
           else{
+              
           $("#otherAmount").val(self.gameState.cashier.min)
 
           //select text on clicking
@@ -2198,12 +2443,37 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
           }
         })
 
-            $("#autoRebuy").focus(function() {
+
+            $("#autoRebuyAmount").focus(function() {
         
          $('#maxRadio').prop('checked', false)
           $('#otherAmountRadio').prop('checked', false)
           $('#autoRebuyRadio').prop('checked', true)
+          //do nothing if autorebuy is acceptable
+           if(typeof parseFloat($("#autoRebuyAmount").val()) == 'number' &&  parseFloat($("#autoRebuyAmount").val()) >=info.table_min){}
+          else{
+          $("#autoRebuyAmount").val(info.table_min)
+          //select text on clicking
+           $("#autoRebuyAmount").one('mouseup', function(event){
+        event.preventDefault();
+       }).select()
+          }
         })
+        
+
+          $("#maxAmount").focus(function() {
+        
+         $('#maxRadio').prop('checked', true)
+          $('#otherAmountRadio').prop('checked', false)
+          $('#autoRebuyRadio').prop('checked', false)
+        })
+
+//display textboxes for adding chips
+          var htmlcashier = document.getElementById('cashier')
+    htmlcashier.style.display = 'inline'
+    htmlcashier.style.position = 'absolute'
+    htmlcashier.style.left = this.images.cashier.addChipsTextBox.position.x + 'px'
+    htmlcashier.style.top = this.images.cashier.addChipsTextBox.position.y + 'px'
 
 
   //  this.images.cashier.currency =  new this.images.Item (cashierWindowOffsetLeft,this.images.cashier.accountBalance.position.y+10, cashierWindowWidth,25,4) 
@@ -2220,10 +2490,7 @@ self.gameState.cashier.activeContainers = this.storeActiveContainers()
 
         for(var i = 0; i<cashierImageContainerIndex;i++){
             this.images.containers[i].mouseEnabled = false
-
         }
-
-
                 this.displayChildren(this.images.cashier)
 
 }
@@ -2270,9 +2537,6 @@ this.restoreActiveContainers=function(activeContainerArray){
             this.gameState.seats[i] = null
 
         }
-
-
-
         
                 //display seats and assign userSeatNumber
          for (var i in table_state.seats) { 
@@ -2320,8 +2584,6 @@ this.restoreActiveContainers=function(activeContainerArray){
         }
         }
 
-
-
         //comunity cards
         this.displayAllCommunity(table_state.community)
         //pot
@@ -2348,6 +2610,7 @@ this.restoreActiveContainers=function(activeContainerArray){
     
     this.activateSockets = function(){
      
+        
 
     socket.on('street_ends', function (potSize){
         var animationTime = 800
@@ -2399,6 +2662,16 @@ function(next){
                 
 })
         
+ //player is refunded chips
+       socket.on('player_gets_refund', function(player){
+           var stackSize = player.chips
+           var betSize = player.current_bet
+           var seatNumber = player.seat
+
+          self.playerPutsChipsInPot(seatNumber, betSize, stackSize)
+           self.displayChipStack(betSize, self.images.seats[seatNumber], self.images.seats[seatNumber].firstChip.position.x, self.images.seats[seatNumber].firstChip.position.y)
+                
+})
 
 
     //community cards are dealt
@@ -2511,9 +2784,60 @@ self.playerToAct(self.gameState.userSeatNumber)
 })
 
 //player to act (not the user)
- socket.on('chatmessage', function(chatInfo){
+ socket.on('chatMessage', function(chatInfo){
 
+  chatInfo.seat = 2
+  //remove previous tweens that may be running:
+  createjs.Tween.removeTweens(self.images.seats[chatInfo.seat].chat.image)
+  createjs.Tween.removeTweens(self.images.seats[chatInfo.seat].chat.text)
+
+     self.images.seats[chatInfo.seat].chat.text.text = chatInfo.message
+     originalImageAlpha = self.imageData.chatBoxAlpha
+
+     var textShortened = false
+     var width = self.getTextWidthAndFontSize(self.images.seats[chatInfo.seat].chat)[0]
+
+     //loop to start excising end offscreenBuffering String if t
+     if(width>self.images.seats[chatInfo.seat].chat.text.maxWidth){
+    while(width>self.images.seats[chatInfo.seat].chat.text.maxWidth-3){
+        //remove last character of text
+        self.images.seats[chatInfo.seat].chat.text.text = self.images.seats[chatInfo.seat].chat.text.text.substring(0,self.images.seats[chatInfo.seat].chat.text.text.length-1) 
+        width = self.getTextWidthAndFontSize(self.images.seats[chatInfo.seat].chat)[0]
+   textShortened = true
+    }
+    }
+    //add elipses .... to end of text if text was shortened
+    if(textShortened == true){
+        self.images.seats[chatInfo.seat].chat.text.text = self.images.seats[chatInfo.seat].chat.text.text + '...'
+        width = self.getTextWidthAndFontSize(self.images.seats[chatInfo.seat].chat)[0]
+    }
+    //determind ratio of chat.text to chat.image
+   var imageToTextWidthRatio =  self.images.seats[chatInfo.seat].chat.size.x/self.images.seats[chatInfo.seat].chat.text.maxWidth
+
+    //determine width of tableChatBox
+    var chatBoxWidth = imageToTextWidthRatio*width+2.5
+
+    //draw new chatBox and set alpha to original alpha
+    self.images.seats[chatInfo.seat].chat.image.drawChat(chatBoxWidth) // drawChat function resets alpha automatically
+self.images.seats[chatInfo.seat].chat.text.alpha = 1
+
+//display chat image and text
+     self.displayChildren(self.images.seats[chatInfo.seat].chat)
      
+      //tween image
+     createjs.Tween.get(self.images.seats[chatInfo.seat].chat.image,{loop:false, override:true})
+     .to({alpha:originalImageAlpha})
+    .to({alpha:0}, 10000)
+    .call(self.hideImage,[self.images.seats[chatInfo.seat].chat], self)
+    .to({alpha:originalImageAlpha})
+
+    //tween text
+     createjs.Tween.get(self.images.seats[chatInfo.seat].chat.text,{loop:false, override:true})
+     .to({alpha:1})
+    .to({alpha:0}, 10000)
+    .call(self.hideText,[self.images.seats[chatInfo.seat].chat], self)
+    .to({alpha:1})
+
 })
 //player sits in
        socket.on('player_sits_in', function(player){
@@ -2563,7 +2887,6 @@ self.playerToAct(self.gameState.userSeatNumber)
 //player stands, checks if player is the user
        socket.on('player_stands', function(player, seatNumber, is_you){
 
-        
         if(is_you){
             self.gameState.userSeatNumber = false
             self.hideSeatedOptions()
@@ -2585,7 +2908,7 @@ self.playerToAct(self.gameState.userSeatNumber)
         self.displayCashier(info)
         
         }
-  );   
+  )
   
 
 //player adds chips to his stack
@@ -2640,27 +2963,17 @@ socket.on('reset_table', function(players){
 
 jQuery(document).ready(function(){
     holdemCanvas = new Table(10)
-    holdemCanvas.initialize()
-
-
-
+   holdemCanvas.initialize()
 })
 
 
 jQuery(window).load(function (){
-    holdemCanvas.receiveTableState()
+     
+    holdemCanvas.createAllItems()
+   holdemCanvas.receiveTableState()
+
     })
- /*  
-asdf = new createjs.Container()
-holdemCanvas.stage.addChild(asdf)
-gjorb = new createjs.Shape()
-asdf.addChild(gjorb)
-console.log(holdemCanvas.stage.contains(gjorb))
-holdemCanvas.stage.removeChild(gjorb)
-//holdemCanvas.stage.update()
-console.log(holdemCanvas.stage.contains(gjorb))
-
-
+ /*
      tick=function(event) {
          if(holdemCanvas.gameState.countdownOn) {
        

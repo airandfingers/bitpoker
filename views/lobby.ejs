@@ -1,16 +1,16 @@
 <% var title = 'Welcome to Bitcoin Poker!'; %>
 <% include head %>
-    <div id="container">
+    <div id="container" class="row-fluid">
         <!-- display list of tables -->
-        <div id="table_list_lobby">
+        <div id="table_list_lobby" class="span6">
             <% include table_list %>
         </div>
 
-        <!-- display chat -->
-        <div id="chat_lobby" class="chat_container">
-            <% include chat %>
+        <div class="chat_container">
+            <div id="chat_lobby" class="span6">
+                <% include chat %>
+            </div>
         </div>
-
         <!-- include values to expose to scripts -->
         <input type="hidden" id="server_values" data-room_state="<%= room_state %>" />
 
