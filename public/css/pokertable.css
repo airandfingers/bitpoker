@@ -7,16 +7,16 @@
 #pokerCanvasDiv {
     position: absolute;
 }
-#cashier{
+#cashier input[type = 'text']{
     background-image:url(img/cashier_textbox_bg.jpg);
-	background-repeat:repeat-x;
+	background-repeat:repeat;
 	border:1px solid #d1c7ac;
 	color:#333333;
     margin-right: 0px;
 	font-family:tahoma, arial, sans-serif;
     position: absolute;
     z-index: 1;
-    display: none;
+    text-align: left;
 }
 #chatDiv{
     background-image:url(img/cashier_textbox_bg.jpg);
