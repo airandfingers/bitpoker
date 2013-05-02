@@ -28,7 +28,6 @@ socket.$emit = function() {
   $emit.apply(socket, arguments);
 };
 
-
 socket.on('user_chats', function(data) {
   console.log('user_chats message received: ', data);
   var sender = data.sender
@@ -56,36 +55,43 @@ $chat_form.submit(function(e) {
 
 $(document).on('keydown', function(e) {
   if ($(':focus').is('input')) {
-      //don't focus $chat_message if the user's typing in a text field
-      return;
+    //don't focus $chat_message if the user's typing in a text field
+    return;
   }
   else {
-      $chat_message.focus();
+    $chat_message.focus();
   }
 });
 
+var users = $('#server_values').data('room_state').users
+  , $user_list = $('#user_list')
+  , $user_to_add;
 //Display initial user list.
-  console.log("Pre-Displaying initial user list: printing ", $("#server_values").data("room_state").users);
-  for (var i=0, len = $("#server_values").data("room_state").users.length; i < len; i++) {
-    var initial_user = $("#server_values").data("room_state").users[i];
-    if ($("#" + initial_user).length == 0) {
-      $("#users > ul").append("<li id="+ initial_user +">"+ initial_user + "</li>");
-      console.log("adding " + initial_user+ " to the initial users list.");
-    }    
-  }
+console.log('Pre-Displaying initial user list:', users);
+for (var i = 0, len = users.length; i < len; i++) {
+  var initial_user = users[i];
+  if ($user_list.find('#' + initial_user).length === 0) {
+    console.log('adding ' + initial_user + ' to the initial users list.');
+    $user_to_add = $('<li />', { id: initial_user, text: initial_user });
+    $user_list.append($user_to_add);
+  }    
+}
 
-//Socket.on like function that takes user joins and user leaves and updates the user list.
+//User joins handler - updates the user list.
 socket.on('user_joins', function(user) {
-  //jquery add this thingy to dom user.username
-  //if there is not already a user named __ in the chat, add them.
-    if ($("#" + user.username).length == 0) {
-      $("#users > ul").append("<li id="+ user.username +">"+ user.username + "</li>");
-      console.log("adding " + user.username + " to the users list.");
-    }
+  var username = user.username;
+  //add user named username to the user list (if it doesn't exist already)
+  if ($user_list.find('#' + username).length === 0) {
+    console.log('adding ' + username + ' to the users list.');
+    $user_to_add = $('<li />', { id: username, text: username });
+    $user_list.append($user_to_add);
+  }
 });
 
+//User leaves handler - updates the user list.
 socket.on('user_leaves', function(user) {
-  //jquery remove this thingy from dom user.username
-  console.log("removing " + user.username + " from the users list.");
-  $("#" + user.username).detach();
+  var username = user.username;
+  //remove user named username from the user list (if it exists)
+  console.log('removing ' + username + ' from the users list.');
+  $user_list.find('#' + username).remove();
 });
