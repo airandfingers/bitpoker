@@ -1,6 +1,13 @@
    $("#chat_table").css('position','absolute')
    $("#chat_table").css('top','1000px')
-   
+      function onKeyDown(event) {
+event.preventDefault() } 
+
+window.onKeydown = onKeyDown
+
+/*function (dtnode, event) { 
+        return false; 
+    }*/
    
     //default canvas size is 690x480
     //all numbers are in base 0, including variable names and documentation
@@ -330,11 +337,9 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
     */
 
     this.events.exitTableClick = function(event){
-        console.log('exit clicked')
-        console.log(event)
        var  messageInfo = {}
        messageInfo.cancel = true
-       messageInfo.okayEvent = window.close
+       messageInfo.okayEvent = self.events.exit
         self.displayMessageBox("Are you sure you want to leave?",messageInfo)
 
     }
@@ -347,6 +352,11 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
        messageInfo.okayEvent = window.close
         self.displayMessageBox("Are you sure you want to leave?",messageInfo)
 
+    }
+
+    this.events.exit = function(event){
+          var win = window.open('', '_self')
+          win.close()
     }
 
 
@@ -1117,7 +1127,7 @@ hit.graphics.beginFill('black').beginStroke('#000000')
 .drawRect(exitX1, topY, exitX3-exitX1, bottomY-topY)
 
 //this.containers[13].addChild(hit)
-  this.exitTable.image.hitArea = exitTableHit
+//  this.exitTable.image.hitArea = exitTableHit
 this.exitTable.image.onClick = self.events.exitTableClick
 
         //----------------not in hand action buttons------------------
@@ -2770,7 +2780,6 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
      if(_.isNull(messageInfo.buttonTextColor)||_.isUndefined(messageInfo.buttonTextColor)){ messageInfo.buttonTextColor = '#000000'}
     if(_.isNull(messageInfo.buttonBackgroundColor)||_.isUndefined(messageInfo.buttonBackgroundColor)){ messageInfo.buttonBackgroundColor = '#0000FF'}
 
-    console.log(messageInfo)
 
        //set button locations
     if(messageInfo.cancel != true){
@@ -2797,23 +2806,35 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         self.images.messageBox[messageBoxImageContainerIndex].okay =  new self.images.Item (okayX,buttonY, buttonWidth,buttonHeight,messageBoxImageContainerIndex) 
         self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].okay, messageInfo.buttonBackgroundColor )
         self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].okay, 'OK', messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
-                self.images.messageBox[messageBoxImageContainerIndex].okay.messages = messageInfo.okayMessages
+            //asign messages if exists
+            if(messageInfo.okayMessages){    
+            self.images.messageBox[messageBoxImageContainerIndex].okay.messages = messageInfo.okayMessages}
                 //assign event if assigned
-       if(messageInfo.okayEvent){self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = messageInfo.okayEvent}
-        self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = self.events.onButtonClick
+               
+       if(messageInfo.okayEvent){
+           self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = messageInfo.okayEvent
+           }
+      else{
+            self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = self.events.onButtonClick
         self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = self.hideMessageBox
-
+        }
 //cancel button
         if(messageInfo.cancel){
         self.images.messageBox[messageBoxImageContainerIndex].cancel =  new self.images.Item (cancelX,buttonY, buttonWidth,buttonHeight,messageBoxImageContainerIndex) 
         self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].cancel, messageInfo.buttonBackgroundColor )
         self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].cancel, 'Cancel', messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
+        //add message to cancel if available
+        if(messageInfo.cancelMessages){
           self.images.messageBox[messageBoxImageContainerIndex].cancel.messages = messageInfo.cancelMessages
-           if(messageInfo.cancelEvent){self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = messageInfo.cancelEvent}
-          self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = self.events.onButtonClick
+          }
+          //add cancel event if availble
+           if(messageInfo.cancelEvent){
+               self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = messageInfo.cancelEvent
+               }
+       else{  
         self.images.messageBox[messageBoxImageContainerIndex].cancel.image.onClick = self.hidemessageBox
         }
-       
+       }
         //add closeX Image
         var closeX =messageBoxWindowX+messageBoxWindowWidth- closeXRightOffset- closeXWidth
         var closeY =  messageBoxWindowY+ closeXTopOffset
@@ -3234,6 +3255,8 @@ self.playerToAct(self.gameState.userSeatNumber)
 
 //player to act (not the user)
  socket.on('user_chats', function(chatInfo){
+     //perform animation only if string is longer than 0 and is not purely spaces
+  if (/\S/.test(chatInfo.message)){
 
   //remove previous tweens that may be running:
   createjs.Tween.removeTweens(self.images.seats[chatInfo.seat].chat.image)
@@ -3265,6 +3288,7 @@ self.playerToAct(self.gameState.userSeatNumber)
     //determine width of tableChatBox
     var chatBoxWidth = imageToTextWidthRatio*width+2.5
 
+    
     //draw new chatBox and set alpha to original alpha
     self.images.seats[chatInfo.seat].chat.image.drawChat(chatBoxWidth) // drawChat function resets alpha automatically
 self.images.seats[chatInfo.seat].chat.text.alpha = 1
@@ -3285,6 +3309,7 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
     .to({alpha:0}, 10000)
     .call(self.hideText,[self.images.seats[chatInfo.seat].chat], self)
     .to({alpha:1})
+    }
 
 })
 //player sits in
@@ -3419,6 +3444,7 @@ jQuery(window).load(function (){
      
     holdemCanvas.createAllItems()
    holdemCanvas.receiveTableState()
+ 
   // self.displayButton(self.images.cashierButton)
     })
  /*
