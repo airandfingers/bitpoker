@@ -1,4 +1,4 @@
-   $("#chat_table").css('position','absolute')
+   $("#chat_table").css('display','none')
    $("#chat_table").css('top','1000px')
       function onKeyDown(event) {
 event.preventDefault() } 
@@ -1368,9 +1368,7 @@ var textX = radioX + radioWidth+distanceFromRadioToText
         $('#autoRebuyAmount').css('top', autoRebuyTextBoxY+'px')
 
 
-         console.log(document.getElementById('pokerTableWrapper'))
-          console.log(document.getElementById('pokerCanvasDiv'))
-        console.log(document.getElementById('cashierDiv'))
+          console.log(document.getElementById('chatDiv'))
 
         //iterate through cashierItems to create all texts
         for(var i in cashierItems){
@@ -1456,7 +1454,7 @@ this.displayChildren(this.images.background)
         this.images.setDefaults()
        this.images.setDefaultEvents()
        this.images.setDefaultMessages()
-   //    this.displayTableChatBox()
+      this.displayTableChatBox()
     }
      
 
@@ -1485,11 +1483,13 @@ this.displayChildren(this.images.background)
 
     this.displayTableChatBox = function (){
 
-var htmlTableChatBox = document.getElementById('tableChatBox')
-    htmlTableChatBox.style.display = 'inline'
-    htmlTableChatBox.style.position = 'absolute'
-    htmlTableChatBox.style.left = this.images.htmlTableChatBox.position.x + 'px'
-    htmlTableChatBox.style.top = this.images.htmlTableChatBox.position.y + 'px'
+$('#tableChatBox').css({
+ 'display'   : 'inline',
+ 'position' :  'absolute',
+ 'left'  : this.images.htmlTableChatBox.position.x + 'px',
+'top'  : this.images.htmlTableChatBox.position.y + 'px'
+})
+
 
     //emit chat if user pressed enter
  $('#tableChatBox').keypress(function(event){
@@ -2779,6 +2779,9 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
     if(_.isNull(messageInfo.buttonSizeAndFont)||_.isUndefined(messageInfo.buttonSizeAndFont)){messageInfo.buttonSizeAndFont = '13px Arial'}
      if(_.isNull(messageInfo.buttonTextColor)||_.isUndefined(messageInfo.buttonTextColor)){ messageInfo.buttonTextColor = '#000000'}
     if(_.isNull(messageInfo.buttonBackgroundColor)||_.isUndefined(messageInfo.buttonBackgroundColor)){ messageInfo.buttonBackgroundColor = '#0000FF'}
+    if(_.isNull(messageInfo.okatText)||_.isUndefined(messageInfo.Text)){ messageInfo.okayText = 'OK'}
+    if(_.isNull(messageInfo.cancelText)||_.isUndefined(messageInfo.cancelText)){ messageInfo.cancelText = 'Cancel'}
+
 
 
        //set button locations
@@ -2805,7 +2808,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
    //OK button
         self.images.messageBox[messageBoxImageContainerIndex].okay =  new self.images.Item (okayX,buttonY, buttonWidth,buttonHeight,messageBoxImageContainerIndex) 
         self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].okay, messageInfo.buttonBackgroundColor )
-        self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].okay, 'OK', messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
+        self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].okay, messageInfo.okayText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
             //asign messages if exists
             if(messageInfo.okayMessages){    
             self.images.messageBox[messageBoxImageContainerIndex].okay.messages = messageInfo.okayMessages}
@@ -2822,7 +2825,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         if(messageInfo.cancel){
         self.images.messageBox[messageBoxImageContainerIndex].cancel =  new self.images.Item (cancelX,buttonY, buttonWidth,buttonHeight,messageBoxImageContainerIndex) 
         self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].cancel, messageInfo.buttonBackgroundColor )
-        self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].cancel, 'Cancel', messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
+        self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].cancel, messageInfo.cancelText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
         //add message to cancel if available
         if(messageInfo.cancelMessages){
           self.images.messageBox[messageBoxImageContainerIndex].cancel.messages = messageInfo.cancelMessages
