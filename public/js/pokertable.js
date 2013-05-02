@@ -1,3 +1,7 @@
+   $("#chat_table").css('position','absolute')
+   $("#chat_table").css('top','1000px')
+   
+   
     //default canvas size is 690x480
     //all numbers are in base 0, including variable names and documentation
     //seat position 0 is top middle and proceeds clockwise
@@ -1151,7 +1155,7 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
 
         var textHeight = 13
         var distanceBetweenTextY = 5
-        var sizeAndFont = '12px arial'
+        var sizeAndFont = '11px arial'
         var textColor = '#000000'
 
          var outerTopHeight = 31
@@ -1177,12 +1181,12 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
 
         var textX = innerCashierX + textLeftOffset
 
-        var textBoxOffsetLeft = 120
+        var textBoxOffsetLeft = 135
         var textBoxOffsetRight = 23 //distance from right of textbox to edge of gray
-        var textBoxHeight = 20
-        var textBoxWidth = innerCashierX - textBoxOffsetLeft - textBoxOffsetRight
+        var textBoxHeight = textHeight
+        var textBoxWidth =  -  textBoxOffsetRight -  textBoxOffsetLeft + innerCashierWidth
        
-        var radioOffsetLeft = 23
+        var radioOffsetLeft = 21
         var radioWidth = 13
         var radioHeight = 13
         var distanceFromRadioToText = 6
@@ -1248,59 +1252,88 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
 
         var rowsUsed = 7
 
+        // pokerTableWrapper and canvas to absolute (won't wrk in css)
+        $("#pokerTableWrapper").css('position', 'absolute')
+         $("#pokerCanvasDiv").css('position', 'absolute')
+$("#cashierDiv").css('position', 'absolute')
+
+        
+
+        //use jquery to position divs to appropriate locations
+
         //use jquery to set appropriate sizes of text boxes
-       $("#cashier input[type='text']").css('width', textBoxWidth)
-       $("#cashier input[type='text']").css('height', textBoxHeight)
+       $("#cashier input[type='text']").css('width', textBoxWidth+'px')
+       $("#cashier input[type='text']").css('height', textBoxHeight+'px')
 
        //set all inputs to position absolute
- //      $("#cashier input[type='text']").css('position', 'absolute')
- //   $("#cashier input[type='radio']").css('position', 'absolute')
+    $("#cashier input[type='text']").css('position', 'absolute')
+  $("#cashier input[type='radio']").css('position', 'absolute')
+ $("#cashier p").css('position', 'absolute')
 
-
-        //set cashiers position as asolute
       $("#cashier").css('position', 'absolute')
+
+      //set text size and font
+      $("#cashier p").css('font',sizeAndFont)
+       $("#cashier input").css('font',sizeAndFont)
+        $("#cashier").children().css('font',sizeAndFont)
+          $("#cashier").children().css('margin-left','0px')
+           $("#cashier").children().css('margin-right','0px')
 
         //position first row of html elements below last row of text
         var radioX = innerCashierX + radioOffsetLeft
- var maxTextY = textRowY[rowsUsed]
+ var maxTextY = textRowY[rowsUsed-1] - textRowY[rowsUsed-2] + textRowY[rowsUsed-1]
 var textBoxX = innerCashierX + textBoxOffsetLeft
 var maxRadioY = maxTextY + textBoxHeight/2 - radioHeight/2
+var textX = radioX + radioWidth+distanceFromRadioToText
 
 //position max radio
      $('#maxRadio').css('left', radioX+'px')
-        $('#maxRadio').css('top', maxRadioY+'px')
-        
+       $('#maxRadio').css('top', maxRadioY+'px')
+       
+       //position max text 
+         $('#maxText').css('left', textX+'px')
+       $('#maxText').css('top', maxRadioY+'px')
+
         //position max textbox
                 $('#maxAmount').css('left', textBoxX+'px')
         $('#maxAmount').css('top', maxRadioY+'px')
 
-        var otherTextY = textRowY[rowsUsed+1]
+        var otherTextY = textRowY[rowsUsed-1] + 2*(textRowY[rowsUsed-1] - textRowY[rowsUsed-2])
         var otherRadioY = otherTextY + textBoxHeight/2 - radioHeight/2
 
         //position other amount radio
          $('#otherAmountRadio').css('left', radioX+'px')
         $('#otherAmountRadio').css('top', otherRadioY+'px')
+
+         //position other amount text
+         $('#otherAmountText').css('left', textX+'px')
+       $('#otherAmountText').css('top', otherRadioY+'px')
+
         
         //position other amount textbox
                 $('#otherAmount').css('left', textBoxX+'px')
         $('#otherAmount').css('top', otherTextY+'px')
 
-         var autoRebuyTextY = textRowY[rowsUsed+2]
+         var autoRebuyTextY = textRowY[rowsUsed-1] + 3*(textRowY[rowsUsed-1] - textRowY[rowsUsed-2])
         var autoRebuyRadioY = autoRebuyTextY + textBoxHeight/2 - radioHeight/2
-
 
         //position autorebuy radio
          $('#autoRebuyRadio').css('left', radioX+'px')
         $('#autoRebuyRadio').css('top', autoRebuyRadioY+'px')
+
+         //position autorebuyText
+         $('#autoRebuyText').css('left', textX+'px')
+       $('#autoRebuyText').css('top', autoRebuyRadioY+'px')
         
         //postion autorebuy textbox
                 $('#autoRebuyAmount').css('left', textBoxX+'px')
         $('#autoRebuyAmount').css('top', autoRebuyTextY+'px')
 
-$('#cashier').css('display', 'inline')
+console.log($('#pokerTableWrapper').css('position'))
+console.log($('#pokerCanvasDiv').css('position'))
          console.log(document.getElementById('pokerTableWrapper'))
-          console.log(document.getElementById('pokerTable'))
-        console.log(document.getElementById('cashier'))
+          console.log(document.getElementById('pokerCanvasDiv'))
+        console.log(document.getElementById('cashierDiv'))
 
         //iterate through cashierItems to create all texts
         for(var i in cashierItems){

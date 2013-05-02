@@ -10,19 +10,29 @@
             <button> God mode my Maobucks </button>
             </form>
         </span>
- <div id="pokerTable">
-       </div> <!-- pokerTable-->
+
+       
         <div id="pokerTableWrapper">
-           
+            <div id="pokerCanvasDiv">
                     <canvas id="canvas" width="690" height="480" style= 'z-index :0'></canvas>
-                   
+                   </div> <!-- pokerCanvasDiv-->
+            <div id="cashierDiv">
                 <form id = 'cashier' style='display: none'>    
-                       <input type = 'radio' id ="maxRadio" name = 'addChipsRadio' value="max" size="-4">max<input type = 'text' id="maxAmount"><br>
-            <input type = 'radio' id ="otherAmountRadio" name = 'addChipsRadio' >Other Amount: <input type = 'text' id="otherAmount"> <br>
-                      <input type = 'radio' id ="autoRebuyRadio" name = 'addChipsRadio' >Auto-Rebuy to: <input type = 'text' id="autoRebuyAmount" >     </form>      
-           <form id ="tableChatBox" style="display:none">
+                       <input type = 'radio' id ="maxRadio" name = 'addChipsRadio' value="max" size="-4">
+                    <p id = 'maxText'>Max</p>
+                    <input type = 'text' id="maxAmount">
+            <input type = 'radio' id ="otherAmountRadio" name = 'addChipsRadio' >
+                <p id = 'otherAmountText'>    Other Amount: </p>
+                    <input type = 'text' id="otherAmount"> 
+                      <input type = 'radio' id ="autoRebuyRadio" name = 'addChipsRadio' >
+                 <p id = 'autoRebuyText'>   Auto-Rebuy to: </p>
+                    <input type = 'text' id="autoRebuyAmount" >     </form>      
+            </div> <!-- cashier-->
+            <div id="chatDiv">
+                <form id ="tableChatBox" style="display:none">
            <input type = 'text' id="chat">
            </form>
+             </div> <!-- chat-->
                
         </div> <!-- poker table wrapper -->
             <!--include values to expose to scripts-->

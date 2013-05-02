@@ -1,33 +1,51 @@
 #pokerTableWrapper{
-    position: fixed;
-    
-}
-
-#pokerTable {
-	background-image:url(img/cashier_textbox_bg.jpg);
-	background-repeat:repeat-x;
-	border:1px solid #d1c7ac;
-	color:#333333;
-	padding:3px;
-	margin-right:4px;
-	margin-bottom:8px;
-	font-family:tahoma, arial, sans-serif;
-  
-    
-}
-#cashier{
     position: absolute;
-    z-index: 1;
     left: 0px;
     top: 0px;
 }
-#tableChatBox{
-    position: relative;
+
+#pokerCanvasDiv {
+    position: absolute;
+}
+#cashier{
+    background-image:url(img/cashier_textbox_bg.jpg);
+	background-repeat:repeat-x;
+	border:1px solid #d1c7ac;
+	color:#333333;
+    margin-right: 0px;
+	font-family:tahoma, arial, sans-serif;
+    position: absolute;
     z-index: 1;
+    display: none;
+}
+#chatDiv{
+    background-image:url(img/cashier_textbox_bg.jpg);
+	background-repeat:repeat-x;
+	border:1px solid #d1c7ac;
+	color:#333333;
+	margin-right:0px;
+	font-family:tahoma, arial, sans-serif;
+    position: absolute;
+    z-index: 1;
+    display: none;
+}
+#tableChatBox{
+    position: absolute;
+    z-index: 1;
+    display: none;
 }
 #maxRadio{
-    
+    position: absolute
 }
-#pokerTableWrapper>form>input{
-    position: relative;
+#otherAmountText {
+    position: absolute;
+}
+    #maxText {
+    position: absolute;
+}
+#autoRebuyText {
+    position: absolute;
+}
+#pokerTableWrapper{
+    
 }
