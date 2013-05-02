@@ -22,32 +22,35 @@
            <form id ="tableChatBox" style="z-index:1; display:none">
            <input type = 'text' id="chat">
            </form>
-                 </div>
-        </div> <!-- poker table wrapper -->
-            <!--include values to expose to scripts-->
-            <input type="hidden" id="server_values" data-table_state="<%= table_state %>" data-table_state_url="/table_state/<%= table_id %>" data-room_state="<%= room_state %>" />
-        <div id="options">
-            <input type="button" id="hideshow" value="hide/show" />
-            <div id="chat_table" class="chat_container">
-                <% include chat %>
-            </div>
         </div>
+        
+        </div> <!-- poker table wrapper -->
+        <input type="button" id="hideshow" value="hide/show" />
+        <div id="chat_table" class="chat_container">
+            <% include chat %>
+        </div>
+
+        <!--include values to expose to scripts-->
+        <input type="hidden" id="server_values"
+               data-table_state="<%= table_state %>"\
+               data-table_state_url="/table_state/<%= table_id %>"
+               data-room_state="<%= room_state %>"
+        />
+
         <% include plugins %>
         <script src="/js/chat.js"></script>
         <script src="/js/vendor/easeljs-0.6.0.min.js"></script>
-<script src="/js/vendor/soundjs-0.4.0.min.js"></script>
-<script src="/js/vendor/tweenjs-0.4.0.min.js"></script>
-<script src="/js/vendor/preloadjs-0.3.0.min.js"></script>
-<!--
-<script src="/js/vendor/preloadjs/AbstractLoader.js"></script>
-<script src="/js/vendor/preloadjs/LoadQueue.js"></script>
-<script src="/js/vendor/preloadjs/TagLoader.js"></script>
-<script src="/js/vendor/preloadjs/XHRLoader.js"></script>
-<script src="/js/vendor/easeljs/EventDispatcher.js"></script>
--->
-<script src="js/vendor/async.js"></script>
-
-
+        <script src="/js/vendor/soundjs-0.4.0.min.js"></script>
+        <script src="/js/vendor/tweenjs-0.4.0.min.js"></script>
+        <script src="/js/vendor/preloadjs-0.3.0.min.js"></script>
+        <!--
+        <script src="/js/vendor/preloadjs/AbstractLoader.js"></script>
+        <script src="/js/vendor/preloadjs/LoadQueue.js"></script>
+        <script src="/js/vendor/preloadjs/TagLoader.js"></script>
+        <script src="/js/vendor/preloadjs/XHRLoader.js"></script>
+        <script src="/js/vendor/easeljs/EventDispatcher.js"></script>
+        -->
+        <script src="/js/vendor/async.js"></script>
         <script src="/js/pokertable.js"></script>
 
 

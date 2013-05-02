@@ -186,8 +186,8 @@ h1 {
     padding: 0 2%;
 }
 
-#options {
-    margin: 0 5%;
+#hideshow {
+    margin: 0 5% 0 0;
 }
 
 #pokerTable {
@@ -197,7 +197,6 @@ h1 {
 }
 
 #pokerTableWrapper {
-    position: relative;
     height: 480px;
     width: 690px;
 }
