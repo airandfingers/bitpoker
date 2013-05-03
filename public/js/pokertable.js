@@ -17,6 +17,7 @@ window.onKeydown = onKeyDown
         this.canvas = document.getElementById('canvas')
         this.stage = new createjs.Stage(canvas)
         this.stage.eventsEnabled = true
+         this.stage.mouseEventsEnabled
         this.stage.enableMouseOver()
             this.events = {}
   this.imageData = {
@@ -357,12 +358,9 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
     }
 
      this.events.viewLobbyClick = function(event){
-        console.log('view lobby clicked')
-        console.log(event)
-       var  messageInfo = {}
-       messageInfo.cancel = true
-       messageInfo.okayEvent = window.close
-        self.displayMessageBox("Are you sure you want to leave?",messageInfo)
+
+
+        window.open("http://localhost:9000/lobby")
 
     }
 
@@ -545,21 +543,22 @@ this.initialize= function(){
     }
     for(var i = 2;i<=14;i++){
         var cardRank
-        if(i==11){cardRank = 'j'}
+           if(i==10){cardRank = 't'}
+      else  if(i==11){cardRank = 'j'}
      else   if(i==12){cardRank = 'q'}
 else if(i==13){cardRank = 'k'}
     else    if(i==14){cardRank = 'a'}
     else{cardRank = i}
-        fileSourceArray.push(this.images.sources.cardImageFolder+cardRank+'c.png')
-        fileSourceArray.push(this.images.sources.cardImageFolder+cardRank+'d.png')
-        fileSourceArray.push(this.images.sources.cardImageFolder+cardRank+'h.png')
-        fileSourceArray.push(this.images.sources.cardImageFolder+cardRank+'s.png')
+        fileSourceArray.push({src: this.images.sources.cardImageFolder+cardRank+'c.png', id: fileSourceArray.length-1})
+        fileSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'d.png', id: fileSourceArray.length-1})
+        fileSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'h.png', id: fileSourceArray.length-1})
+        fileSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'s.png', id: fileSourceArray.length-1})
     }
     console.log(fileSourceArray)
     // must set to false or wo't work.  dont know whay...
                 var preload = new createjs.LoadQueue(false)
-    preload.addEventListener("complete", handleComplete)
-     preload.addEventListener("fileload", handleFileLoad)
+  //  preload.addEventListener("complete", handleComplete)
+  //   preload.addEventListener("fileload", handleFileLoad)
    preload.loadManifest(fileSourceArray)
  //  createjs.Ticker.setFPS(30)
 
@@ -795,7 +794,6 @@ parentOfImageObject.text.x=parentOfImageObject.position.x + sideButtonCheckBoxWi
 parentOfImageObject.text.y=parentOfImageObject.position.y + 1
 parentOfImageObject.text.baseline = 'top'
 parentOfImageObject.text.textAlign = 'left'
-parentOfImageObject.text.maxWidth = parentOfImageObject.size.x - sideButtonCheckBoxWidth - sideButtonDistanceFromBoxToText
 parentOfImageObject.textColor = sideButtonTextColor
 }
 //off state
@@ -817,15 +815,12 @@ parentOfImageObject.textColor = sideButtonTextColor
         //draw rectangular shape
         var hitSquare = new createjs.Shape()
         hitSquare.graphics.beginFill('#FFFFFF').beginStroke(0)
-        .drawRect(parent.position.x, parent.position.y + sideButtonDistanceFromEdgeToInteriorHitAreaY, totalWidth, parent.size.y - sideButtonDistanceFromEdgeToInteriorHitAreaY*2)
+        .drawRect(0, sideButtonDistanceFromEdgeToInteriorHitAreaY, totalWidth, parent.size.y - sideButtonDistanceFromEdgeToInteriorHitAreaY)
         return hitSquare
       }
- //  sitout = drawHitArea(this.sitOutNextHand)
-  ////    this.containers[13].addChild(drawHitArea(this.foldToAnyBet))
- //     this.containers[13].addChild(drawHitArea(this.sitOutNextHand))
-   //   this.containers[13].addChild(drawHitArea(this.sitOutNextBigBlind))
+
                     //hit areas
- /*      this.foldToAnyBet.image.hitArea =  drawHitArea(this.foldToAnyBet)
+      this.foldToAnyBet.image.hitArea =  drawHitArea(this.foldToAnyBet)
         this.sitOutNextHand.image.hitArea = drawHitArea(this.sitOutNextHand)
           this.sitOutNextBigBlind.image.hitArea  = drawHitArea(this.sitOutNextBigBlind)
      
@@ -833,7 +828,7 @@ parentOfImageObject.textColor = sideButtonTextColor
                   this.sitOutNextHandOn.image.hitArea = drawHitArea(this.sitOutNextHandOn)
                     this.sitOutNextBigBlindOn.image.hitArea = drawHitArea(this.sitOutNextBigBlindOn)
 
-                    */
+                    
 
       //onclick
        this.foldToAnyBet.image.onclick =  self.events.onButtonClick
@@ -1112,11 +1107,11 @@ self.images.seats[i].chat.text.x=self.images.seats[i].chat.position.x +  self.im
         this.itemAsRectangle(this.bet, 'red')
         this.addItemText(this.bet, 'bet','12px Arial','#000000')
 
-        this.fold = self.events.onButtonClick
-        this.call  = self.events.onButtonClick
-        this.check = self.events.onButtonClick
-         this.raise  = self.events.onButtonClick
-         this.bet  = self.events.onButtonClick
+        this.fold.image.onClick = self.events.onButtonClick
+        this.call.image.onClick  = self.events.onButtonClick
+        this.check.image.onClick = self.events.onButtonClick
+         this.raise.image.onClick  = self.events.onButtonClick
+         this.bet.image.onClick  = self.events.onButtonClick
 
         //-----------------bet slider-----------------------------
               this.betSlider.horizontal = new this.Item (horizontalBetSliderX,canvasHeight-horizontalBetSliderOffsetBottom-horizontalBetSliderHeight,horizontalBetSliderWidth,horizontalBetSliderHeight,self.gameState.containerImageIndexes.button)
@@ -1164,9 +1159,9 @@ var betSizeY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.si
          height:31
      },
      animations: {
-         mouseOut: [0],
-         mouseOver: [1],
-         mouseDown: [2]
+         mouseOut:0,
+         mouseOver: 1,
+         mouseDown: 2
      }
 }
 
@@ -1184,15 +1179,15 @@ this.cashierButton.button = new createjs.ButtonHelper(this.cashierButton.bitmapA
    this.itemAsBitmap(this.viewLobby, this.sources.viewLobby)
    //define shape for hit area of  viewLobby
    var viewLobbyHit = new createjs.Shape()
-   var topY = this.viewLobby.position.y + viewLobbyHitAreaTopOffset
-   var bottomY = this.viewLobby.position.y+ this.viewLobby.size.y - viewLobbyHitAreaBottomOffset
+   var topY = viewLobbyHitAreaTopOffset
+   var bottomY = this.viewLobby.size.y - viewLobbyHitAreaBottomOffset
 
 viewLobbyHit.graphics.beginFill('white').setStrokeStyle(2).beginStroke('#000000')
-.moveTo(this.viewLobby.position.x+viewLobbyHitAreaUpperLeftOffsetX, topY)
-.lineTo(this.viewLobby.position.x+viewLobbyHitAreaLowerLeftOffsetX, bottomY)
-.lineTo(this.viewLobby.position.x+this.viewLobby.size.x-viewLobbyHitAreaRightOffset, bottomY)
-.lineTo(this.viewLobby.position.x+ this.viewLobby.size.x-viewLobbyHitAreaRightOffset, topY)
-.lineTo(this.viewLobby.position.x+viewLobbyHitAreaUpperLeftOffsetX, topY)
+.moveTo(viewLobbyHitAreaUpperLeftOffsetX, topY)
+.lineTo(viewLobbyHitAreaLowerLeftOffsetX, bottomY)
+.lineTo(this.viewLobby.size.x-viewLobbyHitAreaRightOffset, bottomY)
+.lineTo(this.viewLobby.size.x-viewLobbyHitAreaRightOffset, topY)
+.lineTo(viewLobbyHitAreaUpperLeftOffsetX, topY)
 this.viewLobby.image.hitArea = viewLobbyHit
 this.viewLobby.image.onClick = self.events.viewLobbyClick
 
@@ -1200,18 +1195,15 @@ this.viewLobby.image.onClick = self.events.viewLobbyClick
  this.getChips = new this.Item(0, 0, getChipsWidth, getChipsHeight, self.gameState.containerImageIndexes.button, ['get_add_chips_info'])
  this.itemAsBitmap(this.getChips, this.sources.getChips)
 
-
   //define shape of hit area
     var getChipsHit = new createjs.Shape()
-   var topY = this.getChips.position.y + getChipsHitAreaTopOffset
-   var bottomY = this.getChips.position.y+ this.getChips.size.y - getChipsHitAreaBottomOffset
 
-getChipsHit.graphics.beginFill('white').beginStroke('#000000')
-.moveTo(this.getChips.position.x+getChipsHitAreaLeftOffset, topY)
-.lineTo(this.getChips.position.x+getChipsHitAreaLeftOffset, bottomY)
-.lineTo(this.getChips.position.x+this.getChips.size.x-getChipsHitAreaLowerRightOffset, bottomY)
-.lineTo(this.getChips.position.x+ this.getChips.size.x-getChipsHitAreaUpperRightOffset, topY)
-.lineTo(this.getChips.position.x+getChipsHitAreaLeftOffset, topY)
+getChipsHit.graphics.beginFill('#000000')
+.moveTo(getChipsHitAreaLeftOffset, getChipsHitAreaTopOffset)
+.lineTo(getChipsHitAreaLeftOffset, this.getChips.size.y-getChipsHitAreaBottomOffset)
+.lineTo(this.getChips.size.x-getChipsHitAreaLowerRightOffset, this.getChips.size.y-getChipsHitAreaBottomOffset)
+.lineTo(this.getChips.size.x-getChipsHitAreaUpperRightOffset, getChipsHitAreaTopOffset)
+.lineTo(getChipsHitAreaLeftOffset, getChipsHitAreaTopOffset)
 //    this.containers[13].addChild(getChipsHit)
   this.getChips.image.hitArea = getChipsHit
    this.getChips.image.onClick = self.events.onButtonClick
@@ -1220,33 +1212,17 @@ getChipsHit.graphics.beginFill('white').beginStroke('#000000')
  this.exitTable = new this.Item(canvasWidth - exitTableWidth, viewLobbyHeight, exitTableWidth, exitTableHeight, self.gameState.containerImageIndexes.button)
    this.itemAsBitmap(this.exitTable, this.sources.exitTable)
    //define shape of hit area
-    var exitTableHit = new createjs.Shape()
-   var topY = this.exitTable.position.y + exitTableHitAreaTopOffset
-   var bottomY = this.exitTable.position.y+ this.exitTable.size.y - exitTableHitAreaBottomOffset
-   var exitX1 = this.exitTable.position.x+exitTableHitAreaUpperLeftOffsetX
-   var exitX2 = this.exitTable.position.x+exitTableHitAreaLowerLeftOffsetX
-   var exitX3 = this.exitTable.position.x+ this.exitTable.size.x-exitTableHitAreaRightOffset
- /*  console.log(topY)
-   console.log(bottomY)
-   console.log(exitX1)
-   console.log(exitX2)
-   console.log(exitX3) */
 
-exitTableHit.graphics.beginFill('black').beginStroke('#000000')
-.moveTo(this.exitTable.position.x+ this.exitTable.size.x-exitTableHitAreaRightOffset, topY)
-.lineTo(this.exitTable.position.x+this.exitTable.size.x-exitTableHitAreaRightOffset, bottomY)
-.lineTo(this.exitTable.position.x+exitTableHitAreaLowerLeftOffsetX, bottomY)
-.lineTo(this.exitTable.position.x+exitTableHitAreaUpperLeftOffsetX, topY)
-.closePath().endFill()
-exitTableHit.alpha = 0
+   var exitTableHit = new createjs.Shape(new createjs.Graphics()
+.beginFill('#000000')
+.moveTo(this.exitTable.size.x-exitTableHitAreaRightOffset, exitTableHitAreaTopOffset)
+.lineTo(this.exitTable.size.x-exitTableHitAreaRightOffset, this.exitTable.size.y - exitTableHitAreaBottomOffset)
+.lineTo(exitTableHitAreaLowerLeftOffsetX, this.exitTable.size.y - exitTableHitAreaBottomOffset)
+.lineTo(exitTableHitAreaUpperLeftOffsetX, exitTableHitAreaTopOffset)
+.closePath())
 // .lineTo(this.exitTable.position.x+ this.exitTable.size.x-exitTableHitAreaRightOffset, topY)
-this.containers[3].addChild(exitTableHit)
-var hit = new createjs.Shape()
-hit.graphics.beginFill('black').beginStroke('#000000')
-.drawRect(exitX1, topY, exitX3-exitX1, bottomY-topY)
 
-//this.containers[13].addChild(hit)
-//  this.exitTable.image.hitArea = exitTableHit
+ this.exitTable.image.hitArea = exitTableHit
 this.exitTable.image.onClick = self.events.exitTableClick
 
         //----------------not in hand action buttons------------------
@@ -1259,7 +1235,7 @@ this.addItemText(this.sitIn,'Deal Me In','10px Arial','white')
  this.itemAsRectangle(this.rebuy,'black')
 this.addItemText(this.rebuy,'Get Chips','10px Arial','white')
 this.sitIn.image.onClick = self.events.onButtonClick
-this.rebuy  = self.events.onButtonClick
+this.rebuy.image.onClick  = self.events.onButtonClick
 
 //========================4 color deck sprite sheet=============================
 
@@ -2171,7 +2147,7 @@ callback(null, callBackNumber)
 
     this.hideSeatedOptions=function(){
         this.hideInHandOptions()
-        this.hideChildren(this.images.stand)
+      //  this.hideChildren(this.images.stand)
          this.hideChildren(this.images.rebuy)
  this.hideChildren(this.images.sitIn)
     }
@@ -2764,7 +2740,7 @@ self.displayCorrectSeatMessage(seatNumber)
     }
     
     this.hideCashier = function(){
-        console.log('hidecashier called')
+
         //enable TableChatBox
         if($('#chat').attr("readonly") == true||'readonly'){
             self.gameState.tableChatBox.display = false
@@ -2791,8 +2767,7 @@ self.displayCorrectSeatMessage(seatNumber)
     this.hideMessageBox = function(){
 
         self.hideChildren(self.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex])
-        if(self.gameState.messageBox.messageBoxImageContainerIndex == self.gameState.containerImageIndexes.initialMessageBox){
-            
+        if(self.gameState.messageBox.messageBoxImageContainerIndex == self.gameState.containerImageIndexes.initialMessageBox){     
             
         if(self.gameState.cashier.display === true){
             $('#cashier').css('display','inline')
@@ -2822,9 +2797,10 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         //check if this is the first(bottom) messagebox displayed
         if(messageBoxImageContainerIndex == this.gameState.containerImageIndexes.initialMessageBox){
        //hide html cashier(if visible)
-       if( $('cashier').is('visible')){
+       if( $('#maxRadio').is(':visible')){
+           console.log('cashier being hidden')
        self.gameState.cashier.display = true
-       $('cashier').css('display', 'none')
+       $('#cashier').css('display', 'none')
        }
        else{self.gameState.cashier.display = false}
        
@@ -2970,6 +2946,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         
 
       var cashierImageContainerIndex = this.gameState.containerImageIndexes.cashier
+
 
       //disable tableChatBox
 
@@ -3122,7 +3099,7 @@ this.restoreActiveContainers=function(activeContainerArray){
          this.gameState.userSeatNumber = table_state.seats[i].seat 
 
          //show options available if player is user
-         self.displayChildren(self.images.stand)
+      //   self.displayChildren(self.images.stand)
          self.displayChildren(self.images.getChips)
          self.displayChildren(self.images.sitOutNextHand)
 
@@ -3238,9 +3215,9 @@ function(next){
     //error received
        socket.on('error', function(errorString){
            var messageInfo = {}
-           messageInfo.message = errorString
+          errorString
            messageInfo.okay = true
-            self.displayMessageBox(messageInfo)
+            self.displayMessageBox(errorString, messageInfo)
                 
 })
         
@@ -3346,7 +3323,7 @@ self.playerToAct(self.gameState.userSeatNumber)
          }
       else   if (actions[i].call){
              self.images.call.text.text = 'Call '+actions[i].call
-         self.displayChildren(holdemCanvas.images.call,false,['act','call',actions[i].call])
+         self.displayChildren(self.images.call,false,['act','call',actions[i].call])
          }
        else  if (actions[i].raise){
          self.displayChildren(self.images.raise,'raise to '+actions[i].raise[0],['act','raise', actions[i].raise[0]])
@@ -3467,9 +3444,9 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
         if(is_you == true){
             self.gameState.userSeatNumber = player.seat
             socket.emit('get_add_chips_info')
-            self.displayChildren(self.images.stand, false, ['stand'])
+      //      self.displayChildren(self.images.stand, false, ['stand'])
             self.displayChildren(self.images.getChips)
-        self.displayChildren(self.images.stand)
+     //   self.displayChildren(self.images.stand)
 
         //refresh open seats to disabled seats
         for (var i = 0;i<self.images.seats.length;i++){self.displayCorrectSeatMessage(i) }
@@ -3566,7 +3543,6 @@ jQuery(window).load(function (){
    holdemCanvas.receiveTableState()
              console.log(document.getElementById('chatDiv'))
              console.log(document.getElementById('cashierDiv'))
- 
 
     })
  /*
