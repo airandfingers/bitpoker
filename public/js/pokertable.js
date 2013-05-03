@@ -26,9 +26,11 @@ window.onKeydown = onKeyDown
   }
   this.userPreferences = {
       
+
       bigBlindsPerHorizontalSliderTick : 3,
       timePerHorizontalSliderTick: 500,
-      animate: true
+      animate: true,
+      chatTextColor: '#FFFFFF'
 
   }
         this.gameState = {}
@@ -67,13 +69,13 @@ window.onKeydown = onKeyDown
      }
 
           this.images.sources = {
-            call: 'img/call.jpg',
-            check: 'img/check.jpg',
-            raise: 'img/raise.jpg',
+       //     call: 'img/call.jpg',
+       //     check: 'img/check.jpg',
+       //     raise: 'img/raise.jpg',
             hiddenCardFileName: 'back.png',
             seat: 'img/empty_seat.jpg',
-            blankSeat : 'img/blank_seat.jpg',
-            bet: 'img/bet.jpg',
+      //      blankSeat : 'img/blank_seat.jpg',
+       //     bet: 'img/bet.jpg',
             community: 'img/card_back.jpg',
             fold: 'img/fold.jpg',
             sideButton :'img/side_button.jpg',
@@ -297,7 +299,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
     //=======unfocus tableChatBox==================
     this.events.unfocusChatBox = function(event){
         
-         $('#tableChatBox').blur()
+         $('#chat').blur()
 
     }
 
@@ -643,8 +645,9 @@ this.images.setDefaults = function(){
 
             var htmlTableChatBoxLeftOffset = 20
             var htmlTableChatBoxBottomOffset = 20
-            var htmlTableChatBoxWidth = 65
+            var htmlTableChatBoxWidth = 135
             var htmlTableChatBoxHeight = 20
+            var htmlTableChatBoxReminderTextColor = 'rgb(215,215,215)'
 
             var verticalBetSliderWidth = 6
             var verticalBetSliderHeight = 13            
@@ -715,9 +718,46 @@ this.images.setDefaults = function(){
               this.pots[0].secondColumnChip = new this.Item(this.pots[0].firstChip.position.x+chipDiameter+self.imageData.distanceBetweenChipColumns,this.pots[0].firstChip.position.y,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
 
               //---------------------player chat input---------------
-              this.htmlTableChatBox = new this.Item(htmlTableChatBoxLeftOffset,canvasHeight - htmlTableChatBoxBottomOffset,htmlTableChatBoxWidth,htmlTableChatBoxHeight,self.gameState.containerImageIndexes.button)
-           
+              this.htmlTableChatBox = new this.Item(htmlTableChatBoxLeftOffset,canvasHeight - htmlTableChatBoxBottomOffset-htmlTableChatBoxHeight,htmlTableChatBoxWidth,htmlTableChatBoxHeight,self.gameState.containerImageIndexes.button)
+var defaultMessage = 'Type here to chat'
+$('#chat').val(defaultMessage)
+$('#chat').css('color', htmlTableChatBoxReminderTextColor)
 
+//remove reminder text when clicked
+$('#chat').focusin(function(){
+    if($('#chat').val() == defaultMessage){
+    $('#chat').val('')
+$('#chat').css('color', self.userPreferences.chatTextColor)}
+})
+
+//redisplay reminder text ONLY if text value is only spaces or nothing
+$('#chat').focusout(function(){
+ //   console.log($('#chat').val())
+  //  console.log(/\S/.test($('#chat').val()))
+    //check if there is charaters inside text field
+    if (/\S/.test($('#chat').val())){}
+   else{
+   $('#chat').val('Type here to chat')
+$('#chat').css('color', htmlTableChatBoxReminderTextColor)
+ }
+//deselect all text inside the textboxf
+//$('#chat').attr('selectionStart',0)
+//$('#chat').attr('selectionEnd',0)
+//remove focus from chatbox
+//$('#chat').blur()
+})
+
+
+$('#chat').css({
+ 'position' :  'absolute',
+ 'left'  : this.htmlTableChatBox.position.x + 'px',
+'top'  : this.htmlTableChatBox.position.y + 'px',
+'width' : this.htmlTableChatBox.size.x + 'px',
+'height' : this.htmlTableChatBox.size.y + 'px',
+'padding': '0px',
+'margin':'0px'
+ // 'background-color': 'rgb(200,200,200)'
+})
 
            //--------side buttons---------------------
             this.leftSideButtons[0].button = new this.Item(7.5,419,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button)
@@ -1368,7 +1408,7 @@ var textX = radioX + radioWidth+distanceFromRadioToText
         $('#autoRebuyAmount').css('top', autoRebuyTextBoxY+'px')
 
 
-          console.log(document.getElementById('chatDiv'))
+
 
         //iterate through cashierItems to create all texts
         for(var i in cashierItems){
@@ -1483,37 +1523,34 @@ this.displayChildren(this.images.background)
 
     this.displayTableChatBox = function (){
 
-$('#tableChatBox').css({
- 'display'   : 'inline',
- 'position' :  'absolute',
- 'left'  : this.images.htmlTableChatBox.position.x + 'px',
-'top'  : this.images.htmlTableChatBox.position.y + 'px'
+$('#chat').css({
+ 'display'   : 'inline'
 })
 
 
     //emit chat if user pressed enter
- $('#tableChatBox').keypress(function(event){
+ $('#chat').keypress(function(event){
       var keycode = (event.keyCode ? event.keyCode : event.which)
     if(keycode == '13') {    
-        socket.emit('chat', $("#tableChatBox").val())
-        $("#tableChatBox").val('')
+        socket.emit('chat', $("#chat").val())
+        $("#chat").val('')
+        $('#chat').focus()
         }
     })
     }
 
     this.disableTableChatBox = function(){
-         $('#tableChatBox').attr("readonly", true)
+         $('#chat').attr("readonly", true)
     }
 
     this.enableTableChatBox = function(){
         
-        $('#tableChatBox').attr("readonly", false)
+        $('#chat').attr("readonly", false)
     }
 
     this.hideTableChatBox = function(){
 
-        var htmlTableChatBox = document.getElementById('tableChatBox')
-    htmlcashier.style.display = 'none'
+ $('#chat').attr("display", none)
 
     }
 
@@ -2649,9 +2686,9 @@ self.displayCorrectSeatMessage(seatNumber)
     this.hideCashier = function(){
 
         //enable TableChatBox
-        if($('#tableChatBox').attr("readonly") == true){
-            this.gameState.tableChatBox.display = false
-       this.enableTableChatBox()
+        if($('#chat').attr("readonly") == true||'readonly'){
+            self.gameState.tableChatBox.display = false
+       self.enableTableChatBox()
        }
 
                 self.hideChildren(self.images.cashier)
@@ -2680,7 +2717,7 @@ self.displayCorrectSeatMessage(seatNumber)
         if(self.gameState.messageBox.messageBoxImageContainerIndex == self.gameState.containerImageIndexes.initialMessageBox){
             
 
-        if(self.gameState.cashier.display === true){
+        if(self.gameState.cashier.display === true || 'readonly'){
             var htmlcashier = document.getElementById('cashier')
            htmlcashier.style.display = 'inline'
         }
@@ -2719,7 +2756,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
        else{self.gameState.cashier.display = false}
        
        //check if tableChatBox is readonly
-      if($('#tableChatBox').attr("readonly") == true){}
+      if($('#chat').attr("readonly") == true){}
       else{
        this.gameState.tableChatBox.display = true
        this.disableTableChatBox()
@@ -3447,6 +3484,8 @@ jQuery(window).load(function (){
      
     holdemCanvas.createAllItems()
    holdemCanvas.receiveTableState()
+             console.log(document.getElementById('chatDiv'))
+             console.log(document.getElementById('cashierDiv'))
  
   // self.displayButton(self.images.cashierButton)
     })

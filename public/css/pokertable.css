@@ -18,22 +18,20 @@
     z-index: 1;
     text-align: left;
 }
-#chatDiv{
-    background-image:url(img/cashier_textbox_bg.jpg);
-	background-repeat:repeat-x;
-	border:1px solid #d1c7ac;
-	color:#333333;
+#chatDiv input[type = 'text']{
+   background: transparent url('img/chat_bg.jpg') no-repeat;
+	border:0;
+	color : #747862;
 	margin-right:0px;
 	font-family:tahoma, arial, sans-serif;
     position: absolute;
     z-index: 1;
     display: none;
+    color: #FFFFFF;
+    border: 1px solid #FFFFFF;
+    border-radius: 0px;
 }
-#tableChatBox{
-    position: absolute;
-    z-index: 1;
-    display: none;
-}
+
 #maxRadio{
     position: absolute
 }
