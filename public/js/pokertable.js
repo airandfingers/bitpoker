@@ -243,14 +243,13 @@ this.events.buttonMouseDown = function(event){
         event.target.graphics.beginFill(event.target.parentOfImageObject.fillColor).drawRoundRect(event.target.parentOfImageObject.position.x, event.target.parentOfImageObject.position.y, event.target.parentOfImageObject.size.x, event.target.parentOfImageObject.size.y,event.target.parentOfImageObject.size.y*.15); 
 event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.position.y
      self.stage.update()
-
      }
      }
      }
       
   this.events.onButtonClick = function(event){
         socket.emit.apply(socket, event.target.parentOfImageObject.messages)
-        if(event.target.parentOfImageObject.messages2){socket.emit.apply(socket, event.target.parentOfImageObject.messages)}
+        if(event.target.parentOfImageObject.otherMessages){socket.emit.apply(socket, event.target.parentOfImageObject.otherMessages)}
     }
   
     this.events.foldToAnyBetClick = function(event){
@@ -258,6 +257,12 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
         socket.emit('set flag','fold',true)
         socket.emit('set flag','check',true)
 
+    }
+
+    this.events.foldToAnyBetOnClick =function (event){
+        
+        socket.emit('set flag','fold',false)
+        socket.emit('set flag','check',false)
 
     }
 
@@ -341,13 +346,10 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
         onMouseUp = function(event){
             
-
         }
 
     }
     */
-    
-
 
     this.events.exitTableClick = function(event){
        var  messageInfo = {}
@@ -359,7 +361,6 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
      this.events.viewLobbyClick = function(event){
 
-
         window.open("http://localhost:9000/lobby")
 
     }
@@ -368,7 +369,6 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
           var win = window.open('', '_self')
           win.close()
     }
-
 
      //===============START BET SLIDER===================
 
@@ -410,7 +410,6 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
              //if slider is too far to the right adjust to maximum
              if(self.images.betSlider.vertical.image.x>maxX){
                  self.images.betSlider.vertical.image.x=maxX
-               
              }
              adjustBetSize()
 
@@ -489,9 +488,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
     else if(self.stage.contains(self.images.raise.text)){
         self.images.raise.text.text = 'Raise to '+roundedBet
     self.images.raise.messages = ['act','raise',roundedBet]}
-    
   self.stage.update()
-     
   }
  
 
@@ -501,7 +498,6 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
          roundedBet = self.gameState.maxBet}
   else if(event.stageX<minX){
       event.target.x = minX
-      event.target.graphics.beginFill('blue').drawRect(minX,event.target.parentOfImageObject.position.y,event.target.parentOfImageObject.size.x,event.target.parentOfImageObject.size.y)
   roundedBet = self.gameState.minBet}
 
     //if mouse is inside the dimensions of the horizontal slider, proportionally display bet size
@@ -510,7 +506,6 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
       betSizePercent = (event.stageX-minX)/(maxX-minX)
       unroundedBetAmount =  betSizePercent*(self.gameState.maxBet-self.gameState.minBet)+self.gameState.minBet
       roundedBet = Math.round(unroundedBetAmount/self.gameState.minIncrement)*self.gameState.minIncrement
-
   }
    self.images.betSlider.betSize.text.text = roundedBet
    if(self.stage.contains(self.images.bet.text)){self.images.bet.text.text = 'Bet '+roundedBet}
@@ -518,8 +513,6 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
   self.stage.update()
 
  }
- 
-
  }
   //=============END BET SLIDER===================
 
@@ -563,7 +556,6 @@ else if(i==13){cardRank = 'k'}
  //  createjs.Ticker.setFPS(30)
 
    var handleFileLoad=  function  (event){
-       
        console.log(event.item.src)
    }
 
@@ -571,8 +563,6 @@ else if(i==13){cardRank = 'k'}
                console.log('loading completed')
           //  self.createAllItems()
         }
-
-
 }
 
 
@@ -771,12 +761,26 @@ $('#chat').css({
  // 'background-color': 'rgb(200,200,200)'
 })
 
+    //emit chat if user pressed enter
+ $('#chat').keypress(function(event){
+      var keycode = (event.keyCode ? event.keyCode : event.which)
+    if(keycode == '13') {    
+        socket.emit('chat', $("#chat").val())
+        $("#chat").val('')
+        $('#chat').focus()
+        }
+    })
+
            //--------standard pre-action buttons---------------------
-          this.foldToAnyBet = new  this.Item(sideButtonOffSetLeft,this.htmlTableChatBox.position.y-  sideButtonDistanceFromChat - 3*sideButtonHeight-2*sideButtonDistanceY,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button)
+          this.foldToAnyBet = new  this.Item(sideButtonOffSetLeft,this.htmlTableChatBox.position.y-  sideButtonDistanceFromChat - 3*sideButtonHeight-2*sideButtonDistanceY,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button, ['set_flag','check',true])
+         this.foldToAnyBet.otherMessages = ['set_flag','fold',true]
           this.sitOutNextHand = new  this.Item(sideButtonOffSetLeft,this.htmlTableChatBox.position.y -  sideButtonDistanceFromChat- 2*sideButtonHeight - sideButtonDistanceY,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button, ['sit_out'])
         this.sitOutNextBigBlind =  new this.Item(sideButtonOffSetLeft,this.htmlTableChatBox.position.y-  sideButtonDistanceFromChat- sideButtonHeight,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button, ['set_flag', 'receive_hole_cards', false])
+               
+               
                 //define on versions
-                  this.foldToAnyBetOn =  new this.Item(this.foldToAnyBet.position.x,this.foldToAnyBet.position.y, this.foldToAnyBet.size.x,this.foldToAnyBet.size.y,self.gameState.containerImageIndexes.button)
+                  this.foldToAnyBetOn =  new this.Item(this.foldToAnyBet.position.x,this.foldToAnyBet.position.y, this.foldToAnyBet.size.x,this.foldToAnyBet.size.y,self.gameState.containerImageIndexes.button, ['set_flag','fold',false])
+                   this.foldToAnyBet.otherMessages = ['set_flag','check',false]
           this.sitOutNextHandOn = new  this.Item(this.sitOutNextHand.position.x,this.sitOutNextHand.position.y, this.sitOutNextHand.size.x,this.sitOutNextHand.size.y,self.gameState.containerImageIndexes.button, ['sit_in'])
         this.sitOutNextBigBlindOn = new  this.Item(this.sitOutNextBigBlind.position.x,this.sitOutNextBigBlind.position.y, this.sitOutNextBigBlind.size.x,this.sitOutNextBigBlind.size.y,self.gameState.containerImageIndexes.button, ['set_flag', 'receive_hole_cards', true])
         
@@ -1584,15 +1588,6 @@ $('#chat').css({
 })
 
 
-    //emit chat if user pressed enter
- $('#chat').keypress(function(event){
-      var keycode = (event.keyCode ? event.keyCode : event.which)
-    if(keycode == '13') {    
-        socket.emit('chat', $("#chat").val())
-        $("#chat").val('')
-        $('#chat').focus()
-        }
-    })
     }
 
     this.disableTableChatBox = function(){
@@ -1707,11 +1702,8 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
         else if( chips == 0){
              this.images.seats[seatNumber].status.text.text =  'adding chips'
         }
-
-           
+       
         this.displayCorrectSeatMessage(seatNumber)
-
-
     }
 
     this.hideBet = function (seatNumber){
@@ -1726,7 +1718,7 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
     }
 
    //this.images.seats[i] is parent for players bets, this.images.pots[i] is parent for pots
-    this.displayChipStack = function(chipAmount,parentOfChipArray, initialX, initialY){
+    this.displayChipStack = function(chipAmount,parentOfChipArray, initialX, initialY, distanceBetweenColumns){
         //remove previous chips
         this.hideChildren(parentOfChipArray.chips)
         //reset chip array from memory
@@ -1735,9 +1727,11 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
         var y = initialY
         var chipIncrementY = this.images.pots[0].secondChip.position.y-this.images.pots[0].firstChip.position.y
         var totalChips = 0
-
-                    var distanceBetweenColumns = parentOfChipArray.secondColumnChip.position.x-parentOfChipArray.firstChip.position.x
-
+        if(_.isNull(distanceBetweenColumns)||_.isUndefined(distanceBetweenColumns)){
+            if(!_.isNull(parentOfChipArray.secondColumnChip.position.x) && !_.isUndefined(parentOfChipArray.secondColumnChip.position.x)&&!_.isNull(parentOfChipArray.firstChip.position.x)&&!_.isUndefined(parentOfChipArray.firstChip.position.x))
+            {
+                    var distanceBetweenColumns = parentOfChipArray.secondColumnChip.position.x-parentOfChipArray.firstChip.position.x}
+                    }
 
         while(chipAmount>=1){
             if(chipAmount>=10000){
@@ -1949,6 +1943,7 @@ clearInterval(imageAnimation)
 }, interval)
 
  }
+
  //get Width of a line of text from its parent Item, returns [width, fontSize]
  this.getTextWidthAndFontSize = function (parentOfTextObject, fontSize){
      if(parentOfTextObject instanceof this.images.Item){
@@ -1965,6 +1960,7 @@ clearInterval(imageAnimation)
      var textData = context.measureText(parentOfTextObject.text.text)
      return [textData.width, fontSize]
  }
+
  //must include false or undefined slots for already dealt cards
  this.dealCommunity = function (communityArray){
      
@@ -2268,7 +2264,7 @@ this.addChildToContainer(parentOfImageObject.image, parentOfImageObject.position
         }
  }
 
- this.hideAllActionButtons=function(seatNumber){
+ this.hideAllActionButtons =function(){
 this.hideChildren(this.images.fold)
 this.hideChildren(this.images.call)
 this.hideChildren(this.images.check)
@@ -2304,6 +2300,114 @@ this.hideChildren(this.images.betSlider)
 
  }
 
+ this.winners = function (pots, players){
+     // player is array, so players[i].win = array[amountWon, amountWon]
+      var animationTime = 800
+      var timeBetweenAnimations = 400
+      var timeAtEnd = 700
+        var ticks = 40
+        var chipStacks = []
+        for(var i = 0;i<players.length;i++)
+        {
+            chipStacks.push([])
+        }
+        var callbackNumber = 0
+        //push animateImages into an array
+       // we want to end up with an array of these for each pot: [seatNumber, amount]
+       var potWinners = []
+       var temporaryStacks = []
+    var potIntoChipAnimationArray = []
+    var callbacks = []
+    var finalArray = []
+   var chipsInFrontOfPlayer =[]
+    for(var i =0;i<self.images.seats.length;i++){
+    chipsInFrontOfPlayer.push(0)}
+       for(var i=0;i<pots.length;i++){
+           //increase the length of data array to match number of pots
+          potWinners.push([])
+          //increase the length of animation array to match number of pots
+           potIntoChipAnimationArray.push([])
+           for(var n=0;n<players.length;n++){
+              var winnings =  players[n].win[i]
+              if(amountWon>0){potWinners[i].push({seat:players[n].seat, amountWon: winnings, id:temporaryStacks.length })}
+               temporaryStacks.push([])
+           }
+       }
+
+       //now we create arrays of functions for animations FROM pot TO player
+        _.each(_.range(potWinners), function(potNumber) {
+            var callID = 0
+            //skip pot if empty
+            if(!_.isEmpty(potWinners[potNumber])){
+                callbacks.push({callback:{}})
+                //iterate through all the data of winners in  potWinners[potNumber]
+                _.each(potWinners[potNumber], function(i) {
+                    //calculate distance each trip will travel based on bottom chip
+                var animationDistanceX = self.images.seats[potWinners[potNumber][i].seat].firstChip.position.x - self.images.pots[potNumber].firstChip.position.x 
+                var animationDistanceY = self.images.seats[potWinners[potNumber][i].seat].firstChip.position.y - self.images.pots[potNumber].firstChip.position.y 
+                //calculate distance between first and second chip column
+                var columnDistance = self.images.seats[potWinners[potNumber][i].seat].secondColumnChip.position.x - self.images.seats[potWinners[potNumber][i].seat].firstChip.position.x 
+
+                //display chips in pot
+                self.displayChipStack(potWinners[potNumber][i.amountWon], temporaryStacks[potWinners[potNumber][i].id], self.images.pots[potNumber].firstChip.position.x, self.images.pots[potNumber].firstChip.position.y, columnDistance)
+                //iterate through chipstack to push animations of each chip into an array
+                _.each(_.range(temporaryStacks[potWinners[potNumber][i].id].chips), function(n){
+
+potIntoChipAnimationArray[potNumber].push(function(callback){
+      self.animateImage(temporaryStacks[potWinners[potNumber][i].id].chips[n].position.x, temporaryStacks[potWinners[potNumber][i].id].chips[n].position.y, temporaryStacks[potWinners[potNumber][i].id].chips[n].position.x +animationDistanceX, temporaryStacks[potWinners[potNumber][i].id].chips[n].position.y+ animationDistanceY, function(){callback(null, callID)})
+     
+                }) 
+
+                callID++
+                
+                })
+
+                })
+                callbackNumber++
+    }
+    })
+
+    var errorNumber = 0
+    _.each(_.range(potIntoChipAnimationArray), function(potNumber){
+        if(!_isEmpty(potNumber)){
+
+        finalArray.push(
+
+           function(next){
+               //remove chip images from pot
+               self.hideChildren(self.images.pots[potNumber].chips)
+               self.hideChildren(self.images.pots[potNumber].potSize)
+    async.parallel(chipIntoPotAnimationArray[potNumber], function(err, results){next(null, errorNumber)})
+})
+errorNumber++
+ finalArray.push(function(next){
+
+     _.each(potWinners[potNumber], function(i) {
+         //define seatNumber
+         var seatNumber = potWinners[potNumber][i].seat
+         //update how many chips a player has
+         chipsInFrontOfPlayer[seatNumber] = potWinners[potNumber][i].amountWon + chipsInFrontOfPlayer[seatNumber]
+    self.displayChipStack(chipsInFrontOfPlayer[seatNumber], self.images.seats[seatNumber], self.images.seats[seatNumber].chips.firstChip.position.x, self.images.seats[seatNumber].chips.firstChip.position.y)
+   
+    self.images.seats[seatNumber].betSize =  chipsInFrontOfPlayer[seatNumber]
+    //remove temporary animated chipstack
+    self.hideChildren(temporaryStacks[potWinners[potNumber][i].id].chips)
+
+var wait = setTimeout(function(){
+    
+    next(null, errorNumber)
+
+}, timeBetweenAnimations)
+
+})
+ })
+    errorNumber++
+
+ }})
+
+ async.series([finalArray])
+ }
+
     this.displayopenSeats = function(openSeats){
         
 for (var i = 0; i < openSeats.length; i = i + 1)
@@ -2311,12 +2415,13 @@ for (var i = 0; i < openSeats.length; i = i + 1)
         this.displayText(this.images.seats[openSeats[i]].openSeat)}
     }
 
-    this.displayInHandOptions=function(){
+    this.displayInHandOptions = function(){
         
         this.displayChildren(this.images.foldToAnyBet)
         this.displayChildren(this.images.sitOutNextHand)
          this.displayChildren(this.images.sitOutNextBigBlind)
     }
+
     this.hideSeatedOptions = function(){
         this.hideChildren(this.images.foldToAnyBet)
          this.hideChildren(this.images.sitOutNextHand)
@@ -2782,6 +2887,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         self.gameState.messageBox.messageBoxImageContainerIndex = self.gameState.messageBox.messageBoxImageContainerIndex -2 
     }
 
+
     this.displayMessageBox = function(messageString, messageInfo){
        var messageBoxImageContainerIndex = this.gameState.containerImageIndexes.initialMessageBox
 
@@ -3076,103 +3182,8 @@ this.restoreActiveContainers=function(activeContainerArray){
     }
 }
     
-
-   this.displayInitialTableState=function(tableState){
-        
-        
-        if(tableState){table_state = tableState}
-        else{var table_state = $('#server_values').data('table_state');
-        //console.log(table_state)
-        }
-        //remove extra seats
-        for (var i = 9;i>=table_state.max_players;i=i-1){
-            
-            this.images.seats[i] = null
-            this.gameState.seats[i] = null
-
-        }
-        
-                //display seats and assign userSeatNumber
-         for (var i in table_state.seats) { 
-          //assign userSeatNumber if player is user
-         if(table_state.seats[i].is_you){ 
-         this.gameState.userSeatNumber = table_state.seats[i].seat 
-
-         //show options available if player is user
-      //   self.displayChildren(self.images.stand)
-         self.displayChildren(self.images.getChips)
-         self.displayChildren(self.images.sitOutNextHand)
-
-         
-
-         if(table_state.seats[i].sitting_out == true){
-             self.displayChildren(self.images.sitIn)
-         }
-         else if(table_state.seats[i].sitting_out == false){
-
-         }
-         }
-
-         //seated players
-         this.playerSits(table_state.seats[i].seat,table_state.seats[i].username,table_state.seats[i].chips)
-        if(table_state.seats[i].sitting_out == true){
-            self.images.seats[table_state.seats[i].seat].status.text.text = "Sitting Out"
-        }
-         }
-
-
-        //display player's cards
-         for(var i=0;i<table_state.players.length;i=i+1){
-               if(!table_state.players[i].hand)
-               {
-                   this.displayHiddenCards(table_state.players[i].seat)
-                   }
-              
-                   else if(table_state.players[i].hand)
-                   {
-        this.displayHoleCards(table_state.players[i].hand, table_state.players[i].seat)
-        //show in hand options if player has cards
-
-        self.showInHandOptions()
-        }
-        }
-
-        //comunity cards
-        this.displayAllCommunity(table_state.community)
-        //pot
-        if(table_state.pot&&table_state.pot>0){this.updatePotSize(table_state.pot)}
-
-         //current bets
-         for (var i=0;i<table_state.players.length;i=i+1) { 
-         this.playerPutsChipsInPot(table_state.players[i].seat,table_state.players[i].current_bet, table_state.players[i].chips)
-         this.displayChipStack(table_state.players[i].current_bet, self.images.seats[table_state.players[i].seat], self.images.seats[table_state.players[i].seat].firstChip.position.x, self.images.seats[table_state.players[i].seat].firstChip.position.y)
-         }
-
-          //empty seats
-         for (var i = 0; i<table_state.max_players;i++){    this.displayCorrectSeatMessage(i)    }
-
-
-         //display static items
-         this.displayChildren(this.images.getChips)
-         this.displayChildren(this.images.viewLobby)
-         this.displayChildren(this.images.exitTable)
-         
-    }
-    
-  //---------------------SOCKET CODE------------------------
-    this.receiveTableState = function(){
-   socket.once('table_state', function(table_state){
-             self.displayInitialTableState(table_state)
-             self.activateSockets()
-    })
-    }
-    
-    this.activateSockets = function(){
-     
-        
-
-    socket.on('street_ends', function (potSize){
-        var animationTime = 800
+this.streetEnds = function(potSize){
+      var animationTime = 800
         var ticks = 40
         var chipIntoPotAnimationArray = []
         var callBackNumber = 0
@@ -3210,6 +3221,128 @@ function(next){
 }
   ])
 
+}
+
+
+   this.displayInitialTableState=function(tableState){
+
+                 //display static items
+         this.displayChildren(this.images.getChips)
+         this.displayChildren(this.images.viewLobby)
+         this.displayChildren(this.images.exitTable)
+        
+         //get table_state if not passed as parameter
+        if(tableState){table_state = tableState}
+        else{var table_state = $('#server_values').data('table_state')
+        //console.log(table_state)
+        }
+        //remove extra seats
+        for (var i = 9;i>=table_state.max_players;i=i-1){
+            this.images.seats[i] = null
+            this.gameState.seats[i] = null
+        }
+        
+        //comunity cards
+        this.displayAllCommunity(table_state.community)
+        
+                //display seats and assign userSeatNumber
+         for (var i = 0;i< table_state.seats.length;i++) { 
+          //assign userSeatNumber if player is user
+         if(table_state.seats[i].is_you == true){ 
+         this.gameState.userSeatNumber = table_state.seats[i].seat 
+         //iterate through players array to get the index of user
+         for(var n=0;n<table_state.players.length;n++){
+             if(table_state.players[n].seat == this.gameState.userSeatNumber)
+         var userPlayerArrayIndex = n
+         }
+
+      //   self.displayChildren(self.images.stand)
+
+//======================display user's flag settings=====================================
+         //display foldToAnyBetButton depending on user's flag
+         if(table_state.seats[i].flags){
+              //check if user is holding cards
+         if(!_.isUndefined(userPlayerArrayIndex)&&table_state.players[userPlayerArrayIndex].hand){
+         if(table_state.seats[i].flags.check ==true && table_state.seats[i].flags.fold == true){
+        
+         
+             self.displayChildren(self.images.foldToAnyBetOn)}
+             else{ self.displayChildren(self.images.foldToAnyBet)}
+             }
+
+             //display sitout next hand depending on user's flag
+              if(table_state.seats[i].flags.sitting_out == true){
+             self.displayChildren(self.images.sitOutNextHandOn)}
+             else{self.displayChildren(self.images.sitOutNextHand)}
+
+          
+                  //check if user is sitting in
+                  if(table_state.seats[i].sitting_out == true){
+                       //either display rebuy OR sitin if user is sitting out
+             if(table_state.seats[i].chips == 0){
+                 self.displayChildren(self.images.rebuy)}
+                 else{ self.displayChildren(self.images.sitIn)}
+         }
+
+         //if user is not sitting out
+         else{
+                    //display sit out next big blind depending on user's flag
+              if(table_state.seats[i].flags.post_blind == false){self.displayChildren(self.images.sitOutNextBigBlindOn)}
+                    else{self.displayChildren(self.images.sitOutNextBigBlind)}
+             }
+  
+         }
+         }
+
+         //non-user seated players
+         this.playerSits(table_state.seats[i].seat,table_state.seats[i].username,table_state.seats[i].chips)
+        if(table_state.seats[i].sitting_out == true){
+            self.images.seats[table_state.seats[i].seat].status.text.text = "Sitting Out"
+        }
+         }
+         
+
+
+        //display player's cards
+         for(var i=0;i<table_state.players.length;i=i+1){
+               if(!table_state.players[i].hand){
+                   this.displayHiddenCards(table_state.players[i].seat)
+                   }
+              
+                   else if(table_state.players[i].hand) {
+        this.displayHoleCards(table_state.players[i].hand, table_state.players[i].seat)
+        }
+        }
+
+        //pot
+        if(table_state.pot&&table_state.pot>0){this.updatePotSize(table_state.pot)}
+
+         //current bets
+         for (var i=0;i<table_state.players.length;i=i+1) { 
+         this.playerPutsChipsInPot(table_state.players[i].seat,table_state.players[i].current_bet, table_state.players[i].chips)
+         this.displayChipStack(table_state.players[i].current_bet, self.images.seats[table_state.players[i].seat], self.images.seats[table_state.players[i].seat].firstChip.position.x, self.images.seats[table_state.players[i].seat].firstChip.position.y)
+         }
+
+          //empty seats
+         for (var i = 0; i<table_state.max_players;i++){    this.displayCorrectSeatMessage(i)    }
+
+         
+    }
+    
+  //---------------------SOCKET CODE------------------------
+    this.receiveTableState = function(){
+   socket.once('table_state', function(table_state){
+             self.displayInitialTableState(table_state)
+             self.activateSockets()
+    })
+    }
+    
+    this.activateSockets = function(){
+     
+        
+
+    socket.on('street_ends', function (potSize){
+       self.streetEnds(potSize)
     })
 
     //error received
@@ -3316,21 +3449,21 @@ socket.on('hands_dealt', function(players){
 self.playerToAct(self.gameState.userSeatNumber)
      for (var i = 0; i < actions.length; i++){
      if (typeof actions[i].fold !== 'undefined'){
-         self.displayChildren(self.images.fold, false, ['act','fold'])
+         self.displayButton(self.images.fold, false, ['act','fold'])
         }
        else if (actions[i].check !== undefined){
-         self.displayChildren(self.images.check,false,['act','check'])
+         self.displayButton(self.images.check,false,['act','check'])
          }
       else   if (actions[i].call){
              self.images.call.text.text = 'Call '+actions[i].call
-         self.displayChildren(self.images.call,false,['act','call',actions[i].call])
+         self.displayButton(self.images.call,false,['act','call',actions[i].call])
          }
        else  if (actions[i].raise){
-         self.displayChildren(self.images.raise,'raise to '+actions[i].raise[0],['act','raise', actions[i].raise[0]])
+         self.displayButton(self.images.raise,'raise to '+actions[i].raise[0],['act','raise', actions[i].raise[0]])
          self.displayBetSlider(actions[i].raise[0], actions[i].raise[1], 1)
          }
       else if (actions[i].bet){
-         self.displayChildren(self.images.bet,'bet '+actions[i].bet[0] ,['act','bet',actions[i].bet[0]])
+         self.displayButton(self.images.bet,'bet '+actions[i].bet[0] ,['act','bet',actions[i].bet[0]])
          self.displayBetSlider(actions[i].bet[0], actions[i].bet[1], 1)
          }
          }
@@ -3480,6 +3613,13 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
         }
   )
   
+  //player sets a flag
+       socket.on('player_sets_flag', function(player){
+        console.log(player)
+        
+        }
+  )
+
 
 //player adds chips to his stack
        socket.on('player_adds_chips', function(player,is_you){
@@ -3505,6 +3645,11 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
 
 //round ends, all hole cards are shown
        socket.on('winners', function(players){
+        
+
+         //  self.winners()
+
+
 
 
            for(var i =0;i<players.length;i++){
@@ -3541,8 +3686,8 @@ jQuery(window).load(function (){
      
     holdemCanvas.createAllItems()
    holdemCanvas.receiveTableState()
-             console.log(document.getElementById('chatDiv'))
-             console.log(document.getElementById('cashierDiv'))
+     console.log(document.getElementById('chatDiv'))
+      console.log(document.getElementById('cashierDiv'))
 
     })
  /*
