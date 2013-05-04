@@ -361,7 +361,9 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
      this.events.viewLobbyClick = function(event){
 
-         window.open('/lobby')
+         var lobbyName = "Lobby"
+         window.open('/lobby', lobbyName, 'width=800,height=770 ,left=200,top=200,location=0,toolbar=no,menubar=no,titlebar=no,directories=no,scrollbars=yes');
+    //     window.open('/lobby')
 
     }
 
