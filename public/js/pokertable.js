@@ -1,3 +1,14 @@
+   $("#chat_table").css('display','none')
+   $("#chat_table").css('top','1000px')
+      function onKeyDown(event) {
+event.preventDefault() } 
+
+window.onKeydown = onKeyDown
+
+/*function (dtnode, event) { 
+        return false; 
+    }*/
+   
     //default canvas size is 690x480
     //all numbers are in base 0, including variable names and documentation
     //seat position 0 is top middle and proceeds clockwise
@@ -6,6 +17,7 @@
         this.canvas = document.getElementById('canvas')
         this.stage = new createjs.Stage(canvas)
         this.stage.eventsEnabled = true
+         this.stage.mouseEventsEnabled
         this.stage.enableMouseOver()
             this.events = {}
   this.imageData = {
@@ -15,9 +27,11 @@
   }
   this.userPreferences = {
       
+
       bigBlindsPerHorizontalSliderTick : 3,
       timePerHorizontalSliderTick: 500,
-      animate: true
+      animate: true,
+      chatTextColor: '#FFFFFF'
 
   }
         this.gameState = {}
@@ -56,13 +70,13 @@
      }
 
           this.images.sources = {
-            call: 'img/call.jpg',
-            check: 'img/check.jpg',
-            raise: 'img/raise.jpg',
+       //     call: 'img/call.jpg',
+       //     check: 'img/check.jpg',
+       //     raise: 'img/raise.jpg',
             hiddenCardFileName: 'back.png',
             seat: 'img/empty_seat.jpg',
-            blankSeat : 'img/blank_seat.jpg',
-            bet: 'img/bet.jpg',
+      //      blankSeat : 'img/blank_seat.jpg',
+       //     bet: 'img/bet.jpg',
             community: 'img/card_back.jpg',
             fold: 'img/fold.jpg',
             sideButton :'img/side_button.jpg',
@@ -82,6 +96,8 @@
             exitTable: 'img/exit_table.png',
             messageBoxBackground: 'img/messagebox.png',
             messageBoxCloseX:'img/messageBox_closeWindowX.jpg',
+            checkBox: 'img/check_box.png',
+            checkBoxChecked:'img/check_box_clicked.png',
             
 
             chips: {
@@ -172,6 +188,9 @@ this.positionImage=function(){
     item.positionImage()
     item.image.parentOfImageObject = item
     item.bitmapSource = imageSource
+    if(item.messages){
+        item.image.onClick = self.events.onButtonClick
+    }
             }
 
             this.images.cardAsBitmap = function(item,cardText){
@@ -192,6 +211,9 @@ this.positionImage=function(){
 item.drawRoundedRectangle(fillColor)
 item.image.parentOfImageObject = item
 item.fillColor = fillColor
+if(item.messages){
+    item.image.onClick = self.events.onButtonClick
+}
             }
 
             //for example: (parentOfImageObject, fold, "13px Arial", "#100D08")
@@ -211,7 +233,8 @@ parentOfImageObject.textColor = color
             
 //-------------START EVENTS--------------------------
 this.events.buttonMouseDown = function(event){
-      event.target.graphics.clear()
+     if(event.target instanceof createjs.Shape) {
+         event.target.graphics.clear()
   event.target.graphics.beginFill('red').drawRoundRect(event.target.parentOfImageObject.position.x, event.target.parentOfImageObject.position.y, event.target.parentOfImageObject.size.x, event.target.parentOfImageObject.size.y,event.target.parentOfImageObject.size.y*.15)
   event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.position.y + 2
      self.stage.update()
@@ -220,13 +243,13 @@ this.events.buttonMouseDown = function(event){
         event.target.graphics.beginFill(event.target.parentOfImageObject.fillColor).drawRoundRect(event.target.parentOfImageObject.position.x, event.target.parentOfImageObject.position.y, event.target.parentOfImageObject.size.x, event.target.parentOfImageObject.size.y,event.target.parentOfImageObject.size.y*.15); 
 event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.position.y
      self.stage.update()
-
+     }
      }
      }
       
   this.events.onButtonClick = function(event){
         socket.emit.apply(socket, event.target.parentOfImageObject.messages)
-
+        if(event.target.parentOfImageObject.otherMessages){socket.emit.apply(socket, event.target.parentOfImageObject.otherMessages)}
     }
   
     this.events.foldToAnyBetClick = function(event){
@@ -234,6 +257,12 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
         socket.emit('set flag','fold',true)
         socket.emit('set flag','check',true)
 
+    }
+
+    this.events.foldToAnyBetOnClick =function (event){
+        
+        socket.emit('set flag','fold',false)
+        socket.emit('set flag','check',false)
 
     }
 
@@ -284,7 +313,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
     //=======unfocus tableChatBox==================
     this.events.unfocusChatBox = function(event){
         
-         $('#tableChatBox').blur()
+         $('#chat').blur()
 
     }
 
@@ -317,11 +346,30 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
         onMouseUp = function(event){
             
-
         }
 
     }
     */
+
+    this.events.exitTableClick = function(event){
+       var  messageInfo = {}
+       messageInfo.cancel = true
+       messageInfo.okayEvent = self.events.exit
+        self.displayMessageBox("Are you sure you want to leave?",messageInfo)
+
+    }
+
+     this.events.viewLobbyClick = function(event){
+
+        window.open("http://localhost:9000/lobby")
+
+    }
+
+    this.events.exit = function(event){
+          var win = window.open('', '_self')
+          win.close()
+    }
+
      //===============START BET SLIDER===================
 
      this.events.horizontalSliderMouseDown = function(event){
@@ -362,7 +410,6 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
              //if slider is too far to the right adjust to maximum
              if(self.images.betSlider.vertical.image.x>maxX){
                  self.images.betSlider.vertical.image.x=maxX
-               
              }
              adjustBetSize()
 
@@ -441,9 +488,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
     else if(self.stage.contains(self.images.raise.text)){
         self.images.raise.text.text = 'Raise to '+roundedBet
     self.images.raise.messages = ['act','raise',roundedBet]}
-    
   self.stage.update()
-     
   }
  
 
@@ -453,7 +498,6 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
          roundedBet = self.gameState.maxBet}
   else if(event.stageX<minX){
       event.target.x = minX
-      event.target.graphics.beginFill('blue').drawRect(minX,event.target.parentOfImageObject.position.y,event.target.parentOfImageObject.size.x,event.target.parentOfImageObject.size.y)
   roundedBet = self.gameState.minBet}
 
     //if mouse is inside the dimensions of the horizontal slider, proportionally display bet size
@@ -462,7 +506,6 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
       betSizePercent = (event.stageX-minX)/(maxX-minX)
       unroundedBetAmount =  betSizePercent*(self.gameState.maxBet-self.gameState.minBet)+self.gameState.minBet
       roundedBet = Math.round(unroundedBetAmount/self.gameState.minIncrement)*self.gameState.minIncrement
-
   }
    self.images.betSlider.betSize.text.text = roundedBet
    if(self.stage.contains(self.images.bet.text)){self.images.bet.text.text = 'Bet '+roundedBet}
@@ -470,8 +513,6 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
   self.stage.update()
 
  }
- 
-
  }
   //=============END BET SLIDER===================
 
@@ -495,26 +536,26 @@ this.initialize= function(){
     }
     for(var i = 2;i<=14;i++){
         var cardRank
-        if(i==11){cardRank = 'j'}
+           if(i==10){cardRank = 't'}
+      else  if(i==11){cardRank = 'j'}
      else   if(i==12){cardRank = 'q'}
 else if(i==13){cardRank = 'k'}
     else    if(i==14){cardRank = 'a'}
     else{cardRank = i}
-        fileSourceArray.push(this.images.sources.cardImageFolder+cardRank+'c.png')
-        fileSourceArray.push(this.images.sources.cardImageFolder+cardRank+'d.png')
-        fileSourceArray.push(this.images.sources.cardImageFolder+cardRank+'h.png')
-        fileSourceArray.push(this.images.sources.cardImageFolder+cardRank+'s.png')
+        fileSourceArray.push({src: this.images.sources.cardImageFolder+cardRank+'c.png', id: fileSourceArray.length-1})
+        fileSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'d.png', id: fileSourceArray.length-1})
+        fileSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'h.png', id: fileSourceArray.length-1})
+        fileSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'s.png', id: fileSourceArray.length-1})
     }
     console.log(fileSourceArray)
     // must set to false or wo't work.  dont know whay...
                 var preload = new createjs.LoadQueue(false)
-    preload.addEventListener("complete", handleComplete)
-     preload.addEventListener("fileload", handleFileLoad)
+  //  preload.addEventListener("complete", handleComplete)
+  //   preload.addEventListener("fileload", handleFileLoad)
    preload.loadManifest(fileSourceArray)
  //  createjs.Ticker.setFPS(30)
 
    var handleFileLoad=  function  (event){
-       
        console.log(event.item.src)
    }
 
@@ -522,8 +563,6 @@ else if(i==13){cardRank = 'k'}
                console.log('loading completed')
           //  self.createAllItems()
         }
-
-
 }
 
 
@@ -552,8 +591,17 @@ this.images.setDefaults = function(){
             //percentage of vertical card to show
             var shownCardY = 0.85
 
-            var sideButtonWidth = 185
-            var sideButtonHeight = 16
+            var sideButtonWidth = 100
+            var sideButtonHeight = 13
+            var sideButtonDistanceFromChat = 20
+            var sideButtonOffSetLeft = 2
+           var  sideButtonDistanceY = 3
+           var sideButtonCheckBoxWidth = sideButtonHeight
+           var sideButtonDistanceFromBoxToText = 5
+           var sideButtonDistanceFromEdgeToInteriorHitAreaY = 1
+           var sideButtonSizeAndFont = '10px arial'
+           var sideButtonTextColor = '#FFFFFF'
+
             var actionButtonWidth = 80
             var actionButtonHeight = 25
             var seatWidth = 90
@@ -589,7 +637,7 @@ this.images.setDefaults = function(){
             var bottomRowSeatDealerButtonX = dealerButtonWidth/2
             var bottomRowSeatDealerButtonY = -dealerButtonHeight*.1
 
-            var rightColumnSeatDealerButtonX = seatWidth-dealerButtonWidth*1.1
+            var rightColumnSeatDealerButtonX = -dealerButtonWidth*1.1
             var rightColumnSeatDealerButtonY = 0
 
             var potHeight = 7
@@ -603,10 +651,12 @@ this.images.setDefaults = function(){
             var betTextWidth =  20
             var absoluteDistanceBetweenBetTextAndChipImages = 5
 
-            var htmlTableChatBoxLeftOffset = 20
-            var htmlTableChatBoxBottomOffset = 20
-            var htmlTableChatBoxWidth = 65
+            var htmlTableChatBoxLeftOffset = 10
+            var htmlTableChatBoxBottomOffset = 10
+            var htmlTableChatBoxWidth = 135
+            var htmlTableChatBorderSize = $('#chat').css('border').substring(0,$('#chat').css('border').indexOf('p'))
             var htmlTableChatBoxHeight = 20
+            var htmlTableChatBoxReminderTextColor = 'rgb(165,165,165)'
 
             var verticalBetSliderWidth = 6
             var verticalBetSliderHeight = 13            
@@ -661,11 +711,15 @@ this.images.setDefaults = function(){
             var getChipsWidth = 153
             var getChipsHeight = 42
 
-             var getChipsHitAreaLeftOffset  = 25 //distance from left of getChips image and mouse events
+             var getChipsHitAreaLeftOffset  = 2 //distance from left of getChips image and mouse events
             var getChipsHitAreaTopOffset  = 2 // distance from top of getChips image and mouse event clicks
              var getChipsHitAreaBottomOffset  = 10
             var getChipsHitAreaUpperRightOffset  = 12  
             var getChipsHitAreaLowerRightOffset  = 41
+
+            //dealerButton
+           this.dealerButton = new this.Item(0,0,dealerButtonWidth, dealerButtonHeight,self.gameState.containerImageIndexes.chips)
+            this.itemAsBitmap(this.dealerButton, this.sources.dealerButton)
 
             //---------pot-------------------
 
@@ -677,27 +731,125 @@ this.images.setDefaults = function(){
               this.pots[0].secondColumnChip = new this.Item(this.pots[0].firstChip.position.x+chipDiameter+self.imageData.distanceBetweenChipColumns,this.pots[0].firstChip.position.y,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
 
               //---------------------player chat input---------------
-              this.htmlTableChatBox = new this.Item(htmlTableChatBoxLeftOffset,canvasHeight - htmlTableChatBoxBottomOffset,htmlTableChatBoxWidth,htmlTableChatBoxHeight,self.gameState.containerImageIndexes.button)
-           
+              this.htmlTableChatBox = new this.Item(htmlTableChatBoxLeftOffset,canvasHeight - htmlTableChatBoxBottomOffset-htmlTableChatBoxHeight-htmlTableChatBorderSize*2,htmlTableChatBoxWidth,htmlTableChatBoxHeight,self.gameState.containerImageIndexes.button)
+var defaultMessage = 'Type here to chat'
+$('#chat').val(defaultMessage)
+$('#chat').css('color', htmlTableChatBoxReminderTextColor)
+
+//remove reminder text when clicked
+$('#chat').focusin(function(){
+    if($('#chat').val() == defaultMessage){
+    $('#chat').val('')
+$('#chat').css('color', self.userPreferences.chatTextColor)}
+})
+
+//redisplay reminder text ONLY if text value is only spaces or nothing
+$('#chat').focusout(function(){
+    if (/\S/.test($('#chat').val())){}
+   else{
+   $('#chat').val('Type here to chat')
+$('#chat').css('color', htmlTableChatBoxReminderTextColor)
+ }
+})
 
 
-           //--------side buttons---------------------
-            this.leftSideButtons[0].button = new this.Item(7.5,419,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button)
-            this.leftSideButtons[1].button = new this.Item(7.5,439,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button)
-            this.leftSideButtons[2].button = new this.Item(7.5,459,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button)
-            this.rightSideButtons[0].button = new this.Item(497.5,419,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button)
-            this.rightSideButtons[1].button = new this.Item(497.5,439,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button)
-            this.rightSideButtons[2].button = new this.Item(497.5,459,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button)
 
-        for (var i = 0; i < 3; i = i + 1){
-            this.itemAsRectangle(this.leftSideButtons[i].button, "#000000")
-            this.addItemText(this.leftSideButtons[i].button, '',"12px Arial", "#FFFFFF")
-            this.itemAsRectangle(this.rightSideButtons[i].button, "#000000")
-            this.addItemText(this.rightSideButtons[i].button, '',"12px Arial", "#FFFFFF")
-         }
-         this.rightSideButtons[0].button.text.text = 'fold to any bet'
-         this.rightSideButtons[1].button.text.text = 'sit out next hand'
-         this.rightSideButtons[2].button.text.text = 'sit out next blind'
+$('#chat').css({
+ 'position' :  'absolute',
+ 'left'  : this.htmlTableChatBox.position.x + 'px',
+'top'  : this.htmlTableChatBox.position.y + 'px',
+'width' : this.htmlTableChatBox.size.x + 'px',
+'height' : this.htmlTableChatBox.size.y +'px',
+'padding': '0px',
+'margin':'0px'
+ // 'background-color': 'rgb(200,200,200)'
+})
+
+    //emit chat if user pressed enter
+ $('#chat').keypress(function(event){
+      var keycode = (event.keyCode ? event.keyCode : event.which)
+    if(keycode == '13') {    
+        socket.emit('chat', $("#chat").val())
+        $("#chat").val('')
+        $('#chat').focus()
+        }
+    })
+
+           //--------standard pre-action buttons---------------------
+          this.foldToAnyBet = new  this.Item(sideButtonOffSetLeft,this.htmlTableChatBox.position.y-  sideButtonDistanceFromChat - 3*sideButtonHeight-2*sideButtonDistanceY,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button, ['set_flag','check',true])
+         this.foldToAnyBet.otherMessages = ['set_flag','fold',true]
+          this.sitOutNextHand = new  this.Item(sideButtonOffSetLeft,this.htmlTableChatBox.position.y -  sideButtonDistanceFromChat- 2*sideButtonHeight - sideButtonDistanceY,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button, ['sit_out'])
+        this.sitOutNextBigBlind =  new this.Item(sideButtonOffSetLeft,this.htmlTableChatBox.position.y-  sideButtonDistanceFromChat- sideButtonHeight,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button, ['set_flag', 'receive_hole_cards', false])
+               
+               
+                //define on versions
+                  this.foldToAnyBetOn =  new this.Item(this.foldToAnyBet.position.x,this.foldToAnyBet.position.y, this.foldToAnyBet.size.x,this.foldToAnyBet.size.y,self.gameState.containerImageIndexes.button, ['set_flag','fold',false])
+                   this.foldToAnyBet.otherMessages = ['set_flag','check',false]
+          this.sitOutNextHandOn = new  this.Item(this.sitOutNextHand.position.x,this.sitOutNextHand.position.y, this.sitOutNextHand.size.x,this.sitOutNextHand.size.y,self.gameState.containerImageIndexes.button, ['sit_in'])
+        this.sitOutNextBigBlindOn = new  this.Item(this.sitOutNextBigBlind.position.x,this.sitOutNextBigBlind.position.y, this.sitOutNextBigBlind.size.x,this.sitOutNextBigBlind.size.y,self.gameState.containerImageIndexes.button, ['set_flag', 'receive_hole_cards', true])
+        
+        this.itemAsBitmap(this.foldToAnyBet, this.sources.checkBox)
+this.itemAsBitmap(this.sitOutNextHand, this.sources.checkBox)
+this.itemAsBitmap(this.sitOutNextBigBlind, this.sources.checkBox)
+
+        this.itemAsBitmap(this.foldToAnyBetOn, this.sources.checkBoxChecked)
+this.itemAsBitmap(this.sitOutNextHandOn, this.sources.checkBoxChecked)
+this.itemAsBitmap(this.sitOutNextBigBlindOn, this.sources.checkBoxChecked)
+//function for creating text from all fast
+    var addSideButtonText = function(parentOfImageObject, text){
+                parentOfImageObject.text = new createjs.Text(text, sideButtonSizeAndFont, sideButtonTextColor)
+parentOfImageObject.text.x=parentOfImageObject.position.x + sideButtonCheckBoxWidth + sideButtonDistanceFromBoxToText
+parentOfImageObject.text.y=parentOfImageObject.position.y + 1
+parentOfImageObject.text.baseline = 'top'
+parentOfImageObject.text.textAlign = 'left'
+parentOfImageObject.textColor = sideButtonTextColor
+}
+//off state
+      addSideButtonText( this.foldToAnyBet, 'Fold to any bet' )
+      addSideButtonText(this.sitOutNextHand, 'Sit out next hand')
+      addSideButtonText (  this.sitOutNextBigBlind,'Sit out next big blind' )
+      
+      //on state
+      addSideButtonText( this.foldToAnyBetOn, 'Fold to any bet' )
+      addSideButtonText(this.sitOutNextHandOn, 'Sit out next hand')
+      addSideButtonText (  this.sitOutNextBigBlindOn,'Sit out next big blind' )
+
+      //hitAreas for buttons
+      
+      var drawHitArea = function(parent){
+          //get width of text
+        var textWidth =   self.getTextWidthAndFontSize(parent)[0]
+        var totalWidth = sideButtonCheckBoxWidth + sideButtonDistanceFromBoxToText + textWidth
+        //draw rectangular shape
+        var hitSquare = new createjs.Shape()
+        hitSquare.graphics.beginFill('#FFFFFF').beginStroke(0)
+        .drawRect(0, sideButtonDistanceFromEdgeToInteriorHitAreaY, totalWidth, parent.size.y - sideButtonDistanceFromEdgeToInteriorHitAreaY)
+        return hitSquare
+      }
+
+                    //hit areas
+      this.foldToAnyBet.image.hitArea =  drawHitArea(this.foldToAnyBet)
+        this.sitOutNextHand.image.hitArea = drawHitArea(this.sitOutNextHand)
+          this.sitOutNextBigBlind.image.hitArea  = drawHitArea(this.sitOutNextBigBlind)
+     
+                  this.foldToAnyBetOn.image.hitArea  = drawHitArea(this.foldToAnyBetOn)
+                  this.sitOutNextHandOn.image.hitArea = drawHitArea(this.sitOutNextHandOn)
+                    this.sitOutNextBigBlindOn.image.hitArea = drawHitArea(this.sitOutNextBigBlindOn)
+
+                    
+
+      //onclick
+       this.foldToAnyBet.image.onclick =  self.events.onButtonClick
+        this.sitOutNextHand.image.onclick = self.events.onButtonClick
+          this.sitOutNextBigBlind.image.onclick  = self.events.onButtonClick
+           //define on versions
+                  this.foldToAnyBetOn.image.onclick  = self.events.onButtonClick
+                  this.sitOutNextHandOn.image.onclick = self.events.onButtonClick
+                    this.sitOutNextBigBlindOn.image.onclick = self.events.onButtonClick
+
+         
+
+
 
            //----------------------seats-------------------------------
            this.seats[0].seat = new this.Item(thirdColumnX,fourthRowY,seatWidth,seatHeight,self.gameState.containerImageIndexes.button)
@@ -852,12 +1004,7 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
     }
 
     else if(this.seats[i].seat.position.y == fourthRowY){
-        
-        var dealerButtonX = this.seats[i].seat.position.x+bottomRowSeatDealerButtonX
-        var dealerButtonY = this.seats[i].seat.position.y+bottomRowSeatDealerButtonY
-
-        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,self.gameState.containerImageIndexes.chips)
-
+       
         this.seats[i].firstChip = new this.Item(this.seats[i].seat.position.x+bottomChipOffsetX,this.seats[i].seat.position.y+bottomChipOffsetY,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
         this.seats[i].secondColumnChip = new this.Item( this.seats[i].firstChip.position.x+chipDiameter+self.imageData.distanceBetweenChipColumns,this.seats[i].firstChip.position.y,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
 
@@ -869,6 +1016,19 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
         var betY = bottomLeftChipY + this.seats[i].firstChip.size.y - betTextHeight  
         //bet size
         this.seats[i].bet = new this.Item(betX,betY,betTextWidth,betTextHeight,self.gameState.containerImageIndexes.chips)
+   
+      //    var dealerButtonX = this.seats[i].seat.position.x+bottomRowSeatDealerButtonX
+   //     var dealerButtonY = this.seats[i].seat.position.y+bottomRowSeatDealerButtonY
+   //place dealer button opposite side than firstChip
+   var distanceChipFromLeftSideX = this.seats[i].firstChip.position.x - this.seats[i].seat.position.x
+ 
+   var dealerButtonRightX = this.seats[i].seat.position.x + this.seats[i].seat.size.x - distanceChipFromLeftSideX
+  var dealerButtonX = dealerButtonRightX - dealerButtonWidth
+  var dealerButtonY = this.seats[i].firstChip.position.y+this.seats[i].firstChip.size.y - dealerButtonHeight
+
+        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,self.gameState.containerImageIndexes.chips)
+
+   
     }
         else if(this.seats[i].seat.position.x == fifthColumnX){
         
@@ -963,6 +1123,12 @@ self.images.seats[i].chat.text.x=self.images.seats[i].chat.position.x +  self.im
         this.itemAsRectangle(this.bet, 'red')
         this.addItemText(this.bet, 'bet','12px Arial','#000000')
 
+        this.fold.image.onClick = self.events.onButtonClick
+        this.call.image.onClick  = self.events.onButtonClick
+        this.check.image.onClick = self.events.onButtonClick
+         this.raise.image.onClick  = self.events.onButtonClick
+         this.bet.image.onClick  = self.events.onButtonClick
+
         //-----------------bet slider-----------------------------
               this.betSlider.horizontal = new this.Item (horizontalBetSliderX,canvasHeight-horizontalBetSliderOffsetBottom-horizontalBetSliderHeight,horizontalBetSliderWidth,horizontalBetSliderHeight,self.gameState.containerImageIndexes.button)
               var verticalY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.size.y/2-verticalBetSliderHeight/2
@@ -993,7 +1159,7 @@ var betSizeY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.si
         this.stand = new this.Item(0,0,actionButtonWidth,actionButtonHeight/2,self.gameState.containerImageIndexes.button, ['stand'])
          this.itemAsRectangle(this.stand, 'black')
  this.addItemText(this.stand,'stand up','10px Arial','white')
-
+ this.stand.image.onClick = self.events.onButtonClick
  //upper right side Buttons
  //this.cashierButton = new this.Item(canvasWidth-cashierButtonWidth, canvasHeight-cashierButtonHeight, cashierButtonWidth, cashierButtonHeight, self.gameState.containerImageIndexes.button)
 // this.itemAsBitmap(this.cashierButton, this.sources.cashierButton)
@@ -1009,9 +1175,9 @@ var betSizeY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.si
          height:31
      },
      animations: {
-         mouseOut: [0],
-         mouseOver: [1],
-         mouseDown: [2]
+         mouseOut:0,
+         mouseOver: 1,
+         mouseDown: 2
      }
 }
 
@@ -1019,7 +1185,7 @@ var spriteSheet = new createjs.SpriteSheet(cashierButtonSpriteData)
 this.cashierButton.bitmapAnimation = new createjs.BitmapAnimation(spriteSheet)
 this.cashierButton.bitmapAnimation.x = this.cashierButton.position.x
 this.cashierButton.bitmapAnimation.y = this.cashierButton.position.y
-this.cashierButton.bitmapAnimation.gotoAndStop(0)
+// this.cashierButton.bitmapAnimation.gotoAndStop(0)
 this.cashierButton.button = new createjs.ButtonHelper(this.cashierButton.bitmapAnimation, 'mouseOut', 'mouseOver', 'mouseDown', false)
 //this.cashierButton.button.initialize()
 
@@ -1029,16 +1195,17 @@ this.cashierButton.button = new createjs.ButtonHelper(this.cashierButton.bitmapA
    this.itemAsBitmap(this.viewLobby, this.sources.viewLobby)
    //define shape for hit area of  viewLobby
    var viewLobbyHit = new createjs.Shape()
-   var topY = this.viewLobby.position.y + viewLobbyHitAreaTopOffset
-   var bottomY = this.viewLobby.position.y+ this.viewLobby.size.y - viewLobbyHitAreaBottomOffset
+   var topY = viewLobbyHitAreaTopOffset
+   var bottomY = this.viewLobby.size.y - viewLobbyHitAreaBottomOffset
 
-viewLobbyHit.graphics.beginFill('white').beginStroke(0)
-.moveTo(this.viewLobby.position.x+viewLobbyHitAreaUpperLeftOffsetX, topY)
-.lineTo(this.viewLobby.position.x+viewLobbyHitAreaLowerLeftOffsetX, bottomY)
-.lineTo(this.viewLobby.position.x+this.viewLobby.size.x-viewLobbyHitAreaRightOffset, bottomY)
-.lineTo(this.viewLobby.position.x+ this.viewLobby.size.x-viewLobbyHitAreaRightOffset, topY)
-.lineTo(this.viewLobby.position.x+viewLobbyHitAreaUpperLeftOffsetX, topY)
+viewLobbyHit.graphics.beginFill('white').setStrokeStyle(2).beginStroke('#000000')
+.moveTo(viewLobbyHitAreaUpperLeftOffsetX, topY)
+.lineTo(viewLobbyHitAreaLowerLeftOffsetX, bottomY)
+.lineTo(this.viewLobby.size.x-viewLobbyHitAreaRightOffset, bottomY)
+.lineTo(this.viewLobby.size.x-viewLobbyHitAreaRightOffset, topY)
+.lineTo(viewLobbyHitAreaUpperLeftOffsetX, topY)
 this.viewLobby.image.hitArea = viewLobbyHit
+this.viewLobby.image.onClick = self.events.viewLobbyClick
 
 //-------------------------upper left Get Chips-------
  this.getChips = new this.Item(0, 0, getChipsWidth, getChipsHeight, self.gameState.containerImageIndexes.button, ['get_add_chips_info'])
@@ -1046,35 +1213,33 @@ this.viewLobby.image.hitArea = viewLobbyHit
 
   //define shape of hit area
     var getChipsHit = new createjs.Shape()
-   var topY = this.getChips.position.y + exitTableHitAreaTopOffset
-   var bottomY = this.getChips.position.y+ this.getChips.size.y - exitTableHitAreaBottomOffset
 
-getChipsHit.graphics.beginFill('white').beginStroke(0)
-.moveTo(this.getChips.position.x+getChipsHitAreaLeftOffset, topY)
-.lineTo(this.getChips.position.x+getChipsHitAreaLeftOffset, bottomY)
-.lineTo(this.getChips.position.x+this.getChips.size.x-getChipsHitAreaLowerRightOffset, bottomY)
-.lineTo(this.getChips.position.x+ this.getChips.size.x-getChipsHitAreaUpperRightOffset, topY)
-.lineTo(this.getChips.position.x+getChipsHitAreaLeftOffset, topY)
-
-this.getChips.image.hitArea = getChipsHit
-
+getChipsHit.graphics.beginFill('#000000')
+.moveTo(getChipsHitAreaLeftOffset, getChipsHitAreaTopOffset)
+.lineTo(getChipsHitAreaLeftOffset, this.getChips.size.y-getChipsHitAreaBottomOffset)
+.lineTo(this.getChips.size.x-getChipsHitAreaLowerRightOffset, this.getChips.size.y-getChipsHitAreaBottomOffset)
+.lineTo(this.getChips.size.x-getChipsHitAreaUpperRightOffset, getChipsHitAreaTopOffset)
+.lineTo(getChipsHitAreaLeftOffset, getChipsHitAreaTopOffset)
+//    this.containers[13].addChild(getChipsHit)
+  this.getChips.image.hitArea = getChipsHit
+   this.getChips.image.onClick = self.events.onButtonClick
 
    //--------------upper right exit Table--------------
  this.exitTable = new this.Item(canvasWidth - exitTableWidth, viewLobbyHeight, exitTableWidth, exitTableHeight, self.gameState.containerImageIndexes.button)
    this.itemAsBitmap(this.exitTable, this.sources.exitTable)
    //define shape of hit area
-    var exitTableHit = new createjs.Shape()
-   var topY = this.exitTable.position.y + exitTableHitAreaTopOffset
-   var bottomY = this.exitTable.position.y+ this.exitTable.size.y - exitTableHitAreaBottomOffset
 
-exitTableHit.graphics.beginFill('white').beginStroke(0)
-.moveTo(this.exitTable.position.x+exitTableHitAreaUpperLeftOffsetX, topY)
-.lineTo(this.exitTable.position.x+exitTableHitAreaLowerLeftOffsetX, bottomY)
-.lineTo(this.exitTable.position.x+this.exitTable.size.x-exitTableHitAreaRightOffset, bottomY)
-.lineTo(this.exitTable.position.x+ this.exitTable.size.x-exitTableHitAreaRightOffset, topY)
-.lineTo(this.exitTable.position.x+exitTableHitAreaUpperLeftOffsetX, topY)
+   var exitTableHit = new createjs.Shape(new createjs.Graphics()
+.beginFill('#000000')
+.moveTo(this.exitTable.size.x-exitTableHitAreaRightOffset, exitTableHitAreaTopOffset)
+.lineTo(this.exitTable.size.x-exitTableHitAreaRightOffset, this.exitTable.size.y - exitTableHitAreaBottomOffset)
+.lineTo(exitTableHitAreaLowerLeftOffsetX, this.exitTable.size.y - exitTableHitAreaBottomOffset)
+.lineTo(exitTableHitAreaUpperLeftOffsetX, exitTableHitAreaTopOffset)
+.closePath())
+// .lineTo(this.exitTable.position.x+ this.exitTable.size.x-exitTableHitAreaRightOffset, topY)
 
-this.exitTable.image.hitArea = exitTableHit
+ this.exitTable.image.hitArea = exitTableHit
+this.exitTable.image.onClick = self.events.exitTableClick
 
         //----------------not in hand action buttons------------------
         this.sitIn = new this.Item(205,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['sit_in'])
@@ -1085,6 +1250,8 @@ this.addItemText(this.sitIn,'Deal Me In','10px Arial','white')
 
  this.itemAsRectangle(this.rebuy,'black')
 this.addItemText(this.rebuy,'Get Chips','10px Arial','white')
+this.sitIn.image.onClick = self.events.onButtonClick
+this.rebuy.image.onClick  = self.events.onButtonClick
 
 //========================4 color deck sprite sheet=============================
 
@@ -1119,7 +1286,7 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
         var outerSideWidth = 8
 
         var columns = 2
-        var rows = 8
+        var rows = 10
 
         var cashierWindowX = canvasWidth/2 - cashierWindowWidth/2
         var cashierWindowY = canvasHeight/2 - cashierWindowHeight/2
@@ -1136,6 +1303,23 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
         var innerCashierHeight = cashierWindowHeight-outerBottomHeight-outerTopHeight
 
         var textX = innerCashierX + textLeftOffset
+
+        var textBoxOffsetLeft = 135
+        var textBoxOffsetRight = 23 //distance from right of textbox to edge of gray
+        var textBoxToTextHeightRatio = 1.8
+        var distanceFromGrayBoxTopToFirstTextBox = 15
+        var textBoxHeight = textHeight*textBoxToTextHeightRatio
+        var textBoxWidth = innerCashierWidth -  textBoxOffsetRight -  textBoxOffsetLeft 
+       var  distanceBetweenTextBoxY = textBoxToTextHeightRatio*distanceBetweenTextY
+
+        var radioOffsetLeft = 19.5 //distance to innerCashierX
+        var radioWidth = 13
+        var radioHeight = radioWidth
+        var distanceFromRadioToText = 6
+
+        var grayBoxOffsetTop = 151
+        var htmlTextWidth = textBoxOffsetLeft- radioWidth - distanceFromRadioToText - radioOffsetLeft
+
 
         var grayBoxOffsetSide = 11 //distance from gray box to end of gray background
         var grayBoxOffsetTop = 150
@@ -1194,6 +1378,109 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
           cashierItems.accountBalanceValue ={name: 'accountBalanceValue' ,location: [1,5]}
         cashierItems.autoRebuy ={name: 'autoRebuy',location:  [0,6],  text: 'Auto-Rebuy:'}
         cashierItems.autoRebuyValue ={name: 'autoRebuyValue' ,location: [1,6]}
+
+        var rowsUsed = 7
+
+        // pokerTableWrapper and canvas to absolute (won't wrk in css)
+        $("#pokerTableWrapper").css('position', 'absolute')
+         $("#pokerTableWrapper").children().css('position', 'absolute')
+
+        
+
+        //use jquery to position divs to appropriate locations
+
+        //use jquery to set appropriate sizes of text boxes
+       $("#cashier input[type='text']").css('width', textBoxWidth+'px')
+       $("#cashier input[type='text']").css('height', textBoxHeight+'px')
+
+       //set all inputs to position absolute
+      $("#cashier").css(
+      {
+      'position': 'absolute'
+      
+      })
+
+      //set text size and font
+        $("#cashier").children().css({
+            'position':'absolute',
+            'font':sizeAndFont,
+        'margin-left':'0px',
+        'margin-top': '0px',
+       'margin-bottom':'0px',
+           'margin-right':'0px',
+           'padding':'0px',
+           'text-align':'left'
+          
+  
+   
+           })
+
+           //customize radio buttons
+           $("#cashier input[type='radio']").css({
+               'background':'rgb(233,233,233)',
+    'background-image':'img/radio_button_bg.jpg',
+    'background-repeat': 'repeat',
+    '-webkit-backface-visibility': 'hidden'
+           })
+
+           //set width of text
+ $("#cashier p").css({
+     'max-width': htmlTextWidth+'px',
+     'height': textBoxHeight+'px',
+     'white-space': 'nowrap'
+
+     })
+           
+        //position first row of html elements below last row of text
+        var radioX = innerCashierX + radioOffsetLeft
+ var maxTextBoxY = innerCashierY + grayBoxOffsetTop + distanceFromGrayBoxTopToFirstTextBox
+var textBoxX = innerCashierX + textBoxOffsetLeft
+var maxRadioY = maxTextBoxY + textBoxHeight/2 - radioHeight/2
+var textX = radioX + radioWidth+distanceFromRadioToText
+
+//position max radio
+     $('#maxRadio').css('left', radioX+'px')
+       $('#maxRadio').css('top', maxRadioY+'px')
+       
+       //position max text 
+         $('#maxText').css('left', textX+'px')
+       $('#maxText').css('top', maxRadioY+'px')
+
+        //position max textbox
+                $('#maxAmount').css('left', textBoxX+'px')
+        $('#maxAmount').css('top', maxTextBoxY+'px')
+
+        var otherTextBoxY = maxTextBoxY + textBoxHeight + distanceBetweenTextBoxY
+        var otherRadioY = otherTextBoxY + textBoxHeight/2 - radioHeight/2
+
+        //position other amount radio
+         $('#otherAmountRadio').css('left', radioX+'px')
+        $('#otherAmountRadio').css('top', otherRadioY+'px')
+
+         //position other amount text
+         $('#otherAmountText').css('left', textX+'px')
+       $('#otherAmountText').css('top', otherRadioY+'px')
+        
+        //position other amount textbox
+                $('#otherAmount').css('left', textBoxX+'px')
+        $('#otherAmount').css('top', otherTextBoxY+'px')
+
+         var autoRebuyTextBoxY = otherTextBoxY + textBoxHeight + distanceBetweenTextBoxY
+        var autoRebuyRadioY = autoRebuyTextBoxY + textBoxHeight/2 - radioHeight/2
+
+        //position autorebuy radio
+         $('#autoRebuyRadio').css('left', radioX+'px')
+        $('#autoRebuyRadio').css('top', autoRebuyRadioY+'px')
+
+         //position autorebuyText
+         $('#autoRebuyText').css('left', textX+'px')
+       $('#autoRebuyText').css('top', autoRebuyRadioY+'px')
+        
+        //postion autorebuy textbox
+                $('#autoRebuyAmount').css('left', textBoxX+'px')
+        $('#autoRebuyAmount').css('top', autoRebuyTextBoxY+'px')
+
+
 
 
         //iterate through cashierItems to create all texts
@@ -1260,7 +1547,6 @@ this.displayChildren(this.images.background)
          this.seats[i].openSeat.image.onClick = self.events.onButtonClick
         }
 
-        this.rightSideButtons[0].button.image.onClick = self.events.foldToAnyBetClick
         this.stand.image.onPress = self.events.buttonMouseDown
         this.stand.image.onClick = self.events.onButtonClick
 
@@ -1280,7 +1566,7 @@ this.displayChildren(this.images.background)
         this.images.setDefaults()
        this.images.setDefaultEvents()
        this.images.setDefaultMessages()
-   //    this.displayTableChatBox()
+      this.displayTableChatBox()
     }
      
 
@@ -1309,35 +1595,25 @@ this.displayChildren(this.images.background)
 
     this.displayTableChatBox = function (){
 
-var htmlTableChatBox = document.getElementById('tableChatBox')
-    htmlTableChatBox.style.display = 'inline'
-    htmlTableChatBox.style.position = 'absolute'
-    htmlTableChatBox.style.left = this.images.htmlTableChatBox.position.x + 'px'
-    htmlTableChatBox.style.top = this.images.htmlTableChatBox.position.y + 'px'
+$('#chat').css({
+ 'display'   : 'inline'
+})
 
-    //emit chat if user pressed enter
- $('#tableChatBox').keypress(function(event){
-      var keycode = (event.keyCode ? event.keyCode : event.which)
-    if(keycode == '13') {    
-        socket.emit('chat', $("#tableChatBox").val())
-        $("#tableChatBox").val('')
-        }
-    })
+
     }
 
     this.disableTableChatBox = function(){
-         $('#tableChatBox').attr("readonly", true)
+         $('#chat').attr("readonly", true)
     }
 
     this.enableTableChatBox = function(){
         
-        $('#tableChatBox').attr("readonly", false)
+        $('#chat').attr("readonly", false)
     }
 
     this.hideTableChatBox = function(){
 
-        var htmlTableChatBox = document.getElementById('tableChatBox')
-    htmlcashier.style.display = 'none'
+ $('#chat').attr("display", none)
 
     }
 
@@ -1438,11 +1714,8 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
         else if( chips == 0){
              this.images.seats[seatNumber].status.text.text =  'adding chips'
         }
-
-           
+       
         this.displayCorrectSeatMessage(seatNumber)
-
-
     }
 
     this.hideBet = function (seatNumber){
@@ -1457,7 +1730,7 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
     }
 
    //this.images.seats[i] is parent for players bets, this.images.pots[i] is parent for pots
-    this.displayChipStack = function(chipAmount,parentOfChipArray, initialX, initialY){
+    this.displayChipStack = function(chipAmount,parentOfChipArray, initialX, initialY, distanceBetweenColumns){
         //remove previous chips
         this.hideChildren(parentOfChipArray.chips)
         //reset chip array from memory
@@ -1466,9 +1739,11 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
         var y = initialY
         var chipIncrementY = this.images.pots[0].secondChip.position.y-this.images.pots[0].firstChip.position.y
         var totalChips = 0
-
-                    var distanceBetweenColumns = parentOfChipArray.secondColumnChip.position.x-parentOfChipArray.firstChip.position.x
-
+        if(_.isNull(distanceBetweenColumns)||_.isUndefined(distanceBetweenColumns)){
+            if(!_.isNull(parentOfChipArray.secondColumnChip.position.x) && !_.isUndefined(parentOfChipArray.secondColumnChip.position.x)&&!_.isNull(parentOfChipArray.firstChip.position.x)&&!_.isUndefined(parentOfChipArray.firstChip.position.x))
+            {
+                    var distanceBetweenColumns = parentOfChipArray.secondColumnChip.position.x-parentOfChipArray.firstChip.position.x}
+                    }
 
         while(chipAmount>=1){
             if(chipAmount>=10000){
@@ -1680,6 +1955,7 @@ clearInterval(imageAnimation)
 }, interval)
 
  }
+
  //get Width of a line of text from its parent Item, returns [width, fontSize]
  this.getTextWidthAndFontSize = function (parentOfTextObject, fontSize){
      if(parentOfTextObject instanceof this.images.Item){
@@ -1688,7 +1964,7 @@ clearInterval(imageAnimation)
            var PIndex =  parentOfTextObject.text.font.indexOf('P')
            if(pIndex>=PIndex){var pLocation = pIndex}
            else if(pIndex<PIndex){var pLocation = pIndex}
-           var fontSize = parentOfTextObject.text.font.substring(0,pLocation-1)
+           var fontSize = parentOfTextObject.text.font.substring(0,pLocation)
          }
      }
      var context = this.stage.canvas.getContext('2d')
@@ -1696,6 +1972,7 @@ clearInterval(imageAnimation)
      var textData = context.measureText(parentOfTextObject.text.text)
      return [textData.width, fontSize]
  }
+
  //must include false or undefined slots for already dealt cards
  this.dealCommunity = function (communityArray){
      
@@ -1878,7 +2155,7 @@ callback(null, callBackNumber)
 
     this.hideSeatedOptions=function(){
         this.hideInHandOptions()
-        this.hideChildren(this.images.stand)
+      //  this.hideChildren(this.images.stand)
          this.hideChildren(this.images.rebuy)
  this.hideChildren(this.images.sitIn)
     }
@@ -1999,7 +2276,7 @@ this.addChildToContainer(parentOfImageObject.image, parentOfImageObject.position
         }
  }
 
- this.hideAllActionButtons=function(seatNumber){
+ this.hideAllActionButtons =function(){
 this.hideChildren(this.images.fold)
 this.hideChildren(this.images.call)
 this.hideChildren(this.images.check)
@@ -2035,6 +2312,114 @@ this.hideChildren(this.images.betSlider)
 
  }
 
+ this.winners = function (pots, players){
+     // player is array, so players[i].win = array[amountWon, amountWon]
+      var animationTime = 800
+      var timeBetweenAnimations = 400
+      var timeAtEnd = 700
+        var ticks = 40
+        var chipStacks = []
+        for(var i = 0;i<players.length;i++)
+        {
+            chipStacks.push([])
+        }
+        var callbackNumber = 0
+        //push animateImages into an array
+       // we want to end up with an array of these for each pot: [seatNumber, amount]
+       var potWinners = []
+       var temporaryStacks = []
+    var potIntoChipAnimationArray = []
+    var callbacks = []
+    var finalArray = []
+   var chipsInFrontOfPlayer =[]
+    for(var i =0;i<self.images.seats.length;i++){
+    chipsInFrontOfPlayer.push(0)}
+       for(var i=0;i<pots.length;i++){
+           //increase the length of data array to match number of pots
+          potWinners.push([])
+          //increase the length of animation array to match number of pots
+           potIntoChipAnimationArray.push([])
+           for(var n=0;n<players.length;n++){
+              var winnings =  players[n].win[i]
+              if(amountWon>0){potWinners[i].push({seat:players[n].seat, amountWon: winnings, id:temporaryStacks.length })}
+               temporaryStacks.push([])
+           }
+       }
+
+       //now we create arrays of functions for animations FROM pot TO player
+        _.each(_.range(potWinners), function(potNumber) {
+            var callID = 0
+            //skip pot if empty
+            if(!_.isEmpty(potWinners[potNumber])){
+                callbacks.push({callback:{}})
+                //iterate through all the data of winners in  potWinners[potNumber]
+                _.each(potWinners[potNumber], function(i) {
+                    //calculate distance each trip will travel based on bottom chip
+                var animationDistanceX = self.images.seats[potWinners[potNumber][i].seat].firstChip.position.x - self.images.pots[potNumber].firstChip.position.x 
+                var animationDistanceY = self.images.seats[potWinners[potNumber][i].seat].firstChip.position.y - self.images.pots[potNumber].firstChip.position.y 
+                //calculate distance between first and second chip column
+                var columnDistance = self.images.seats[potWinners[potNumber][i].seat].secondColumnChip.position.x - self.images.seats[potWinners[potNumber][i].seat].firstChip.position.x 
+
+                //display chips in pot
+                self.displayChipStack(potWinners[potNumber][i.amountWon], temporaryStacks[potWinners[potNumber][i].id], self.images.pots[potNumber].firstChip.position.x, self.images.pots[potNumber].firstChip.position.y, columnDistance)
+                //iterate through chipstack to push animations of each chip into an array
+                _.each(_.range(temporaryStacks[potWinners[potNumber][i].id].chips), function(n){
+
+potIntoChipAnimationArray[potNumber].push(function(callback){
+      self.animateImage(temporaryStacks[potWinners[potNumber][i].id].chips[n].position.x, temporaryStacks[potWinners[potNumber][i].id].chips[n].position.y, temporaryStacks[potWinners[potNumber][i].id].chips[n].position.x +animationDistanceX, temporaryStacks[potWinners[potNumber][i].id].chips[n].position.y+ animationDistanceY, function(){callback(null, callID)})
+     
+                }) 
+
+                callID++
+                
+                })
+
+                })
+                callbackNumber++
+    }
+    })
+
+    var errorNumber = 0
+    _.each(_.range(potIntoChipAnimationArray), function(potNumber){
+        if(!_isEmpty(potNumber)){
+
+        finalArray.push(
+
+           function(next){
+               //remove chip images from pot
+               self.hideChildren(self.images.pots[potNumber].chips)
+               self.hideChildren(self.images.pots[potNumber].potSize)
+    async.parallel(chipIntoPotAnimationArray[potNumber], function(err, results){next(null, errorNumber)})
+})
+errorNumber++
+ finalArray.push(function(next){
+
+     _.each(potWinners[potNumber], function(i) {
+         //define seatNumber
+         var seatNumber = potWinners[potNumber][i].seat
+         //update how many chips a player has
+         chipsInFrontOfPlayer[seatNumber] = potWinners[potNumber][i].amountWon + chipsInFrontOfPlayer[seatNumber]
+    self.displayChipStack(chipsInFrontOfPlayer[seatNumber], self.images.seats[seatNumber], self.images.seats[seatNumber].chips.firstChip.position.x, self.images.seats[seatNumber].chips.firstChip.position.y)
+   
+    self.images.seats[seatNumber].betSize =  chipsInFrontOfPlayer[seatNumber]
+    //remove temporary animated chipstack
+    self.hideChildren(temporaryStacks[potWinners[potNumber][i].id].chips)
+
+var wait = setTimeout(function(){
+    
+    next(null, errorNumber)
+
+}, timeBetweenAnimations)
+
+})
+ })
+    errorNumber++
+
+ }})
+
+ async.series([finalArray])
+ }
+
     this.displayopenSeats = function(openSeats){
         
 for (var i = 0; i < openSeats.length; i = i + 1)
@@ -2042,16 +2427,17 @@ for (var i = 0; i < openSeats.length; i = i + 1)
         this.displayText(this.images.seats[openSeats[i]].openSeat)}
     }
 
-    this.displayInHandOptions=function(){
+    this.displayInHandOptions = function(){
         
-        this.displayButton(this.images.rightSideButtons[0].button)
-        
-        this.displayButton(this.images.rightSideButtons[2].button,false,['set_flag','post_blind',false])
+        this.displayChildren(this.images.foldToAnyBet)
+        this.displayChildren(this.images.sitOutNextHand)
+         this.displayChildren(this.images.sitOutNextBigBlind)
     }
+
     this.hideSeatedOptions = function(){
-        this.hideChildren(this.images.rightSideButtons[0].button)
-         this.hideChildren(this.images.rightSideButtons[1].button)
-          this.hideChildren(this.images.rightSideButtons[2].button)
+        this.hideChildren(this.images.foldToAnyBet)
+         this.hideChildren(this.images.sitOutNextHand)
+          this.hideChildren(this.images.sitOutNextBigBlind)
           this.hideChildren(this.images.getChips)
           this.hideChildren(this.images.rebuy)
           this.hideChildren(this.images.sitIn)
@@ -2454,9 +2840,11 @@ self.displayCorrectSeatMessage(seatNumber)
           this.addChildToContainer(parentOfImageObject.bitmapAnimation, parentOfImageObject.position.z)
           parentOfImageObject.bitmapAnimation.gotoAndStop(0)
       }
-    else if( parentOfImageObject.image){  parentOfImageObject.image.onClick = self.events.onButtonClick
+    else if( parentOfImageObject.image){  
+    if(parentOfImageObject.onClick == null){
+    parentOfImageObject.image.onClick = self.events.onButtonClick
       parentOfImageObject.image.onPress = self.events.buttonMouseDown
-      
+      }
      this.displayChildren(parentOfImageObject)
      }
  
@@ -2471,18 +2859,15 @@ self.displayCorrectSeatMessage(seatNumber)
     this.hideCashier = function(){
 
         //enable TableChatBox
-        if($('#tableChatBox').attr("readonly") == true){
-            this.gameState.tableChatBox.display = false
-       this.enableTableChatBox()
+        if($('#chat').attr("readonly") == true||'readonly'){
+            self.gameState.tableChatBox.display = false
+       self.enableTableChatBox()
        }
 
-                self.hideChildren(self.images.cashier)
-                var htmlcashier = document.getElementById('cashier')
-                htmlcashier.style.display = 'none'
+                $('#cashier').css('display','none')
 
                 self.restoreActiveContainers(self.gameState.cashier.activeContainers)
-
-        self.gameState.cashier.visible = false
+        self.gameState.cashier.display = false
 
                  $('#maxRadio').prop('checked', false)
           $('#autoRebuyRadio').prop('checked', false)
@@ -2491,24 +2876,22 @@ self.displayCorrectSeatMessage(seatNumber)
           $("#otherAmount").val('')
            $('#autoRebuyAmount').val('')
            $('#maxAmount').val('')
-
+           //hide cashier children
+           self.hideChildren(self.images.cashier)
 
     }
 
     this.hideMessageBox = function(){
 
-
         self.hideChildren(self.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex])
-        if(self.gameState.messageBox.messageBoxImageContainerIndex == self.gameState.containerImageIndexes.initialMessageBox){
+        if(self.gameState.messageBox.messageBoxImageContainerIndex == self.gameState.containerImageIndexes.initialMessageBox){     
             
-
         if(self.gameState.cashier.display === true){
-            var htmlcashier = document.getElementById('cashier')
-           htmlcashier.style.display = 'inline'
+            $('#cashier').css('display','inline')
         }
 
         //enable tableChatBox if necessary
-      else  if(this.gameState.tableChatBox.display == true){ this.enableTableChatBox()}
+      else  if(self.gameState.tableChatBox.display == true){ self.enableTableChatBox()}
 
         }
 
@@ -2516,8 +2899,8 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         self.gameState.messageBox.messageBoxImageContainerIndex = self.gameState.messageBox.messageBoxImageContainerIndex -2 
     }
 
-    this.displayMessageBox = function(messageString, messageInfo){
 
+    this.displayMessageBox = function(messageString, messageInfo){
        var messageBoxImageContainerIndex = this.gameState.containerImageIndexes.initialMessageBox
 
            for(var i= this.gameState.containerImageIndexes.initialMessageBox;i<self.images.containers.length;i++){
@@ -2532,16 +2915,15 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         //check if this is the first(bottom) messagebox displayed
         if(messageBoxImageContainerIndex == this.gameState.containerImageIndexes.initialMessageBox){
        //hide html cashier(if visible)
-        var htmlcashier = document.getElementById('cashier')
-
-       if( htmlcashier.style.display !== 'none'){
+       if( $('#maxRadio').is(':visible')){
+           console.log('cashier being hidden')
        self.gameState.cashier.display = true
-       htmlcashier.style.display = 'none'
+       $('#cashier').css('display', 'none')
        }
        else{self.gameState.cashier.display = false}
        
        //check if tableChatBox is readonly
-      if($('#tableChatBox').attr("readonly") == true){}
+      if($('#chat').attr("readonly") == true){}
       else{
        this.gameState.tableChatBox.display = true
        this.disableTableChatBox()
@@ -2601,8 +2983,10 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
     if(_.isNull(messageInfo.buttonSizeAndFont)||_.isUndefined(messageInfo.buttonSizeAndFont)){messageInfo.buttonSizeAndFont = '13px Arial'}
      if(_.isNull(messageInfo.buttonTextColor)||_.isUndefined(messageInfo.buttonTextColor)){ messageInfo.buttonTextColor = '#000000'}
     if(_.isNull(messageInfo.buttonBackgroundColor)||_.isUndefined(messageInfo.buttonBackgroundColor)){ messageInfo.buttonBackgroundColor = '#0000FF'}
+    if(_.isNull(messageInfo.okayText)||_.isUndefined(messageInfo.Text)){ messageInfo.okayText = 'OK'}
+    if(_.isNull(messageInfo.cancelText)||_.isUndefined(messageInfo.cancelText)){ messageInfo.cancelText = 'Cancel'}
 
-    console.log(messageInfo)
+
 
        //set button locations
     if(messageInfo.cancel != true){
@@ -2628,21 +3012,36 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
    //OK button
         self.images.messageBox[messageBoxImageContainerIndex].okay =  new self.images.Item (okayX,buttonY, buttonWidth,buttonHeight,messageBoxImageContainerIndex) 
         self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].okay, messageInfo.buttonBackgroundColor )
-        self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].okay, 'OK', messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
-                self.images.messageBox[messageBoxImageContainerIndex].okay.messages = messageInfo.okayMessages
-        self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = self.events.onButtonClick
+        self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].okay, messageInfo.okayText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
+            //asign messages if exists
+            if(messageInfo.okayMessages){    
+            self.images.messageBox[messageBoxImageContainerIndex].okay.messages = messageInfo.okayMessages}
+                //assign event if assigned
+               
+       if(messageInfo.okayEvent){
+           self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = messageInfo.okayEvent
+           }
+      else{
+            self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = self.events.onButtonClick
         self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = self.hideMessageBox
-
+        }
 //cancel button
         if(messageInfo.cancel){
         self.images.messageBox[messageBoxImageContainerIndex].cancel =  new self.images.Item (cancelX,buttonY, buttonWidth,buttonHeight,messageBoxImageContainerIndex) 
         self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].cancel, messageInfo.buttonBackgroundColor )
-        self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].cancel, 'Cancel', messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
+        self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].cancel, messageInfo.cancelText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
+        //add message to cancel if available
+        if(messageInfo.cancelMessages){
           self.images.messageBox[messageBoxImageContainerIndex].cancel.messages = messageInfo.cancelMessages
-          self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = self.events.onButtonClick
-        self.images.messageBox[messageBoxImageContainerIndex].cancel.image.onClick = self.hidemessageBox
+          }
+          //add cancel event if availble
+           if(messageInfo.cancelEvent){
+               self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = messageInfo.cancelEvent
+               }
+       else{  
+        self.images.messageBox[messageBoxImageContainerIndex].cancel.image.onClick = self.hideMessageBox
         }
-       
+       }
         //add closeX Image
         var closeX =messageBoxWindowX+messageBoxWindowWidth- closeXRightOffset- closeXWidth
         var closeY =  messageBoxWindowY+ closeXTopOffset
@@ -2656,25 +3055,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         }
 
                 self.displayChildren(self.images.messageBox[messageBoxImageContainerIndex])
-                console.log(self.stage.contains(self.images.containers[messageBoxImageContainerIndex]))
-                 console.log(self.images.containers[messageBoxImageContainerIndex].children)
-                 console.log(self.images.containers[messageBoxImageContainerIndex].isVisible())
-                   console.log(self.stage.contains(self.images.containers[messageBoxImageContainerIndex].children[0]))
-                   console.log(self.stage.contains(self.images.containers[messageBoxImageContainerIndex].children[1]))
-                   console.log(self.stage.contains(self.images.containers[messageBoxImageContainerIndex].children[2]))
-                   console.log(self.images.containers[messageBoxImageContainerIndex].children[0].isVisible())
-
-                 for(var i in self.images.messageBox[messageBoxImageContainerIndex]){
-if(self.images.messageBox[messageBoxImageContainerIndex][i].text) {
-    console.log(self.images.messageBox[messageBoxImageContainerIndex][i].text)
-    console.log(self.stage.contains(self.images.messageBox[messageBoxImageContainerIndex][i]))}
-if(self.images.messageBox[messageBoxImageContainerIndex][i].image){
-    console.log(self.images.messageBox[messageBoxImageContainerIndex][i].image)
-    console.log(self.images.containers[messageBoxImageContainerIndex].contains(self.images.messageBox[messageBoxImageContainerIndex][i].image))}
-
-                 }
-          /*      console.log(self.images.messageBox[messageBoxImageContainerIndex])
-                console.log(messageBoxImageContainerIndex) */
+              
     }
 
 
@@ -2683,6 +3064,7 @@ if(self.images.messageBox[messageBoxImageContainerIndex][i].image){
         
 
       var cashierImageContainerIndex = this.gameState.containerImageIndexes.cashier
+
 
       //disable tableChatBox
 
@@ -2713,7 +3095,7 @@ if(self.images.messageBox[messageBoxImageContainerIndex][i].image){
 
         this.images.cashier.playerMinValue.text.text = info.currency_per_chip*info.min
 
-       this.images.cashier.accountBalanceValue.text.text = info.balance
+       this.images.cashier.accountBalanceValue.text.text = info.currency_per_chip*info.balance
 
        this.images.cashier.currency.text.text = info.currency+':'
 
@@ -2742,7 +3124,6 @@ if(self.images.messageBox[messageBoxImageContainerIndex][i].image){
           }
         })
 
-
             $("#autoRebuyAmount").focus(function() {
         
          $('#maxRadio').prop('checked', false)
@@ -2770,14 +3151,9 @@ if(self.images.messageBox[messageBoxImageContainerIndex][i].image){
 //display textboxes for adding chips
           var htmlcashier = document.getElementById('cashier')
     htmlcashier.style.display = 'inline'
-    htmlcashier.style.position = 'absolute'
-    htmlcashier.style.left = this.images.cashier.addChipsTextBox.position.x + 'px'
-    htmlcashier.style.top = this.images.cashier.addChipsTextBox.position.y + 'px'
 
-        
+      
        this.images.cashier.addChips.text.text = 'add chips'
-     
-
        this.images.cashier.cancel.text.text = 'cancel'
 
 
@@ -2818,103 +3194,8 @@ this.restoreActiveContainers=function(activeContainerArray){
     }
 }
     
-
-   this.displayInitialTableState=function(tableState){
-        
-        
-        if(tableState){table_state = tableState}
-        else{var table_state = $('#server_values').data('table_state');
-        //console.log(table_state)
-        }
-        //remove extra seats
-        for (var i = 9;i>=table_state.max_players;i=i-1){
-            
-            this.images.seats[i] = null
-            this.gameState.seats[i] = null
-
-        }
-        
-                //display seats and assign userSeatNumber
-         for (var i in table_state.seats) { 
-          //assign userSeatNumber if player is user
-         if(table_state.seats[i].is_you){ 
-         this.gameState.userSeatNumber = table_state.seats[i].seat 
-
-         //show options available if player is user
-         self.displayButton(self.images.stand)
-         self.displayButton(self.images.getChips)
-         self.displayButton(self.images.rightSideButtons[1].button)
-
-         
-
-         if(table_state.seats[i].sitting_out == true){
-             self.displayButton(self.images.sitIn)
-         }
-         else if(table_state.seats[i].sitting_out == false){
-
-         }
-         }
-
-         //seated players
-         this.playerSits(table_state.seats[i].seat,table_state.seats[i].username,table_state.seats[i].chips)
-        if(table_state.seats[i].sitting_out == true){
-            self.images.seats[table_state.seats[i].seat].status.text.text = "Sitting Out"
-        }
-         }
-
-
-        //display player's cards
-         for(var i=0;i<table_state.players.length;i=i+1){
-               if(!table_state.players[i].hand)
-               {
-                   this.displayHiddenCards(table_state.players[i].seat)
-                   }
-              
-                   else if(table_state.players[i].hand)
-                   {
-        this.displayHoleCards(table_state.players[i].hand, table_state.players[i].seat)
-        //show in hand options if player has cards
-
-        self.displayButton(self.images.rightSideButtons[0].button)
-         self.displayButton(self.images.rightSideButtons[2].button)
-        }
-        }
-
-        //comunity cards
-        this.displayAllCommunity(table_state.community)
-        //pot
-        if(table_state.pot&&table_state.pot>0){this.updatePotSize(table_state.pot)}
-
-         //current bets
-         for (var i=0;i<table_state.players.length;i=i+1) { 
-         this.playerPutsChipsInPot(table_state.players[i].seat,table_state.players[i].current_bet, table_state.players[i].chips)
-         this.displayChipStack(table_state.players[i].current_bet, self.images.seats[table_state.players[i].seat], self.images.seats[table_state.players[i].seat].firstChip.position.x, self.images.seats[table_state.players[i].seat].firstChip.position.y)
-         }
-
-          //empty seats
-         for (var i = 0; i<table_state.max_players;i++){    this.displayCorrectSeatMessage(i)    }
-
-
-         //display static items
-         this.displayChildren(this.images.getChips)
-         this.displayChildren(this.images.viewLobby)
-         this.displayChildren(this.images.exitTable)
-    }
-    
-  //---------------------SOCKET CODE------------------------
-    this.receiveTableState = function(){
-   socket.once('table_state', function(table_state){
-             self.displayInitialTableState(table_state)
-             self.activateSockets()
-    })
-    }
-    
-    this.activateSockets = function(){
-     
-        
-
-    socket.on('street_ends', function (potSize){
-        var animationTime = 800
+this.streetEnds = function(potSize){
+      var animationTime = 800
         var ticks = 40
         var chipIntoPotAnimationArray = []
         var callBackNumber = 0
@@ -2952,14 +3233,136 @@ function(next){
 }
   ])
 
+}
+
+
+   this.displayInitialTableState=function(tableState){
+
+                 //display static items
+         this.displayChildren(this.images.getChips)
+         this.displayChildren(this.images.viewLobby)
+         this.displayChildren(this.images.exitTable)
+        
+         //get table_state if not passed as parameter
+        if(tableState){table_state = tableState}
+        else{var table_state = $('#server_values').data('table_state')
+        //console.log(table_state)
+        }
+        //remove extra seats
+        for (var i = 9;i>=table_state.max_players;i=i-1){
+            this.images.seats[i] = null
+            this.gameState.seats[i] = null
+        }
+        
+        //comunity cards
+        this.displayAllCommunity(table_state.community)
+        
+                //display seats and assign userSeatNumber
+         for (var i = 0;i< table_state.seats.length;i++) { 
+          //assign userSeatNumber if player is user
+         if(table_state.seats[i].is_you == true){ 
+         this.gameState.userSeatNumber = table_state.seats[i].seat 
+         //iterate through players array to get the index of user
+         for(var n=0;n<table_state.players.length;n++){
+             if(table_state.players[n].seat == this.gameState.userSeatNumber)
+         var userPlayerArrayIndex = n
+         }
+
+      //   self.displayChildren(self.images.stand)
+
+//======================display user's flag settings=====================================
+         //display foldToAnyBetButton depending on user's flag
+         if(table_state.seats[i].flags){
+              //check if user is holding cards
+         if(!_.isUndefined(userPlayerArrayIndex)&&table_state.players[userPlayerArrayIndex].hand){
+         if(table_state.seats[i].flags.check ==true && table_state.seats[i].flags.fold == true){
+        
+         
+             self.displayChildren(self.images.foldToAnyBetOn)}
+             else{ self.displayChildren(self.images.foldToAnyBet)}
+             }
+
+             //display sitout next hand depending on user's flag
+              if(table_state.seats[i].flags.sitting_out == true){
+             self.displayChildren(self.images.sitOutNextHandOn)}
+             else{self.displayChildren(self.images.sitOutNextHand)}
+
+          
+                  //check if user is sitting in
+                  if(table_state.seats[i].sitting_out == true){
+                       //either display rebuy OR sitin if user is sitting out
+             if(table_state.seats[i].chips == 0){
+                 self.displayChildren(self.images.rebuy)}
+                 else{ self.displayChildren(self.images.sitIn)}
+         }
+
+         //if user is not sitting out
+         else{
+                    //display sit out next big blind depending on user's flag
+              if(table_state.seats[i].flags.post_blind == false){self.displayChildren(self.images.sitOutNextBigBlindOn)}
+                    else{self.displayChildren(self.images.sitOutNextBigBlind)}
+             }
+  
+         }
+         }
+
+         //non-user seated players
+         this.playerSits(table_state.seats[i].seat,table_state.seats[i].username,table_state.seats[i].chips)
+        if(table_state.seats[i].sitting_out == true){
+            self.images.seats[table_state.seats[i].seat].status.text.text = "Sitting Out"
+        }
+         }
+         
+
+
+        //display player's cards
+         for(var i=0;i<table_state.players.length;i=i+1){
+               if(!table_state.players[i].hand){
+                   this.displayHiddenCards(table_state.players[i].seat)
+                   }
+              
+                   else if(table_state.players[i].hand) {
+        this.displayHoleCards(table_state.players[i].hand, table_state.players[i].seat)
+        }
+        }
+
+        //pot
+        if(table_state.pot&&table_state.pot>0){this.updatePotSize(table_state.pot)}
+
+         //current bets
+         for (var i=0;i<table_state.players.length;i=i+1) { 
+         this.playerPutsChipsInPot(table_state.players[i].seat,table_state.players[i].current_bet, table_state.players[i].chips)
+         this.displayChipStack(table_state.players[i].current_bet, self.images.seats[table_state.players[i].seat], self.images.seats[table_state.players[i].seat].firstChip.position.x, self.images.seats[table_state.players[i].seat].firstChip.position.y)
+         }
+
+          //empty seats
+         for (var i = 0; i<table_state.max_players;i++){    this.displayCorrectSeatMessage(i)    }
+
+         
+    }
+    
+  //---------------------SOCKET CODE------------------------
+    this.receiveTableState = function(){
+   socket.once('table_state', function(table_state){
+             self.displayInitialTableState(table_state)
+             self.activateSockets()
+    })
+    }
+    
+    this.activateSockets = function(){
+     
+        
+
+    socket.on('street_ends', function (potSize){
+       self.streetEnds(potSize)
     })
 
     //error received
        socket.on('error', function(errorString){
            var messageInfo = {}
-           messageInfo.message = errorString
+          errorString
            messageInfo.okay = true
-            self.displayMessageBox(messageInfo)
+            self.displayMessageBox(errorString, messageInfo)
                 
 })
         
@@ -2984,12 +3387,19 @@ function(next){
                 
 })
 
-socket.on('hands_dealt', function(players){
+socket.on('hands_dealt', function(players, tableInfo){
+    //show dealer button
+    self.images.dealerButton.image.x = self.images.seats[tableInfo.dealer].dealerButton.position.x
+     self.images.dealerButton.image.y = self.images.seats[tableInfo.dealer].dealerButton.position.y
+     self.displayChildren(self.images.dealerButton)
+     console.log(self.images.dealerButton)
+     console.log(self.images.dealerButton.image.isVisible())
+    //deal cards
     var playerArray = []
     for(var i = 0; i<players.length;i++){playerArray.push(players[i].seat)}
 
     if(self.gameState.holeCards) { 
-    self.dealHoleCards(playerArray[0],playerArray, self.gameState.holeCards)
+    self.dealHoleCards(tableInfo.small_blind_seat,playerArray, self.gameState.holeCards)
     self.displayInHandOptions()
     }
     else{self.dealHoleCards(playerArray[0],playerArray)}
@@ -2999,7 +3409,6 @@ socket.on('hands_dealt', function(players){
 
 //hand dealt to user
        socket.on('hole_cards_dealt', function(hand){
-         // socket.removeListener('hands_dealt')
          self.gameState.holeCards = hand
 
      })
@@ -3017,7 +3426,9 @@ socket.on('hands_dealt', function(players){
         self.hideHoleCards(player.seat)
         self.hideBet(player.seat)
         if(player.seat == self.gameState.userSeatNumber){
-            self.hideButton(self.images.rightSideButtons[0].button)
+            self.hideChildren(self.images.foldToAnyBet)
+            self.hideChildren(self.images.foldToAnyBetOn)
+
             }
             break;
 
@@ -3063,7 +3474,7 @@ self.playerToAct(self.gameState.userSeatNumber)
          }
       else   if (actions[i].call){
              self.images.call.text.text = 'Call '+actions[i].call
-         self.displayButton(holdemCanvas.images.call,false,['act','call',actions[i].call])
+         self.displayButton(self.images.call,false,['act','call',actions[i].call])
          }
        else  if (actions[i].raise){
          self.displayButton(self.images.raise,'raise to '+actions[i].raise[0],['act','raise', actions[i].raise[0]])
@@ -3078,14 +3489,21 @@ self.playerToAct(self.gameState.userSeatNumber)
 
 //player to act (not the user)
  socket.on('player_to_act', function(player, timeout){
-    
+    var timeToCountDown = 3000
      self.playerToAct(player.seat)
-  //   self.startCountdown(player.seat,Math.round(timeout/1000))
-     
+
+     //do a countdown when time is low for non-user players
+     if(player.seat != self.gameState.userSeatNumber){
+     createjs.Tween.get(self.images.seats[player.seat].countdown)
+     .wait(timeout-timeToCountDown)
+    .call(self.startCountdown,[player.seat,Math.round(timeToCountDown/1000)],self)
+     }
 })
 
 //player to act (not the user)
  socket.on('user_chats', function(chatInfo){
+     //perform animation only if string is longer than 0 and is not purely spaces
+  if (/\S/.test(chatInfo.message)){
 
   //remove previous tweens that may be running:
   createjs.Tween.removeTweens(self.images.seats[chatInfo.seat].chat.image)
@@ -3117,6 +3535,7 @@ self.playerToAct(self.gameState.userSeatNumber)
     //determine width of tableChatBox
     var chatBoxWidth = imageToTextWidthRatio*width+2.5
 
+    
     //draw new chatBox and set alpha to original alpha
     self.images.seats[chatInfo.seat].chat.image.drawChat(chatBoxWidth) // drawChat function resets alpha automatically
 self.images.seats[chatInfo.seat].chat.text.alpha = 1
@@ -3137,6 +3556,7 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
     .to({alpha:0}, 10000)
     .call(self.hideText,[self.images.seats[chatInfo.seat].chat], self)
     .to({alpha:1})
+    }
 
 })
 //player sits in
@@ -3146,26 +3566,32 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
         if(player.seat == self.gameState.userSeatNumber){
             self.hideChildren(self.images.sitIn)
             self.hideChildren(self.images.rebuy)
-            self.displayButton(self.images.rightSideButtons[1].button,false, ['sit_out'])
+            self.hideChildren(self.images.sitOutNextHandOn)
+            self.displayChildren(self.images.sitOutNextHand)
+           
+            
 }
         self.stage.update()
-});
+})
 
 //player sits out
        socket.on('player_sits_out', function(player){
            self.images.seats[player.seat].status.text.text = 'Sitting Out'
   
         if(player.seat == self.gameState.userSeatNumber){
-
+            self.hideChildren(self.images.sitOutNextHand)
+            self.displayChildren(self.images.sitOutNextHandOn)
+            self.hideChildren(self.images.sitOutNextBigBlind)
+            self.hideChildren(self.images.sitOutNextBigBlindOn)
             if(player.chips == 0){
-                self.displayButton(self.images.rebuy)
+                self.displayChildren(self.images.rebuy)
             }
             else{
-            self.displayButton(self.images.sitIn)
+            self.displayChildren(self.images.sitIn)
             }
 }
         self.stage.update()
-});
+})
 
 
 //player sits, checks if player is the user
@@ -3174,9 +3600,9 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
         if(is_you == true){
             self.gameState.userSeatNumber = player.seat
             socket.emit('get_add_chips_info')
-            self.displayButton(self.images.stand, false, ['stand'])
-            self.displayButton(self.images.getChips)
-        self.displayChildren(self.images.stand)
+      //      self.displayChildren(self.images.stand, false, ['stand'])
+            self.displayChildren(self.images.getChips)
+     //   self.displayChildren(self.images.stand)
 
         //refresh open seats to disabled seats
         for (var i = 0;i<self.images.seats.length;i++){self.displayCorrectSeatMessage(i) }
@@ -3210,6 +3636,13 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
         }
   )
   
+  //player sets a flag
+       socket.on('player_sets_flag', function(player){
+        console.log(player)
+        
+        }
+  )
+
 
 //player adds chips to his stack
        socket.on('player_adds_chips', function(player,is_you){
@@ -3226,7 +3659,7 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
         if(is_you){
             self.hideCashier()
             if(player.chips>0){self.hideChildren(self.images.rebuy)
-            if (player.sitting_out == true){self.displayButton(self.images.sitIn)}
+            if (player.sitting_out == true){self.displayChildren(self.images.sitIn)}
             }
         }
         self.stage.update()
@@ -3235,6 +3668,11 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
 
 //round ends, all hole cards are shown
        socket.on('winners', function(players){
+        
+
+         //  self.winners()
+
+
 
 
            for(var i =0;i<players.length;i++){
@@ -3271,7 +3709,9 @@ jQuery(window).load(function (){
      
     holdemCanvas.createAllItems()
    holdemCanvas.receiveTableState()
-   self.displayButton(self.images.cashierButton)
+     console.log(document.getElementById('chatDiv'))
+      console.log(document.getElementById('cashierDiv'))
+
     })
  /*
      tick=function(event) {

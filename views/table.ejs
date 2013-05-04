@@ -1,5 +1,7 @@
 <% var title = 'Table ' + table_id; %>
-<% include head %>
+<% include head_start %>
+        <link type="text/css" rel="stylesheet" href="/css/pokertable.css" />
+    <% include head_end_and_header %>
         <h1 id="welcome">
             <%= title %>
         </h1>
@@ -11,23 +13,39 @@
             </form>
         </span>
 
+       
         <div id="pokerTableWrapper">
-            <div id="pokerTable">
+            <div id="pokerCanvasDiv">
                     <canvas id="canvas" width="690" height="480" style= 'z-index :0'></canvas>
-                   
-                <form id = 'cashier' style='z-index: 1; display: none'>    
-                       <input type = 'radio' id ="maxRadio" name = 'addChipsRadio' value="max" size="-4">max<input type = 'text' id="maxAmount" width="20px" height="17px"><br>
-            <input type = 'radio' id ="otherAmountRadio" name = 'addChipsRadio' >Other Amount: <input type = 'text' id="otherAmount" width="20px" height="17px"> <br>
-                      <input type = 'radio' id ="autoRebuyRadio" name = 'addChipsRadio' >Auto-Rebuy to: <input type = 'text' id="autoRebuyAmount" >     </form>      
-           <form id ="tableChatBox" style="z-index:1; display:none">
+                   </div> <!-- pokerCanvasDiv-->
+            <div id="cashierDiv">
+                <form id = 'cashier' style='display: none'>    
+                       <input type = 'radio' id ="maxRadio" name = 'addChipsRadio' value="max" size="-4">
+                    <p id = 'maxText'>Max</p>
+                    <input type = 'text' id="maxAmount">
+            <input type = 'radio' id ="otherAmountRadio" name = 'addChipsRadio' >
+                <p id = 'otherAmountText'>    Other Amount: </p>
+                    <input type = 'text' id="otherAmount"> 
+                      <input type = 'radio' id ="autoRebuyRadio" name = 'addChipsRadio' >
+                 <p id = 'autoRebuyText'>   Auto-Rebuy to: </p>
+                    <input type = 'text' id="autoRebuyAmount" >     </form>      
+            </div> <!-- cashier-->
+            <div id="chatDiv">
+                <form id='chatForm'>
            <input type = 'text' id="chat">
-           </form>
-        </div>
-        
+                <input type = 'text' id="trolol" style ="display :none">
+                </form>
+             </div> <!-- chatDiv-->
+               
         </div> <!-- poker table wrapper -->
-        <input type="button" id="hideshow" value="hide/show" />
-        <div id="chat_table" class="chat_container">
-            <% include chat %>
+            <!--include values to expose to scripts-->
+
+            <input type="hidden" id="server_values" data-table_state="<%= table_state %>" data-table_state_url="/table_state/<%= table_id %>" data-room_state="<%= room_state %>" />
+        <div id="options">
+            <input type="button" id="hideshow" value="hide/show" />
+            <div id="chat_table" class="chat_container">
+                <% include chat %>
+            </div>
         </div>
 
         <!--include values to expose to scripts-->
@@ -43,15 +61,19 @@
         <script src="/js/vendor/soundjs-0.4.0.min.js"></script>
         <script src="/js/vendor/tweenjs-0.4.0.min.js"></script>
         <script src="/js/vendor/preloadjs-0.3.0.min.js"></script>
+        <script src="/js/vendor/jquery-ui.js"></script>
         <!--
         <script src="/js/vendor/preloadjs/AbstractLoader.js"></script>
         <script src="/js/vendor/preloadjs/LoadQueue.js"></script>
         <script src="/js/vendor/preloadjs/TagLoader.js"></script>
         <script src="/js/vendor/preloadjs/XHRLoader.js"></script>
         <script src="/js/vendor/easeljs/EventDispatcher.js"></script>
+
+        <script src="/js/vendor/easeljs/container.js"></script>
+
         -->
-        <script src="/js/vendor/async.js"></script>
+
+        <script src="js/vendor/async.js"></script>
+
         <script src="/js/pokertable.js"></script>
-
-
 <% include foot %>
