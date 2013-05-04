@@ -579,7 +579,7 @@ else if(i==13){cardRank = 'k'}
 
            function handleComplete(event) {
                console.log('loading completed')
-         //   self.createAllItems()
+           self.createAllItems()
         }
 }
 
@@ -3073,7 +3073,9 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         }
 
                 self.displayChildren(self.images.messageBox[messageBoxImageContainerIndex])
-              
+                self.displayChildren(self.images.messageBox[messageBoxImageContainerIndex].window)
+              console.log(self.images.messageBox[messageBoxImageContainerIndex].window)
+                console.log(self.images.messageBox[messageBoxImageContainerIndex].window.image.isVisible())
     }
 
 
@@ -3730,7 +3732,13 @@ jQuery(window).load(function (){
   holdemCanvas.receiveTableState()
      console.log(document.getElementById('chatDiv'))
       console.log(document.getElementById('cashierDiv'))
-
+/*
+      //background bitmap
+        self.window = new self.images.Item(80,80,9,9,9)
+        self.images.itemAsBitmap( self.window, self.images.sources.messageBoxBackground)
+        
+        self.displayChildren( self.window)
+        */
     })
  /*
      tick=function(event) {
