@@ -553,33 +553,18 @@ else if(i==13){cardRank = 'k'}
     console.log(fileSourceArray)
     // must set to false or wo't work.  dont know whay...
                 var preload = new createjs.LoadQueue(false)
-               
-  //  preload.addEventListener("complete", handleComplete)
- //    preload.addEventListener("fileload", handleFileLoad)
- // preload.addEventListener("progress", handleProgress)
-
-      preload.onComplete = handleComplete
-  //    preload.onFileLoad = handleFileLoad
-   //  preload.onProgress = handleProgress
-  //  preload.onLoadStart = handleLoadStart
+    preload.addEventListener("complete", handleComplete)
+     preload.addEventListener("fileload", handleFileLoad)
    preload.loadManifest(fileSourceArray)
-
-   var handleLoadStart = function(event){
-       
-       console.log('load started')
-   }
- var handleProgress = function(event){
-     console.log(event)
- }
+ //  createjs.Ticker.setFPS(30)
 
    var handleFileLoad=  function  (event){
-       console.log('file loaded')
        console.log(event.item.src)
    }
 
            function handleComplete(event) {
                console.log('loading completed')
-         //   self.createAllItems()
+          //  self.createAllItems()
         }
 }
 
@@ -2934,7 +2919,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         if(messageBoxImageContainerIndex == this.gameState.containerImageIndexes.initialMessageBox){
        //hide html cashier(if visible)
        if( $('#maxRadio').is(':visible')){
-          
+           console.log('cashier being hidden')
        self.gameState.cashier.display = true
        $('#cashier').css('display', 'none')
        }
@@ -3268,7 +3253,7 @@ function(next){
         //console.log(table_state)
         }
         //remove extra seats
-        for (var i = 10;i>=table_state.max_players;i=i-1){
+        for (var i = 9;i>=table_state.max_players;i=i-1){
             this.images.seats[i] = null
             this.gameState.seats[i] = null
         }
@@ -3726,8 +3711,8 @@ jQuery(document).ready(function(){
 
 jQuery(window).load(function (){
      
- //   holdemCanvas.createAllItems()
-  holdemCanvas.receiveTableState()
+    holdemCanvas.createAllItems()
+   holdemCanvas.receiveTableState()
      console.log(document.getElementById('chatDiv'))
       console.log(document.getElementById('cashierDiv'))
 
