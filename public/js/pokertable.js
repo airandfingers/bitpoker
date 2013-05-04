@@ -78,8 +78,8 @@ window.onKeydown = onKeyDown
       //      blankSeat : 'img/blank_seat.jpg',
        //     bet: 'img/bet.jpg',
             community: 'img/card_back.jpg',
-            fold: 'img/fold.jpg',
-            sideButton :'img/side_button.jpg',
+     //       fold: 'img/fold.jpg',
+      //      sideButton :'img/side_button.jpg',
             background: 'img/table_background.jpg',
             fourColorDeck: 'img/4colorsheet.png',
             dealerButton: 'img/dealer_button.png',
@@ -2331,7 +2331,7 @@ this.hideChildren(this.images.betSlider)
  }
 
  this.winners = function (pots, players){
-     // player is array, so players[i].win = array[amountWon, amountWon]
+     // player is array, so players[i].chips_won = array[amountWon, amountWon]
       var animationTime = 800
       var timeBetweenAnimations = 400
       var timeAtEnd = 700
@@ -2358,7 +2358,7 @@ this.hideChildren(this.images.betSlider)
           //increase the length of animation array to match number of pots
            potIntoChipAnimationArray.push([])
            for(var n=0;n<players.length;n++){
-              var winnings =  players[n].win[i]
+              var winnings =  players[n].chips_won[i]
               if(amountWon>0){potWinners[i].push({seat:players[n].seat, amountWon: winnings, id:temporaryStacks.length })}
                temporaryStacks.push([])
            }
