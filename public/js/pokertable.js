@@ -637,7 +637,7 @@ this.images.setDefaults = function(){
             var bottomRowSeatDealerButtonX = dealerButtonWidth/2
             var bottomRowSeatDealerButtonY = -dealerButtonHeight*.1
 
-            var rightColumnSeatDealerButtonX = seatWidth-dealerButtonWidth*1.1
+            var rightColumnSeatDealerButtonX = -dealerButtonWidth*1.1
             var rightColumnSeatDealerButtonY = 0
 
             var potHeight = 7
@@ -652,7 +652,7 @@ this.images.setDefaults = function(){
             var absoluteDistanceBetweenBetTextAndChipImages = 5
 
             var htmlTableChatBoxLeftOffset = 10
-            var htmlTableChatBoxBottomOffset = 0
+            var htmlTableChatBoxBottomOffset = 10
             var htmlTableChatBoxWidth = 135
             var htmlTableChatBorderSize = $('#chat').css('border').substring(0,$('#chat').css('border').indexOf('p'))
             var htmlTableChatBoxHeight = 20
@@ -716,6 +716,10 @@ this.images.setDefaults = function(){
              var getChipsHitAreaBottomOffset  = 10
             var getChipsHitAreaUpperRightOffset  = 12  
             var getChipsHitAreaLowerRightOffset  = 41
+
+            //dealerButton
+           this.dealerButton = new this.Item(0,0,dealerButtonWidth, dealerButtonHeight,self.gameState.containerImageIndexes.chips)
+            this.itemAsBitmap(this.dealerButton, this.sources.dealerButton)
 
             //---------pot-------------------
 
@@ -1000,12 +1004,7 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
     }
 
     else if(this.seats[i].seat.position.y == fourthRowY){
-        
-        var dealerButtonX = this.seats[i].seat.position.x+bottomRowSeatDealerButtonX
-        var dealerButtonY = this.seats[i].seat.position.y+bottomRowSeatDealerButtonY
-
-        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,self.gameState.containerImageIndexes.chips)
-
+       
         this.seats[i].firstChip = new this.Item(this.seats[i].seat.position.x+bottomChipOffsetX,this.seats[i].seat.position.y+bottomChipOffsetY,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
         this.seats[i].secondColumnChip = new this.Item( this.seats[i].firstChip.position.x+chipDiameter+self.imageData.distanceBetweenChipColumns,this.seats[i].firstChip.position.y,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
 
@@ -1017,6 +1016,19 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
         var betY = bottomLeftChipY + this.seats[i].firstChip.size.y - betTextHeight  
         //bet size
         this.seats[i].bet = new this.Item(betX,betY,betTextWidth,betTextHeight,self.gameState.containerImageIndexes.chips)
+   
+      //    var dealerButtonX = this.seats[i].seat.position.x+bottomRowSeatDealerButtonX
+   //     var dealerButtonY = this.seats[i].seat.position.y+bottomRowSeatDealerButtonY
+   //place dealer button opposite side than firstChip
+   var distanceChipFromLeftSideX = this.seats[i].firstChip.position.x - this.seats[i].seat.position.x
+ 
+   var dealerButtonRightX = this.seats[i].seat.position.x + this.seats[i].seat.size.x - distanceChipFromLeftSideX
+  var dealerButtonX = dealerButtonRightX - dealerButtonWidth
+  var dealerButtonY = this.seats[i].firstChip.position.y+this.seats[i].firstChip.size.y - dealerButtonHeight
+
+        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,self.gameState.containerImageIndexes.chips)
+
+   
     }
         else if(this.seats[i].seat.position.x == fifthColumnX){
         
@@ -3375,12 +3387,19 @@ function(next){
                 
 })
 
-socket.on('hands_dealt', function(players){
+socket.on('hands_dealt', function(players, tableInfo){
+    //show dealer button
+    self.images.dealerButton.image.x = self.images.seats[tableInfo.dealer].dealerButton.position.x
+     self.images.dealerButton.image.y = self.images.seats[tableInfo.dealer].dealerButton.position.y
+     self.displayChildren(self.images.dealerButton)
+     console.log(self.images.dealerButton)
+     console.log(self.images.dealerButton.image.isVisible())
+    //deal cards
     var playerArray = []
     for(var i = 0; i<players.length;i++){playerArray.push(players[i].seat)}
 
     if(self.gameState.holeCards) { 
-    self.dealHoleCards(playerArray[0],playerArray, self.gameState.holeCards)
+    self.dealHoleCards(tableInfo.small_blind_seat,playerArray, self.gameState.holeCards)
     self.displayInHandOptions()
     }
     else{self.dealHoleCards(playerArray[0],playerArray)}
@@ -3390,7 +3409,6 @@ socket.on('hands_dealt', function(players){
 
 //hand dealt to user
        socket.on('hole_cards_dealt', function(hand){
-         // socket.removeListener('hands_dealt')
          self.gameState.holeCards = hand
 
      })
@@ -3471,10 +3489,15 @@ self.playerToAct(self.gameState.userSeatNumber)
 
 //player to act (not the user)
  socket.on('player_to_act', function(player, timeout){
-    
+    var timeToCountDown = 3000
      self.playerToAct(player.seat)
-  //   self.startCountdown(player.seat,Math.round(timeout/1000))
-     
+
+     //do a countdown when time is low for non-user players
+     if(player.seat != self.gameState.userSeatNumber){
+     createjs.Tween.get(self.images.seats[player.seat].countdown)
+     .wait(timeout-timeToCountDown)
+    .call(self.startCountdown,[player.seat,Math.round(timeToCountDown/1000)],self)
+     }
 })
 
 //player to act (not the user)
