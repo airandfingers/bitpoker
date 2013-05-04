@@ -269,7 +269,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
     this.events.onAddChipsClick = function(event){
         if($('#maxRadio').is(':checked'))
         {
-            socket.emit('add_chips',self.gameState.cashier.max)
+            socket.emit('add_chips',self.gameState.cashier.max, self.gameState.cashier.currency)
 
         }
         else if($('#otherAmountRadio').is(':checked')){
@@ -282,7 +282,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
             }
             else{
                 
-                socket.emit('add_chips',Number(amount))
+                socket.emit('add_chips',Number(amount), self.gameState.cashier.currency)
             }
 
         }
@@ -296,7 +296,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
             }
             else{
                 
-                socket.emit('auto_rebuy',Number(amount))
+                socket.emit('auto_rebuy',Number(amount), self.gameState.cashier.currency)
             }
 
         }
@@ -361,11 +361,12 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
      this.events.viewLobbyClick = function(event){
 
-        window.open("http://localhost:9000/lobby")
+         window.open('/lobby')
 
     }
 
     this.events.exit = function(event){
+        socket.emit('stand')
           var win = window.open('', '_self')
           win.close()
     }
@@ -3081,6 +3082,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         this.gameState.cashier.table_name = info.table_name
         this.gameState.cashier.small_blind = info.small_blind
         this.gameState.cashier.big_blind = info.big_blind
+        this.gameState.cashier.currency = info.currency
         //set defaults
         if(_.isUndefined(info.currency_per_chip)||_.isNull(info.currency_per_chip)){info.currency_per_chip = 1}
         if(_.isUndefined(info.currency)||_.isNull(info.currency)){info.currency = 'Chips'}
