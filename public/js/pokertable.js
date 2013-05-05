@@ -2087,7 +2087,7 @@ else if(communityArray.length == 3){
      
      var initialX = this.images.startingCard.position.x
      var initialY = this.images.startingCard.position.y
-     var animationTime = 200
+     var animationTime = 100
             var fractionDistancePerTick = .02
             var lastTick = 1/fractionDistancePerTick -1 
 
@@ -3271,8 +3271,8 @@ function(next){
         }
         //remove extra seats
         for (var i = 10;i>=table_state.max_players;i=i-1){
-            this.images.seats[i] = null
-            this.gameState.seats[i] = null
+            this.images.seats.splice(i,1)
+            this.gameState.seats.splice(i,1)
         }
         
         //comunity cards
@@ -3356,8 +3356,10 @@ function(next){
          this.displayChipStack(table_state.players[i].current_bet, self.images.seats[table_state.players[i].seat], self.images.seats[table_state.players[i].seat].firstChip.position.x, self.images.seats[table_state.players[i].seat].firstChip.position.y)
          }
 
+
           //empty seats
-         for (var i = 0; i<table_state.max_players;i++){    this.displayCorrectSeatMessage(i)    }
+         for (var i = 0; i<table_state.max_players;i++){    
+         this.displayCorrectSeatMessage(i)    }
 
          
     }
@@ -3626,7 +3628,8 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
      //   self.displayChildren(self.images.stand)
 
         //refresh open seats to disabled seats
-        for (var i = 0;i<self.images.seats.length;i++){self.displayCorrectSeatMessage(i) }
+        for (var i = 0;i<self.images.seats.length;i++){
+            self.displayCorrectSeatMessage(i) }
         }
 
 })
