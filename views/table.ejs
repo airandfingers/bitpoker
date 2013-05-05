@@ -1,5 +1,7 @@
 <% var title = 'Table ' + table_id; %>
-<% include head %>
+<% include head_start %>
+        <link type="text/css" rel="stylesheet" href="/css/pokertable.css" />
+    <% include head_end_and_header %>
         <h1 id="welcome">
             <%= title %>
         </h1>
@@ -45,29 +47,33 @@
                 <% include chat %>
             </div>
         </div>
+
+        <!--include values to expose to scripts-->
+        <input type="hidden" id="server_values"
+               data-table_state="<%= table_state %>"\
+               data-table_state_url="/table_state/<%= table_id %>"
+               data-room_state="<%= room_state %>"
+        />
+
         <% include plugins %>
         <script src="/js/chat.js"></script>
         <script src="/js/vendor/easeljs-0.6.0.min.js"></script>
-<script src="/js/vendor/soundjs-0.4.0.min.js"></script>
-<script src="/js/vendor/tweenjs-0.4.0.min.js"></script>
-<script src="/js/vendor/preloadjs-0.3.0.min.js"></script>
-<script src="/js/vendor/jquery-ui.js"></script>
-<link type="text/css" rel="stylesheet" href="/css/jquery-ui.css" />
-  <link type="text/css" rel="stylesheet" href="/css/pokertable.css" />
-<!--
-<script src="/js/vendor/preloadjs/AbstractLoader.js"></script>
-<script src="/js/vendor/preloadjs/LoadQueue.js"></script>
-<script src="/js/vendor/preloadjs/TagLoader.js"></script>
-<script src="/js/vendor/preloadjs/XHRLoader.js"></script>
-<script src="/js/vendor/easeljs/EventDispatcher.js"></script>
+        <script src="/js/vendor/soundjs-0.4.0.min.js"></script>
+        <script src="/js/vendor/tweenjs-0.4.0.min.js"></script>
+        <script src="/js/vendor/preloadjs-0.3.0.min.js"></script>
+        <script src="/js/vendor/jquery-ui.js"></script>
+        <!--
+        <script src="/js/vendor/preloadjs/AbstractLoader.js"></script>
+        <script src="/js/vendor/preloadjs/LoadQueue.js"></script>
+        <script src="/js/vendor/preloadjs/TagLoader.js"></script>
+        <script src="/js/vendor/preloadjs/XHRLoader.js"></script>
+        <script src="/js/vendor/easeljs/EventDispatcher.js"></script>
 
-<script src="/js/vendor/easeljs/container.js"></script>
+        <script src="/js/vendor/easeljs/container.js"></script>
 
--->
+        -->
 
-<script src="js/vendor/async.js"></script>
+        <script src="js/vendor/async.js"></script>
 
         <script src="/js/pokertable.js"></script>
-
-
 <% include foot %>
