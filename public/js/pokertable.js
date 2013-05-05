@@ -78,8 +78,8 @@ window.onKeydown = onKeyDown
       //      blankSeat : 'img/blank_seat.jpg',
        //     bet: 'img/bet.jpg',
             community: 'img/card_back.jpg',
-            fold: 'img/fold.jpg',
-            sideButton :'img/side_button.jpg',
+     //       fold: 'img/fold.jpg',
+      //      sideButton :'img/side_button.jpg',
             background: 'img/table_background.jpg',
             fourColorDeck: 'img/4colorsheet.png',
             dealerButton: 'img/dealer_button.png',
@@ -2087,7 +2087,7 @@ else if(communityArray.length == 3){
      
      var initialX = this.images.startingCard.position.x
      var initialY = this.images.startingCard.position.y
-     var animationTime = 200
+     var animationTime = 100
             var fractionDistancePerTick = .02
             var lastTick = 1/fractionDistancePerTick -1 
 
@@ -2331,7 +2331,7 @@ this.hideChildren(this.images.betSlider)
  }
 
  this.winners = function (pots, players){
-     // player is array, so players[i].win = array[amountWon, amountWon]
+     // player is array, so players[i].chips_won = array[amountWon, amountWon]
       var animationTime = 800
       var timeBetweenAnimations = 400
       var timeAtEnd = 700
@@ -2358,7 +2358,7 @@ this.hideChildren(this.images.betSlider)
           //increase the length of animation array to match number of pots
            potIntoChipAnimationArray.push([])
            for(var n=0;n<players.length;n++){
-              var winnings =  players[n].win[i]
+              var winnings =  players[n].chips_won[i]
               if(amountWon>0){potWinners[i].push({seat:players[n].seat, amountWon: winnings, id:temporaryStacks.length })}
                temporaryStacks.push([])
            }
@@ -3271,8 +3271,8 @@ function(next){
         }
         //remove extra seats
         for (var i = 10;i>=table_state.max_players;i=i-1){
-            this.images.seats[i] = null
-            this.gameState.seats[i] = null
+            this.images.seats.splice(i,1)
+            this.gameState.seats.splice(i,1)
         }
         
         //comunity cards
@@ -3356,8 +3356,10 @@ function(next){
          this.displayChipStack(table_state.players[i].current_bet, self.images.seats[table_state.players[i].seat], self.images.seats[table_state.players[i].seat].firstChip.position.x, self.images.seats[table_state.players[i].seat].firstChip.position.y)
          }
 
+
           //empty seats
-         for (var i = 0; i<table_state.max_players;i++){    this.displayCorrectSeatMessage(i)    }
+         for (var i = 0; i<table_state.max_players;i++){    
+         this.displayCorrectSeatMessage(i)    }
 
          
     }
@@ -3626,7 +3628,8 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
      //   self.displayChildren(self.images.stand)
 
         //refresh open seats to disabled seats
-        for (var i = 0;i<self.images.seats.length;i++){self.displayCorrectSeatMessage(i) }
+        for (var i = 0;i<self.images.seats.length;i++){
+            self.displayCorrectSeatMessage(i) }
         }
 
 })
