@@ -567,18 +567,18 @@ else if(i==13){cardRank = 'k'}
      var statusHeight = 20
      var statusColor = '#000000'
     var preloadBarY  = $('#canvas').attr('height')/2
-    var preloadBarWidth = $('#canvas').attr('width')*.75
+    var preloadBarWidth = $('#canvas').attr('width')*.65
     var preloadBarHeight = 30
     var preloadBarBorderColor = 'rgb(0,0,255)'
     var preloadBarProgressColor = '#000000'
     var preloadBarUnfinishedColor = 'rgb(150,150,150)'
 
-    console.log(this.images.containers.length)
+    
     introScreen.preloadBar = new this.images.Item($('#canvas').attr('width')/2 - preloadBarWidth/2, preloadBarY, preloadBarWidth, preloadBarHeight, this.images.containers.length-2)
     introScreen.title = new this.images.Item(0, preloadBarY-titleAndPreloadBarDistanceY-titleHeight, $('#canvas').attr('width'), titleHeight, this.images.containers.length-2)
      introScreen.status = new this.images.Item(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y - statusHeight, $('#canvas').attr('width')-introScreen.preloadBar.x, statusHeight, this.images.containers.length-2)
   
-
+     console.log( introScreen.preloadBar)
      //define function for drawing the loading bar graphic
      introScreen.preloadBar.image  = new createjs.Shape()
      introScreen.preloadBar.drawBar  = function (progressRatio){
@@ -604,7 +604,7 @@ else if(i==13){cardRank = 'k'}
          //show progress'd ratio
    if(progressX != false){
        introScreen.preloadBar.image.graphics.setStrokeStyle(0).beginFill(preloadBarProgressColor)
-       .beginStroke(null).drawRect(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y, progressX, introScreen.preloadBar.size.y)
+       .beginStroke(null).drawRect(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y, progressX - introScreen.preloadBar.position.x, introScreen.preloadBar.size.y)
 
    }
 if(unfinishedX != false && unfinishedX<introScreen.preloadBar.position.x+introScreen.preloadBar.size.x){
@@ -3404,13 +3404,11 @@ function(next){
         else{var table_state = $('#server_values').data('table_state')}
 
 createjs.Ticker.addEventListener('tick', tick)
-createjs.Ticker.setInterval(700)
+createjs.Ticker.setInterval(50)
 createjs.Ticker.setPaused(false)
-console.log(createjs.Ticker.hasEventListener('tick'))
  //set up function to check whether loading has completed
        var seatsLoaded = []
 function tick(event){
-    console.log('tick')
  
        var updateLoadedSeats = function(){
            
