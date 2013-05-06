@@ -58,7 +58,9 @@ window.onKeydown = onKeyDown
             button:4,
             chat:5,
              cashier:7,
-            initialMessageBox:9
+            initialMessageBox:9,
+            containersPerCashier:2,
+            containersPerMessageBox:3
         }
 
         this.images = {}
@@ -74,14 +76,14 @@ window.onKeydown = onKeyDown
        //     check: 'img/check.jpg',
        //     raise: 'img/raise.jpg',
             hiddenCardFileName: 'back.png',
-            seat: 'img/empty_seat.jpg',
+       //     seat: 'img/empty_seat.jpg',
       //      blankSeat : 'img/blank_seat.jpg',
        //     bet: 'img/bet.jpg',
-            community: 'img/card_back.jpg',
+      //      community: 'img/card_back.jpg',
      //       fold: 'img/fold.jpg',
       //      sideButton :'img/side_button.jpg',
             background: 'img/table_background.jpg',
-            fourColorDeck: 'img/4colorsheet.png',
+            fourColorDeck: 'img/sheet4color.png',
             dealerButton: 'img/dealer_button.png',
             verticalSlider: 'img/raise_slider.png',
             horizontalSlider: 'img/small_slider_bg.png',
@@ -527,6 +529,7 @@ this.initialize= function(){
 
     var fileSourceArray = []
 
+    //push items to preload into array
     for(var i in this.images.sources){
         for(var n in this.images.sources[i][n]){
             if(typeof this.images.sources[i][n] == 'string'){
@@ -537,6 +540,7 @@ this.initialize= function(){
            fileSourceArray.push({src: this.images.sources[i], id:fileSourceArray.length-1})
     }
     }
+
     for(var i = 2;i<=14;i++){
         var cardRank
            if(i==10){cardRank = 't'}
@@ -551,7 +555,51 @@ else if(i==13){cardRank = 'k'}
         fileSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'s.png', id: fileSourceArray.length-1})
     }
     console.log(fileSourceArray)
-    // must set to false or wo't work.  dont know whay...
+
+    function preloadImages(imageArray, onComplete){
+    var newImages=[]
+    var loadedImages=0
+
+    //define image.onload functions
+    function handleImageLoad(src){
+        loadedImages++
+        console.log(src + ' loaded')
+        console.log(loadedImages+','+imageArray.length)
+        if (loadedImages==imageArray.length){
+            console.log("loaded")
+        }
+    }
+    function handleImageLoadError(src){
+        loadedImages++
+        console.log(src + ' loading error')
+         if (loadedImages==imageArray.length){
+            console.log('error')
+        }
+    }
+    //iterate through imageArray to preload images
+    _.each(_.range(imageArray.length), function(i){
+        newImages[i]=new Image()
+        if(typeof imageArray[i] == 'string'){newImages[i].src=imageArray[i]}
+        else if (typeof imageArray[i] == 'object'){newImages[i].src=imageArray[i].src}
+        
+        newImages[i].onload=function(){handleImageLoad(newImages[i].src)}
+        newImages[i].onerror=function(){handleImageLoadError(newImages[i].src) }
+        //on last iteration call onComplete function
+        if(i == imageArray.length-1){onComplete()}
+    })
+    }
+    preloadImages(fileSourceArray, function(){self.createAllItems()} )
+
+    
+
+
+
+
+
+
+ /*
+ 
+    // must set to false or won't work.  dont know whay...
                 var preload = new createjs.LoadQueue(false)
                
   //  preload.addEventListener("complete", handleComplete)
@@ -581,6 +629,11 @@ else if(i==13){cardRank = 'k'}
                console.log('loading completed')
            self.createAllItems()
         }
+
+
+        */
+
+
 }
 
 
@@ -2914,7 +2967,7 @@ self.displayCorrectSeatMessage(seatNumber)
         }
 
 self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.gameState.messageBox.messageBoxImageContainerIndex])
-        self.gameState.messageBox.messageBoxImageContainerIndex = self.gameState.messageBox.messageBoxImageContainerIndex -2 
+        self.gameState.messageBox.messageBoxImageContainerIndex = self.gameState.messageBox.messageBoxImageContainerIndex - self.gameState.containerImageIndexes.containersPerMessageBox
     }
 
 
@@ -3020,15 +3073,15 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         self.images.itemAsBitmap(self.images.messageBox[messageBoxImageContainerIndex].window, self.images.sources.messageBoxBackground)
         
         //title
-        self.images.messageBox[messageBoxImageContainerIndex].windowTitle = new self.images.Item (messageBoxWindowX,messageBoxWindowY, messageBoxWindowWidth,outerTopHeight,messageBoxImageContainerIndex)
+        self.images.messageBox[messageBoxImageContainerIndex].windowTitle = new self.images.Item (messageBoxWindowX,messageBoxWindowY, messageBoxWindowWidth,outerTopHeight,messageBoxImageContainerIndex+1)
          self.images.addItemText(self.images.messageBox[messageBoxImageContainerIndex].windowTitle, messageInfo.title, messageInfo.titleSizeAndFont, messageInfo.titleColor)
 
          //message
-        self.images.messageBox[messageBoxImageContainerIndex].message = new self.images.Item (textX,innerMessageBoxY+textTopOffset, innerMessageBoxWidth -textLeftOffset*2 ,textHeight,messageBoxImageContainerIndex)
+        self.images.messageBox[messageBoxImageContainerIndex].message = new self.images.Item (textX,innerMessageBoxY+textTopOffset, innerMessageBoxWidth -textLeftOffset*2 ,textHeight,messageBoxImageContainerIndex+1)
         self.images.addItemText(self.images.messageBox[messageBoxImageContainerIndex].message, messageString, messageInfo.messageSizeAndFont, messageInfo.messageColor)
 
    //OK button
-        self.images.messageBox[messageBoxImageContainerIndex].okay =  new self.images.Item (okayX,buttonY, buttonWidth,buttonHeight,messageBoxImageContainerIndex) 
+        self.images.messageBox[messageBoxImageContainerIndex].okay =  new self.images.Item (okayX,buttonY, buttonWidth,buttonHeight,messageBoxImageContainerIndex+1) 
         self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].okay, messageInfo.buttonBackgroundColor )
         self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].okay, messageInfo.okayText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
             //asign messages if exists
@@ -3045,7 +3098,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         }
 //cancel button
         if(messageInfo.cancel){
-        self.images.messageBox[messageBoxImageContainerIndex].cancel =  new self.images.Item (cancelX,buttonY, buttonWidth,buttonHeight,messageBoxImageContainerIndex) 
+        self.images.messageBox[messageBoxImageContainerIndex].cancel =  new self.images.Item (cancelX,buttonY, buttonWidth,buttonHeight,messageBoxImageContainerIndex+1) 
         self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].cancel, messageInfo.buttonBackgroundColor )
         self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].cancel, messageInfo.cancelText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
         //add message to cancel if available
@@ -3074,8 +3127,12 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
 
                 self.displayChildren(self.images.messageBox[messageBoxImageContainerIndex])
                 self.displayChildren(self.images.messageBox[messageBoxImageContainerIndex].window)
+   //        self.stage.addChild(     self.images.messageBox[messageBoxImageContainerIndex].window.image)
+   self.hideChildren(self.images.messageBox[messageBoxImageContainerIndex].window.okay)
               console.log(self.images.messageBox[messageBoxImageContainerIndex].window)
+          console.log(    self.images.containers[messageBoxImageContainerIndex].contains(self.images.messageBox[messageBoxImageContainerIndex].window.image) )
                 console.log(self.images.messageBox[messageBoxImageContainerIndex].window.image.isVisible())
+
     }
 
 
@@ -3367,10 +3424,13 @@ function(next){
   //---------------------SOCKET CODE------------------------
     this.receiveTableState = function(){
    socket.once('table_state', function(table_state){
-             self.displayInitialTableState(table_state)
              self.activateSockets()
+             self.displayInitialTableState(table_state)
+            
     })
+    socket.emit('get_table_state')
     }
+     
     
     this.activateSockets = function(){
      
@@ -3670,7 +3730,7 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
 
 //player adds chips to his stack
        socket.on('player_adds_chips', function(player,is_you){
-        
+
            if(player.sitting_out == true){
                           
            self.images.seats[player.seat].status.text.text = 'Sitting Out'
