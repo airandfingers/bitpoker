@@ -16,8 +16,9 @@ window.onKeydown = onKeyDown
         self = this
         this.canvas = document.getElementById('canvas')
         this.stage = new createjs.Stage(canvas)
-        this.stage.eventsEnabled = true
-         this.stage.mouseEventsEnabled
+        createjs.Touch.enable(this.stage)
+        this.stage.mouseEnabled = true
+        this.stage.mouseMoveOutside =true
         this.stage.enableMouseOver()
             this.events = {}
   this.imageData = {
@@ -668,7 +669,7 @@ if(unfinishedX != false && unfinishedX<introScreen.preloadBar.position.x+introSc
     }
     self.displayChildren(introScreen)
     preloadImages(fileSourceArray, function(){
-        self.hideChildren(introScreen)
+  //      self.hideChildren(introScreen)
         self.createAllItems()
         } )
 
@@ -3398,16 +3399,55 @@ function(next){
 
    this.displayInitialTableState=function(tableState){
 
+  //get table_state if not passed as parameter
+        if(typeof tableState == 'object'){table_state = tableState}
+        else{var table_state = $('#server_values').data('table_state')}
+
+createjs.Ticker.addEventListener('tick', tick)
+createjs.Ticker.setInterval(700)
+createjs.Ticker.setPaused(false)
+console.log(createjs.Ticker.hasEventListener('tick'))
+ //set up function to check whether loading has completed
+       var seatsLoaded = []
+function tick(event){
+    console.log('tick')
+ 
+       var updateLoadedSeats = function(){
+           
+           for(var i =0; i<table_state.max_players;i++){
+               if(seatsLoaded[i] != true){
+               if(self.stage.contains(self.images.seats[i].seat.image) || self.stage.contains(self.images.seats[i].disabledSeat.image) || self.stage.contains(self.images.seats[i].openSeat.image))
+           seatsLoaded[i] = true
+           }
+           }
+       }
+       var checkSeatsLoaded = function(){
+            for(var i =0; i<table_state.max_players;i++){
+               if(seatsLoaded[i] == true){ }
+               else{return false}
+           }
+           return true
+       }
+       //update status on whether seats have loaded
+       updateLoadedSeats()
+
+       // check if all seats are loaded
+       if(checkSeatsLoaded() ==true){
+                      createjs.Ticker.removeEventListener("tick", tick)
+           self.images.containers[self.images.containers.length-2].removeAllChildren()
+           self.images.containers[self.images.containers.length-1].removeAllChildren()
+           self.stage.update()
+       }
+
+}
+
+
+
                  //display static items
          this.displayChildren(this.images.getChips)
          this.displayChildren(this.images.viewLobby)
          this.displayChildren(this.images.exitTable)
-        
-         //get table_state if not passed as parameter
-        if(tableState){table_state = tableState}
-        else{var table_state = $('#server_values').data('table_state')
-        //console.log(table_state)
-        }
+
         //remove extra seats
         for (var i = 10;i>=table_state.max_players;i=i-1){
             this.images.seats.splice(i,1)
@@ -3497,8 +3537,7 @@ function(next){
 
 
           //empty seats
-         for (var i = 0; i<table_state.max_players;i++){    
-         this.displayCorrectSeatMessage(i)    }
+         for (var i = 0; i<table_state.max_players;i++){  this.displayCorrectSeatMessage(i)    }
 
          
     }
@@ -3506,9 +3545,9 @@ function(next){
   //---------------------SOCKET CODE------------------------
     this.receiveTableState = function(){
    socket.once('table_state', function(table_state){
-             self.activateSockets()
+             
              self.displayInitialTableState(table_state)
-            
+            self.activateSockets()
     })
     socket.emit('get_table_state')
     }
