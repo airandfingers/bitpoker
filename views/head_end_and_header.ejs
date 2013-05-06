@@ -1,0 +1,118 @@
+        <script src="/js/vendor/modernizr-2.6.2.min.js"></script>
+    </head>
+    <body>
+        <!-- Prompt IE 6 users to install Chrome Frame. Remove this if you support IE 6.
+             chromium.org/developers/how-tos/chrome-frame-getting-started -->
+        <!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
+        <header>
+          <% if (! locals.hide_navbar) { %>      
+            <nav class="navbar">
+                <ul>
+                    <%
+                    var pages = [
+                        { name: 'bitcoin', href: '/' },                  
+                        { name: 'lobby', href: '/lobby' },
+                        { name: 'account', href: '/account' },
+                        { name: 'bitcoins', href: '/bitcoin_info' },
+                        { name: 'about', href: '/site_info' },
+                        { name: 'legal', href: '/legal_info' },
+                        { name: 'promotions', href: '/promo' }                      
+                    ],
+                        i,
+                        j,
+                        len,
+                        len2,
+                        page_name,
+                        page_href,
+                        page_dropdown,
+                        subpage_name,
+                        subpage_href;
+
+                    for (i = 0, len = pages.length; i < len; i++) {
+                        page_name = pages[i].name;
+                        page_href = pages[i].href;
+                        page_dropdown = pages[i].dropdown;
+                    %>
+                        <li>
+                            <a href="<%= page_href %>">
+                                <%= page_name.toUpperCase() %>
+                            </a>
+                           <!--write nested ul for dropdowns-->
+                            <% if (page_dropdown !== undefined ) { %>
+                              <ul>
+                              <% for (j=0, len2 = page_dropdown.length; j < len2; j++) {
+                                subpage_name = page_dropdown[j].name;
+                                subpage_href = page_dropdown[j].href;
+                                %>
+                                <li>
+                                  <a href="<%= subpage_href %>">
+                                      <%= subpage_name %>
+                                  </a>
+                                </li>
+                              <% } %>  
+                              </ul>
+                            <% } %>
+                        </li>
+                    <% } %>
+                        <!-- REGISTER dropdown Link -->
+                        <li class="right">
+                          <% if (locals.username) { %>
+                            <%= locals.username.toUpperCase() %>    
+                          <% } else { %>
+                            <a href="#" id="register_trigger">REGISTER</a>
+                          <% } %>
+                        </li>
+                        <% if (! locals.username) { %>                    
+                        <div id="register" class="dropdown_form">
+                          <form action="/register" method="post">
+                              <div class="username">
+                                  <label>Username:</label>
+                                  <input type="text" name="username" placeholder="username" autofocus /><br/>
+                              </div>
+                              <div class="password">
+                                  <label>Password:</label>
+                                  <input type="password" name="password" placeholder="password" />
+                              </div>
+                              <div class="password">
+                                  <label>Confirm Password:</label>
+                                  <input type="password" name="password2" placeholder="re-type password" />
+                              </div>
+                              <div class="submit_button">
+                                  <input type="submit" value="Log In" class="button"/>
+                              </div>
+                          </form>
+                        </div>
+                        <% } %>
+
+                        <!--Login or Logout Link-->
+                        <li class="right">
+                            <% if (locals.username) { %>
+                              <a href="/logout">LOGOUT</a>
+                            <% } else { %>
+                              <a href="#" id="login_trigger">LOGIN</a>
+                            <% } %>
+                        </li>
+                        <% if (! locals.username) { %>
+                        <div id="login" class="dropdown_form">
+                          <form action="/login" method="post">
+                            <div class="username">
+                              <label>Username:</label>
+                              <input type="text" name="username" placeholder="username" autofocus /><br/>
+                            </div>
+                            <div class="password">
+                              <label>Password:</label>
+                              <input type="password" name="password" placeholder="password" />
+                            </div>
+                            <div class="submit_button">
+                              <input type="submit" value="Login" class="button" />
+                            </div>
+                          </form>
+                          <div>
+                          Forgetting your password? <a href="/password_recovery">Click here.</a>
+                          </div>
+                        </div>                          
+                            <% } %>
+                </ul>
+            </nav>
+          <% } %>
+        </header>
