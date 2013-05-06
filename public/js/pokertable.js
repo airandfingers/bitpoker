@@ -3424,10 +3424,13 @@ function(next){
   //---------------------SOCKET CODE------------------------
     this.receiveTableState = function(){
    socket.once('table_state', function(table_state){
-             self.displayInitialTableState(table_state)
              self.activateSockets()
+             self.displayInitialTableState(table_state)
+            
     })
+    socket.emit('get_table_state')
     }
+     
     
     this.activateSockets = function(){
      
