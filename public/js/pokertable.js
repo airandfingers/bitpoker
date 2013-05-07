@@ -16,8 +16,9 @@ window.onKeydown = onKeyDown
         self = this
         this.canvas = document.getElementById('canvas')
         this.stage = new createjs.Stage(canvas)
-        this.stage.eventsEnabled = true
-         this.stage.mouseEventsEnabled
+        createjs.Touch.enable(this.stage)
+        this.stage.mouseEnabled = true
+        this.stage.mouseMoveOutside =true
         this.stage.enableMouseOver()
             this.events = {}
   this.imageData = {
@@ -555,6 +556,77 @@ else if(i==13){cardRank = 'k'}
         fileSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'s.png', id: fileSourceArray.length-1})
     }
     console.log(fileSourceArray)
+    //define dimensions of preloading screen
+    var introScreen = {}
+    var titleSizeAndFont = '20px Arial'
+     var titleHeight = 35
+     var titleAndPreloadBarDistanceY = 50
+     var titleText = 'Loading ...'
+     var titleColor = '#000000'
+     var statusSizeAndFont = '15px arial'
+     var statusHeight = 20
+     var statusColor = '#000000'
+    var preloadBarY  = $('#canvas').attr('height')/2
+    var preloadBarWidth = $('#canvas').attr('width')*.65
+    var preloadBarHeight = 30
+    var preloadBarBorderColor = 'rgb(0,0,255)'
+    var preloadBarProgressColor = '#000000'
+    var preloadBarUnfinishedColor = 'rgb(150,150,150)'
+
+    
+    introScreen.preloadBar = new this.images.Item($('#canvas').attr('width')/2 - preloadBarWidth/2, preloadBarY, preloadBarWidth, preloadBarHeight, this.images.containers.length-2)
+    introScreen.title = new this.images.Item(0, preloadBarY-titleAndPreloadBarDistanceY-titleHeight, $('#canvas').attr('width'), titleHeight, this.images.containers.length-2)
+     introScreen.status = new this.images.Item(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y - statusHeight, $('#canvas').attr('width')-introScreen.preloadBar.x, statusHeight, this.images.containers.length-2)
+  
+     console.log( introScreen.preloadBar)
+     //define function for drawing the loading bar graphic
+     introScreen.preloadBar.image  = new createjs.Shape()
+     introScreen.preloadBar.drawBar  = function (progressRatio){
+         //determine x coordinate of where fills end and start
+         var progressX = introScreen.preloadBar.size.x*progressRatio + introScreen.preloadBar.position.x
+         var unfinishedX
+         //insure fill does not surpass the loading bar
+         if(progressX>=introScreen.preloadBar.size.x+ introScreen.preloadBar.position.x){
+             progressX = introScreen.preloadBar.size.x+ introScreen.preloadBar.position.x
+             unfinishedX = false
+             }
+       else  if(progressX<= introScreen.preloadBar.position.x){
+             progressX = false
+             unfinishedX = introScreen.preloadBar.position.x
+             }
+             else{unfinishedX = progressX + 1}
+
+         //clear previous graphics
+         introScreen.preloadBar.image.graphics.clear()
+         //draw outer border
+         .beginStroke(preloadBarBorderColor).beginFill(null).setStrokeStyle(1)
+         .drawRect(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y, introScreen.preloadBar.size.x, introScreen.preloadBar.size.y)
+         //show progress'd ratio
+   if(progressX != false){
+       introScreen.preloadBar.image.graphics.setStrokeStyle(0).beginFill(preloadBarProgressColor)
+       .beginStroke(null).drawRect(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y, progressX - introScreen.preloadBar.position.x, introScreen.preloadBar.size.y)
+
+   }
+if(unfinishedX != false && unfinishedX<introScreen.preloadBar.position.x+introScreen.preloadBar.size.x){
+       introScreen.preloadBar.image.graphics.setStrokeStyle(0).beginFill(preloadBarUnfinishedColor)
+       .beginStroke(null).drawRect(introScreen.preloadBar.position.x + unfinishedX, introScreen.preloadBar.position.y, introScreen.preloadBar.position.x+introScreen.preloadBar.size.x - unfinishedX, introScreen.preloadBar.size.y)
+
+   }
+     }
+
+     //define title text
+     this.images.addItemText(introScreen.title, titleText, titleSizeAndFont, titleColor)
+     //define statusText
+     introScreen.status.text = new createjs.Text('', statusSizeAndFont, statusColor)
+ introScreen.status.text.x= introScreen.status.position.x
+ introScreen.status.text.y= introScreen.status.position.y + 1
+ introScreen.status.text.baseline = 'top'
+ introScreen.status.text.textAlign = 'left'
+ introScreen.status.textColor = titleColor
+
+    function displayPreloadBar(){
+        
+    }
 
     function preloadImages(imageArray, onComplete){
     var newImages=[]
@@ -563,18 +635,25 @@ else if(i==13){cardRank = 'k'}
     //define image.onload functions
     function handleImageLoad(src){
         loadedImages++
+        introScreen.status.text.text = src + ' loaded'
         console.log(src + ' loaded')
+        introScreen.preloadBar.drawBar(loadedImages/imageArray.length)
         console.log(loadedImages+','+imageArray.length)
         if (loadedImages==imageArray.length){
             console.log("loaded")
         }
+        self.stage.update()
+        
     }
     function handleImageLoadError(src){
         loadedImages++
+        introScreen.status.text.text = src + ' loaded'
         console.log(src + ' loading error')
+        introScreen.preloadBar.drawBar(loadedImages/imageArray.length)
          if (loadedImages==imageArray.length){
             console.log('error')
         }
+        self.stage.update()
     }
     //iterate through imageArray to preload images
     _.each(_.range(imageArray.length), function(i){
@@ -588,7 +667,11 @@ else if(i==13){cardRank = 'k'}
         if(i == imageArray.length-1){onComplete()}
     })
     }
-    preloadImages(fileSourceArray, function(){self.createAllItems()} )
+    self.displayChildren(introScreen)
+    preloadImages(fileSourceArray, function(){
+  //      self.hideChildren(introScreen)
+        self.createAllItems()
+        } )
 
     
 
@@ -3316,16 +3399,53 @@ function(next){
 
    this.displayInitialTableState=function(tableState){
 
+  //get table_state if not passed as parameter
+        if(typeof tableState == 'object'){table_state = tableState}
+        else{var table_state = $('#server_values').data('table_state')}
+
+createjs.Ticker.addEventListener('tick', tick)
+createjs.Ticker.setInterval(50)
+createjs.Ticker.setPaused(false)
+ //set up function to check whether loading has completed
+       var seatsLoaded = []
+function tick(event){
+ 
+       var updateLoadedSeats = function(){
+           
+           for(var i =0; i<table_state.max_players;i++){
+               if(seatsLoaded[i] != true){
+               if(self.stage.contains(self.images.seats[i].seat.image) || self.stage.contains(self.images.seats[i].disabledSeat.image) || self.stage.contains(self.images.seats[i].openSeat.image))
+           seatsLoaded[i] = true
+           }
+           }
+       }
+       var checkSeatsLoaded = function(){
+            for(var i =0; i<table_state.max_players;i++){
+               if(seatsLoaded[i] == true){ }
+               else{return false}
+           }
+           return true
+       }
+       //update status on whether seats have loaded
+       updateLoadedSeats()
+
+       // check if all seats are loaded
+       if(checkSeatsLoaded() ==true){
+                      createjs.Ticker.removeEventListener("tick", tick)
+           self.images.containers[self.images.containers.length-2].removeAllChildren()
+           self.images.containers[self.images.containers.length-1].removeAllChildren()
+           self.stage.update()
+       }
+
+}
+
+
+
                  //display static items
          this.displayChildren(this.images.getChips)
          this.displayChildren(this.images.viewLobby)
          this.displayChildren(this.images.exitTable)
-        
-         //get table_state if not passed as parameter
-        if(tableState){table_state = tableState}
-        else{var table_state = $('#server_values').data('table_state')
-        //console.log(table_state)
-        }
+
         //remove extra seats
         for (var i = 10;i>=table_state.max_players;i=i-1){
             this.images.seats.splice(i,1)
@@ -3415,8 +3535,7 @@ function(next){
 
 
           //empty seats
-         for (var i = 0; i<table_state.max_players;i++){    
-         this.displayCorrectSeatMessage(i)    }
+         for (var i = 0; i<table_state.max_players;i++){  this.displayCorrectSeatMessage(i)    }
 
          
     }
@@ -3424,9 +3543,9 @@ function(next){
   //---------------------SOCKET CODE------------------------
     this.receiveTableState = function(){
    socket.once('table_state', function(table_state){
-             self.activateSockets()
+             
              self.displayInitialTableState(table_state)
-            
+            self.activateSockets()
     })
     socket.emit('get_table_state')
     }
