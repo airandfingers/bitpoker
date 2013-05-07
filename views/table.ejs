@@ -2,18 +2,7 @@
 <% include head_start %>
         <link type="text/css" rel="stylesheet" href="/css/pokertable.css" />
     <% include head_end_and_header %>
-        <h1 id="welcome">
-            <%= title %>
-        </h1>
-        <span id="maobucks">
-            mao bucks: <%= maobucks %>
-            <form action="/update_maobucks" method="post">
-            <input type="number" name="maobucks_update" placeholder="100" />
-            <button> God mode my Maobucks </button>
-            </form>
-        </span>
 
-       
         <div id="pokerTableWrapper">
             <div id="pokerCanvasDiv">
                     <canvas id="canvas" width="690" height="480" style= 'z-index :0'></canvas>
@@ -41,12 +30,7 @@
             <!--include values to expose to scripts-->
 
             <input type="hidden" id="server_values" data-table_state="<%= table_state %>" data-table_state_url="/table_state/<%= table_id %>" data-room_state="<%= room_state %>" />
-        <div id="options">
-            <input type="button" id="hideshow" value="hide/show" />
-            <div id="chat_table" class="chat_container">
-                <% include chat %>
-            </div>
-        </div>
+
 
         <!--include values to expose to scripts-->
         <input type="hidden" id="server_values"
