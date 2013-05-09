@@ -61,15 +61,19 @@ window.onKeydown = onKeyDown
              cashier:7,
             initialMessageBox:9,
             containersPerCashier:2,
-            containersPerMessageBox:3
+            containersPerMessageBox:3,
+            loadingBackground: 0,
+            loadingAnimation: 1
+
         }
 
         this.images = {}
+        this.images.loadingContainers = []
+
         this.images.containers = []
         for (var i = 0;i<16;i++){
         this.images.containers[i] = new createjs.Container()
-        this.stage.addChild(this.images.containers[i])
-        
+        this.images.loadingContainers[i] = new createjs.Container()
      }
 
           this.images.sources = {
@@ -561,7 +565,7 @@ else if(i==13){cardRank = 'k'}
     var titleSizeAndFont = '20px Arial'
      var titleHeight = 35
      var titleAndPreloadBarDistanceY = 50
-     var titleText = 'Loading ...'
+     var titleText = 'Loading resources...'
      var titleColor = '#000000'
      var statusSizeAndFont = '15px arial'
      var statusHeight = 20
@@ -574,9 +578,9 @@ else if(i==13){cardRank = 'k'}
     var preloadBarUnfinishedColor = 'rgb(150,150,150)'
 
     
-    introScreen.preloadBar = new this.images.Item($('#canvas').attr('width')/2 - preloadBarWidth/2, preloadBarY, preloadBarWidth, preloadBarHeight, this.images.containers.length-2)
-    introScreen.title = new this.images.Item(0, preloadBarY-titleAndPreloadBarDistanceY-titleHeight, $('#canvas').attr('width'), titleHeight, this.images.containers.length-2)
-     introScreen.status = new this.images.Item(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y - statusHeight, $('#canvas').attr('width')-introScreen.preloadBar.x, statusHeight, this.images.containers.length-2)
+    introScreen.preloadBar = new this.images.Item($('#canvas').attr('width')/2 - preloadBarWidth/2, preloadBarY, preloadBarWidth, preloadBarHeight, this.gameState.containerImageIndexes.loadingAnimation)
+    introScreen.title = new this.images.Item(0, preloadBarY-titleAndPreloadBarDistanceY-titleHeight, $('#canvas').attr('width'), titleHeight,this.gameState.containerImageIndexes.loadingAnimation)
+     introScreen.status = new this.images.Item(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y - statusHeight, $('#canvas').attr('width')-introScreen.preloadBar.x, statusHeight,this.gameState.containerImageIndexes.loadingAnimation)
   
      console.log( introScreen.preloadBar)
      //define function for drawing the loading bar graphic
@@ -624,8 +628,22 @@ if(unfinishedX != false && unfinishedX<introScreen.preloadBar.position.x+introSc
  introScreen.status.text.textAlign = 'left'
  introScreen.status.textColor = titleColor
 
-    function displayPreloadBar(){
+
+    function displayPreloadScreen(){
+        //add images and text to containers 
+        self.images.loadingContainers[introScreen.title.position.z+1].addChild(introScreen.title.text)
         
+        self.images.loadingContainers[introScreen.preloadBar.position.z].addChild(introScreen.preloadBar.image)
+        
+        self.images.loadingContainers[introScreen.status.position.z+1].addChild(introScreen.status.text)
+
+        //add containers to stage
+        for(var i = 0;i<self.images.loadingContainers.length;i++){
+            
+            self.stage.addChild(self.images.loadingContainers[i])
+        }
+        
+
     }
 
     function preloadImages(imageArray, onComplete){
@@ -667,9 +685,8 @@ if(unfinishedX != false && unfinishedX<introScreen.preloadBar.position.x+introSc
         if(i == imageArray.length-1){onComplete()}
     })
     }
-    self.displayChildren(introScreen)
+    displayPreloadScreen()
     preloadImages(fileSourceArray, function(){
-  //      self.hideChildren(introScreen)
         self.createAllItems()
         } )
 
@@ -3393,9 +3410,7 @@ function(next){
     next(null, 2)
 }
   ])
-
 }
-
 
    this.displayInitialTableState=function(tableState){
 
@@ -3403,26 +3418,59 @@ function(next){
         if(typeof tableState == 'object'){table_state = tableState}
         else{var table_state = $('#server_values').data('table_state')}
 
+
+
+//create text to show user images are being displayed
+
+var imageLoading = {}
+var titleHeight = 30
+var titleSizeAndFont = '30px Arial'
+var titleColor = 'blue'
+var titleText = 'Displaying Images '
+var titleX = $('#canvas').attr('width')*.25
+var titleY = $('#canvas').attr('height')*.75
+imageLoading.title = new this.images.Item(titleX, titleY, $('#canvas').attr('width') -titleX, titleHeight,this.gameState.containerImageIndexes.loadingAnimation)
+imageLoading.title.text = new createjs.Text(titleText, titleSizeAndFont, titleColor)
+imageLoading.title.text.x= imageLoading.title.position.x
+ imageLoading.title.text.y= imageLoading.title.position.y + 1
+ imageLoading.title.text.baseline = 'top'
+ imageLoading.title.text.textAlign = 'left'
+ imageLoading.title.text.textColor = titleColor
+
+
+ //add imageLoading
+ this.images.loadingContainers[imageLoading.title.position.z+1].addChild(imageLoading.title.text)
+
+ //set up animation variables
+ var tickerInterval = 50
+var ticksPerAnimation = 3
+var numTicks = 0
 createjs.Ticker.addEventListener('tick', tick)
-createjs.Ticker.setInterval(50)
+createjs.Ticker.setInterval(tickerInterval)
 createjs.Ticker.setPaused(false)
- //set up function to check whether loading has completed
        var seatsLoaded = []
 function tick(event){
- 
+  
+    //update loading images graphic evert 3 ticks
+    if(numTicks%3 == 0){
+        imageLoading.title.text.text = imageLoading.title.text.text+ '.'
+    }
+
+
        var updateLoadedSeats = function(){
            
            for(var i =0; i<table_state.max_players;i++){
                if(seatsLoaded[i] != true){
-               if(self.stage.contains(self.images.seats[i].seat.image) || self.stage.contains(self.images.seats[i].disabledSeat.image) || self.stage.contains(self.images.seats[i].openSeat.image))
+               if(self.images.containers[self.images.seats[i].seat.position.z].contains(self.images.seats[i].seat.image) || self.images.containers[self.images.seats[i].disabledSeat.position.z].contains(self.images.seats[i].disabledSeat.image) || self.images.containers[self.images.seats[i].openSeat.position.z].contains(self.images.seats[i].openSeat.image))
            seatsLoaded[i] = true
            }
            }
        }
+       
+ //set up function to check whether loading has completed
        var checkSeatsLoaded = function(){
             for(var i =0; i<table_state.max_players;i++){
-               if(seatsLoaded[i] == true){ }
-               else{return false}
+               if(seatsLoaded[i] != true){return false }
            }
            return true
        }
@@ -3432,14 +3480,18 @@ function tick(event){
        // check if all seats are loaded
        if(checkSeatsLoaded() ==true){
                       createjs.Ticker.removeEventListener("tick", tick)
-           self.images.containers[self.images.containers.length-2].removeAllChildren()
-           self.images.containers[self.images.containers.length-1].removeAllChildren()
-           self.stage.update()
+                      //remove all loadingContainers from the stage and remove all children from them
+                      self.stage.removeAllChildren()
+                      //add all containers to the stage
+                      for(var i = 0;i<self.images.containers.length;i++){
+                      self.stage.addChild(    self.images.containers[i])
+           }
+           
+       console.log(   self.stage.getNumChildren())
        }
-
+       self.stage.update()
+       numTicks ++
 }
-
-
 
                  //display static items
          this.displayChildren(this.images.getChips)
