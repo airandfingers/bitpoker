@@ -629,6 +629,27 @@ if(unfinishedX != false && unfinishedX<introScreen.preloadBar.position.x+introSc
  introScreen.status.textColor = titleColor
 
 
+ 
+//create text to show user images are being displayed
+
+this.images.imageLoading = {}
+var titleHeight = 30
+var titleSizeAndFont = '30px Arial'
+var titleColor = 'blue'
+var titleText = 'Displaying Images ...'
+var titleX = $('#canvas').attr('width')*.25
+var titleY = $('#canvas').attr('height')*.75
+this.images.imageLoading.title = new this.images.Item(titleX, titleY, $('#canvas').attr('width') -titleX, titleHeight,this.gameState.containerImageIndexes.loadingAnimation)
+this.images.imageLoading.title.text = new createjs.Text(titleText, titleSizeAndFont, titleColor)
+this.images.imageLoading.title.text.x= this.images.imageLoading.title.position.x
+ this.images.imageLoading.title.text.y= this.images.imageLoading.title.position.y + 1
+ this.images.imageLoading.title.text.baseline = 'top'
+ this.images.imageLoading.title.text.textAlign = 'left'
+ this.images.imageLoading.title.text.textColor = titleColor
+
+
+ //add imageLoading
+ 
     function displayPreloadScreen(){
         //add images and text to containers 
         self.images.loadingContainers[introScreen.title.position.z+1].addChild(introScreen.title.text)
@@ -688,6 +709,8 @@ if(unfinishedX != false && unfinishedX<introScreen.preloadBar.position.x+introSc
     displayPreloadScreen()
     preloadImages(fileSourceArray, function(){
         self.createAllItems()
+        self.images.loadingContainers[self.images.imageLoading.title.position.z+1].addChild(self.images.imageLoading.title.text)
+
         } )
 
     
@@ -3420,40 +3443,25 @@ function(next){
 
 
 
-//create text to show user images are being displayed
-
-var imageLoading = {}
-var titleHeight = 30
-var titleSizeAndFont = '30px Arial'
-var titleColor = 'blue'
-var titleText = 'Displaying Images '
-var titleX = $('#canvas').attr('width')*.25
-var titleY = $('#canvas').attr('height')*.75
-imageLoading.title = new this.images.Item(titleX, titleY, $('#canvas').attr('width') -titleX, titleHeight,this.gameState.containerImageIndexes.loadingAnimation)
-imageLoading.title.text = new createjs.Text(titleText, titleSizeAndFont, titleColor)
-imageLoading.title.text.x= imageLoading.title.position.x
- imageLoading.title.text.y= imageLoading.title.position.y + 1
- imageLoading.title.text.baseline = 'top'
- imageLoading.title.text.textAlign = 'left'
- imageLoading.title.text.textColor = titleColor
-
-
- //add imageLoading
- this.images.loadingContainers[imageLoading.title.position.z+1].addChild(imageLoading.title.text)
 
  //set up animation variables
- var tickerInterval = 50
+ var tickerInterval = 25
 var ticksPerAnimation = 3
 var numTicks = 0
 createjs.Ticker.addEventListener('tick', tick)
 createjs.Ticker.setInterval(tickerInterval)
 createjs.Ticker.setPaused(false)
        var seatsLoaded = []
+
+//add one elipse to the loading text
+self.images.imageLoading.title.text.text = self.images.imageLoading.title.text.text+ '.'
+this.stage.update()
 function tick(event){
   
     //update loading images graphic evert 3 ticks
     if(numTicks%3 == 0){
-        imageLoading.title.text.text = imageLoading.title.text.text+ '.'
+        
+        self.images.imageLoading.title.text.text = self.images.imageLoading.title.text.text+ '.'
     }
 
 
@@ -3487,7 +3495,6 @@ function tick(event){
                       self.stage.addChild(    self.images.containers[i])
            }
            
-       console.log(   self.stage.getNumChildren())
        }
        self.stage.update()
        numTicks ++
