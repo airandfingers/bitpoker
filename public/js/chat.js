@@ -53,16 +53,6 @@ $chat_form.submit(function(e) {
   socket.emit('chat', data);
 });
 
-$(document).on('keydown', function(e) {
-  if ($(':focus').is('input')) {
-    //don't focus $chat_message if the user's typing in a text field
-    return;
-  }
-  else {
-    $chat_message.focus();
-  }
-});
-
 var users = $('#server_values').data('room_state').users
   , $user_list = $('#user_list')
   , $user_to_add;
