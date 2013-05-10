@@ -13,6 +13,7 @@ module.exports = (function () {
   
   //These app.get functions will display their respective ejs page.
   app.get('/account', auth.ensureAuthenticated, function(req, res) {
+    console.log("req.user is " + req.user);
     res.render('account', {
       title: 'Account',
       username: req.user.username,
@@ -20,6 +21,7 @@ module.exports = (function () {
       email: req.user.email,
       maobucks: req.user.maobucks,
       email_confirmed: req.user.email_confirmed,
+      bitcoins: req.user.bitcoins,
     });
   });
 
