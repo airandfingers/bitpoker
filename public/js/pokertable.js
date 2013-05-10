@@ -1916,11 +1916,9 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
    
             this.hideChildren(this.images.seats[seatNumber].bet)
             for(var i = 0;i<this.images.seats[seatNumber].chips.length;i++){
-                this.hideChildren(this.images.seats[seatNumber].chips[i])
-                
+                this.hideChildren(this.images.seats[seatNumber].chips[i])            
             }
             this.images.seats[seatNumber].chips = []
-
     }
 
    //this.images.seats[i] is parent for players bets, this.images.pots[i] is parent for pots
@@ -1997,8 +1995,6 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
             x=x + distanceBetweenColumns
             y = initialY
         }
-
-       
         }
     }
 
@@ -2503,15 +2499,15 @@ this.hideChildren(this.images.betSlider)
          for(var i=0; i<this.images.pots.length;i++){
         self.hideChildren(self.images.pots[i].potSize)
         self.hideChildren(self.images.pots[i].chips)}
-
  }
+
 
  this.winners = function (pots, players){
      // player is array, so players[i].chips_won = array[amountWon, amountWon]
       var animationTime = 800
       var timeBetweenAnimations = 400
       var timeAtEnd = 700
-        var ticks = 40
+        var ticks = 60
         var chipStacks = []
         for(var i = 0;i<players.length;i++)
         {
@@ -3395,8 +3391,8 @@ this.restoreActiveContainers=function(activeContainerArray){
     }
 }
     
-this.streetEnds = function(potSize){
-      var animationTime = 800
+this.streetEnds = function(potSizes){
+      var animationTime = 300
         var ticks = 40
         var chipIntoPotAnimationArray = []
         var callBackNumber = 0
@@ -3418,9 +3414,6 @@ chipIntoPotAnimationArray.push(function(callback){
                 })
                 }
                 })
-            
-
-        
         
 async.series([
 function(next){
@@ -3428,7 +3421,7 @@ function(next){
 },
 
 function(next){
-    self.displayChipStack(parseFloat(self.images.pots[0].potSize.text.text), self.images.pots[0], self.images.pots[0].firstChip.position.x, self.images.pots[0].firstChip.position.y)
+    self.displayChipStack(parseFloat(potSizes[0]), self.images.pots[0], self.images.pots[0].firstChip.position.x, self.images.pots[0].firstChip.position.y)
     self.removeAllBets()
     next(null, 2)
 }
@@ -3641,7 +3634,8 @@ function tick(event){
 
     //community cards are dealt
        socket.on('community_dealt', function(community){
-
+console.log(self.images.pots[0])
+console.log(self.stage.contains(self.images.pots[0]))
       //      self.removeAllBets()
             self.dealCommunity(community)
        //     self.displayAllCommunity(community)
