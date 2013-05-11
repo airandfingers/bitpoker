@@ -23,6 +23,7 @@ module.exports = (function() {
     //whether the user has confirmed his/r email address
   , email_confirmed  : { type: Boolean, default: false }
   , maobucks         : { type: Number, default: 0, min: 0 }
+  , bitcoins         : { type: Number, default: 0, min: 0 }
   , recovery_code    : { type: String }
   , registration_date: { type: Date, default: Date.now }
   });
