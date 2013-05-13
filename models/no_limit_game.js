@@ -20,7 +20,7 @@ module.exports = (function () {
     // how many chips the small blind costs
   , BIG_BLIND: { type: Number, default: 20 }
     // how many maobucks it takes to buy a single chip at this table
-  , MAOBUCKS_PER_CHIP: { type: Number, default: .01 }
+  , CURRENCY_PER_CHIP: { type: Number, default: 1E-5 }
 
     // which currency this game deals in (maobucks or cash)
   , CURRENCY: { type: String, default: 'maobucks' }
@@ -50,7 +50,7 @@ module.exports = (function () {
     if (_.isNumber(spec.SMALL_BLIND) && _.isUndefined(spec.BIG_BLIND)) {
       spec.BIG_BLIND = spec.SMALL_BLIND * 2;
     }
-    console.log('creating NoLimitGame:', spec);
+    //console.log('creating NoLimitGame:', spec);
     var game = new NoLimitGame(spec);
 
     return game;
@@ -58,14 +58,27 @@ module.exports = (function () {
 
   // rounds chip numbers to the nearest MIN_INCREMENT value
   NoLimitGameSchema.methods.roundNumChips = function(amount) {
-    // console.log('game.roundNumChips called with', amount, game.MIN_INCREMENT);
-    var rounded_amount = amount / this.MIN_INCREMENT;
-    // console.log('amount after dividing:', amount);
-    rounded_amount = Math.round(rounded_amount);
-    // console.log('amount after rounding:', amount);
-    rounded_amount = rounded_amount * this.MIN_INCREMENT;
-    // console.log('amount after multiplying:', amount);
-    console.log('rounded', amount, 'to', rounded_amount);
+    var MIN_INCREMENT = this.MIN_INCREMENT
+      , rounded_amount;
+    //console.log('game.roundNumChips called with', amount, MIN_INCREMENT);
+    if (MIN_INCREMENT > 1) {
+      //divide by MIN_INCREMENT, round, multiply
+      rounded_amount = amount / MIN_INCREMENT;
+      rounded_amount = Math.round(rounded_amount);
+      rounded_amount = rounded_amount * MIN_INCREMENT;
+    }
+    else {
+      //multiply by Math.round(1 / MIN_INCREMENT), round, divide
+      var min_increment_inverse = Math.round(1 / MIN_INCREMENT);
+      //console.log('min_increment_inverse:', min_increment_inverse);
+      rounded_amount = amount * min_increment_inverse;
+      //console.log('after multiplying:', rounded_amount);
+      rounded_amount = Math.round(rounded_amount);
+      //console.log('after rounding:', rounded_amount);
+      rounded_amount = rounded_amount / min_increment_inverse;
+      //console.log('after dividing:', rounded_amount);
+    }
+    //console.log('rounded', amount, 'to', rounded_amount);
     return rounded_amount;
   }
 

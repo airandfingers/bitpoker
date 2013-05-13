@@ -117,13 +117,14 @@ module.exports = (function () {
     socket_list.emit.apply(socket_list, arguments);
   };
 
-  RoomSchema.methods.broadcastChatMessage = function(socket, chat_obj) {
+  RoomSchema.methods.broadcastChatMessage = function(socket, message) {
     var username = socket.user && socket.user.username || 'Guest'
-      , seat_num = socket.player && socket.player.seat;
+      , seat_num = socket.player && socket.player.seat
+      , chat_obj = { message : message };
     if (username !== chat_obj.sender) {
       console.error(username, 'tried to send a message as', chat_obj.sender);
-      chat_obj.sender = username;
     }
+    chat_obj.sender = username;
     if (_.isNumber(seat_num)) { chat_obj.seat = seat_num; }
     this.broadcast('user_chats', chat_obj);
   };

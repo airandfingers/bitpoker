@@ -17,29 +17,28 @@ module.exports = (function () {
 
   var static_properties = {
   // static properties (attached below) - Model.property_name
-  TABLE_CONSTANTS: ['SMALL_BLIND', 'MIN_CHIPS', 'MAX_CHIPS',
-                     'MAOBUCKS_PER_CHIP', 'MAX_PLAYERS'],
+  TABLE_CONSTANTS: ['SMALL_BLIND', 'MIN_CHIPS', 'MAX_CHIPS', 'MAX_PLAYERS'],
   // describes the constants to initialize tables with,
   // listing constants in TABLE_CONSTANTS' order
   TABLE_TYPES: [
-// small blind   max stack      max players
-//         min stack    maobucks/chip
-    // SB    MIN    MAX    MB/C   MAXP
-      [ 10,   50, 10000, .0001,    10] // .001/.002   maobucks
-    , [ 10,   50, 10000, .0001,    10] // .001/.002   maobucks
-    , [ 50,  250, 50000, .0001,    10] // .005/.01    maobucks
-    , [ 50,  250, 50000, .0001,    10] // .005/.01    maobucks
-    , [250, 1000,  2000, .0001,    10] // .025/.05    maobucks
-    , [ 10,   50, 10000,   .01,    10] // .1/.2       maobucks
-    , [ 50,  250, 50000,   .01,    10] // .5/1        maobucks
-    , [  1,   10,   250,     1,    10] // 1/2         maobucks
-    , [  5,   50,  1000,     1,    10] // 5/10        maobucks
-    , [ 25,  250,  5000,     1,    10] // 25/50       maobucks
-    , [  1,   10,   250,   100,    10] // 100/200     maobucks
-    , [  5,   50,  1000,   100,    10] // 500/1000    maobucks
-    , [ 25,  250,  5000,   100,    10] // 2500/5000   maobucks
-    , [100,  500, 10000,   100,    10] // 10000/20000 maobucks
-    , [100,  500, 10000,   100,     2] // 10000/20000 maobucks
+// small blind    max stack
+//          min stack    max players
+    // SB     MIN    MAX    MAXP
+      [   1,    5,   100,    10]
+    , [   5,   25,   500,    10]
+    , [  25,  100,  2500,    10]
+    , [ 100,  500,   1E4,    10]
+    , [ 500, 2500,   5E4,    10]
+    , [2500,  1E4,  25E4,    10]
+    , [ 1E4,  5E4,   1E6,    10]
+    , [ 5E4, 25E4,   5E6,    10]
+    , [25E4,  1E5,  25E6,    10]
+    , [ 1E5,  5E5,   1E7,    10]
+    , [ 5E5, 25E5,   5E7,    10]
+    , [25E5,  1E6,  25E7,    10]
+    , [ 1E6,  5E6,   1E8,    10]
+    , [ 5E6, 25E6,   5E8,    10]
+    , [25E6,100E6,  25E8,     2]
     ]
     // [this string] + table_id = room_name
   , TABLE_PREFIX: 'table_'
@@ -115,7 +114,7 @@ module.exports = (function () {
     var table_games = []
       , table_game;
     _.each(Table.tables, function(table, table_name) {
-      table_game = table.game.constants();
+      table_game = { game: table.game };
       table_game.table_name = table_name;
       table_game.table_id = table.table_id;
       table_game.seats_taken = table.getNumSeatsTaken();
@@ -223,9 +222,12 @@ module.exports = (function () {
     // set socket.player to player
     socket.player = player;
     // set player.socket to socket
-    player.onConnect(socket);
+    player.socket = socket;
     // send current table state
-    self.sendTableState(player);
+    self.sendTableState(player, null, function() {
+      // augment the socket and send act_prompt if applicable
+      player.onConnect(socket);
+    });
   };
 
   static_properties.room_events.socket_leave = 'onSocketDisconnect';
@@ -267,11 +269,12 @@ module.exports = (function () {
   };
 
   static_properties.player_events['message:get_table_state'] = 'sendTableState';
-  TableSchema.methods.sendTableState = function(player, fields) {
+  TableSchema.methods.sendTableState = function(player, fields, cb) {
     var self = this;
     fields = fields || 'all';
     self.getTableState(player.socket.user, fields, function(err, table_state) {
       player.socket.emit('table_state', table_state);
+      if (_.isFunction(cb)) cb();
     })
   };
 
@@ -294,7 +297,7 @@ module.exports = (function () {
       }
       else {
         table_state.balance = maobucks;
-        cb(null, table_state);
+        if (_.isFunction(cb)) cb(null, table_state);
       }
     });
   };

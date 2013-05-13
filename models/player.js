@@ -97,7 +97,7 @@ module.exports = (function () {
     return amount;
   };
 
-  // only called when we've raised beyond another player's chipstack
+  // only called when we've raised beyond all other players' stacks
   PlayerSchema.methods.getBet = function(amount) {
     var game = this.game
       , rounded_amount = game.roundNumChips(amount);
@@ -111,7 +111,7 @@ module.exports = (function () {
 
   PlayerSchema.methods.win = function(amount) {
     this.chips += amount;
-    this.chips_won = amount;
+    this.chips_won += amount;
   };
 
   PlayerSchema.methods.receiveHand = function(first_card, second_card) {
@@ -138,7 +138,6 @@ module.exports = (function () {
     else {
       console.log('prompting', self.username, 'for next action', actions, timeout);
       self.sendMessage('act_prompt', actions, timeout);
-      self.current_prompt = [actions, timeout, new Date()];
       self.socket.once('act', function(action, num_chips) {
         console.log(self.username, 'responds with', action, num_chips);
         self.current_prompt = undefined;
@@ -153,6 +152,13 @@ module.exports = (function () {
         self.socket.removeAllListeners('act');
         cb(default_action);
       }, timeout);
+      self.current_prompt = {
+        actions: actions
+      , timeout: timeout
+      , prompt_sent: new Date()
+      , callback: cb
+      , act_timeout: act_timeout
+      };
     }
   };
 
@@ -173,7 +179,12 @@ module.exports = (function () {
           addChips: 'chips_added'
         , sitOut: 'sit_out'
         , vacateSeat: 'stand'
-    }
+        }
+      , action_to_flag_name = {
+          addChips: 'add_chips'
+        , vacateSeat: 'stand'
+        , sitOut: 'sit_out'
+        }
       , actions = [];
     
     _.each(action_order, function(method_name) {
@@ -182,7 +193,10 @@ module.exports = (function () {
         actions.push(function(acb) {
           self.performAction(method_name, args_array);
           // wait until the event that the method triggers when it's done
-          self.once(complete_events[method_name], function() { acb(); });
+          self.once(complete_events[method_name], function() {
+            this.setFlag('pending_' + action_to_flag_name[method_name], false);
+            acb();
+          });
         });
       }
     });
@@ -203,7 +217,9 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.sendMessage = function() {
-    this.socket.emit.apply(this.socket, arguments);
+    if (_.isObject(this.socket)) {
+      this.socket.emit.apply(this.socket, arguments);
+    }
   };
 
   PlayerSchema.methods.toObject = function() {
@@ -238,7 +254,7 @@ module.exports = (function () {
     else if (this.table.seats[seat_num] !== undefined) {
       error = 'A player is already sitting in seat ' + seat_num;
     }
-    else if (this.seat) {
+    else if (_.isNumber(this.seat)) {
       error = 'Player is already sitting at the table!';
     }
     if (error) {
@@ -308,8 +324,8 @@ module.exports = (function () {
           self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);
           return;
         }
-        var stack_in_maobucks = self.chips * game.MAOBUCKS_PER_CHIP
-          , new_maobucks = user.maobucks + stack_in_maobucks;
+        var stack_in_currency = self.chips * game.CURRENCY_PER_CHIP
+          , new_maobucks = user.maobucks + stack_in_currency;
         user.update({ $set: { maobucks: new_maobucks } }, function(save_err) {
           if (save_err) {
             self.sendMessage('error', 'error while saving user: ' + save_err.message || save_err);
@@ -390,16 +406,16 @@ module.exports = (function () {
         cb(err);
       }
       else {
-        var maobucks_per_chip = game.MAOBUCKS_PER_CHIP
-          , balance_in_chips = game.roundNumChips(maobucks / maobucks_per_chip)
+        var currency_per_chip = game.CURRENCY_PER_CHIP
+          , balance_in_chips = game.roundNumChips(maobucks / currency_per_chip)
           , stack = self.chips
           , num_to_min = game.MIN_CHIPS - stack
           , num_to_max = game.MAX_CHIPS - stack
           , add_chips_info = {
-              balance: maobucks
+              balance_in_currency: maobucks
             , balance_in_chips: balance_in_chips
             , stack: stack
-            , maobucks_per_chip: maobucks_per_chip
+            , currency_per_chip: currency_per_chip
           }
           ,  min_buyin = self.min_buyin
           , min
@@ -424,36 +440,45 @@ module.exports = (function () {
   };
 
   static_properties.messages.add_chips = 'handleAddChips';
-  PlayerSchema.methods.handleAddChips = function(num_chips) {
+  PlayerSchema.methods.handleAddChips = function(amount, currency_or_chips) {
     var self = this
       , game = self.game
       , error
       , rounded_num_chips
-      , add_chips_info = self.add_chips_info;
-    // validate the num_chips and that a get_add_chips_info was sent
-    if (! _.isNumber(num_chips)) {
-      error = 'add_chips message received with non-Number num_chips: ' + num_chips;
-    }
-    else {
-      rounded_num_chips = game.roundNumChips(num_chips);
-      if (rounded_num_chips !== num_chips) {
-        console.error('add_chips message sent with unrounded num_chips:', num_chips, game.MIN_INCREMENT);
-        num_chips = rounded_num_chips;
-      }
-    }
+      , add_chips_info = self.add_chips_info
+      , num_chips;
+    
     if (! _.isObject(add_chips_info)) {
       error = 'add_chips message received before add_chips_info was sent!';
     }
     else if (add_chips_info.min === -1) {
       error = 'add_chips message received when player after -1 add_chips_info!';
     }
+    // validate the amount and that a get_add_chips_info was sent
+    if (! _.isNumber(amount)) {
+      error = 'add_chips message received with non-Number amount: ' + amount;
+    }
     if (error) {
       self.sendMessage('error', error);
       return;
     }
-    else {
-      self.pendAction('addChips', num_chips);
+    if (currency_or_chips === 'maobucks') {
+      num_chips = amount / add_chips_info.currency_per_chip;
     }
+    else if (currency_or_chips === 'chips') {
+      num_chips = amount;
+    }
+    else {
+      console.error('Unsupported currency type', currency_or_chips);
+      currency_or_chips = 'chips';
+      num_chips = amount;
+    }
+    rounded_num_chips = game.roundNumChips(num_chips);
+    if (rounded_num_chips !== num_chips) {
+      console.error('add_chips message sent with unrounded num_chips:', num_chips, game.MIN_INCREMENT);
+      num_chips = rounded_num_chips;
+    }
+    self.pendAction('addChips', num_chips);
   };
 
   PlayerSchema.methods.addChips = function(num_chips) {
@@ -469,6 +494,9 @@ module.exports = (function () {
     }
     else if (num_chips < 0) {
       error = 'cannot add negative numbers of chips!';
+    }
+    else if (num_to_max === 0) {
+      error = 'cannot add any more chips!';
     }
     else if (num_chips < sent_min) {
       error = 'cannot add fewer than ' + sent_min + ' chips!';
@@ -487,7 +515,7 @@ module.exports = (function () {
         self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);
         return;
       }
-      var num_maobucks = num_chips * game.MAOBUCKS_PER_CHIP
+      var num_maobucks = num_chips * game.CURRENCY_PER_CHIP
         , new_maobucks = user.maobucks - num_maobucks;
       if (new_maobucks < 0) {
         self.sendMessage('error', 'player no longer has enough maobucks to add ' + num_chips + ' chips!');
@@ -512,6 +540,7 @@ module.exports = (function () {
   PlayerSchema.methods.setFlag = function(name, value) {
     console.log(this.username, 'setting', name, 'to', value);
     this.flags[name] = value;
+    this.sendMessage('flag_set', name, value);
   };
 
   static_properties.messages.set_flags = 'setFlags';
@@ -528,7 +557,6 @@ module.exports = (function () {
 
   PlayerSchema.methods.onConnect = function(socket) {
     var self = this;
-    self.socket = socket;
     self.disconnected = false;
 
     // override message-received trigger (called $emit) to log, trigger player event, then trigger
@@ -550,9 +578,21 @@ module.exports = (function () {
     // send outstanding prompt, if any
     if (self.current_prompt) {
       var current_prompt = self.current_prompt
-        , elapsed_timeout = new Date() - current_prompt[2]
-        , remaining_timeout = current_prompt[1] - elapsed_timeout;
-      self.sendMessage('act_prompt', current_prompt[0], remaining_timeout);
+        , actions = current_prompt.actions
+        , elapsed_timeout = new Date() - current_prompt.prompt_sent
+        , remaining_timeout = current_prompt.timeout - elapsed_timeout
+        , act_timeout = current_prompt.act_timeout
+        , cb = current_prompt.callback;
+
+      self.sendMessage('act_prompt', actions, remaining_timeout);
+
+      self.socket.once('act', function(action, num_chips) {
+        console.log(self.username, 'responds with', action, num_chips);
+        self.current_prompt = undefined;
+        self.idle = false;
+        clearTimeout(act_timeout);
+        cb(action, num_chips);
+      });
     }
 
     // attach handlers for messages as defined in Player.messages
@@ -569,16 +609,22 @@ module.exports = (function () {
   PlayerSchema.methods.pendAction = function(method_name) {
     var args_array = _.toArray(arguments)
       , action_to_english = {
-          addChips : 'add chips'
-        , vacateSeat : 'stand'
-        , sitOut : 'sit out'
-    };
+          addChips: 'add chips'
+        , vacateSeat: 'stand'
+        , sitOut: 'sit out'
+        }
+      , action_to_flag_name = {
+          addChips: 'add_chips'
+        , vacateSeat: 'stand'
+        , sitOut: 'sit_out'
+        };
     args_array.shift(); // remove method_name from arguments
     if (this.in_hand) {
       this.pending_actions[method_name] = args_array;
       // notify user that the requested action has been delayed
       var message = 'You will ' + action_to_english[method_name] + ' as soon as the hand is over.';
       this.sendMessage('error', message);
+      this.setFlag('pending_' + action_to_flag_name[method_name], true);
     }
     else {
       this.performAction(method_name, args_array);
