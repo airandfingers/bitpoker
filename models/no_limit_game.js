@@ -56,31 +56,42 @@ module.exports = (function () {
     return game;
   };
 
-  // rounds chip numbers to the nearest MIN_INCREMENT value
-  NoLimitGameSchema.methods.roundNumChips = function(amount) {
-    var MIN_INCREMENT = this.MIN_INCREMENT
-      , rounded_amount;
-    //console.log('game.roundNumChips called with', amount, MIN_INCREMENT);
-    if (MIN_INCREMENT > 1) {
-      //divide by MIN_INCREMENT, round, multiply
-      rounded_amount = amount / MIN_INCREMENT;
+  function roundBy(amount, round_by) {
+    var rounded_amount;
+    //console.log('game.roundNumChips called with', amount, round_by);
+    if (round_by > 1) {
+      //divide by round_by, round, multiply
+      rounded_amount = amount / round_by;
       rounded_amount = Math.round(rounded_amount);
-      rounded_amount = rounded_amount * MIN_INCREMENT;
+      rounded_amount = rounded_amount * round_by;
     }
     else {
-      //multiply by Math.round(1 / MIN_INCREMENT), round, divide
-      var min_increment_inverse = Math.round(1 / MIN_INCREMENT);
+      //multiply by Math.round(1 / round_by), round, divide
+      var round_by_inverse = Math.round(1 / round_by);
       //console.log('min_increment_inverse:', min_increment_inverse);
-      rounded_amount = amount * min_increment_inverse;
+      rounded_amount = amount * round_by_inverse;
       //console.log('after multiplying:', rounded_amount);
       rounded_amount = Math.round(rounded_amount);
       //console.log('after rounding:', rounded_amount);
-      rounded_amount = rounded_amount / min_increment_inverse;
+      rounded_amount = rounded_amount / round_by_inverse;
       //console.log('after dividing:', rounded_amount);
     }
-    //console.log('rounded', amount, 'to', rounded_amount);
+    console.log('rounded', amount, 'to', rounded_amount);
     return rounded_amount;
   }
+
+  // rounds chip numbers to the nearest MIN_INCREMENT value
+  NoLimitGameSchema.methods.roundNumChips = function(amount) {
+    var rounded_amount = roundBy(amount, this.MIN_INCREMENT);
+    //console.log('rounded', amount, 'to', rounded_amount);
+    return rounded_amount;
+  };
+
+  NoLimitGameSchema.methods.roundNumCurrency = function(amount) {
+    var rounded_amount = roundBy(amount, this.CURRENCY_PER_CHIP);
+    //console.log('rounded', amount, 'to', rounded_amount);
+    return rounded_amount;
+  };
 
   // returns a copy of this class's constants
   NoLimitGameSchema.methods.constants = function() {

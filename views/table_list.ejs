@@ -12,7 +12,7 @@
     <%
     var i, len
       , table_game, game, table_name, table_id
-      , constants, CURRENCY, CURRENCY_PER_CHIP
+      , constants, CURRENCY_ABBREV, CURRENCY_PER_CHIP
       , SMALL_BLIND, BIG_BLIND, MIN_CHIPS, MAX_CHIPS
       , seats_taken, MAX_PLAYERS;
 
@@ -22,20 +22,20 @@
       table_name = table_game.table_name;
       table_id = table_game.table_id;
       constants = game.constants();
-      CURRENCY = game.CURRENCY === 'maobucks' ? 'MB' : 'BTC';
-      CURRENCY_PER_CHIP = game.roundNumChips(game.CURRENCY_PER_CHIP);
-      SMALL_BLIND = game.roundNumChips(game.SMALL_BLIND * CURRENCY_PER_CHIP);
-      BIG_BLIND = game.roundNumChips(game.BIG_BLIND * CURRENCY_PER_CHIP);
-      MIN_CHIPS = game.roundNumChips(game.MIN_CHIPS * CURRENCY_PER_CHIP);
-      MAX_CHIPS = game.roundNumChips(game.MAX_CHIPS * CURRENCY_PER_CHIP);
+      CURRENCY_ABBREV = game.CURRENCY === 'maobucks' ? 'MB' : 'BTC';
+      CURRENCY_PER_CHIP = game.CURRENCY_PER_CHIP;
+      SMALL_BLIND = game.roundNumCurrency(game.SMALL_BLIND * CURRENCY_PER_CHIP);
+      BIG_BLIND = game.roundNumCurrency(game.BIG_BLIND * CURRENCY_PER_CHIP);
+      MIN_CHIPS = game.roundNumCurrency(game.MIN_CHIPS * CURRENCY_PER_CHIP);
+      MAX_CHIPS = game.roundNumCurrency(game.MAX_CHIPS * CURRENCY_PER_CHIP);
 
       seats_taken = table_game.seats_taken;
       MAX_PLAYERS = game.MAX_PLAYERS;
     %>
       <tr id="<%=table_name %>">
         <td> <%= table_id %> </td>
-        <td> <%= SMALL_BLIND %> / <%= BIG_BLIND %> <%= CURRENCY %> </td>
-        <td> <%= MIN_CHIPS %> - <%= MAX_CHIPS %> <%= CURRENCY %> </td>
+        <td> <%= SMALL_BLIND %> / <%= BIG_BLIND %> <%= CURRENCY_ABBREV %> </td>
+        <td> <%= MIN_CHIPS %> - <%= MAX_CHIPS %> <%= CURRENCY_ABBREV %> </td>
         <td> <%= seats_taken %> </td>
         <td> <%= MAX_PLAYERS %> </td>
       </tr> 
