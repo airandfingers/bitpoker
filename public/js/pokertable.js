@@ -236,6 +236,7 @@ parentOfImageObject.textColor = color
 
             }
 
+
 //------------END CONSTRUCTORS-------------------
             
 //-------------START EVENTS--------------------------
@@ -1058,23 +1059,39 @@ parentOfImageObject.textColor = sideButtonTextColor
      this.seats[9].seat = new this.Item(fourthColumnX,fourthRowY,seatWidth,seatHeight,self.gameState.containerImageIndexes.button)
 
       //---filled seats------
+     
+                 var drawSeat = function (parent, borderColor, fillColor, middleDividerColor){
+          if(parent.image instanceof createjs.Shape){}
+          else{
+              parent.image = new createjs.Shape()}
 
+              var x = parent.position.x; var y = parent.position.y
+              var width = parent.size.x;  var height = parent.size.y
+
+              parent.image.graphics.clear() //clear previous graphics on the shape
+   parent.image.snapToPixel = true
+
+ parent.image.graphics.setStrokeStyle(2,'square').beginStroke(borderColor).beginFill(fillColor).drawRect(x, y, width, height)
+    parent.image.graphics.setStrokeStyle(1).beginStroke(middleDividerColor).moveTo(x+1,y+height/2).lineTo(x+width-1,y+height/2)
+            
+          parent.image.borderColor = borderColor
+          parent.image.fillColor = fillColor
+           parent.image.middleDividerColor = middleDividerColor
+          
+      }
+     
       _.each(_.range(this.seats.length), function(i) {
           var x = self.images.seats[i].seat.position.x
           var y = self.images.seats[i].seat.position.y
           var width = self.images.seats[i].seat.size.x
           var height = self.images.seats[i].seat.size.y
           self.images.seats[i].seat.image = new createjs.Shape()
-self.images.seats[i].seat.image.drawSeat = function(borderColor, fillColor, middleDividerColor){
-    self.images.seats[i].seat.image.graphics.clear()
-    self.images.seats[i].seat.image.snapToPixel = true
-self.images.seats[i].seat.image.graphics.setStrokeStyle(2,'square').beginStroke(borderColor).beginFill(fillColor).drawRect(x, y, width, height)
-            self.images.seats[i].seat.image.graphics.setStrokeStyle(1).beginStroke(middleDividerColor).moveTo(x,y+height/2).lineTo(x+width,y+height/2)
-          self.images.seats[i].seat.image.parentOfImageObject = self.images.seats[i].seat
-          self.images.seats[i].seat.image.borderColor = borderColor
-          self.images.seats[i].seat.image.fillColor = fillColor
-          self.images.seats[i].seat.image.middleDividerColor = middleDividerColor
-}
+self.images.seats[i].seat.image.drawSeat = function(border, fill, middle){
+    console.log('1')
+    drawSeat(self.images.seats[i].seat, border, fill, middle)
+    }
+ self.images.seats[i].seat.image.parentOfImageObject = self.images.seats[i].seat
+
 })
 
 
@@ -1082,7 +1099,7 @@ self.images.seats[i].seat.image.graphics.setStrokeStyle(2,'square').beginStroke(
    
 for(var i =0;i<this.seats.length;i++){
 
-this.seats[i].seat.image.drawSeat('#FFFFFF','#000000', '#FFFFFF')
+this.seats[i].seat.image.drawSeat('#1520b9','#000000', '#7d7d7d')
 
     //--------------------empty seats and text----------------- 
          this.seats[i].openSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,self.gameState.containerImageIndexes.button)
@@ -1112,10 +1129,12 @@ this.seats[i].seat.image.drawSeat('#FFFFFF','#000000', '#FFFFFF')
 
 
             //Empty Seats
-            this.seats[i].openSeat.image = new createjs.Shape()
-this.seats[i].openSeat.image.snapToPixel = true
-this.seats[i].openSeat.image.graphics.setStrokeStyle(2,'square').beginStroke("#FFFFFF").beginFill('black').drawRect(this.seats[i].openSeat.position.x, this.seats[i].openSeat.position.y, this.seats[i].openSeat.size.x, this.seats[i].openSeat.size.y)
-this.seats[i].openSeat.image.parentOfImageObject = this.seats[i].openSeat                
+            var openSeatFill = '#000000'
+            var openSeatMiddle = openSeatMiddle
+            var openSeatBorder = '#FFFFFF'
+
+drawSeat(this.seats[i].openSeat, openSeatBorder, openSeatFill, openSeatMiddle)
+this.seats[i].openSeat.image.parentOfImageObject = this.seats[i].openSeat  
 
                 this.seats[i].openSeat.text = new createjs.Text('Open Seat', '15px Arial', "#FFFFFF")
 this.seats[i].openSeat.text.x=this.seats[i].openSeat.position.x + this.seats[i].openSeat.size.x/2 
@@ -1126,11 +1145,17 @@ this.seats[i].openSeat.text.maxWidth = this.seats[i].openSeat.size.x*.9
 this.seats[i].openSeat.textColor = "#FFFFFF"       
 
             //disabled Seats
+            var disabledBorder = "#544E4F"
+            var disabledFill = 'black'
+            var disabledMiddle = disabledFill
+            drawSeat (this.seats[i].disabledSeat, disabledBorder, disabledFill, disabledMiddle)
+   this.seats[i].disabledSeat.image.parentOfImageObject = this.seats[i].disabledSeat     
+/*
             this.seats[i].disabledSeat.image = new createjs.Shape()
 this.seats[i].disabledSeat.image.snapToPixel = true
 this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke("#544E4F").beginFill('black').drawRect(this.seats[i].disabledSeat.position.x, this.seats[i].disabledSeat.position.y, this.seats[i].disabledSeat.size.x, this.seats[i].disabledSeat.size.y)
          this.seats[i].disabledSeat.image.parentOfImageObject = this.seats[i].disabledSeat       
-
+         */
 
             //hole cards
              this.itemAsBitmap(this.seats[i].hiddenCard0, this.sources.cardImageFolder+this.sources.hiddenCardFileName)
@@ -2880,7 +2905,10 @@ var rgbArrayToString = function(rgbArray){
         colorString = 'rgb('+rgbArray[0]+','+rgbArray[1]+','+rgbArray[2]+')'
         return colorString
 }
-
+var toActBorderColor = '#FFFFFF'
+var toActMiddleDividerColor = '#FFFFFF'
+var originalBorderColor = self.images.seats[0].seat.image.borderColor
+var originalMiddleDividerColor = self.images.seats[0].seat.image.middleDividerColor
         var timeToChangeColors = 2000
         var ticksPerColorChange = 35
         var interval = timeToChangeColors/ticksPerColorChange
@@ -2978,13 +3006,13 @@ var nextCounter = lastCompletedFillColorCounter+1
     //concatanate to create new fill color
     newFillColor = rgbArrayToString([nextRed, nextGreen, nextBlue])
 
-    self.images.seats[seatNumber].seat.image.drawSeat(self.images.seats[seatNumber].seat.image.borderColor, newFillColor, self.images.seats[seatNumber].seat.image.middleDividerColor)
+    self.images.seats[seatNumber].seat.image.drawSeat(toActBorderColor, newFillColor, toActMiddleDividerColor)
     self.stage.update()
     
                 if (self.gameState.seats[seatNumber].toAct==false)
                   {
                       clearInterval(countdown)
-                     self.images.seats[seatNumber].seat.image.drawSeat(self.images.seats[seatNumber].seat.image.borderColor, originalFillColor, self.images.seats[seatNumber].seat.image.middleDividerColor)
+                     self.images.seats[seatNumber].seat.image.drawSeat(originalBorderColor, originalFillColor, originalMiddleDividerColor)
                       }
         },interval)
 
@@ -3271,13 +3299,6 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
        }
 
 
-        this.gameState.cashier.min = info.min
-        this.gameState.cashier.max = info.max
-        this.gameState.cashier.balance = info.balance
-        this.gameState.cashier.table_name = info.table_name
-        this.gameState.cashier.small_blind = info.small_blind
-        this.gameState.cashier.big_blind = info.big_blind
-      
         //set defaults
         if(_.isUndefined(info.currency_per_chip)||_.isNull(info.currency_per_chip)){info.currency_per_chip = 1}
         if(_.isUndefined(info.currency)||_.isNull(info.currency)){info.currency = 'Chips'}
@@ -3287,8 +3308,10 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         this.gameState.cashier.max = info.max*info.currency_per_chip
         this.gameState.cashier.balance = info.balance
         this.gameState.cashier.table_name = info.table_name
-        this.gameState.cashier.small_blind = info.small_blind
-        this.gameState.cashier.big_blind = info.big_blind
+        this.gameState.cashier.small_blind = info.small_blind*info.currency_per_chip
+        this.gameState.cashier.big_blind = info.big_blind*info.currency_per_chip
+        this.gameState.cashier.table_min = info.table_min*info.currency_per_chip
+        
 
        this.images.cashier.blinds.text.text = info.currency_per_chip*info.small_blind+'/'+info.currency_per_chip*info.big_blind
 
@@ -3307,20 +3330,21 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
        //set initial values of text boxes
              $("#otherAmount").val('')
            $('#autoRebuyAmount').val('')
-       $("#maxAmount").val(info.max)
+       $("#maxAmount").val(this.gameState.cashier.max)
         $("#maxAmount").attr("readonly", true)
 
 //check radio buttons when textbox is focused
 
     $("#otherAmount").focus(function() {
+        var min = self.gameState.cashier.min
                  $('#maxRadio').prop('checked', false)
           $('#autoRebuyRadio').prop('checked', false)
           $('#otherAmountRadio').prop('checked', true)
           //do nothing if amount to add is acceptable
-          if(typeof parseFloat($("#otherAmount").val()) == 'number' &&  parseFloat($("#otherAmount").val()) >=self.gameState.cashier.min){}
+          if(typeof parseFloat($("#otherAmount").val()) == 'number' &&  parseFloat($("#otherAmount").val()) >=min){}
           else{
               
-          $("#otherAmount").val(self.gameState.cashier.min)
+          $("#otherAmount").val(min)
 
           //select text on clicking
            $("#otherAmount").one('mouseup', function(event){
@@ -3330,14 +3354,15 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         })
 
             $("#autoRebuyAmount").focus(function() {
-        
+                
+        var min = self.gameState.cashier.table_min
          $('#maxRadio').prop('checked', false)
           $('#otherAmountRadio').prop('checked', false)
           $('#autoRebuyRadio').prop('checked', true)
           //do nothing if autorebuy is acceptable
-           if(typeof parseFloat($("#autoRebuyAmount").val()) == 'number' &&  parseFloat($("#autoRebuyAmount").val()) >=info.table_min){}
+           if(typeof parseFloat($("#autoRebuyAmount").val()) == 'number' &&  parseFloat($("#autoRebuyAmount").val()) >=min){}
           else{
-          $("#autoRebuyAmount").val(info.table_min)
+          $("#autoRebuyAmount").val(min)
           //select text on clicking
            $("#autoRebuyAmount").one('mouseup', function(event){
         event.preventDefault();
@@ -3839,7 +3864,7 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
 
 //player sits out
        socket.on('player_sits_out', function(player){
-           self.images.seats[player.seat].status.text.text = 'Sitting Out'
+           self.images.seats[player.seat].status.text.text = 'Sitting Out'+player.chips
   
         if(player.seat == self.gameState.userSeatNumber){
             self.hideChildren(self.images.sitOutNextHand)
