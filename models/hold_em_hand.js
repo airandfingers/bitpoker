@@ -66,10 +66,10 @@ module.exports = (function () {
   , to_act           : { type: Number, default: 0 }
     // the highest bet so far in this betting round
   , high_bet         : Number
-    // the number of chips in the pot (matched by all active players)
-  , pot              : { type: Number, default: 0 }
-    // the index (within this.players) of the winning player
-  , winner           : Number
+    // the number of chips in each pot { [usernames of active Players in pot] : pot value }
+  , pots             : { type: Schema.Types.Mixed, default: function() { return {}; } }
+    // any bets forfeited by folding players
+  , forfeited_bets   : { type: [Schema.Types.Mixed], default: function() { return []; } }
     // the deck this hand uses (created in initialize)
   , deck             : Schema.Types.Mixed
     // the cards that are visible to everyone
@@ -82,7 +82,7 @@ module.exports = (function () {
   HoldEmHandSchema.statics.createHoldEmHand = function(spec) {
     /* our "constructor" function. Usage: HoldEmHand.createHoldEmHand({prop: 'val'})
        (see Schema definition for list of properties)*/
-    console.log('HoldEmHand.createHoldEmHand called!', spec);
+    //console.log('HoldEmHand.createHoldEmHand called!', spec);
     var hand = new HoldEmHand(spec)
       , constants
       , game = spec.game;
@@ -171,9 +171,14 @@ module.exports = (function () {
       , game = self.game
       , SMALL_BLIND_PAID = false
       , BIG_BLIND_PAID = false
+      , usernames
       , player;
 
     self.calculatePlayers();
+    usernames = _.pluck(self.players, 'username');
+    usernames.sort();
+    self.pots[usernames] = 0;
+
     while (SMALL_BLIND_PAID === false && 
            self.players.length >= game.MIN_PLAYERS) {
       player = self.players[self.to_act];
@@ -186,7 +191,7 @@ module.exports = (function () {
       else {
         console.log('player will post blind:', player, game.SMALL_BLIND);
         player.makeBet(game.SMALL_BLIND);
-        self.broadcast('player_acts', player.serialize(), 'post_blind', self.calculatePot());
+        self.broadcast('player_acts', player.serialize(), 'post_blind', self.getPots());
         self.small_blind_seat = player.seat;
         SMALL_BLIND_PAID = true;
       }
@@ -198,15 +203,15 @@ module.exports = (function () {
            self.players.length >= game.MIN_PLAYERS) {
       player = self.players[this.to_act];
       //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
-      if (! player.isFlagSet('post_blind') || player.disconnected) {
+      if (! player.isFlagSet('post_blind') || player.disconnected || player.chips < game.BIG_BLIND) {
         console.log('Player\'s post_blind flag is unset, or player is disconnected - sitting player out!');
         self.playerOut(self.to_act);
         player.sitOut();
       }
       else {
-        console.log('player will post blind:', player, game.SMALL_BLIND);
+        console.log('player will post blind:', player, game.BIG_BLIND);
         player.makeBet(game.BIG_BLIND);
-        self.broadcast('player_acts', player.serialize(), 'post_blind', self.calculatePot());
+        self.broadcast('player_acts', player.serialize(), 'post_blind', self.getPots());
         BIG_BLIND_PAID = true;
       }
       self.nextPlayer();
@@ -265,14 +270,14 @@ module.exports = (function () {
         console.log('Not in betting_preflop, so resetting high_bet and to_act');
         last_raise = game.SMALL_BLIND;
         this.high_bet = 0;
-        this.to_act = 0;
+        this.to_act = this.first_to_act;
         break;
       case 'betting_preriver':
       case 'betting_postriver':
         console.log('Not in betting_preflop, so resetting high_bet and to_act');
         last_raise = game.BIG_BLIND;
         this.high_bet = 0;
-        this.to_act = 0;
+        this.to_act = this.first_to_act;
         break;
       default:
         console.error('bettingRound called when stage_name is', this.stage_name);
@@ -287,7 +292,7 @@ module.exports = (function () {
                       'Has player acted yet? ' + player.hasActedIn(self.stage_num),
                       'current_bet: ' + player.current_bet + ' vs. high_bet: ' + self.high_bet);
         high_stack = self.calculateHighestStack(player); // how high other players can/have called to
-        if (player.current_bet > high_stack) {
+        if (self.players.length >= game.MIN_PLAYERS && player.current_bet > high_stack) {
           // adjust player's current bet to be the high bet
           refund = player.current_bet - high_stack;
           player.getBet(refund);
@@ -377,19 +382,78 @@ module.exports = (function () {
         self.broadcast('player_to_act', player.serialize(), game.ACT_TIMEOUT);
       },
       function loopComplete() {
+        // construct an Object of the form { bet_amount : [usernames] }
+        var bets_obj = {}
+          , bet;
+        _.each(self.players, function(player) {
+          bet = player.giveBet();
+          if (bet !== game.roundNumChips(bet)) {
+            console.error('Invalid bet returned by giveBet:', bet, game.MIN_INCREMENT);
+            bet = game.roundNumChips(bet);
+          }
+          if (bet > 0) {
+            bets_obj[player.username] = bet;
+          }
+          else {
+            console.log('Not adding', player.username, 'to bet_obj since bet is', bet);
+          }
+        });
+        // move bets from bets_obj into pots
+        while (! _.isEmpty(bets_obj)) {
+          console.log('Iterating over bets_obj, which is', bets_obj);
+          var min_bet = _.min(bets_obj)
+            , usernames = []
+            , pot;
+          _.each(bets_obj, function(bet_amount, username) {
+            usernames.push(username);
+            if (bet_amount === min_bet) {
+              delete bets_obj[username];
+            }
+            else {
+              bets_obj[username] = bet_amount - min_bet;
+            }
+          });
+          usernames.sort();
+          pot = self.pots[usernames] || 0;
+          console.log('usernames is', usernames, ', pots[usernames] is', pot);
+          pot += usernames.length * min_bet;
+          console.log('About to iterate over forfeited_bets, which is', self.forfeited_bets);
+          _.each(self.forfeited_bets, function(forfeited_bet, i) {
+            if (forfeited_bet === 0) {
+              // skip
+              return;
+            }
+            if (forfeited_bet >= min_bet) {
+              pot += min_bet;
+              forfeited_bet -+ min_bet;
+            }
+            else {
+              pot += forfeited_bet;
+              forfeited_bet = 0;
+            }
+            self.forfeited_bets[i] = forfeited_bet;
+            // remove zero-value bets so they are skipped by future iterations
+            self.forfeited_bets = _.without(self.forfeited_bets, 0);
+          });
+          // save the new pot value
+          self.pots[usernames] = pot;
+        }
         if (self.players.length >= game.MIN_PLAYERS) {
-          console.log('Betting round completed!', self.pot, self.players);
+          console.log('Betting round completed!', self.pots, self.players);
           setTimeout(function() {
             self.broadcast('street_ends');
-            self.takeBets();
             self.nextStage();
           }, game.STREET_END_DELAY);
         }
         else {
           console.log('Not enough players to continue to next stage!', self.players);
-          self.winner = 0;
-          self.takeBets();
-          self.toStage('paying_out', [{ player: self.players[self.winner] }]);
+          // create a results_obj that mimics that created by showing_down handler
+          var winners = _.map(self.players, function(player) {
+            var result_obj = {};
+            result_obj[player.username] = { player : player };
+            return result_obj;
+          });
+          self.toStage('paying_out', winners);
         }
       }
     );
@@ -438,10 +502,13 @@ module.exports = (function () {
         last_raise = raise;
         break;
       case 'fold':
-        self.playerOut(self.to_act);
+        // nothing here - call playerOut after emitting player_acts, for message order
         break;
       }
-      self.broadcast('player_acts', player.serialize(), action, self.calculatePot());
+      self.broadcast('player_acts', player.serialize(), action, self.getPots());
+      if (action === 'fold') {
+        self.playerOut(self.to_act);
+      }
       player.actedIn(self.stage_num);
       player = self.nextPlayer();
     }
@@ -489,36 +556,62 @@ module.exports = (function () {
     });
     //console.log('results is', results);
     results = _.groupBy(results, function(result) {
-      return (result.handType << 12) + result.handRank;
+      return result.value;
     });
     //console.log('grouped results:', results);
-    var high_hand = _.max(_.keys(results), function(value) {
-      return parseInt(value, 10);
+    results = _.sortBy(results, function(result_list, value) {
+      return (- parseInt(value, 10));
     });
-    results = results[high_hand];
+    //console.log('sorted results:', results);
+    _.each(results, function(result_list, i) {
+      // replace result_list with { username: result_list }
+      results[i] = _.object(_.map(result_list, function(res) { return res.player.username; }),
+                            result_list);
+    });
+    //console.log('transformed results:', results);
     self.nextStage(results);
   };
 
-  static_properties.stage_handlers.paying_out = function(winner_results) {
+  static_properties.stage_handlers.paying_out = function(sorted_results) {
     var self = this
       , game = self.game
-      , chips_won = game.roundNumChips(Math.floor(self.pot / winner_results.length))
-      , player_objs;
-    //console.log('winner(s):', winner_results, ', chips_won:', chips_won);
-    _.each(winner_results, function(winner_result) {
-      winner_result.player.win(chips_won);
+      //, chips_won = game.roundNumChips(Math.floor(self.pot / winner_results.length))
+      , player_objs = _.map(self.players, function(player) {
+          return player.serialize(['hand']);
+    }), player_list
+      , pot_winners
+      , chips_won;
+    console.log('paying out, results:', sorted_results, ', player_objs:', player_objs);
+    self.broadcast('hands_shown', player_objs);
+    // iterate over all active players, in order of best hands to worst
+    _.each(sorted_results, function(result_obj) {
+      // result_obj is { username: res } (see showing_down handler)
+      result_usernames = _.keys(result_obj);
+      console.log('result_obj is', result_obj, ', result_usernames is', result_usernames);
+      // iterate over all pots
+      console.log('paying_out: pots is now', self.pots);
+      _.each(self.pots, function(pot_value, pot_usernames) {
+        // intersect winners' usernames with this pot's usernames
+        pot_usernames = pot_usernames.split(',');
+        pot_winners = _.intersection(result_usernames, pot_usernames);
+        num_winners = pot_winners.length;
+        console.log('pot_winners is', pot_winners, 'pot_value is', pot_value);
+        if (num_winners > 0) {
+          chips_won = game.roundNumChips(pot_value / num_winners);
+          _.each(pot_winners, function(username) {
+            //console.log('username is', username, 'player is', result_obj[username].player, 'chips_won is', chips_won);
+            result_obj[username].player.win(chips_won);
+          });
+          delete self.pots[pot_usernames];
+        }
+        else {
+          // no winners in this result_usernames/pot_usernames intersection
+        }
+      });
     });
-    if (self.showed_down) {
-      player_objs = _.map(self.players, function(player) {
-        return player.serialize(['hand', 'chips_won']);
-      });
-      self.broadcast('hands_shown', player_objs);
-    }
-    else {
-      player_objs = _.map(self.players, function(player) {
-        return player.serialize(['hand', 'chips_won']);
-      });
-    }
+    player_objs = _.map(self.players, function(player) {
+      return player.serialize(['hand', 'chips_won']);
+    });
     self.broadcast('winners', player_objs);
     setTimeout(function() {
       self.nextStage();
@@ -614,19 +707,24 @@ module.exports = (function () {
       }
     }
     if (self.players.length > 2) {
-      // don't start with dealer when calculating blinds
+      // make the dealer go last for blinding and betting
       self.players.push(self.players.shift());
+      // small blind bets first (except preflop)
+      self.first_to_act = 0;
+    }
+    else {
+      // big blind bets first (except preflop)
+      self.first_to_act = 1;
     }
     //console.log('calculated players:', self.players, 'small_blind_seat:', self.small_blind_seat);
   };
 
   // calculate how much is in the pot, including current bets
-  HoldEmHandSchema.methods.calculatePot = function() {
-    var bets = 0;
-    _.each(this.players, function(player) {
-      bets += player.current_bet;
-    });
-    return this.pot + bets;
+  HoldEmHandSchema.methods.getPots = function() {
+    console.log('pots:', this.pots);
+    var sorted_pots = _.sortBy(this.pots, function(pot_value, usernames) { return (- usernames.length); });
+    console.log('sorted pots:', sorted_pots);
+    return sorted_pots
   };
 
   // calculate what's the highest amount any player (other than the given one) can bet,
@@ -646,21 +744,6 @@ module.exports = (function () {
     return high_stack;
   };
 
-  HoldEmHandSchema.methods.takeBets = function() {
-    var self = this
-      , game = self.game
-      , bet;
-    _.each(self.players, function(player) {
-      bet = player.giveBet();
-      if (bet !== game.roundNumChips(bet)) {
-        console.error('Invalid bet returned by giveBet:', bet, game.MIN_INCREMENT);
-        bet = game.roundNumChips(bet);
-      }
-      //console.log('got bet from player:', bet);
-      self.pot += bet;
-    });
-  };
-
   HoldEmHandSchema.methods.currentPlayer = function() {
     return this.players[this.to_act];
   };
@@ -675,23 +758,40 @@ module.exports = (function () {
   };
 
   HoldEmHandSchema.methods.playerOut = function(index) {
-    var player = this.players[index]
+    var self = this
+      , player = self.players[index]
+      , username = player.username
       , bet = player.giveBet();
-    //console.log('got bet from player:', bet);
-    this.pot += bet;
-    player.handOver();
-    this.players.splice(index, 1);
-    if (this.to_act >= index) {
-      this.to_act--;
+    if (bet > 0) {
+      console.log(username, 'forfeited', bet);
+      self.forfeited_bets.push(bet);
     }
-    //console.log('playerOut:', index, this.players[this.to_act]);
+    player.handOver();
+    self.players.splice(index, 1);
+    if (self.to_act >= index) {
+      self.to_act--;
+    }
+    // remove user's name from any and all pots
+    console.log('playerOut: pots is now', self.pots);
+    _.each(self.pots, function(pot_value, usernames) {
+      usernames = usernames.split(',');
+      if (_.contains(usernames, username)) {
+        // usernames are keys, so we need to delete and re-add
+        delete self.pots[usernames];
+        usernames = _.without(usernames, username);
+        self.pots[usernames] = pot_value;
+      }
+    })
+    console.log('playerOut: pots is now', self.pots);
+    //console.log('playerOut:', index, self.players[self.to_act]);
   };
 
   static_properties.includes = {
     all: ['stage_name', 'dealer', 'small_blind_seat', 'to_act',
-          'high_bet', 'pot', 'winner', 'community', 'hand_id',
+          'high_bet', 'pots', 'community', 'hand_id',
           'max_players', 'min_chips', 'max_chips', 'min_increment', 
-          'currency', 'maobucks_per_chip', 'seats', 'players']
+          'small_blind', 'big_blind', 'currency', 'currency_per_chip',
+          'seats', 'players']
   };
   HoldEmHandSchema.methods.serialize = function(this_username, include) {
     var self = this
@@ -732,9 +832,11 @@ module.exports = (function () {
     if (_.contains(hand_include, 'max_players')) hand_obj.max_players = game.MAX_PLAYERS;
     if (_.contains(hand_include, 'min_chips')) hand_obj.min_chips = game.MIN_CHIPS;
     if (_.contains(hand_include, 'max_chips')) hand_obj.max_chips = game.MAX_CHIPS;
+    if (_.contains(hand_include, 'small_blind')) hand_obj.small_blind = game.SMALL_BLIND;
+    if (_.contains(hand_include, 'big_blind')) hand_obj.big_blind = game.BIG_BLIND;
     if (_.contains(hand_include, 'currency')) hand_obj.currency = game.CURRENCY;
     if (_.contains(hand_include, 'min_increment')) hand_obj.min_increment = game.MIN_INCREMENT;
-    if (_.contains(hand_include, 'maobucks_per_chip')) hand_obj.maobucks_per_chip = game.MAOBUCKS_PER_CHIP;
+    if (_.contains(hand_include, 'currency_per_chip')) hand_obj.currency_per_chip = game.currency_PER_CHIP;
     if (_.contains(hand_include, 'seats')) hand_obj.seats = _.map(hand_obj.seats, serializePlayer);
     if (_.contains(hand_include, 'players')) hand_obj.players = _.map(hand_obj.players, serializePlayer);
     function serializePlayer(player) {

@@ -59,6 +59,7 @@ module.exports = (function () {
           , referer = data.headers.referer
           , url = referer.slice(referer.indexOf(host) + host.length + 1); // get everything after
                                                                     //[protocol]://[host]:[port]/
+        if (url.indexOf('?') !== -1) url = url.slice(0, url.indexOf('?'));
         data.room_id = url;
         // accept (or reject) the incoming connection
         authorized = true;

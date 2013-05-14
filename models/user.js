@@ -53,14 +53,14 @@ module.exports = (function() {
     });
   };
   
-  UserSchema.statics.generatePasswordRecoveryCode = function(callback) {
+  UserSchema.statics.generatePasswordRecoveryCode = function(cb) {
     crypto.randomBytes(16, function(err, buf) {
       if (err) {
-        callback(err);
+        cb(err);
       }
       else {
-      var recovery_code = buf.toString('hex');
-      callback(null, recovery_code);
+        var recovery_code = buf.toString('hex');
+        cb(null, recovery_code);
       }
     });
   };
@@ -74,9 +74,13 @@ module.exports = (function() {
   // lookup and return current maobucks value
   UserSchema.methods.maobucks_inquire = function(cb) {
     User.findOne({ _id: this._id }, function(err, user) {
-      //console.log('findOne returns', err, user);
-      console.log(user.username + " has " + (user && user.maobucks) + " in maobucks on " + Date());
-      cb(err, user && user.maobucks);
+      if (err) {
+        cb(err);
+      }
+      else {
+        console.log(user.username + " has " + (user && user.maobucks) + " in maobucks on " + Date());
+        cb(null, user && user.maobucks)
+      }
     });
   };
 
