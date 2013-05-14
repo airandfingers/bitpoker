@@ -33,7 +33,8 @@ module.exports = (function () {
 
   app.get('/deposit_bitcoins', function(req, res) {
     res.render('deposit_bitcoins', {
-      title: 'deposit_bitcoins', 
+      title: 'Deposit Bitcoins', 
+      public_address: req.user.public_address,
     });
   });
 

@@ -26,6 +26,7 @@ module.exports = (function() {
   , bitcoins         : { type: Number, default: 0, min: 0 }
   , recovery_code    : { type: String }
   , registration_date: { type: Date, default: Date.now }
+  , public_address    : { type: String }
   });
 
   // static methods - Model.method()
@@ -100,6 +101,8 @@ module.exports = (function() {
     shasum.update(user.password);
     shasum = shasum.digest('hex');
     user.password = shasum;
+    // generate public address for this user
+    user.public_address = 'test_address';
     next();
   });
 
