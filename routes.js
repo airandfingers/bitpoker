@@ -40,7 +40,8 @@ module.exports = (function () {
 
   app.get('/withdraw_bitcoins', function(req, res) {
     res.render('withdraw_bitcoins', {
-     title: 'withdraw_bitcoins', 
+     title: 'withdraw_bitcoins',
+     bitcoins: req.user.bitcoins, 
     });
   });
 
@@ -311,6 +312,11 @@ module.exports = (function () {
       res.redirect(base_page);
     }
   });
+
+  //withdraw bitcoins
+  app.post('withdraw_bitcoins', function (req, res) {
+    console.log("HEY! withdraw_bitcoins route has been activated. DO a little dance.");
+    });
 
   //Send register the new information
   app.post('/register', function (req, res, next) {

@@ -1,7 +1,18 @@
 <% var title = 'Bitcoin Poker- Withdraw Page'; %>
 <% include head %>
     <div>
-      Stub page for Withdrawing bitcoins
+      <h1> Withdraw Bitcoins </h1>
+        <form action ="/withdraw_bitcoins" method="post">
+        <h5>Account Balance</h5>
+        bitcoins: <%= bitcoins %>
+        <br />        
+        Account to transfer to
+        <input type="number" name="withdraw_account" placeholder="12345678910" />
+        </br>
+        Amount to Withdraw
+        <input type="number" name="withdraw_bitcoins" placeholder="0" />
+        </br>
+        <button class="btn btn-danger">Give me my money!</button>    
     </div>
     <% include plugins %>
 <% include foot %>
