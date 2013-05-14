@@ -3277,10 +3277,18 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         this.gameState.cashier.table_name = info.table_name
         this.gameState.cashier.small_blind = info.small_blind
         this.gameState.cashier.big_blind = info.big_blind
-        this.gameState.cashier.currency = info.currency
+      
         //set defaults
         if(_.isUndefined(info.currency_per_chip)||_.isNull(info.currency_per_chip)){info.currency_per_chip = 1}
         if(_.isUndefined(info.currency)||_.isNull(info.currency)){info.currency = 'Chips'}
+          
+          this.gameState.cashier.currency = info.currency
+             this.gameState.cashier.min = info.min*info.currency_per_chip
+        this.gameState.cashier.max = info.max*info.currency_per_chip
+        this.gameState.cashier.balance = info.balance
+        this.gameState.cashier.table_name = info.table_name
+        this.gameState.cashier.small_blind = info.small_blind
+        this.gameState.cashier.big_blind = info.big_blind
 
        this.images.cashier.blinds.text.text = info.currency_per_chip*info.small_blind+'/'+info.currency_per_chip*info.big_blind
 
