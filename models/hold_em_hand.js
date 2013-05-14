@@ -441,7 +441,7 @@ module.exports = (function () {
         if (self.players.length >= game.MIN_PLAYERS) {
           console.log('Betting round completed!', self.pots, self.players);
           setTimeout(function() {
-            self.broadcast('street_ends');
+            self.broadcast('street_ends', self.getPots());
             self.nextStage();
           }, game.STREET_END_DELAY);
         }
@@ -724,7 +724,7 @@ module.exports = (function () {
     console.log('pots:', this.pots);
     var sorted_pots = _.sortBy(this.pots, function(pot_value, usernames) { return (- usernames.length); });
     console.log('sorted pots:', sorted_pots);
-    return sorted_pots
+    return sorted_pots;
   };
 
   // calculate what's the highest amount any player (other than the given one) can bet,

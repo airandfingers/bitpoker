@@ -7,7 +7,9 @@ module.exports = (function () {
     , User = require('./models/user')
     , Room = require('./models/room')
     , Table = require('./models/table')
-    , mailer = require('./mailer');
+    , db_config = require('./models/db.config')
+    , mailer = require('./mailer')
+    , request = require('request');
 
   var base_page = '/lobby';
   
@@ -47,6 +49,7 @@ module.exports = (function () {
   app.get('/withdraw_bitcoins', function(req, res) {
     res.render('withdraw_bitcoins', {
      title: 'withdraw_bitcoins',
+     bitcoins: req.user.bitcoins, 
     });
   });
 
@@ -316,6 +319,52 @@ module.exports = (function () {
     else {
       res.redirect(base_page);
     }
+  });
+
+  //withdraw bitcoins
+  app.post('/withdraw_bitcoins', function (req, res) {
+    var amount = req.body.amount
+      , withdraw_address = req.body.withdraw_address
+     // withdraw bitcoins from user's account, send to given public address
+      , url = 'https://blockchain.info/merchant/' + db_config.WALLET_ID + '/payment' +
+              '?password=' + db_config.WALLET_PASSWORD +
+              '&to=' + withdraw_address +
+              '&amount=' + amount * 10E8;
+    console.log('amount:', amount, 'withdraw_address:', withdraw_address, 'url:', url);
+    req.user.bitcoins_inquire(function(err, balance_in_bitcoins) {
+      if (err) {
+        console.error('Error while looking up bitcoin balance:', err);
+        res.redirect('back');
+        return;
+      }
+      if (amount <= balance_in_bitcoins) {
+        request({
+          url: url
+        }, function(err, response, body) {
+          if (err) {
+            console.error('Error while withdrawing:', err);
+          }
+          else if (response.statusCode !== 200 && response.statusCode !== 201) {
+            console.error('Unsuccessful response code while withdrawing:', response.statusCode);
+          }
+          else {
+            var body = JSON.parse(response.body)
+              , new_bitcoins = req.user.bitcoins - amount;
+            console.log('Withdraw successful!', amount, new_bitcoins);
+            req.user.update({ $set: { bitcoins: new_bitcoins } }, function(save_err) {
+              if (save_err) {
+                console.error('Error while updating bitcoin balance:', save_err);
+              }
+            });
+          }
+          res.redirect('/account');
+        });
+      }
+      else {
+        console.error('Tried to withdraw', amount, 'when balance is only', balance_in_bitcoins);
+        res.redirect('back');
+      }
+    });
   });
 
   //Send register the new information

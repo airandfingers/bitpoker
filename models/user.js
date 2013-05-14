@@ -86,6 +86,19 @@ module.exports = (function() {
     });
   };
 
+  // lookup and return current bitcoins value
+  UserSchema.methods.bitcoins_inquire = function(cb) {
+    User.findOne({ _id: this._id }, function(err, user) {
+      if (err) {
+        cb(err);
+      }
+      else {
+        console.log(user.username + " has " + (user && user.bitcoins) + " in bitcoins on " + Date());
+        cb(null, user && user.bitcoins)
+      }
+    });
+  };
+
   // lookup and return current, complete user document
   UserSchema.methods.fetch = function(cb) {
     User.findOne({ _id: this._id }, function(err, user) {
@@ -102,9 +115,8 @@ module.exports = (function() {
     shasum.update(user.password);
     shasum = shasum.digest('hex');
     user.password = shasum;
-    // generate deposit public address for this user
-    user.deposit_address = 'test_address';
 
+    // generate deposit public address for this user
     var url = 'https://blockchain.info/api/receive?method=create' +
               '&address=1NpMFVFNjutgY2VXGfn97WcBa1JafSVHF' +
               '&shared=false' +
