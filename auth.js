@@ -33,7 +33,7 @@ module.exports = (function () {
 
   passport.deserializeUser(function(id, done) {
     //console.log("deserializeUser called!");
-    User.findById(id, 'username registration_date maobucks email email_confirmed bitcoins public_address',
+    User.findById(id, 'username registration_date maobucks email email_confirmed bitcoins deposit_address',
                   function(err, result) {
       if (err) { return done(err); }
       if (! result) {

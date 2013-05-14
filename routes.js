@@ -27,40 +27,46 @@ module.exports = (function () {
 
   app.get('/bitcoin_info', function(req, res) {
     res.render('bitcoin_info', {
-      title: 'bitcoin_info', 
+      title: 'bitcoin_info',
     });
   });
 
   app.get('/deposit_bitcoins', function(req, res) {
+    console.log(req.user.deposit_address);
     res.render('deposit_bitcoins', {
-      title: 'Deposit Bitcoins', 
-      public_address: req.user.public_address,
+      title: 'Deposit Bitcoins',
+      deposit_address: req.user.deposit_address,
     });
+  });
+
+  app.get('/payment_made/:username', function(req, res) {
+    var username = req.params.username;
+    console.log('payment made to', username, req);
   });
 
   app.get('/withdraw_bitcoins', function(req, res) {
     res.render('withdraw_bitcoins', {
-     title: 'withdraw_bitcoins', 
+     title: 'withdraw_bitcoins',
     });
   });
 
     //home, index and "/" link to the same page
    app.get('/', function(req, res) {
     res.render('index', {
-      title: 'Homepage', 
+      title: 'Homepage',
     });
   });
 
   app.get('/home', function(req, res) {
     res.render('index', {
-      title: 'Homepage', 
+      title: 'Homepage',
     });
   });
 
     //home and index link to the same page
   app.get('/index', function(req, res) {
     res.render('index', {
-      title: 'Homepage', 
+      title: 'Homepage',
     });
   });
 

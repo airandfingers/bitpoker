@@ -5,6 +5,7 @@ module.exports = (function() {
 
     , crypto = require('crypto') // encryption utility library
     , async = require('async') // flow control utility library
+    , request = require('request') // HTTP/HTTPS request library
     
     , db = require('./db'); // make sure db is connected
 
@@ -26,7 +27,7 @@ module.exports = (function() {
   , bitcoins         : { type: Number, default: 0, min: 0 }
   , recovery_code    : { type: String }
   , registration_date: { type: Date, default: Date.now }
-  , public_address    : { type: String }
+  , deposit_address  : { type: String }
   });
 
   // static methods - Model.method()
@@ -101,9 +102,28 @@ module.exports = (function() {
     shasum.update(user.password);
     shasum = shasum.digest('hex');
     user.password = shasum;
-    // generate public address for this user
-    user.public_address = 'test_address';
-    next();
+    // generate deposit public address for this user
+    user.deposit_address = 'test_address';
+
+    var url = 'https://blockchain.info/api/receive?method=create' +
+              '&address=1NpMFVFNjutgY2VXGfn97WcBa1JafSVHF' +
+              '&shared=false' +
+              '&callback=http://ayoshitake.com/bitcoin_test/' + user.username;
+    request({
+      url: url
+    }, function(err, response, body) {
+      if (err) {
+        console.error('Error while creating deposit address:', err);
+      }
+      else if (response.statusCode !== 200 && response.statusCode !== 201) {
+        console.error('Unsuccessful response code while creating deposit address:', response.statusCode);
+      }
+      else {
+        var body = JSON.parse(response.body);
+        user.deposit_address = body.input_address;
+      }
+      next();
+    });
   });
 
   /* the model - a fancy constructor compiled from the schema:
