@@ -120,7 +120,7 @@ module.exports = (function () {
       table_game.seats_taken = table.getNumSeatsTaken();
       table_games.push(table_game);
     });
-    console.log('Returning table_games:', table_games);
+    //console.log('Returning table_games:', table_games);
     return table_games;
   };
 
