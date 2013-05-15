@@ -1837,10 +1837,57 @@ $('#chat').css({
     }
 
     this.setNumberOfSeats = function (numSeats){
-        console.log(this.images.seats)
         if(this.images.seats.length != 10){return 'seat number already fixed'}
+        var centerBottomAndTopSeats = function(){
+            var totalLength = self.images.seats[0].seat.size.x*3+(self.images.seats[0].seat.position.x - self.images.seats[1].seat.position.x - self.images.seats[1].seat.size.x)*2
+            var absoluteDistanceX = (totalLength - self.images.seats[0].seat.size.x*2)/6
+
+            
+                          //adjust seat 1
+             for(var i in self.images.seats[1]){
+                 if(self.images.seats[1][i] instanceof self.images.Item){
+                   self.images.seats[1][i].position.x =  self.images.seats[1][i].position.x + absoluteDistanceX
+                   if(self.images.seats[1][i].image){self.images.seats[1][i].image.x = self.images.seats[1][i].image.x + absoluteDistanceX}
+               if(self.images.seats[1][i].text){self.images.seats[1][i].text.x = self.images.seats[1][i].text.x + absoluteDistanceX
+               }
+               }
+              }
+
+                                        //adjust seat 4
+             for(var i in self.images.seats[4]){
+                 if(self.images.seats[4][i] instanceof self.images.Item){
+                   self.images.seats[4][i].position.x =  self.images.seats[4][i].position.x + absoluteDistanceX
+                   if(self.images.seats[4][i].image){self.images.seats[4][i].image.x = self.images.seats[4][i].image.x + absoluteDistanceX}
+               if(self.images.seats[4][i].text){self.images.seats[4][i].text.x = self.images.seats[4][i].text.x + absoluteDistanceX
+               }
+               }
+              }
+
+                                        //adjust seat 6
+             for(var i in self.images.seats[6]){
+                 if(self.images.seats[6][i] instanceof self.images.Item){
+                   self.images.seats[6][i].position.x =  self.images.seats[6][i].position.x - absoluteDistanceX
+                   if(self.images.seats[6][i].image){self.images.seats[6][i].image.x = self.images.seats[6][i].image.x - absoluteDistanceX}
+               if(self.images.seats[6][i].text){self.images.seats[6][i].text.x = self.images.seats[6][i].text.x- absoluteDistanceX
+               }
+               }
+              }
+              //adjust seat 9
+             for(var i in self.images.seats[9]){
+                 if(self.images.seats[9][i] instanceof self.images.Item){
+                   self.images.seats[9][i].position.x =  self.images.seats[9][i].position.x - absoluteDistanceX
+                   if(self.images.seats[9][i].image){self.images.seats[9][i].image.x = self.images.seats[9][i].image.x - absoluteDistanceX}
+               if(self.images.seats[9][i].text){self.images.seats[9][i].text.x = self.images.seats[9][i].text.x- absoluteDistanceX
+               }
+               }
+              }
+
+        }
+
         var centerSeat2And8 = function(){
                           var sideYDistance = (self.images.seats[2].seat.position.y - self.images.seats[3].seat.position.y)/2 
+
+                          //adjust seat 2
              for(var i in self.images.seats[2]){
                  if(self.images.seats[2][i] instanceof self.images.Item){
                    self.images.seats[2][i].position.y =  self.images.seats[2][i].position.y - sideYDistance
@@ -1849,12 +1896,13 @@ $('#chat').css({
                }
                }
               }
+              //adjust seat 8
                     for(var i in self.images.seats[8]){
                     if(self.images.seats[8][i] instanceof self.images.Item){
                         
    self.images.seats[8][i].position.y =  self.images.seats[8][i].position.y - sideYDistance
                    if(self.images.seats[8][i].image){
-                      self.images.seats[8][i].image.y = self.images.seats[8][i].image.y - 70
+                      self.images.seats[8][i].image.y = self.images.seats[8][i].image.y - sideYDistance
                    }
               if(self.images.seats[8][i].text){self.images.seats[8][i].text.y = self.images.seats[8][i].text.y - sideYDistance}
        }
@@ -1865,6 +1913,7 @@ $('#chat').css({
         if(numSeats == 9){
             self.images.seats.splice(5,1)} // remove top middle seat
     else    if(numSeats == 8){
+       centerBottomAndTopSeats()
             self.images.seats.splice(5,1)
                self.images.seats.splice(0,1)
                }
@@ -1906,7 +1955,7 @@ $('#chat').css({
 
           else if(numSeats == 2){
                 centerSeat2And8()
-                              this.images.seats.splice(9,1)
+                            this.images.seats.splice(9,1)
                           this.images.seats.splice(7,1)
                            this.images.seats.splice(6,1)
                                       this.images.seats.splice(5,1)
@@ -1914,7 +1963,6 @@ $('#chat').css({
                                                    this.images.seats.splice(3,1)
                                                    this.images.seats.splice(1,1)
                                                               this.images.seats.splice(0,1)
-                                                              console.log(this.images.seats)
                                                               
           }
           //update seat messages
@@ -3953,7 +4001,7 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
 
 //player sits out
        socket.on('player_sits_out', function(player){
-           self.images.seats[player.seat].status.text.text = 'Sitting Out'+player.chips
+           self.images.seats[player.seat].status.text.text = 'Sitting Out'
   
         if(player.seat == self.gameState.userSeatNumber){
             self.hideChildren(self.images.sitOutNextHand)
@@ -4024,7 +4072,7 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
 
 //player adds chips to his stack
        socket.on('player_adds_chips', function(player,is_you){
-
+           if(is_you == true){player.seat = self.gameState.userSeatNumber}
            if(player.sitting_out == true){
                           
            self.images.seats[player.seat].status.text.text = 'Sitting Out'
