@@ -1836,6 +1836,93 @@ $('#chat').css({
 
     }
 
+    this.setNumberOfSeats = function (numSeats){
+        console.log(this.images.seats)
+        if(this.images.seats.length != 10){return 'seat number already fixed'}
+        var centerSeat2And8 = function(){
+                          var sideYDistance = (self.images.seats[2].seat.position.y - self.images.seats[3].seat.position.y)/2 
+             for(var i in self.images.seats[2]){
+                 if(self.images.seats[2][i] instanceof self.images.Item){
+                   self.images.seats[2][i].position.y =  self.images.seats[2][i].position.y - sideYDistance
+                   if(self.images.seats[2][i].image){self.images.seats[2][i].image.y = self.images.seats[2][i].image.y - sideYDistance}
+               if(self.images.seats[2][i].text){self.images.seats[2][i].text.y = self.images.seats[2][i].text.y - sideYDistance
+               }
+               }
+              }
+                    for(var i in self.images.seats[8]){
+                    if(self.images.seats[8][i] instanceof self.images.Item){
+                        
+   self.images.seats[8][i].position.y =  self.images.seats[8][i].position.y - sideYDistance
+                   if(self.images.seats[8][i].image){
+                      self.images.seats[8][i].image.y = self.images.seats[8][i].image.y - 70
+                   }
+              if(self.images.seats[8][i].text){self.images.seats[8][i].text.y = self.images.seats[8][i].text.y - sideYDistance}
+       }
+               }
+               }
+
+        
+        if(numSeats == 9){
+            self.images.seats.splice(5,1)} // remove top middle seat
+    else    if(numSeats == 8){
+            self.images.seats.splice(5,1)
+               self.images.seats.splice(0,1)
+               }
+     else   if(numSeats == 7){
+            self.images.seats.splice(6,1)
+            self.images.seats.splice(4,1)
+            self.images.seats.splice(0,1)
+            }
+      else      if(numSeats == 6){
+             //    set y positions of side to between top and bottom of before
+ 
+               //move seat 2 up to the new position
+                //move seat 8 up to the new position
+          centerSeat2And8()
+
+               this.images.seats.splice(7,1)
+               this.images.seats.splice(5,1)
+               this.images.seats.splice(3,1)
+               this.images.seats.splice(0,1)
+
+            }
+          else  if(numSeats == 5){
+              this.images.seats.splice(5,4)
+
+          }
+
+          else if(numSeats == 4){
+              this.images.seats.splice(9,1)
+                          this.images.seats.splice(7,1)
+                                      this.images.seats.splice(5,1)
+                                                  this.images.seats.splice(4,1)
+                                                  this.images.seats.splice(2,1)
+                                                              this.images.seats.splice(0,1)
+          }
+          
+          else if(numSeats == 3){
+              this.images.seats.splice(3,6)
+          }
+
+          else if(numSeats == 2){
+                centerSeat2And8()
+                              this.images.seats.splice(9,1)
+                          this.images.seats.splice(7,1)
+                           this.images.seats.splice(6,1)
+                                      this.images.seats.splice(5,1)
+                                                  this.images.seats.splice(4,1)
+                                                   this.images.seats.splice(3,1)
+                                                   this.images.seats.splice(1,1)
+                                                              this.images.seats.splice(0,1)
+                                                              console.log(this.images.seats)
+                                                              
+          }
+          //update seat messages
+          for(var i =0; i<this.images.seats.length;i++){
+              this.images.seats[i].openSeat.messages = ['sit', i]
+          }
+    }
+
     this.displayShownCard = function (cardText,parentOfImageObject){
         
       //  parentOfImageObject.text.text= cardText
@@ -3306,7 +3393,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
           this.gameState.cashier.currency = info.currency
              this.gameState.cashier.min = info.min*info.currency_per_chip
         this.gameState.cashier.max = info.max*info.currency_per_chip
-        this.gameState.cashier.balance = info.balance
+        this.gameState.cashier.balance = info.balance_in_currency
         this.gameState.cashier.table_name = info.table_name
         this.gameState.cashier.small_blind = info.small_blind*info.currency_per_chip
         this.gameState.cashier.big_blind = info.big_blind*info.currency_per_chip
@@ -3323,7 +3410,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
 
         this.images.cashier.playerMinValue.text.text = info.currency_per_chip*info.min
 
-       this.images.cashier.accountBalanceValue.text.text = info.currency_per_chip*info.balance
+       this.images.cashier.accountBalanceValue.text.text = this.gameState.cashier.balance
 
        this.images.cashier.currency.text.text = info.currency+':'
 
@@ -3532,11 +3619,13 @@ function tick(event){
          this.displayChildren(this.images.exitTable)
 
         //remove extra seats
+        this.setNumberOfSeats(table_state.max_players)
+        /*
         for (var i = 10;i>=table_state.max_players;i=i-1){
             this.images.seats.splice(i,1)
             this.gameState.seats.splice(i,1)
         }
-        
+        */
         //comunity cards
         this.displayAllCommunity(table_state.community)
         
