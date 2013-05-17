@@ -49,6 +49,8 @@ module.exports = (function () {
     , disconnected: Boolean
       // the outstanding prompt to the player, if any
     , current_prompt: Schema.Types.Mixed
+      // the preferences that describe how this player wants his/r table to be displayed
+    , preferences: { type: Schema.Types.Mixed, default: function() { return {}; } }
     });
 
   var static_properties = {
@@ -639,6 +641,20 @@ module.exports = (function () {
     else {
       console.error('player has no function', method_name);
     }
+  };
+
+  static_properties.messages.set_preference = 'setPreference';
+  PlayerSchema.methods.setPreference = function(name, value) {
+    //console.log(this.username, 'setting preference', name, 'to', value);
+    this.preferences[name] = value;
+  };
+
+  static_properties.messages.set_preferences = 'setPreferences';
+  PlayerSchema.methods.setPreferences = function(preferences) {
+    var self = this;
+    _.each(preferences, function(value, name) {
+      self.setPreference(name, value);
+    });
   };
 
   /* the model - a fancy constructor compiled from the schema:

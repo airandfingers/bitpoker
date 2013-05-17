@@ -342,6 +342,11 @@ module.exports = (function () {
     return num_players === this.game.MAX_PLAYERS;
   }
 
+  TableSchema.methods.getPlayer = function(username) {
+    var player = this.players[username];
+    return player;
+  }
+
   /* the model - a fancy constructor compiled from the schema:
    *   a function that creates a new document
    *   has static methods and properties attached to it

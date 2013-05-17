@@ -446,23 +446,40 @@ module.exports = (function () {
     }
   });
 
-  app.get('/table_state/:id', auth.ensureAuthenticated, function(req, res) {
-    var table_id = req.params.id
-      , table = Table.getTable(table_id)
+  app.get('/table_state/:table_id', auth.ensureAuthenticated, function(req, res) {
+    var table = Table.getTable(req.params.table_id)
       , hand_include = req.query.fields || 'all';
 
-    if (table instanceof Table) {
-      table.getTableState(req.user, hand_include, function(err, table_state) {
-        if (err) {
-          res.json({ error: err });
-        }
-        else {
-          res.json(table_state);
-        }
-      });
+    if (! (table instanceof Table)) {
+      res.json({ error: 'No table with ID ' + table_id });
+      return;
+    }
+
+    table.getTableState(req.user, hand_include, function(err, table_state) {
+      if (err) {
+        res.json({ error: err });
+      }
+      else {
+        res.json(table_state);
+      }
+    });
+  });
+
+  app.get('/preferences/:table_id', auth.ensureAuthenticated, function(req, res) {
+    var table = Table.getTable(req.params.table_id)
+      , player;
+    if (! (table instanceof Table)) {
+      res.json({ error: 'No table with ID ' + table_id });
+      return;
+    }
+
+    username = req.user.username;
+    player = table.getPlayer(username);
+    if (player) {
+      res.json(player.preferences);
     }
     else {
-      res.json({ error: 'No table with ID ' + table_id });
+      res.json({ error: 'Cant get preferences when not at table!' });
     }
   });
 
