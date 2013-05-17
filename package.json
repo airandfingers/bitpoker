@@ -16,7 +16,8 @@
     "underscore.string": "latest",
     "poker-evaluator": "~0.0.4",
     "async": "~0.2.6",
-    "nodemailer": "~0.4.1"
+    "nodemailer": "~0.4.1",
+    "request": "~2.21.0"
   },
   "subdomain": "rpwm-server",
   "domains": [],
