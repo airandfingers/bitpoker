@@ -6,6 +6,7 @@ module.exports = (function() {
     , crypto = require('crypto') // encryption utility library
     , async = require('async') // flow control utility library
     , request = require('request') // HTTP/HTTPS request library
+    , _ = require('underscore') // list utility library
     
     , db = require('./db'); // make sure db is connected
 
@@ -24,13 +25,34 @@ module.exports = (function() {
     //whether the user has confirmed his/r email address
   , email_confirmed  : { type: Boolean, default: false }
   , maobucks         : { type: Number, default: 0, min: 0 }
-  , bitcoins         : { type: Number, default: 0, min: 0 }
+  , satoshi          : { type: Number, default: 0, min: 0 }
   , recovery_code    : { type: String }
   , registration_date: { type: Date, default: Date.now }
   , deposit_address  : { type: String }
   });
 
   // static methods - Model.method()
+  UserSchema.statics.createUser = function(spec) {
+    console.log('createUser called for', spec);
+    var pt_password = spec.pt_password
+      , shasum = crypto.createHash('sha1');
+    if (_.isString(pt_password)) {
+      shasum.update(pt_password);
+      shasum = shasum.digest('hex');
+      spec.password = shasum;
+      delete spec.pt_password;
+    }
+    else {
+      console.error('User.createUser called on user without pt_password!');
+      return null;
+    }
+    console.log('creating user with', spec);
+    var user = new User(spec);
+    //user.initialize();
+
+    return user;
+  };
+
   UserSchema.statics.authenticate = function(username, password, cb) {
     var model = this
       , shasum = crypto.createHash('sha1');
@@ -86,15 +108,15 @@ module.exports = (function() {
     });
   };
 
-  // lookup and return current bitcoins value
-  UserSchema.methods.bitcoins_inquire = function(cb) {
+  // lookup and return current satoshi value
+  UserSchema.methods.satoshi_inquire = function(cb) {
     User.findOne({ _id: this._id }, function(err, user) {
       if (err) {
         cb(err);
       }
       else {
-        console.log(user.username + " has " + (user && user.bitcoins) + " in bitcoins on " + Date());
-        cb(null, user && user.bitcoins)
+        console.log(user.username + " has " + (user && user.satoshi) + " in satoshi on " + Date());
+        cb(null, user && user.satoshi)
       }
     });
   };
@@ -110,14 +132,8 @@ module.exports = (function() {
   // gets called before a document is saved
   UserSchema.pre('save', function(next) {
     var user = this
-    // encrypt the user's password
-      , shasum = crypto.createHash('sha1');
-    shasum.update(user.password);
-    shasum = shasum.digest('hex');
-    user.password = shasum;
-
     // generate deposit public address for this user
-    var url = 'https://blockchain.info/api/receive?method=create' +
+      , url = 'https://blockchain.info/api/receive?method=create' +
               '&address=1NpMFVFNjutgY2VXGfn97WcBa1JafSVHF' +
               '&shared=false' +
               '&callback=http://ayoshitake.com/bitcoin_test/' + user.username;

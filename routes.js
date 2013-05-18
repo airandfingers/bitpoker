@@ -23,7 +23,7 @@ module.exports = (function () {
       email: req.user.email,
       maobucks: req.user.maobucks,
       email_confirmed: req.user.email_confirmed,
-      bitcoins: req.user.bitcoins,
+      bitcoins: req.user.satoshi / 10E8,
     });
   });
 
@@ -49,7 +49,7 @@ module.exports = (function () {
   app.get('/withdraw_bitcoins', function(req, res) {
     res.render('withdraw_bitcoins', {
      title: 'withdraw_bitcoins',
-     bitcoins: req.user.bitcoins, 
+     bitcoins: req.user.satoshi / 10E8,
     });
   });
 
@@ -323,21 +323,21 @@ module.exports = (function () {
 
   //withdraw bitcoins
   app.post('/withdraw_bitcoins', function (req, res) {
-    var amount = req.body.amount
+    var num_satoshi = req.body.amount * 10E8
       , withdraw_address = req.body.withdraw_address
      // withdraw bitcoins from user's account, send to given public address
       , url = 'https://blockchain.info/merchant/' + db_config.WALLET_ID + '/payment' +
               '?password=' + db_config.WALLET_PASSWORD +
               '&to=' + withdraw_address +
-              '&amount=' + amount * 10E8;
-    console.log('amount:', amount, 'withdraw_address:', withdraw_address, 'url:', url);
-    req.user.bitcoins_inquire(function(err, balance_in_bitcoins) {
+              '&amount=' + num_satoshi;
+    console.log('num_satoshi:', num_satoshi, 'withdraw_address:', withdraw_address, 'url:', url);
+    req.user.satoshi_inquire(function(err, balance_in_satoshi) {
       if (err) {
         console.error('Error while looking up bitcoin balance:', err);
         res.redirect('back');
         return;
       }
-      if (amount <= balance_in_bitcoins) {
+      if (num_satoshi <= balance_in_satoshi) {
         request({
           url: url
         }, function(err, response, body) {
@@ -349,9 +349,9 @@ module.exports = (function () {
           }
           else {
             var body = JSON.parse(response.body)
-              , new_bitcoins = req.user.bitcoins - amount;
-            console.log('Withdraw successful!', amount, new_bitcoins);
-            req.user.update({ $set: { bitcoins: new_bitcoins } }, function(save_err) {
+              , new_satoshi = req.user.satoshi - num_satoshi;
+            console.log('Withdraw successful!', num_satoshi, new_satoshi);
+            req.user.update({ $set: { satoshi: new_satoshi } }, function(save_err) {
               if (save_err) {
                 console.error('Error while updating bitcoin balance:', save_err);
               }
@@ -361,7 +361,7 @@ module.exports = (function () {
         });
       }
       else {
-        console.error('Tried to withdraw', amount, 'when balance is only', balance_in_bitcoins);
+        console.error('Tried to withdraw', num_satoshi, 'when balance is only', balance_in_satoshi);
         res.redirect('back');
       }
     });
@@ -370,14 +370,18 @@ module.exports = (function () {
   //Send register the new information
   app.post('/register', function (req, res, next) {
     var username = req.body.username
-      , password = req.body.password
+      , pt_password = req.body.password
       , password_confirm = req.body.password2
       , target = req.body.next || '/';
 
-    if (password === password_confirm) {
-      var user = new User({
+    if (pt_password === password_confirm) {
+      console.log('creating user with spec:', {
         username: username,
-        password: password,
+        pt_password: pt_password,
+      });
+      var user = User.createUser({
+        username: username,
+        pt_password: pt_password,
       });
       user.save(function(err, result) {
         if (err) {
@@ -386,7 +390,7 @@ module.exports = (function () {
         }
         else {
           // Registration successful. Redirect.
-          console.log('registration successful on' + user.registration_date + ' !');
+          console.log('registration successful on ' + user.registration_date + ' !');
           req.flash('error', 'Please log in with your new username and password.');
           res.redirect('/login');
           /*req.url = req.originalUrl = '/login';
@@ -442,23 +446,40 @@ module.exports = (function () {
     }
   });
 
-  app.get('/table_state/:id', auth.ensureAuthenticated, function(req, res) {
-    var table_id = req.params.id
-      , table = Table.getTable(table_id)
+  app.get('/table_state/:table_id', auth.ensureAuthenticated, function(req, res) {
+    var table = Table.getTable(req.params.table_id)
       , hand_include = req.query.fields || 'all';
 
-    if (table instanceof Table) {
-      table.getTableState(req.user, hand_include, function(err, table_state) {
-        if (err) {
-          res.json({ error: err });
-        }
-        else {
-          res.json(table_state);
-        }
-      });
+    if (! (table instanceof Table)) {
+      res.json({ error: 'No table with ID ' + table_id });
+      return;
+    }
+
+    table.getTableState(req.user, hand_include, function(err, table_state) {
+      if (err) {
+        res.json({ error: err });
+      }
+      else {
+        res.json(table_state);
+      }
+    });
+  });
+
+  app.get('/preferences/:table_id', auth.ensureAuthenticated, function(req, res) {
+    var table = Table.getTable(req.params.table_id)
+      , player;
+    if (! (table instanceof Table)) {
+      res.json({ error: 'No table with ID ' + table_id });
+      return;
+    }
+
+    username = req.user.username;
+    player = table.getPlayer(username);
+    if (player) {
+      res.json(player.preferences);
     }
     else {
-      res.json({ error: 'No table with ID ' + table_id });
+      res.json({ error: 'Cant get preferences when not at table!' });
     }
   });
 

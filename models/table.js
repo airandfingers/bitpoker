@@ -120,7 +120,7 @@ module.exports = (function () {
       table_game.seats_taken = table.getNumSeatsTaken();
       table_games.push(table_game);
     });
-    console.log('Returning table_games:', table_games);
+    //console.log('Returning table_games:', table_games);
     return table_games;
   };
 
@@ -340,6 +340,11 @@ module.exports = (function () {
   TableSchema.methods.isFull = function() {
     var num_players = this.getNumSeatsTaken();
     return num_players === this.game.MAX_PLAYERS;
+  }
+
+  TableSchema.methods.getPlayer = function(username) {
+    var player = this.players[username];
+    return player;
   }
 
   /* the model - a fancy constructor compiled from the schema:
