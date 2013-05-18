@@ -3408,10 +3408,8 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         }
 
                 self.displayChildren(self.images.messageBox[messageBoxImageContainerIndex])
-                self.displayChildren(self.images.messageBox[messageBoxImageContainerIndex].window)
-   //        self.stage.addChild(     self.images.messageBox[messageBoxImageContainerIndex].window.image)
    self.hideChildren(self.images.messageBox[messageBoxImageContainerIndex].window.okay)
-              console.log(self.images.messageBox[messageBoxImageContainerIndex].window)
+              console.log(self.images.messageBox[messageBoxImageContainerIndex].window.image.y)
           console.log(    self.images.containers[messageBoxImageContainerIndex].contains(self.images.messageBox[messageBoxImageContainerIndex].window.image) )
                 console.log(self.images.messageBox[messageBoxImageContainerIndex].window.image.isVisible())
 

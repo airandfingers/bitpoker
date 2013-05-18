@@ -3,9 +3,9 @@
   "version": "0.9.1",
   "private": true,
   "dependencies": {
-    "connect-flash": "latest",
+    "connect-flash": "~0.1.1",
     "ejs": "latest",
-    "express": "latest",
+    "express": "~3.2.4",
     "connect-mongodb": "latest",
     "mongodb": "latest",
     "mongoose": "latest",
