@@ -41,6 +41,13 @@
             $('#login_trigger').click(function(e) {
               $login.stop(true, true);
               if (! $(this).hasClass('active')) {
+
+                // remove active class from register & hide it.
+                $('#register_trigger')
+                  .removeClass('active');
+                $register
+                  .hide('slide', { direction: 'up' }, 500);
+
                 // add active class
                 $(this)
                   .addClass('active');
@@ -80,6 +87,13 @@
             $('#register_trigger').click(function() {
               $register.stop(true, true);
               if (! $(this).hasClass('active')) {
+
+                // remove active class from login & hide it.
+                $('#login_trigger')
+                  .removeClass('active');
+                $login
+                  .hide('slide', { direction: 'up' }, 500);
+
                 // add active class
                 $(this)
                   .addClass('active');
@@ -110,15 +124,6 @@
           });
         </script>
       <% } %> 
-        
-        <!-- Hide/Show "options" functionality -->
-        <script>
-          $(document).ready(function() {
-            $('#hideshow').on('click', function(event) {
-              $('#chat').toggle();
-            });
-          });
-        </script>
 
         <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
         <script>

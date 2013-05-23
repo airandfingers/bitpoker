@@ -23,8 +23,8 @@ var express = require('express')
 // Create an Express app and an HTTP server
   }, app = module.exports = express()
   , server = http.createServer(app)
-// Declare what port to listen on
-  , EXPRESS_PORT = 9000
+// Declare what port to listen on - set to "process.env.PORT" per modulus getting started.
+  , EXPRESS_PORT = process.env.PORT || 9000
 // Define some session-related settings
   , session_settings = {
     store: require('./models/db').session_store

@@ -81,8 +81,11 @@ h3 {
     display: none;
     font-size: .8em;
     margin: 1em;
+
 }
 
 #login form {
     margin-bottom: 1em;
 }
+
+#login a:visited { color: #2f96b4; }
