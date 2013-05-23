@@ -24,7 +24,8 @@ window.onKeydown = onKeyDown
   this.imageData = {
       maxChipsPerColumn:5,
       distanceBetweenChipColumns:4,
-      chatBoxAlpha:0.75
+      chatBoxAlpha:0.75,
+      maxChipColumns:3
   }
   this.userPreferences = {
       
@@ -125,6 +126,7 @@ window.onKeydown = onKeyDown
                   this.images.pots[i].secondChip = {}
                   this.images.pots[i].secondColumnChip = {}
             }
+            this.images.totalPotSize = {}
    
             this.images.fold = {text:{},messages:[]}
             this.images.call = {text:{},messages:[]}
@@ -835,8 +837,10 @@ this.images.setDefaults = function(){
             var rightColumnSeatDealerButtonX = -dealerButtonWidth*1.1
             var rightColumnSeatDealerButtonY = 0
 
-            var potHeight = 7
+            var potHeight = 9
             var potWidth = 100
+            var potSizeAndFont = '14px Arial'
+            var potTextColor = '#FFFFFF'
 
             var potDistanceToCommunity = -25
             var chipDiameter = 20
@@ -863,8 +867,6 @@ this.images.setDefaults = function(){
             var betSizeWidth = 35
             var betSizeHeight = 20
 
-            
-         
             //space between player chat and seat
             var chatBoxWidth = seatWidth*1.4
             var chatBoxHeight = seatHeight/2.3
@@ -917,13 +919,38 @@ this.images.setDefaults = function(){
             this.itemAsBitmap(this.dealerButton, this.sources.dealerButton)
 
             //---------pot-------------------
-
-            this.pots[0].potSize = new this.Item(canvasWidth/2-potWidth/2,communityY+cardHeight+potHeight,potWidth,potHeight,self.gameState.containerImageIndexes.chips)
-             this.addItemText(this.pots[0].potSize, '',"14px Arial", "#FFFFFF")
-
              this.pots[0].firstChip = new this.Item(canvasWidth/2-cardWidth/2-cardWidth,communityY+potDistanceToCommunity,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
               this.pots[0].secondChip = new this.Item(this.pots[0].firstChip.position.x,this.pots[0].firstChip.position.y-distanceBetweenChipsY,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
               this.pots[0].secondColumnChip = new this.Item(this.pots[0].firstChip.position.x+chipDiameter+self.imageData.distanceBetweenChipColumns,this.pots[0].firstChip.position.y,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
+           
+              var totalPotWidth = (this.pots[0].secondColumnChip.position.x-this.pots[0].firstChip.position.x)*(self.imageData.maxChipColumns-1)+chipDiameter
+
+            this.pots[0].potSize = new this.Item(this.pots[0].firstChip.position.x, this.pots[0].firstChip.position.y+potHeight,potWidth,potHeight,self.gameState.containerImageIndexes.chips)
+             this.addItemText(this.pots[0].potSize, '',potSizeAndFont, potTextColor)
+                       
+                         var distanceBetweenPots = (this.pots[0].secondColumnChip.position.x-this.pots[0].firstChip.position.x)*(self.imageData.maxChipColumns)
+           var distanceBetweenChipsInColumn =  this.pots[0].firstChip.position.y - this.pots[0].secondChip.position.y
+           var chipColumnHeight = chipDiameter +(self.imageData.maxChipsPerColumn-1)*distanceBetweenChipsInColumn
+
+                        this.totalPotSize  = new this.Item(this.pots[0].firstChip.position.x, this.pots[0].firstChip.position.y+chipDiameter-chipColumnHeight-potHeight,potWidth,potHeight,self.gameState.containerImageIndexes.chips)
+             this.addItemText( this.totalPotSize, '',potSizeAndFont, potTextColor)
+
+             console.log('chipColumnHeight is '+chipColumnHeight)
+             console.log('total pot size Y is '+this.totalPotSize.position.y)
+             console.log('first chip position Y is '+this.pots[0].firstChip.position.y)
+             console.log('bottom of first Chip Y is  '+(this.pots[0].firstChip.position.y + chipDiameter))
+            
+
+              for(var i=1;i<9;i++){
+
+
+             this.pots[i].firstChip = new this.Item( this.pots[0].firstChip+i*distanceBetweenPots, this.pots[0].firstChip.position.y ,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
+              this.pots[i].secondChip = new this.Item(this.pots[0].secondChip.position.x+i*distanceBetweenPots,this.pots[0].secondChip.position.y,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
+              this.pots[i].secondColumnChip = new this.Item(this.pots[0].secondColumnChip.position.x+i*distanceBetweenPots,this.pots[0].secondColumnChip.position.y,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
+
+                   this.pots[i].potSize = new this.Item(this.pots[0].potSize.position.x+i*distanceBetweenPots,this.pots[0].potSize.position.y,potWidth,potHeight,self.gameState.containerImageIndexes.chips)
+             this.addItemText(this.pots[i].potSize, '',potSizeAndFont, potTextColor)
+              }
 
               //---------------------player chat input---------------
               this.htmlTableChatBox = new this.Item(htmlTableChatBoxLeftOffset,canvasHeight - htmlTableChatBoxBottomOffset-htmlTableChatBoxHeight-htmlTableChatBorderSize*2,htmlTableChatBoxWidth,htmlTableChatBoxHeight,self.gameState.containerImageIndexes.button)
@@ -946,8 +973,6 @@ $('#chat').focusout(function(){
 $('#chat').css('color', htmlTableChatBoxReminderTextColor)
  }
 })
-
-
 
 $('#chat').css({
  'position' :  'absolute',
@@ -1031,8 +1056,6 @@ parentOfImageObject.textColor = sideButtonTextColor
                   this.sitOutNextHandOn.image.hitArea = drawHitArea(this.sitOutNextHandOn)
                     this.sitOutNextBigBlindOn.image.hitArea = drawHitArea(this.sitOutNextBigBlindOn)
 
-                    
-
       //onclick
        this.foldToAnyBet.image.onclick =  self.events.onButtonClick
         this.sitOutNextHand.image.onclick = self.events.onButtonClick
@@ -1041,9 +1064,6 @@ parentOfImageObject.textColor = sideButtonTextColor
                   this.foldToAnyBetOn.image.onclick  = self.events.onButtonClick
                   this.sitOutNextHandOn.image.onclick = self.events.onButtonClick
                     this.sitOutNextBigBlindOn.image.onclick = self.events.onButtonClick
-
-         
-
 
 
            //----------------------seats-------------------------------
@@ -1087,7 +1107,7 @@ parentOfImageObject.textColor = sideButtonTextColor
           var height = self.images.seats[i].seat.size.y
           self.images.seats[i].seat.image = new createjs.Shape()
 self.images.seats[i].seat.image.drawSeat = function(border, fill, middle){
-    console.log('1')
+  
     drawSeat(self.images.seats[i].seat, border, fill, middle)
     }
  self.images.seats[i].seat.image.parentOfImageObject = self.images.seats[i].seat
@@ -1096,7 +1116,6 @@ self.images.seats[i].seat.image.drawSeat = function(border, fill, middle){
 
 
   //=================-seat images=========================================
-   
 for(var i =0;i<this.seats.length;i++){
 
 this.seats[i].seat.image.drawSeat('#1520b9','#000000', '#7d7d7d')
@@ -1125,8 +1144,6 @@ this.seats[i].seat.image.drawSeat('#1520b9','#000000', '#7d7d7d')
 
             this.seats[i].shownCard0 = new this.Item(card0X, cardY, cardWidth, cardHeight,1)
             this.seats[i].shownCard1 = new this.Item(card1X, cardY, cardWidth, cardHeight,1)
-
-
 
             //Empty Seats
             var openSeatFill = '#000000'
@@ -1966,6 +1983,7 @@ $('#chat').css({
                                                               
           }
           //update seat messages
+          console.log(this.images.seats)
           for(var i =0; i<this.images.seats.length;i++){
               this.images.seats[i].openSeat.messages = ['sit', i]
           }
@@ -2053,9 +2071,14 @@ this.hideChildren(this.images.seats[seatNumber].shownCard0)
     }
 
     this.updatePotSize = function (potSize, potNumber){
-        if(!potNumber){potNumber = 0}
+        if(!potNumber){
+            this.images.totalPotSize.text.text = 'Total Pot: '+potSize
+            this.displayChildren(this.images.totalPotSize)
+            }
+        else{
 this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
    this.displayChildren(this.images.pots[potNumber].potSize)
+   }
     }
 
     this.playerSits = function(seatNumber, playerName, chips){
@@ -2091,6 +2114,7 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
         var y = initialY
         var chipIncrementY = this.images.pots[0].secondChip.position.y-this.images.pots[0].firstChip.position.y
         var totalChips = 0
+        var columnCounter = 1
         if(_.isNull(distanceBetweenColumns)||_.isUndefined(distanceBetweenColumns)){
             if(!_.isNull(parentOfChipArray.secondColumnChip.position.x) && !_.isUndefined(parentOfChipArray.secondColumnChip.position.x)&&!_.isNull(parentOfChipArray.firstChip.position.x)&&!_.isUndefined(parentOfChipArray.firstChip.position.x))
             {
@@ -2154,6 +2178,9 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
         if(totalChips%this.imageData.maxChipsPerColumn==0){
             x=x + distanceBetweenColumns
             y = initialY
+            //increase column number counter and exit loop
+            columnCounter ++
+            if(columnCounter>this.imageData.maxChipColumns){chipAmount = 0}
         }
         }
     }
@@ -2866,16 +2893,19 @@ this.hideAllActionButtons()
 
             case 'openSeat':
             
-              if((this.gameState.userSeatNumber == false) || _.isNull(this.gameState.userSeatNumber)||_.isUndefined(this.gameState.userSeatNumber)){
-                this.hideChildren(this.images.seats[seatNumber].disabledSeat)
-            this.displayChildren(this.images.seats[seatNumber].openSeat)
-
-            }
-          else if(_.isNumber(this.gameState.userSeatNumber)) {
+                     if(_.isNumber(this.gameState.userSeatNumber)) {
                 
                 this.hideChildren(this.images.seats[seatNumber].openSeat)
                 this.displayChildren(this.images.seats[seatNumber].disabledSeat)
             }
+
+         else     if((this.gameState.userSeatNumber == false) || _.isNull(this.gameState.userSeatNumber)||_.isUndefined(this.gameState.userSeatNumber)){
+     
+                this.hideChildren(this.images.seats[seatNumber].disabledSeat)
+            this.displayChildren(this.images.seats[seatNumber].openSeat)
+
+            }
+
             
               this.hideChildren(this.images.seats[seatNumber].seat)
             this.hideChildren(this.images.seats[seatNumber].status)
@@ -2887,16 +2917,18 @@ this.hideAllActionButtons()
 
             default:
 
-              if((this.gameState.userSeatNumber == false) || _.isNull(this.gameState.userSeatNumber)||_.isUndefined(this.gameState.userSeatNumber)){
-                this.hideChildren(this.images.seats[seatNumber].disabledSeat)
-            this.displayChildren(this.images.seats[seatNumber].openSeat)
-
-            }
-          else if(_.isNumber(this.gameState.userSeatNumber)) {
+             if(_.isNumber(this.gameState.userSeatNumber)) {
                 
                 this.hideChildren(this.images.seats[seatNumber].openSeat)
                 this.displayChildren(this.images.seats[seatNumber].disabledSeat)
             }
+        
+      else        if((this.gameState.userSeatNumber == false) || _.isNull(this.gameState.userSeatNumber)||_.isUndefined(this.gameState.userSeatNumber)){
+                this.hideChildren(this.images.seats[seatNumber].disabledSeat)
+            this.displayChildren(this.images.seats[seatNumber].openSeat)
+
+            }
+      
             
               this.hideChildren(this.images.seats[seatNumber].seat)
             this.hideChildren(this.images.seats[seatNumber].status)
@@ -3581,6 +3613,12 @@ chipIntoPotAnimationArray.push(function(callback){
                 }
                 })
         
+                //update pot sizes
+                for(var i =0;i<potSizes.length;i++){
+                    
+                    self.updatePotSize(potSizes[i],i)
+
+                }
 async.series([
 function(next){
     async.parallel(chipIntoPotAnimationArray, function(err, results){next(null, 1)})
@@ -3594,12 +3632,7 @@ function(next){
   ])
 }
 
-   this.displayInitialTableState=function(tableState){
-
-  //get table_state if not passed as parameter
-        if(typeof tableState == 'object'){table_state = tableState}
-        else{var table_state = $('#server_values').data('table_state')}
-
+   this.displayInitialTableState=function(table_state){
 
 
 
@@ -3775,8 +3808,8 @@ function tick(event){
      
         
 
-    socket.on('street_ends', function (potSize){
-       self.streetEnds(potSize)
+    socket.on('street_ends', function (potSizes){
+       self.streetEnds(potSizes)
     })
 
     //error received
@@ -3797,6 +3830,7 @@ function tick(event){
           self.playerPutsChipsInPot(seatNumber, betSize, stackSize)
            self.displayChipStack(betSize, self.images.seats[seatNumber], self.images.seats[seatNumber].firstChip.position.x, self.images.seats[seatNumber].firstChip.position.y)
                 
+
 })
 
 
