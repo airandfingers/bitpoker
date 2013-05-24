@@ -832,6 +832,9 @@ this.images.setDefaults = function(){
 
             var actionButtonWidth = 80
             var actionButtonHeight = 25
+            var actionButtonLeftX = 205
+            var actionButtonY = 419
+            var distanceBetweenActionButtons = 20
             var seatWidth = 90
             var seatHeight = 33
             var distanceBetweenSeatsX = 40
@@ -892,10 +895,10 @@ this.images.setDefaults = function(){
             var verticalBetSliderHeight = 13            
             var horizontalBetSliderWidth = 200
             var horizontalBetSliderHeight = 7
-            var horizontalBetSliderX = 215
+      //      var horizontalBetSliderX = 215
             var horizontalBetSliderOffsetBottom =  19
-            var distanceBetweenBetSizeAndHorizontalSlider = 35
-            var betSizeWidth = 35
+            var distanceBetweenBetSizeAndHorizontalSlider = 15
+            var betSizeWidth = 80
             var betSizeHeight = 20
 
             //space between player chat and seat
@@ -1351,11 +1354,11 @@ self.images.seats[i].chat.text.x=self.images.seats[i].chat.position.x +  self.im
  })
 
          //---------------action buttons------------------
-      this.fold = new this.Item(205,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','fold'])
-      this.call = new this.Item(305,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','call'])
-      this.check = new this.Item(305,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','check'])
-      this.raise = new this.Item(405,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','raise'])
-      this.bet = new this.Item(405,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','bet'])
+      this.fold = new this.Item(actionButtonLeftX,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','fold'])
+      this.call = new this.Item(actionButtonLeftX+actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','call'])
+      this.check = new this.Item(actionButtonLeftX+actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','check'])
+      this.raise = new this.Item(this.check.position.x +actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','raise'])
+      this.bet = new this.Item(this.check.position.x +actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','bet'])
 
         this.itemAsRectangle(this.fold,  'red')
         this.addItemText(this.fold, 'fold','12px Arial','#000000')
@@ -1375,12 +1378,12 @@ self.images.seats[i].chat.text.x=self.images.seats[i].chat.position.x +  self.im
          this.bet.image.onClick  = self.events.onButtonClick
 
         //-----------------bet slider-----------------------------
-              this.betSlider.horizontal = new this.Item (horizontalBetSliderX,canvasHeight-horizontalBetSliderOffsetBottom-horizontalBetSliderHeight,horizontalBetSliderWidth,horizontalBetSliderHeight,self.gameState.containerImageIndexes.button)
+              this.betSlider.horizontal = new this.Item (this.fold.position.x,canvasHeight-horizontalBetSliderOffsetBottom-horizontalBetSliderHeight,horizontalBetSliderWidth,horizontalBetSliderHeight,self.gameState.containerImageIndexes.button)
               var verticalY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.size.y/2-verticalBetSliderHeight/2
       this.betSlider.vertical = new this.Item(this.betSlider.horizontal.position.x,verticalY,verticalBetSliderWidth,verticalBetSliderHeight,self.gameState.containerImageIndexes.button)
 var betSizeX = this.betSlider.horizontal.position.x+this.betSlider.horizontal.size.x + distanceBetweenBetSizeAndHorizontalSlider
 var betSizeY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.size.y/2-betSizeHeight/2
-      this.betSlider.betSize = new this.Item(betSizeX,betSizeY,betSizeWidth,betSizeWidth,self.gameState.containerImageIndexes.button)
+      this.betSlider.betSize = new this.Item(betSizeX,betSizeY,betSizeWidth,betSizeHeight,self.gameState.containerImageIndexes.button)
 
       this.itemAsBitmap(this.betSlider.horizontal, this.sources.horizontalSlider)
         this.itemAsBitmap(this.betSlider.vertical, this.sources.verticalSlider)
@@ -4034,11 +4037,14 @@ self.playerToAct(self.gameState.userSeatNumber)
     var timeToCountDown = 3000
      self.playerToAct(player.seat)
 
+var delayedCountDown = function(){
+if(self.gameState.seats[player.seat].displayMessageType == 'countdown'){self.startCountdown(player.seat, Math.round(timeToCountDown/1000))}
+}
      //do a countdown when time is low for non-user players
      if(player.seat != self.gameState.userSeatNumber){
-     createjs.Tween.get(self.images.seats[player.seat].countdown)
+     createjs.Tween.get(self.images.seats[player.seat].countdown, {override:true, loop:false})
      .wait(timeout-timeToCountDown)
-    .call(self.startCountdown,[player.seat,Math.round(timeToCountDown/1000)],self)
+    .call(delayedCountDown)
      }
 })
 
