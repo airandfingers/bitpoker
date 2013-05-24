@@ -5,6 +5,7 @@ event.preventDefault() }
 
 window.onKeydown = onKeyDown
 
+
 /*function (dtnode, event) { 
         return false; 
     }*/
@@ -224,6 +225,27 @@ if(item.messages){
     item.image.onClick = self.events.onButtonClick
 }
             }
+
+            //draws a seat
+                  this.images.drawSeat = function (parent, borderColor, fillColor, middleDividerColor){
+          if(parent.image instanceof createjs.Shape){}
+          else{
+              parent.image = new createjs.Shape()}
+
+              var x = parent.position.x; var y = parent.position.y
+              var width = parent.size.x;  var height = parent.size.y
+
+              parent.image.graphics.clear() //clear previous graphics on the shape
+   parent.image.snapToPixel = true
+
+ parent.image.graphics.setStrokeStyle(2,'square').beginStroke(borderColor).beginFill(fillColor).drawRect(x, y, width, height)
+    parent.image.graphics.setStrokeStyle(1).beginStroke(middleDividerColor).moveTo(x+1,y+height/2).lineTo(x+width-1,y+height/2)
+            
+          parent.image.borderColor = borderColor
+          parent.image.fillColor = fillColor
+           parent.image.middleDividerColor = middleDividerColor
+          
+      }
 
             //for example: (parentOfImageObject, fold, "13px Arial", "#100D08")
             this.images.addItemText = function(parentOfImageObject,text,sizeAndFont,color){
@@ -999,22 +1021,22 @@ $('#chat').css({
           this.foldToAnyBet = new  this.Item(sideButtonOffSetLeft,this.htmlTableChatBox.position.y-  sideButtonDistanceFromChat - 3*sideButtonHeight-2*sideButtonDistanceY,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button, ['set_flag','check',true])
          this.foldToAnyBet.otherMessages = ['set_flag','fold',true]
           this.sitOutNextHand = new  this.Item(sideButtonOffSetLeft,this.htmlTableChatBox.position.y -  sideButtonDistanceFromChat- 2*sideButtonHeight - sideButtonDistanceY,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button, ['sit_out'])
-        this.sitOutNextBigBlind =  new this.Item(sideButtonOffSetLeft,this.htmlTableChatBox.position.y-  sideButtonDistanceFromChat- sideButtonHeight,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button, ['set_flag', 'receive_hole_cards', false])
+        this.sitOutNextBlind =  new this.Item(sideButtonOffSetLeft,this.htmlTableChatBox.position.y-  sideButtonDistanceFromChat- sideButtonHeight,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button, ['set_flag', 'post_blind', false])
                
                
                 //define on versions
                   this.foldToAnyBetOn =  new this.Item(this.foldToAnyBet.position.x,this.foldToAnyBet.position.y, this.foldToAnyBet.size.x,this.foldToAnyBet.size.y,self.gameState.containerImageIndexes.button, ['set_flag','fold',false])
                    this.foldToAnyBet.otherMessages = ['set_flag','check',false]
           this.sitOutNextHandOn = new  this.Item(this.sitOutNextHand.position.x,this.sitOutNextHand.position.y, this.sitOutNextHand.size.x,this.sitOutNextHand.size.y,self.gameState.containerImageIndexes.button, ['sit_in'])
-        this.sitOutNextBigBlindOn = new  this.Item(this.sitOutNextBigBlind.position.x,this.sitOutNextBigBlind.position.y, this.sitOutNextBigBlind.size.x,this.sitOutNextBigBlind.size.y,self.gameState.containerImageIndexes.button, ['set_flag', 'receive_hole_cards', true])
+        this.sitOutNextBlindOn = new  this.Item(this.sitOutNextBlind.position.x,this.sitOutNextBlind.position.y, this.sitOutNextBlind.size.x,this.sitOutNextBlind.size.y,self.gameState.containerImageIndexes.button, ['set_flag', 'post_blind', true])
         
         this.itemAsBitmap(this.foldToAnyBet, this.sources.checkBox)
 this.itemAsBitmap(this.sitOutNextHand, this.sources.checkBox)
-this.itemAsBitmap(this.sitOutNextBigBlind, this.sources.checkBox)
+this.itemAsBitmap(this.sitOutNextBlind, this.sources.checkBox)
 
         this.itemAsBitmap(this.foldToAnyBetOn, this.sources.checkBoxChecked)
 this.itemAsBitmap(this.sitOutNextHandOn, this.sources.checkBoxChecked)
-this.itemAsBitmap(this.sitOutNextBigBlindOn, this.sources.checkBoxChecked)
+this.itemAsBitmap(this.sitOutNextBlindOn, this.sources.checkBoxChecked)
 //function for creating text from all fast
     var addSideButtonText = function(parentOfImageObject, text){
                 parentOfImageObject.text = new createjs.Text(text, sideButtonSizeAndFont, sideButtonTextColor)
@@ -1027,12 +1049,12 @@ parentOfImageObject.textColor = sideButtonTextColor
 //off state
       addSideButtonText( this.foldToAnyBet, 'Fold to any bet' )
       addSideButtonText(this.sitOutNextHand, 'Sit out next hand')
-      addSideButtonText (  this.sitOutNextBigBlind,'Sit out next big blind' )
+      addSideButtonText (  this.sitOutNextBlind,'Sit out next blind' )
       
       //on state
       addSideButtonText( this.foldToAnyBetOn, 'Fold to any bet' )
       addSideButtonText(this.sitOutNextHandOn, 'Sit out next hand')
-      addSideButtonText (  this.sitOutNextBigBlindOn,'Sit out next big blind' )
+      addSideButtonText (  this.sitOutNextBlindOn,'Sit out next blind' )
 
       //hitAreas for buttons
       
@@ -1050,20 +1072,20 @@ parentOfImageObject.textColor = sideButtonTextColor
                     //hit areas
       this.foldToAnyBet.image.hitArea =  drawHitArea(this.foldToAnyBet)
         this.sitOutNextHand.image.hitArea = drawHitArea(this.sitOutNextHand)
-          this.sitOutNextBigBlind.image.hitArea  = drawHitArea(this.sitOutNextBigBlind)
+          this.sitOutNextBlind.image.hitArea  = drawHitArea(this.sitOutNextBlind)
      
                   this.foldToAnyBetOn.image.hitArea  = drawHitArea(this.foldToAnyBetOn)
                   this.sitOutNextHandOn.image.hitArea = drawHitArea(this.sitOutNextHandOn)
-                    this.sitOutNextBigBlindOn.image.hitArea = drawHitArea(this.sitOutNextBigBlindOn)
+                    this.sitOutNextBlindOn.image.hitArea = drawHitArea(this.sitOutNextBlindOn)
 
       //onclick
        this.foldToAnyBet.image.onclick =  self.events.onButtonClick
         this.sitOutNextHand.image.onclick = self.events.onButtonClick
-          this.sitOutNextBigBlind.image.onclick  = self.events.onButtonClick
+          this.sitOutNextBlind.image.onclick  = self.events.onButtonClick
            //define on versions
                   this.foldToAnyBetOn.image.onclick  = self.events.onButtonClick
                   this.sitOutNextHandOn.image.onclick = self.events.onButtonClick
-                    this.sitOutNextBigBlindOn.image.onclick = self.events.onButtonClick
+                    this.sitOutNextBlindOn.image.onclick = self.events.onButtonClick
 
 
            //----------------------seats-------------------------------
@@ -1080,25 +1102,7 @@ parentOfImageObject.textColor = sideButtonTextColor
 
       //---filled seats------
      
-                 var drawSeat = function (parent, borderColor, fillColor, middleDividerColor){
-          if(parent.image instanceof createjs.Shape){}
-          else{
-              parent.image = new createjs.Shape()}
-
-              var x = parent.position.x; var y = parent.position.y
-              var width = parent.size.x;  var height = parent.size.y
-
-              parent.image.graphics.clear() //clear previous graphics on the shape
-   parent.image.snapToPixel = true
-
- parent.image.graphics.setStrokeStyle(2,'square').beginStroke(borderColor).beginFill(fillColor).drawRect(x, y, width, height)
-    parent.image.graphics.setStrokeStyle(1).beginStroke(middleDividerColor).moveTo(x+1,y+height/2).lineTo(x+width-1,y+height/2)
-            
-          parent.image.borderColor = borderColor
-          parent.image.fillColor = fillColor
-           parent.image.middleDividerColor = middleDividerColor
-          
-      }
+           
      
       _.each(_.range(this.seats.length), function(i) {
           var x = self.images.seats[i].seat.position.x
@@ -1106,10 +1110,6 @@ parentOfImageObject.textColor = sideButtonTextColor
           var width = self.images.seats[i].seat.size.x
           var height = self.images.seats[i].seat.size.y
           self.images.seats[i].seat.image = new createjs.Shape()
-self.images.seats[i].seat.image.drawSeat = function(border, fill, middle){
-  
-    drawSeat(self.images.seats[i].seat, border, fill, middle)
-    }
  self.images.seats[i].seat.image.parentOfImageObject = self.images.seats[i].seat
 
 })
@@ -1118,7 +1118,7 @@ self.images.seats[i].seat.image.drawSeat = function(border, fill, middle){
   //=================-seat images=========================================
 for(var i =0;i<this.seats.length;i++){
 
-this.seats[i].seat.image.drawSeat('#1520b9','#000000', '#7d7d7d')
+self.images.drawSeat(this.seats[i].seat, '#1520b9','#000000', '#7d7d7d')
 
     //--------------------empty seats and text----------------- 
          this.seats[i].openSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,self.gameState.containerImageIndexes.button)
@@ -1150,7 +1150,7 @@ this.seats[i].seat.image.drawSeat('#1520b9','#000000', '#7d7d7d')
             var openSeatMiddle = openSeatMiddle
             var openSeatBorder = '#FFFFFF'
 
-drawSeat(this.seats[i].openSeat, openSeatBorder, openSeatFill, openSeatMiddle)
+self.images.drawSeat(this.seats[i].openSeat, openSeatBorder, openSeatFill, openSeatMiddle)
 this.seats[i].openSeat.image.parentOfImageObject = this.seats[i].openSeat  
 
                 this.seats[i].openSeat.text = new createjs.Text('Open Seat', '15px Arial', "#FFFFFF")
@@ -1165,7 +1165,7 @@ this.seats[i].openSeat.textColor = "#FFFFFF"
             var disabledBorder = "#544E4F"
             var disabledFill = 'black'
             var disabledMiddle = disabledFill
-            drawSeat (this.seats[i].disabledSeat, disabledBorder, disabledFill, disabledMiddle)
+            self.images.drawSeat (this.seats[i].disabledSeat, disabledBorder, disabledFill, disabledMiddle)
    this.seats[i].disabledSeat.image.parentOfImageObject = this.seats[i].disabledSeat     
 /*
             this.seats[i].disabledSeat.image = new createjs.Shape()
@@ -1983,10 +1983,11 @@ $('#chat').css({
                                                               
           }
           //update seat messages
-          console.log(this.images.seats)
+       
           for(var i =0; i<this.images.seats.length;i++){
               this.images.seats[i].openSeat.messages = ['sit', i]
           }
+             if(this.images.seats.length != numSeats){console.log(this.images.seats)}
     }
 
     this.displayShownCard = function (cardText,parentOfImageObject){
@@ -2808,13 +2809,13 @@ for (var i = 0; i < openSeats.length; i = i + 1)
         
         this.displayChildren(this.images.foldToAnyBet)
         this.displayChildren(this.images.sitOutNextHand)
-         this.displayChildren(this.images.sitOutNextBigBlind)
+         this.displayChildren(this.images.sitOutNextBlind)
     }
 
     this.hideSeatedOptions = function(){
         this.hideChildren(this.images.foldToAnyBet)
          this.hideChildren(this.images.sitOutNextHand)
-          this.hideChildren(this.images.sitOutNextBigBlind)
+          this.hideChildren(this.images.sitOutNextBlind)
           this.hideChildren(this.images.getChips)
           this.hideChildren(this.images.rebuy)
           this.hideChildren(this.images.sitIn)
@@ -2945,15 +2946,14 @@ this.hideAllActionButtons()
     }
 
 
-    this.playerActs=function(seatNumber, actionText, fadeTimeInSeconds){
+    this.playerActs =function(seatNumber, actionText, fadeTimeInSeconds){
          //if player is current user, hide action buttons
         if(seatNumber === self.gameState.userSeatNumber){this.hideAllActionButtons(this.gameState.userSeatNumber)}
         this.gameState.seats[seatNumber].displayMessageType = 'action'
 
         self.images.seats[seatNumber].action.text.text = ''
 
-        //hide other messages on the seat box
-        self.displayCorrectSeatMessage(seatNumber)
+       
 
         var interval = 100
         var alpha
@@ -2965,7 +2965,6 @@ this.hideAllActionButtons()
           if(self.gameState.seats[seatNumber].displayMessageType != 'action'||alpha<=0)
           {
                 if(self.gameState.seats[seatNumber].displayMessageType === 'action'){self.gameState.seats[seatNumber].displayMessageType = 'seat'}
-                self.displayCorrectSeatMessage(seatNumber)
                 clearInterval(playerAction)
             }
 
@@ -2981,6 +2980,8 @@ this.hideAllActionButtons()
             }
             
             alpha = alpha - interval/1000
+ //hide other messages on the seat box
+        self.displayCorrectSeatMessage(seatNumber)
 
 }, interval)
     }
@@ -2991,7 +2992,7 @@ this.hideAllActionButtons()
 
          self.images.seats[seatNumber].winner.text.text = ''
           //hide other messages on the seat box
-self.displayCorrectSeatMessage(seatNumber)
+
 
          var interval = 100
          var alpha
@@ -3004,7 +3005,7 @@ self.displayCorrectSeatMessage(seatNumber)
           if(self.gameState.seats[seatNumber].displayMessageType != 'winner'||alpha<=0)
           {
                 if(self.gameState.seats[seatNumber].displayMessageType === 'winner'){self.gameState.seats[seatNumber].displayMessageType = 'seat'}
-                self.displayCorrectSeatMessage(seatNumber)
+                
                 clearInterval(declareWinner)
             }
             
@@ -3020,7 +3021,7 @@ self.displayCorrectSeatMessage(seatNumber)
             }
             
             alpha = alpha - interval/1000
-
+self.displayCorrectSeatMessage(seatNumber)
 
 }, interval)
 
@@ -3173,13 +3174,13 @@ var nextCounter = lastCompletedFillColorCounter+1
     //concatanate to create new fill color
     newFillColor = rgbArrayToString([nextRed, nextGreen, nextBlue])
 
-    self.images.seats[seatNumber].seat.image.drawSeat(toActBorderColor, newFillColor, toActMiddleDividerColor)
+   self.images.drawSeat( self.images.seats[seatNumber].seat, toActBorderColor, newFillColor, toActMiddleDividerColor)
     self.stage.update()
     
                 if (self.gameState.seats[seatNumber].toAct==false)
                   {
                       clearInterval(countdown)
-                     self.images.seats[seatNumber].seat.image.drawSeat(originalBorderColor, originalFillColor, originalMiddleDividerColor)
+                     self.images.drawSeat(self.images.seats[seatNumber].seat, originalBorderColor, originalFillColor, originalMiddleDividerColor)
                       }
         },interval)
 
@@ -3192,9 +3193,9 @@ var nextCounter = lastCompletedFillColorCounter+1
 
          self.images.seats[seatNumber].countdown.text.text = ''
                   //hide other messages on the seat box
-self.displayCorrectSeatMessage(seatNumber)
 
       var countdown = setInterval(function() {
+
           if(self.gameState.seats[seatNumber].displayMessageType != 'countdown'){clearInterval(countdown)}
 
    else if ( secondsToAct>= 0){
@@ -3209,7 +3210,7 @@ self.displayCorrectSeatMessage(seatNumber)
         clearInterval(countdown)
        }
        
-
+     self.displayCorrectSeatMessage(seatNumber)
    
 }, 1000)
 
@@ -3634,8 +3635,6 @@ function(next){
 
    this.displayInitialTableState=function(table_state){
 
-
-
  //set up animation variables
  var tickerInterval = 25
 var ticksPerAnimation = 3
@@ -3699,12 +3698,7 @@ function tick(event){
 
         //remove extra seats
         this.setNumberOfSeats(table_state.max_players)
-        /*
-        for (var i = 10;i>=table_state.max_players;i=i-1){
-            this.images.seats.splice(i,1)
-            this.gameState.seats.splice(i,1)
-        }
-        */
+
         //comunity cards
         this.displayAllCommunity(table_state.community)
         
@@ -3725,47 +3719,44 @@ function tick(event){
          //display foldToAnyBetButton depending on user's flag
          if(table_state.seats[i].flags){
               //check if user is holding cards
-         if(!_.isUndefined(userPlayerArrayIndex)&&table_state.players[userPlayerArrayIndex].hand){
-         if(table_state.seats[i].flags.check ==true && table_state.seats[i].flags.fold == true){
-        
+ //        if(!_.isUndefined(userPlayerArrayIndex)&&!_.isNull(userPlayerArrayIndex)&&table_state.players[userPlayerArrayIndex].hand){
          
-             self.displayChildren(self.images.foldToAnyBetOn)}
-             else{ self.displayChildren(self.images.foldToAnyBet)}
-             }
+             
 
              //display sitout next hand depending on user's flag
-              if(table_state.seats[i].flags.sitting_out == true){
-             self.displayChildren(self.images.sitOutNextHandOn)}
-             else{self.displayChildren(self.images.sitOutNextHand)}
+              if(table_state.seats[i].flags.pending_sit_out == true){self.displayChildren(self.images.sitOutNextHandOn)}
+             else if (table_state.seats[i].sitting_out != true){self.displayChildren(self.images.sitOutNextHand)}
 
-          
                   //check if user is sitting in
                   if(table_state.seats[i].sitting_out == true){
+                     self.displayChildren(self.images.sitOutNextHandOn)
                        //either display rebuy OR sitin if user is sitting out
-             if(table_state.seats[i].chips == 0){
-                 self.displayChildren(self.images.rebuy)}
+             if(table_state.seats[i].chips == 0){self.displayChildren(self.images.rebuy)}
                  else{ self.displayChildren(self.images.sitIn)}
          }
 
          //if user is not sitting out
          else{
                     //display sit out next big blind depending on user's flag
-              if(table_state.seats[i].flags.post_blind == false){self.displayChildren(self.images.sitOutNextBigBlindOn)}
-                    else{self.displayChildren(self.images.sitOutNextBigBlind)}
-             }
-  
+              if(table_state.seats[i].flags.post_blind == false){self.displayChildren(self.images.sitOutNextBlindOn)}
+                    else{self.displayChildren(self.images.sitOutNextBlind)}
+
+                        //fold to any bet button on or off
+                        if(table_state.seats[i].flags.check ==true && table_state.seats[i].flags.fold == true){self.displayChildren(self.images.foldToAnyBetOn)}
+             else{ self.displayChildren(self.images.foldToAnyBet)}
          }
-         }
+
+         } // end if user's flag object exists
+         } //end is_you check
+     
 
          //non-user seated players
          this.playerSits(table_state.seats[i].seat,table_state.seats[i].username,table_state.seats[i].chips)
         if(table_state.seats[i].sitting_out == true){
             self.images.seats[table_state.seats[i].seat].status.text.text = "Sitting Out"
         }
-         }
+} //end iteration through players.seat
          
-
-
         //display player's cards
          for(var i=0;i<table_state.players.length;i=i+1){
                if(!table_state.players[i].hand){
@@ -3836,11 +3827,9 @@ function tick(event){
 
     //community cards are dealt
        socket.on('community_dealt', function(community){
-console.log(self.images.pots[0])
-console.log(self.stage.contains(self.images.pots[0]))
-      //      self.removeAllBets()
+
+
             self.dealCommunity(community)
-       //     self.displayAllCommunity(community)
                 
 })
 
@@ -3849,8 +3838,7 @@ socket.on('hands_dealt', function(players, tableInfo){
     self.images.dealerButton.image.x = self.images.seats[tableInfo.dealer].dealerButton.position.x
      self.images.dealerButton.image.y = self.images.seats[tableInfo.dealer].dealerButton.position.y
      self.displayChildren(self.images.dealerButton)
-     console.log(self.images.dealerButton)
-     console.log(self.images.dealerButton.image.isVisible())
+
     //deal cards
     var playerArray = []
     for(var i = 0; i<players.length;i++){playerArray.push(players[i].seat)}
@@ -3862,6 +3850,44 @@ socket.on('hands_dealt', function(players, tableInfo){
     else{self.dealHoleCards(playerArray[0],playerArray)}
     self.gameState.holeCards = null
 })
+
+
+
+
+//flag is set
+       socket.on('flag_set', function(flag, value){
+         
+           switch (flag){
+
+case 'pending_sit_out':
+if(value ==true){
+self.hideChildren(self.images.sitOutNextHand)
+self.displayChildren(self.images.sitOutNextHandOn)
+
+}
+else if(value == false){
+    self.hideChildren(self.images.sitOutNextHandOn)
+    self.displayChildren(self.images.sitOutNextHand)
+}
+           
+           break;
+           case 'post_blind':
+           if(self.stage.contains(self.images.sitOutNextBlindOn)||self.stage.contains(self.images.sitOutNextBlind)){
+
+           if(value == true){
+
+            self.hideChildren(self.images.sitOutNextBlindOn)
+            self.displayChildren(self.images.sitOutNextBlind)
+           }
+   else    if(value == false){
+            self.hideChildren(self.images.sitOutNextBlind)
+            self.displayChildren(self.images.sitOutNextBlindOn)
+           }
+                }
+break;
+
+}
+     })
 
 
 //hand dealt to user
@@ -4038,8 +4064,8 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
         if(player.seat == self.gameState.userSeatNumber){
             self.hideChildren(self.images.sitOutNextHand)
             self.displayChildren(self.images.sitOutNextHandOn)
-            self.hideChildren(self.images.sitOutNextBigBlind)
-            self.hideChildren(self.images.sitOutNextBigBlindOn)
+            self.hideChildren(self.images.sitOutNextBlind)
+            self.hideChildren(self.images.sitOutNextBlindOn)
             if(player.chips == 0){
                 self.displayChildren(self.images.rebuy)
             }
