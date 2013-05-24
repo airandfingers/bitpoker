@@ -2993,13 +2993,13 @@ $('#betSize').css('display','inline')
         if(seatNumber === self.gameState.userSeatNumber){this.hideAllActionButtons(this.gameState.userSeatNumber)}
         this.gameState.seats[seatNumber].displayMessageType = 'action'
 
-        self.images.seats[seatNumber].action.text.text = ''
+        self.images.seats[seatNumber].action.text.text = 'actionText'
 
        
 
         var interval = 100
         var alpha
-        if(typeof fadeTimeInSeconds == 'number'){alpha = fadeTimeInSeconds}
+        if(fadeTimeInSeconds && typeof fadeTimeInSeconds == 'number'){alpha = fadeTimeInSeconds}
         else{alpha = 2}
 
       var playerAction =   setInterval(function() {
@@ -3070,7 +3070,8 @@ self.displayCorrectSeatMessage(seatNumber)
     }
 
     this.playerToAct =function(seatNumber){
-
+         self.gameState.seats[seatNumber].toAct = true
+console.log('setting to act as true')
         //function that will convert hex to RGB
     var hexToRGB =     function(hex) {
     // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
@@ -3129,7 +3130,6 @@ var originalMiddleDividerColor = self.images.seats[0].seat.image.middleDividerCo
          var lastCompletedFillColorCounter = -1
 
 
-         self.gameState.seats[seatNumber].toAct = true
 
 //-----------start swapping colors until toAct becomes false----------------
               var countdown = setInterval(function() {
@@ -3230,15 +3230,16 @@ var nextCounter = lastCompletedFillColorCounter+1
     
 
  this.startCountdown = function(seatNumber, secondsToAct){
-
-      this.gameState.seats[seatNumber].displayMessageType = 'countdown'
-
-         self.images.seats[seatNumber].countdown.text.text = ''
+secondsToAct = parseInt(secondsToAct)
+     if(self.gameState.seats[seatNumber].toAct == true) {this.gameState.seats[seatNumber].displayMessageType = 'countdown'
+         self.images.seats[seatNumber].countdown.text.text = 'Time: '+secondsToAct
+     }
                   //hide other messages on the seat box
 
+var interval = 1000
       var countdown = setInterval(function() {
 
-          if(self.gameState.seats[seatNumber].displayMessageType != 'countdown'){clearInterval(countdown)}
+          if(self.gameState.seats[seatNumber].displayMessageType != 'countdown'|| self.gameState.seats[seatNumber].toAct != true){clearInterval(countdown)}
 
    else if ( secondsToAct>= 0){
         self.images.seats[seatNumber].countdown.text.text = 'Time: '+secondsToAct
@@ -3253,7 +3254,7 @@ var nextCounter = lastCompletedFillColorCounter+1
        
      self.displayCorrectSeatMessage(seatNumber)
    
-}, 1000)
+}, interval)
 
 }
 
@@ -3995,8 +3996,9 @@ break;
 //user to act 
  socket.on('act_prompt', function(actions, timeout){
 
-     self.startCountdown(self.gameState.userSeatNumber,Math.round(timeout/1000))
 self.playerToAct(self.gameState.userSeatNumber)
+     self.startCountdown(self.gameState.userSeatNumber,Math.round(timeout/1000))
+
      for (var i = 0; i < actions.length; i++){
      if (typeof actions[i].fold !== 'undefined'){
          self.displayButton(self.images.fold, false, ['act','fold'])
@@ -4038,7 +4040,7 @@ self.playerToAct(self.gameState.userSeatNumber)
      self.playerToAct(player.seat)
 
 var delayedCountDown = function(){
-if(self.gameState.seats[player.seat].displayMessageType == 'countdown'){self.startCountdown(player.seat, Math.round(timeToCountDown/1000))}
+if( self.gameState.seats[player.seat].toAct == true){self.startCountdown(player.seat, Math.round(timeToCountDown/1000))}
 }
      //do a countdown when time is low for non-user players
      if(player.seat != self.gameState.userSeatNumber){
