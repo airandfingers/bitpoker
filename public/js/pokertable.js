@@ -1993,7 +1993,13 @@ $('#chat').css({
               this.images.seats[i].openSeat.messages = ['sit', i]
           }
              if(this.images.seats.length != numSeats){console.log(this.images.seats)}
-                console.log(this.images.seats)
+            
+            //adjust gameState seats array
+
+        for(var i = this.gameState.seats.length;i>=numSeats;i--){
+            this.gameState.seats.splice(i,1)
+        }
+
     }
 
     this.displayShownCard = function (cardText,parentOfImageObject){
@@ -3211,8 +3217,7 @@ var nextCounter = lastCompletedFillColorCounter+1
    }
 
    else{
-        if(self.gameState.seats[seatNumber].displayMessageType === 'countdown'){self.gameState.seats[seatNumber].displayMessageType = 'seat'}
-        self.displayCorrectSeatMessage(seatNumber)
+        if(self.gameState.seats[seatNumber].displayMessageType == 'countdown'){self.gameState.seats[seatNumber].displayMessageType = 'seat'}
         clearInterval(countdown)
        }
        
@@ -3724,11 +3729,10 @@ function tick(event){
 //======================display user's flag settings=====================================
          //display foldToAnyBetButton depending on user's flag
          if(table_state.seats[i].flags){
-              //check if user is holding cards to display fold toAnyBet
-        if(!_.isUndefined(userPlayerArrayIndex)&&!_.isNull(userPlayerArrayIndex)&&table_state.players[userPlayerArrayIndex].hand){
-         if(table_state.seats[i].flags.check == true && table_state.seats[i].flags.fold == true){self.displayChildren(self.images.foldToAnyBetOn)   } 
-else{self.displayChildren(self.images.foldToAnyBet)}
-     }
+            
+
+  
+     
 
              //display sitout next hand depending on user's flag
               if(table_state.seats[i].flags.pending_sit_out == true){self.displayChildren(self.images.sitOutNextHandOn)}
@@ -3744,15 +3748,17 @@ else{self.displayChildren(self.images.foldToAnyBet)}
 
          //if user is not sitting out
          else{
+        
                     //display sit out next big blind depending on user's flag
               if(table_state.seats[i].flags.post_blind == false){self.displayChildren(self.images.sitOutNextBlindOn)}
                     else{self.displayChildren(self.images.sitOutNextBlind)}
-
+  //check if user is holding cards to display fold toAnyBet
+             if(!_.isUndefined(userPlayerArrayIndex)&&!_.isNull(userPlayerArrayIndex)&&table_state.players[userPlayerArrayIndex].hand){
                         //fold to any bet button on or off
                         if(table_state.seats[i].flags.check ==true && table_state.seats[i].flags.fold == true){self.displayChildren(self.images.foldToAnyBetOn)}
              else{ self.displayChildren(self.images.foldToAnyBet)}
          }
-
+}//end if user has cards
          } // end if user's flag object exists
          } //end is_you check
      
@@ -3807,6 +3813,10 @@ else{self.displayChildren(self.images.foldToAnyBet)}
         
 
     socket.on('street_ends', function (potSizes){
+        for(var i = 0;i<self.images.seats.length;i++){
+if(self.gameState.seats[i].displayMessageType == 'action'||'seat'||'openSeat'||'disabledSeat'){}
+    else(self.gameState.seats[i].displayMessageType = 'seat')
+        }
        self.streetEnds(potSizes)
     })
 
@@ -3976,6 +3986,19 @@ self.playerToAct(self.gameState.userSeatNumber)
          }
          }
 })
+
+//hands turned face up
+ socket.on('hands_shown', function(players){
+
+
+           for(var i =0;i<players.length;i++){
+         self.hideHoleCards(players[i].seat)
+        self.displayHoleCards(players[i].hand, players[i].seat)
+        }
+        
+
+})
+
 
 //player to act (not the user)
  socket.on('player_to_act', function(player, timeout){
