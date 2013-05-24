@@ -19,7 +19,6 @@
     "nodemailer": "~0.4.1",
     "request": "~2.21.0"
   },
-  "subdomain": "rpwm-server",
   "domains": [],
   "scripts": {
     "start": "app.js"
