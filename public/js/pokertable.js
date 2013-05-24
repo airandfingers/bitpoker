@@ -412,12 +412,14 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
      //===============START BET SLIDER===================
 
-     this.events.horizontalSliderMouseDown = function(event){
+     this.events.betSliderHorizontalMouseDown = function(event){
 
         var minX = self.images.betSlider.horizontal.position.x
          var maxX = self.images.betSlider.horizontal.position.x + self.images.betSlider.horizontal.size.x-self.images.betSlider.vertical.size.x
-         var pixelsPerTick = self.gameState.maxBet*self.userPreferences.bigBlindsPerHorizontalSliderTick/(maxX-minX)
-         
+       
+         var pixelsPerTick = self.gameState.bigBlind*self.userPreferences.bigBlindsPerHorizontalSliderTick/(self.gameState.maxBet-self.gameState.minBet)*(maxX-minX)
+          
+
          //takes vertical slider location and proportionaly shows bet size
            var adjustBetSize = function (){
 
@@ -425,7 +427,8 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
      unroundedBetAmount =  betSizePercent*(self.gameState.maxBet-self.gameState.minBet)+self.gameState.minBet
      roundedBet = Math.round(unroundedBetAmount/self.gameState.minIncrement)*self.gameState.minIncrement
 
-    self.images.betSlider.betSize.text.text = roundedBet
+
+   $('#betSize').val(roundedBet)
     if(self.stage.contains(self.images.bet.text)){
         self.images.bet.text.text = 'Bet '+roundedBet
         self.images.bet.messages = ['act','bet',roundedBet]}
@@ -520,7 +523,8 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
      unroundedBetAmount =  betSizePercent*(self.gameState.maxBet-self.gameState.minBet)+self.gameState.minBet
      roundedBet = Math.round(unroundedBetAmount/self.gameState.minIncrement)*self.gameState.minIncrement
   }
-    self.images.betSlider.betSize.text.text = roundedBet
+
+    $('#betSize').val(roundedBet)
     if(self.stage.contains(self.images.bet.text)){
         self.images.bet.text.text = 'Bet '+roundedBet
         self.images.bet.messages = ['act','bet',roundedBet]}
@@ -547,7 +551,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
       unroundedBetAmount =  betSizePercent*(self.gameState.maxBet-self.gameState.minBet)+self.gameState.minBet
       roundedBet = Math.round(unroundedBetAmount/self.gameState.minIncrement)*self.gameState.minIncrement
   }
-   self.images.betSlider.betSize.text.text = roundedBet
+   $('#betSize').val(roundedBet)
    if(self.stage.contains(self.images.bet.text)){self.images.bet.text.text = 'Bet '+roundedBet}
     else if(self.stage.contains(self.images.raise.text)){self.images.raise.text.text = 'Raise to '+roundedBet}
   self.stage.update()
@@ -1378,11 +1382,29 @@ var betSizeX = this.betSlider.horizontal.position.x+this.betSlider.horizontal.si
 var betSizeY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.size.y/2-betSizeHeight/2
       this.betSlider.betSize = new this.Item(betSizeX,betSizeY,betSizeWidth,betSizeWidth,self.gameState.containerImageIndexes.button)
 
-      //  this.itemAsRectangle(this.betSlider.horizontal, 'black')
       this.itemAsBitmap(this.betSlider.horizontal, this.sources.horizontalSlider)
         this.itemAsBitmap(this.betSlider.vertical, this.sources.verticalSlider)
-      //  this.itemAsRectangle(this.betSlider.vertical, 'blue')
-        this.addItemText(this.betSlider.betSize, 0, '14px Arial', '#FFFFFF')
+
+$('#betSize').val('')
+
+//highlight when clicked
+$('#betSize').focusin(function(){
+               $("#betSize").one('mouseup', function(event){
+        event.preventDefault();
+       }).select()
+})
+
+
+$('#betSize').css({
+ 'position' :  'absolute',
+ 'left'  : this.betSlider.betSize.position.x + 'px',
+'top'  : this.betSlider.betSize.position.y + 'px',
+'width' : this.betSlider.betSize.size.x + 'px',
+'height' : this.betSlider.betSize.size.y +'px',
+'padding': '0px',
+'margin':'0px'
+})
+
 
   //------------------------------community cards---------------------------
         this.community[0] = new this.Item(canvasWidth/2-cardWidth/2-cardWidth*2-distanceBetweenCommunityCards*2,communityY,cardWidth, cardHeight,self.gameState.containerImageIndexes.button)
@@ -1781,7 +1803,7 @@ this.displayChildren(this.images.background)
 
         //mouse events for changing bet sizes
          this.betSlider.vertical.image.onPress = self.events.betSliderVerticalMouseDown
-         this.betSlider.horizontal.image.onPress = self.events.horizontalSliderMouseDown
+         this.betSlider.horizontal.image.onPress = self.events.betSliderHorizontalMouseDown
 
         //mouse events for clicking on empty seats
              for (var i = 0; i < this.seats.length; i = i + 1){
@@ -2544,7 +2566,7 @@ callback(null, callBackNumber)
     }
 
     this.hideSeatedOptions=function(){
-        this.hideInHandOptions()
+      //  this.hideInHandOptions()
       //  this.hideChildren(this.images.stand)
          this.hideChildren(this.images.rebuy)
  this.hideChildren(this.images.sitIn)
@@ -2673,6 +2695,7 @@ this.hideChildren(this.images.check)
 this.hideChildren(this.images.raise)
 this.hideChildren(this.images.bet)
 this.hideChildren(this.images.betSlider)
+$('#betSize').css('display','none')
      
 
  }
@@ -2842,9 +2865,13 @@ this.hideAllActionButtons()
 
  //reset slider to original position and color
  this.images.betSlider.vertical.image.x =  this.images.betSlider.vertical.position.x
-  this.images.betSlider.betSize.text.text = minBet
-  this.displayChildren(this.images.betSlider)
+  $('#betSize').val(minBet)
 
+  //display betSlider 
+  this.displayChildren(this.images.betSlider)
+$('#betSize').css('display','inline')
+
+//scroll wheel
   $("input").keypress(function (e){
       console.log(event)
   })
@@ -3794,7 +3821,9 @@ function tick(event){
           //empty seats
          for (var i = 0; i<table_state.max_players;i++){  this.displayCorrectSeatMessage(i)    }
 
-         
+         //set game data
+     self.gameState.bigBlind = table_state.big_blind
+     self.gameState.minIncrement = table_state.min_increment
     }
     
   //---------------------SOCKET CODE------------------------
