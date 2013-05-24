@@ -38,6 +38,7 @@ window.onKeydown = onKeyDown
 
   }
         this.gameState = {}
+        this.gameState.betSize = new Number
         this.gameState.displaySize = 'normal'
         this.gameState.secondsToAct
         this.gameState.userSeatNumber = false
@@ -348,9 +349,9 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
     }
 
     //=======unfocus tableChatBox==================
-    this.events.unfocusChatBox = function(event){
+    this.events.onStagePress = function(event){
         
-         $('#chat').blur()
+         $(':text').blur()
 
     }
 
@@ -427,16 +428,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
      unroundedBetAmount =  betSizePercent*(self.gameState.maxBet-self.gameState.minBet)+self.gameState.minBet
      roundedBet = Math.round(unroundedBetAmount/self.gameState.minIncrement)*self.gameState.minIncrement
 
-
-   $('#betSize').val(roundedBet)
-    if(self.stage.contains(self.images.bet.text)){
-        self.images.bet.text.text = 'Bet '+roundedBet
-        self.images.bet.messages = ['act','bet',roundedBet]}
-    
-    else if(self.stage.contains(self.images.raise.text)){
-        self.images.raise.text.text = 'Raise to '+roundedBet
-    self.images.raise.messages = ['act','raise',roundedBet]}
-    self.stage.update()
+self.adjustBetDisplay(roundedBet)
          }
 
 
@@ -456,7 +448,6 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
              }
              adjustBetSize()
 
-             self.stage.update()
          }
          //check if click is to the left of the vertical slider
         else  if(event.stageX<self.images.betSlider.vertical.image.x){
@@ -469,7 +460,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
              }
              adjustBetSize()
-             self.stage.update()
+
          }
          else{pixelDirection = 0}
          if(pixelDirection>0||pixelDirection<0)
@@ -524,15 +515,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
      roundedBet = Math.round(unroundedBetAmount/self.gameState.minIncrement)*self.gameState.minIncrement
   }
 
-    $('#betSize').val(roundedBet)
-    if(self.stage.contains(self.images.bet.text)){
-        self.images.bet.text.text = 'Bet '+roundedBet
-        self.images.bet.messages = ['act','bet',roundedBet]}
-    
-    else if(self.stage.contains(self.images.raise.text)){
-        self.images.raise.text.text = 'Raise to '+roundedBet
-    self.images.raise.messages = ['act','raise',roundedBet]}
-  self.stage.update()
+self.adjustBetDisplay(roundedBet)
   }
  
 
@@ -551,13 +534,44 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
       unroundedBetAmount =  betSizePercent*(self.gameState.maxBet-self.gameState.minBet)+self.gameState.minBet
       roundedBet = Math.round(unroundedBetAmount/self.gameState.minIncrement)*self.gameState.minIncrement
   }
-   $('#betSize').val(roundedBet)
-   if(self.stage.contains(self.images.bet.text)){self.images.bet.text.text = 'Bet '+roundedBet}
-    else if(self.stage.contains(self.images.raise.text)){self.images.raise.text.text = 'Raise to '+roundedBet}
-  self.stage.update()
 
+self.adjustBetDisplay(roundedBet)
  }
  }
+this.events.betSizeUnfocused = function(){
+    var newBetSize  = parseFloat($('#betSize').val())
+    var isNumber = ( newBetSize!= NaN) && _.isNumber(newBetSize) 
+    var roundedBetSize
+    //if not a number use last known number and round
+    if(isNumber == false ){
+ roundedBetSize= Math.floor(self.gameState.betSize/self.gameState.minIncrement)*self.gameState.minIncrement
+
+    }
+    else{
+      roundedBetSize = Math.floor(newBetSize/self.gameState.minIncrement)*self.gameState.minIncrement
+
+    }
+
+    //insure rounded bet is not less or greater than max or min and set appropriately
+    if(roundedBetSize>self.gameState.maxBet){roundedBetSize = self.gameState.maxBet}
+        else if(roundedBetSize<self.gameState.minBet){roundedBetSize = self.gameState.minBet}
+            console.log(roundedBetSize)
+            //make adjustments to bet sliders
+        self.adjustBetDisplay(roundedBetSize)
+}
+
+
+
+this.events.betSizeChanged = function(){
+    //check if betSize value is different than the old value and is not empty
+    var newBetSize = parseFloat($('#betSize').val())
+  var hasValue = /\S/.test($('#betSize').val())
+
+    var isNumber = ( newBetSize!= NaN) && _.isNumber(newBetSize) 
+        var isChanged = newBetSize!=self.gameState.betSize
+if(hasValue && isNumber && isChanged){self.adjustBetDisplay(newBetSize)}
+}
+
   //=============END BET SLIDER===================
 
 //--------------END EVENTS----------------------------
@@ -1388,7 +1402,7 @@ var betSizeY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.si
       this.itemAsBitmap(this.betSlider.horizontal, this.sources.horizontalSlider)
         this.itemAsBitmap(this.betSlider.vertical, this.sources.verticalSlider)
 
-$('#betSize').val('')
+self.updateBetSize('')
 
 //highlight when clicked
 $('#betSize').focusin(function(){
@@ -1396,6 +1410,20 @@ $('#betSize').focusin(function(){
         event.preventDefault();
        }).select()
 })
+//round betSize down when unfocused
+$('#betSize').focusout(function(){ self.events.betSizeUnfocused()})
+
+
+//trigger checks for change in betsize values
+$('#betSize').change(function(){self.events.betSizeChanged()}) 
+$('#betSize').keyup(function(){self.events.betSizeChanged()}) 
+$('#betSize').bind('paste', function(e){self.events.betSizeChanged()})
+$("#betSize")[0].oninput = function () {
+self.events.betSizeChanged()
+}
+
+
+
 
 
 $('#betSize').css({
@@ -1816,7 +1844,7 @@ this.displayChildren(this.images.background)
         this.stand.image.onPress = self.events.buttonMouseDown
         this.stand.image.onClick = self.events.onButtonClick
 
-        self.stage.onPress = self.events.unFocusTableChatBox
+    //    self.stage.onPress = self.events.onStagePress
 
     }
 
@@ -2575,6 +2603,30 @@ callback(null, callBackNumber)
  this.hideChildren(this.images.sitIn)
     }
 
+  this.adjustBetDisplay = function (betSize){
+      var minX = self.images.betSlider.horizontal.position.x
+         var maxX = self.images.betSlider.horizontal.position.x + self.images.betSlider.horizontal.size.x-self.images.betSlider.vertical.size.x
+      
+//determine new X position for vertical slider based on new betSize
+     var betSizePercent = (betSize-self.gameState.minBet)/(self.gameState.maxBet-self.gameState.minBet)
+      var newX = (maxX-minX)*betSizePercent+minX
+      //make sure newX is within the bounds of min and max
+      if(newX>maxX){newX = maxX}
+        else if(newX<minX){newX = minX}
+
+            self.images.betSlider.vertical.image.x = newX
+console.log(newX)
+    if(self.stage.contains(self.images.bet.text)){
+        self.images.bet.text.text = 'Bet '+betSize
+        self.images.bet.messages = ['act','bet',betSize]}
+    
+    else if(self.stage.contains(self.images.raise.text)){
+        self.images.raise.text.text = 'Raise to '+betSize
+    self.images.raise.messages = ['act','raise',betSize]}
+
+self.updateBetSize(betSize)
+self.stage.update()
+         }
 
    this.displayAllCommunity = function(communityArray){
 
@@ -2584,6 +2636,11 @@ callback(null, callBackNumber)
     else{this.displayShownCard(communityArray[i], this.images.community[i])}
     }
     }
+
+this.updateBetSize = function(betSize){
+ $('#betSize').val(betSize)
+ self.gameState.betSize = betSize
+}
  
     //parameter is parent of the actual Image object
     this.displayImage = function (parentOfImageObject){
@@ -2868,7 +2925,7 @@ this.hideAllActionButtons()
 
  //reset slider to original position and color
  this.images.betSlider.vertical.image.x =  this.images.betSlider.vertical.position.x
-  $('#betSize').val(minBet)
+  this.updateBetSize(minBet)
 
   //display betSlider 
   this.displayChildren(this.images.betSlider)
