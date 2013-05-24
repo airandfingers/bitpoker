@@ -230,12 +230,17 @@ if(item.messages){
                   this.images.drawSeat = function (parent, borderColor, fillColor, middleDividerColor){
           if(parent.image instanceof createjs.Shape){}
           else{
-              parent.image = new createjs.Shape()}
+              parent.image = new createjs.Shape()
+              parent.image.parentOfImageObject = parent
+          }
 
               var x = parent.position.x; var y = parent.position.y
               var width = parent.size.x;  var height = parent.size.y
 
               parent.image.graphics.clear() //clear previous graphics on the shape
+              parent.image.x = 0 //reset previous transformations of the image
+              parent.image.y = 0
+              parent.image.alpha = 1
    parent.image.snapToPixel = true
 
  parent.image.graphics.setStrokeStyle(2,'square').beginStroke(borderColor).beginFill(fillColor).drawRect(x, y, width, height)
@@ -584,7 +589,7 @@ else if(i==13){cardRank = 'k'}
         fileSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'h.png', id: fileSourceArray.length-1})
         fileSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'s.png', id: fileSourceArray.length-1})
     }
-    console.log(fileSourceArray)
+    //console.log(fileSourceArray)
     //define dimensions of preloading screen
     var introScreen = {}
     var titleSizeAndFont = '20px Arial'
@@ -607,7 +612,7 @@ else if(i==13){cardRank = 'k'}
     introScreen.title = new this.images.Item(0, preloadBarY-titleAndPreloadBarDistanceY-titleHeight, $('#canvas').attr('width'), titleHeight,this.gameState.containerImageIndexes.loadingAnimation)
      introScreen.status = new this.images.Item(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y - statusHeight, $('#canvas').attr('width')-introScreen.preloadBar.x, statusHeight,this.gameState.containerImageIndexes.loadingAnimation)
   
-     console.log( introScreen.preloadBar)
+
      //define function for drawing the loading bar graphic
      introScreen.preloadBar.image  = new createjs.Shape()
      introScreen.preloadBar.drawBar  = function (progressRatio){
@@ -1988,6 +1993,7 @@ $('#chat').css({
               this.images.seats[i].openSeat.messages = ['sit', i]
           }
              if(this.images.seats.length != numSeats){console.log(this.images.seats)}
+                console.log(this.images.seats)
     }
 
     this.displayShownCard = function (cardText,parentOfImageObject){
@@ -3718,10 +3724,11 @@ function tick(event){
 //======================display user's flag settings=====================================
          //display foldToAnyBetButton depending on user's flag
          if(table_state.seats[i].flags){
-              //check if user is holding cards
- //        if(!_.isUndefined(userPlayerArrayIndex)&&!_.isNull(userPlayerArrayIndex)&&table_state.players[userPlayerArrayIndex].hand){
-         
-             
+              //check if user is holding cards to display fold toAnyBet
+        if(!_.isUndefined(userPlayerArrayIndex)&&!_.isNull(userPlayerArrayIndex)&&table_state.players[userPlayerArrayIndex].hand){
+         if(table_state.seats[i].flags.check == true && table_state.seats[i].flags.fold == true){self.displayChildren(self.images.foldToAnyBetOn)   } 
+else{self.displayChildren(self.images.foldToAnyBet)}
+     }
 
              //display sitout next hand depending on user's flag
               if(table_state.seats[i].flags.pending_sit_out == true){self.displayChildren(self.images.sitOutNextHandOn)}
@@ -4060,20 +4067,24 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
 //player sits out
        socket.on('player_sits_out', function(player){
            self.images.seats[player.seat].status.text.text = 'Sitting Out'
-  
+   self.stage.update()
         if(player.seat == self.gameState.userSeatNumber){
             self.hideChildren(self.images.sitOutNextHand)
-            self.displayChildren(self.images.sitOutNextHandOn)
+           
             self.hideChildren(self.images.sitOutNextBlind)
             self.hideChildren(self.images.sitOutNextBlindOn)
+            //hide fold to any bet
+            self.hideChildren(self.images.foldToAnyBet)
+            self.hideChildren(self.images.foldToAnyBetOn)
             if(player.chips == 0){
                 self.displayChildren(self.images.rebuy)
             }
             else{
             self.displayChildren(self.images.sitIn)
             }
+             self.displayChildren(self.images.sitOutNextHandOn)
 }
-        self.stage.update()
+       
 })
 
 
