@@ -581,7 +581,7 @@ if(hasValue && isNumber && isChanged){
 //if new betsize is not rounded to nearest increment, then set disable raise and bet buttons
   if(self.returnRoundedDownBetSize(newBetSize) == false || self.returnRoundedDownBetSize(newBetSize) != newBetSize){
 
-console.log('disabling raise/bet')
+
 self.images.bet.image.onPress = disableOneClick
 self.images.raise.image.onPress = disableOneClick
 self.images.bet.image.onClick = null
@@ -1898,10 +1898,14 @@ this.displayChildren(this.images.background)
       this.displayTableChatBox()
     }
      
-//return betsize that is rounded down or FALSE if betsize is not a number
+//return betsize that is rounded down or FALSE if betsize is not a number, also checks to make sure betsize is within in and max
 this.returnRoundedDownBetSize = function(betSize){
 
 var betSizeInTextField  = parseFloat($('#betSize').val())
+//check to insure betSize is not outside of bounds, return min or max if it is
+if(betSizeInTextField>self.gameState.maxBet){return self.gameState.maxBet}
+  else if (betSizeInTextField<self.gameState.minBet){return self.gameState.minBet}
+
     var isNumber =  !isNaN(betSizeInTextField) && _.isNumber(betSizeInTextField) 
     var roundedBetSize
     //if not a number use last known number and round
