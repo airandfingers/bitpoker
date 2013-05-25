@@ -31,6 +31,20 @@
     border: 1px solid #FFFFFF;
     border-radius: 0px;
 }
+#betSizeDiv input[type = 'text']{
+   background: transparent url('img/chat_bg.jpg') no-repeat;
+    border:0;
+    color : #747862;
+    margin-right:0px;
+    font-family:tahoma, arial, sans-serif;
+    position: absolute;
+    z-index: 1;
+    display: none;
+    color: #FFFFFF;
+    border: 1px solid #FFFFFF;
+    border-radius: 0px;
+}
+
 
 #maxRadio{
     position: absolute
