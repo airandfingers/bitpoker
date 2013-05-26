@@ -538,26 +538,31 @@ self.adjustBetDisplay(roundedBet)
 self.adjustBetDisplay(roundedBet)
  }
  }
-this.events.betSizeUnfocused = function(){
+
+this.events.betSizeUnfocused = function(event){
+
     var newBetSize  = parseFloat($('#betSize').val())
-    var isNumber = ( newBetSize!= NaN) && _.isNumber(newBetSize) 
+    var isNumber = ( !isNaN(newBetSize)) && _.isNumber(newBetSize) 
     var roundedBetSize
     //if not a number use last known number and round
-    if(isNumber == false ){
- roundedBetSize= Math.floor(self.gameState.betSize/self.gameState.minIncrement)*self.gameState.minIncrement
+    if(isNumber == false ){ 
 
-    }
-    else{
-      roundedBetSize = Math.floor(newBetSize/self.gameState.minIncrement)*self.gameState.minIncrement
+      roundedBetSize = self.returnRoundedDownBetSize(self.gameState.betSize)}
+    else{roundedBetSize =  self.returnRoundedDownBetSize(newBetSize)}
 
-    }
-
-    //insure rounded bet is not less or greater than max or min and set appropriately
+  //insure rounded bet is not less or greater than max or min and set appropriately
     if(roundedBetSize>self.gameState.maxBet){roundedBetSize = self.gameState.maxBet}
         else if(roundedBetSize<self.gameState.minBet){roundedBetSize = self.gameState.minBet}
-            console.log(roundedBetSize)
-            //make adjustments to bet sliders
+
+if(roundedBetSize!=newBetSize){
+ //make adjustments to bet sliders
         self.adjustBetDisplay(roundedBetSize)
+}
+//set raise and bet onclick events to default
+self.images.bet.image.onClick = self.events.onButtonClick
+self.images.raise.image.onClick = self.events.onButtonClick
+
+           
 }
 
 
@@ -567,9 +572,39 @@ this.events.betSizeChanged = function(){
     var newBetSize = parseFloat($('#betSize').val())
   var hasValue = /\S/.test($('#betSize').val())
 
-    var isNumber = ( newBetSize!= NaN) && _.isNumber(newBetSize) 
+    var isNumber = ( !isNaN(newBetSize)) && _.isNumber(newBetSize) 
         var isChanged = newBetSize!=self.gameState.betSize
-if(hasValue && isNumber && isChanged){self.adjustBetDisplay(newBetSize)}
+if(hasValue && isNumber && isChanged){
+//if value is different and is a number, store it
+  self.gameState.betSize = newBetSize}
+
+//if new betsize is not rounded to nearest increment, then set disable raise and bet buttons
+  if(self.returnRoundedDownBetSize(newBetSize) == false || self.returnRoundedDownBetSize(newBetSize) != newBetSize){
+
+
+self.images.bet.image.onPress = disableOneClick
+self.images.raise.image.onPress = disableOneClick
+self.images.bet.image.onClick = null
+self.images.raise.image.onClick = null
+
+
+var disableOneClick = function(event){
+
+  event.onMouseUp = function(event){
+
+    event.target.onClick = self.events.onButtonClick
+     event.target.onPress = self.events.buttonMouseDown
+  }
+}
+
+  }
+  //if newbetsize is rounded, enable bet and raise click events
+  if(self.returnRoundedDownBetSize(newBetSize) != false && self.returnRoundedDownBetSize(newBetSize) == newBetSize){
+    self.images.bet.image.onClick = self.events.onButtonClick
+    self.images.raise.image.onClick = self.events.onButtonClick
+    self.images.bet.image.onPress = self.events.buttonMouseDown
+self.images.raise.image.onPress = self.events.buttonMouseDown
+  }
 }
 
   //=============END BET SLIDER===================
@@ -1411,7 +1446,7 @@ $('#betSize').focusin(function(){
        }).select()
 })
 //round betSize down when unfocused
-$('#betSize').focusout(function(){ self.events.betSizeUnfocused()})
+$('#betSize').focusout(function(event){ self.events.betSizeUnfocused(event)})
 
 
 //trigger checks for change in betsize values
@@ -1474,7 +1509,7 @@ $('#betSize').css({
          mouseDown: 2
      }
 }
-
+/*
 var spriteSheet = new createjs.SpriteSheet(cashierButtonSpriteData)
 this.cashierButton.bitmapAnimation = new createjs.BitmapAnimation(spriteSheet)
 this.cashierButton.bitmapAnimation.x = this.cashierButton.position.x
@@ -1482,7 +1517,7 @@ this.cashierButton.bitmapAnimation.y = this.cashierButton.position.y
 // this.cashierButton.bitmapAnimation.gotoAndStop(0)
 this.cashierButton.button = new createjs.ButtonHelper(this.cashierButton.bitmapAnimation, 'mouseOut', 'mouseOver', 'mouseDown', false)
 //this.cashierButton.button.initialize()
-
+*/
 
  //------------upper right view lobby--------------
  this.viewLobby = new this.Item(canvasWidth - viewLobbyWidth, 0, viewLobbyWidth, viewLobbyHeight, self.gameState.containerImageIndexes.button)
@@ -1863,6 +1898,26 @@ this.displayChildren(this.images.background)
       this.displayTableChatBox()
     }
      
+//return betsize that is rounded down or FALSE if betsize is not a number, also checks to make sure betsize is within in and max
+this.returnRoundedDownBetSize = function(betSize){
+
+var betSizeInTextField  = parseFloat($('#betSize').val())
+//check to insure betSize is not outside of bounds, return min or max if it is
+if(betSizeInTextField>self.gameState.maxBet){return self.gameState.maxBet}
+  else if (betSizeInTextField<self.gameState.minBet){return self.gameState.minBet}
+
+    var isNumber =  !isNaN(betSizeInTextField) && _.isNumber(betSizeInTextField) 
+    var roundedBetSize
+    //if not a number use last known number and round
+    if(isNumber == false ){
+ return false    }
+    else{
+      roundedBetSize = Math.floor(betSizeInTextField/self.gameState.minIncrement)*self.gameState.minIncrement    }
+
+        return roundedBetSize
+
+
+}
 
     //does not update a player's stack size
     this.playerPutsChipsInPot =function(seatNumber,betSize, stackSize){
@@ -2615,7 +2670,7 @@ callback(null, callBackNumber)
         else if(newX<minX){newX = minX}
 
             self.images.betSlider.vertical.image.x = newX
-console.log(newX)
+
     if(self.stage.contains(self.images.bet.text)){
         self.images.bet.text.text = 'Bet '+betSize
         self.images.bet.messages = ['act','bet',betSize]}
@@ -3128,7 +3183,7 @@ self.displayCorrectSeatMessage(seatNumber)
 
     this.playerToAct =function(seatNumber){
          self.gameState.seats[seatNumber].toAct = true
-console.log('setting to act as true')
+
         //function that will convert hex to RGB
     var hexToRGB =     function(hex) {
     // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
@@ -3326,10 +3381,9 @@ var interval = 1000
           parentOfImageObject.bitmapAnimation.gotoAndStop(0)
       }
     else if( parentOfImageObject.image){  
-    if(parentOfImageObject.onClick == null){
-    parentOfImageObject.image.onClick = self.events.onButtonClick
-      parentOfImageObject.image.onPress = self.events.buttonMouseDown
-      }
+    if(parentOfImageObject.image.onClick == null){parentOfImageObject.image.onClick = self.events.onButtonClick }
+     if(parentOfImageObject.image.onPress == null){ parentOfImageObject.image.onPress = self.events.buttonMouseDown}
+     
      this.displayChildren(parentOfImageObject)
      }
  
