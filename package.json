@@ -24,7 +24,7 @@
     "start": "app.js"
   },
   "engines": {
-    "node": "0.8.x"
+    "node": "0.8.16"
   },
   "devDependencies": {
     "chai": "~1.4.2",

@@ -483,6 +483,24 @@ module.exports = (function () {
     }
   });
 
+  app.get('/flags/:table_id', auth.ensureAuthenticated, function(req, res) {
+    var table = Table.getTable(req.params.table_id)
+      , player;
+    if (! (table instanceof Table)) {
+      res.json({ error: 'No table with ID ' + table_id });
+      return;
+    }
+
+    username = req.user.username;
+    player = table.getPlayer(username);
+    if (player) {
+      res.json(player.flags);
+    }
+    else {
+      res.json({ error: 'Cant get preferences when not at table!' });
+    }
+  });
+
   //Handle all other cases with a 404
   //Note: ONLY do this if app.use(app.router) comes after
   //      app.use(express.static) in this app's configuration;

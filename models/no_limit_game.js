@@ -29,7 +29,7 @@ module.exports = (function () {
 
   // CONSTANT FOR ALL GAMES
     // how many ms to wait between polling to see how many players are ready
-  , WAIT_POLL_INTERVAL: { type: Number, default: 1000 }
+  , WAIT_POLL_INTERVAL: { type: Number, default: 5000 }
     // how long (in ms) between last betting action and street_ends message
   , STREET_END_DELAY: { type: Number, default: 1000 }
     // how long (in ms) between street_ends and community_dealt messages

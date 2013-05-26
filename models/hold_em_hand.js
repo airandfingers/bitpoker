@@ -66,8 +66,8 @@ module.exports = (function () {
   , to_act           : { type: Number, default: 0 }
     // the highest bet so far in this betting round
   , high_bet         : Number
-    // the number of chips in each pot { [usernames of active Players in pot] : pot value }
-  , pots             : { type: Schema.Types.Mixed, default: function() { return {}; } }
+    // the number of chips in each pot [{ usernames: [active Players], value: pot value }]
+  , pots             : { type: Schema.Types.Mixed, default: function() { return []; } }
     // any bets forfeited by folding players
   , forfeited_bets   : { type: [Schema.Types.Mixed], default: function() { return []; } }
     // the deck this hand uses (created in initialize)
@@ -136,6 +136,7 @@ module.exports = (function () {
     var self = this
       , game = self.game
       , wait_interval = setInterval(function() {
+      //console.log('Checking if # ready players > ', game.MIN_PLAYERS);
       var num_ready = 0;
       _.each(self.seats, function(player, seat_num) {
         //console.log('waiting:', seat_num, player, player.sitting_out);
@@ -171,13 +172,9 @@ module.exports = (function () {
       , game = self.game
       , SMALL_BLIND_PAID = false
       , BIG_BLIND_PAID = false
-      , usernames
       , player;
 
     self.calculatePlayers();
-    usernames = _.pluck(self.players, 'username');
-    usernames.sort();
-    self.pots[usernames] = 0;
 
     while (SMALL_BLIND_PAID === false && 
            self.players.length >= game.MIN_PLAYERS) {
@@ -191,7 +188,7 @@ module.exports = (function () {
       else {
         console.log('player will post blind:', player, game.SMALL_BLIND);
         player.makeBet(game.SMALL_BLIND);
-        self.broadcast('player_acts', player.serialize(), 'post_blind', self.getPots());
+        self.broadcast('player_acts', player.serialize(), 'post_blind', self.calculatePotTotal());
         self.small_blind_seat = player.seat;
         SMALL_BLIND_PAID = true;
       }
@@ -211,7 +208,7 @@ module.exports = (function () {
       else {
         console.log('player will post blind:', player, game.BIG_BLIND);
         player.makeBet(game.BIG_BLIND);
-        self.broadcast('player_acts', player.serialize(), 'post_blind', self.getPots());
+        self.broadcast('player_acts', player.serialize(), 'post_blind', self.calculatePotTotal());
         BIG_BLIND_PAID = true;
       }
       self.nextPlayer();
@@ -297,7 +294,7 @@ module.exports = (function () {
           refund = player.current_bet - high_stack;
           player.getBet(refund);
           // notify everyone that this player received a refund
-          self.broadcast('player_gets_refund', player.serialize(), refund);
+          self.broadcast('player_gets_refund', player.serialize(), refund, self.calculatePotTotal());
         }
         else {
           refund = 0;
@@ -403,7 +400,8 @@ module.exports = (function () {
           console.log('Iterating over bets_obj, which is', bets_obj);
           var min_bet = _.min(bets_obj)
             , usernames = []
-            , pot;
+            , pot_obj
+            , pot_value;
           _.each(bets_obj, function(bet_amount, username) {
             usernames.push(username);
             if (bet_amount === min_bet) {
@@ -413,35 +411,31 @@ module.exports = (function () {
               bets_obj[username] = bet_amount - min_bet;
             }
           });
-          usernames.sort();
-          pot = self.pots[usernames] || 0;
-          console.log('usernames is', usernames, ', pots[usernames] is', pot);
-          pot += usernames.length * min_bet;
-          console.log('About to iterate over forfeited_bets, which is', self.forfeited_bets);
-          _.each(self.forfeited_bets, function(forfeited_bet, i) {
-            if (forfeited_bet === 0) {
-              // skip
-              return;
-            }
-            if (forfeited_bet >= min_bet) {
-              pot += min_bet;
-              forfeited_bet -+ min_bet;
-            }
-            else {
-              pot += forfeited_bet;
-              forfeited_bet = 0;
-            }
-            self.forfeited_bets[i] = forfeited_bet;
-            // remove zero-value bets so they are skipped by future iterations
-            self.forfeited_bets = _.without(self.forfeited_bets, 0);
+          console.log('Iterating over self.pots, which is', self.pots);
+          pot_obj = _.find(self.pots, function(_pot_obj) {
+            return _pot_obj.usernames.length === usernames.length &&
+                   _.every(_pot_obj.usernames, function(_username) {
+              return usernames.indexOf(_username) !== -1;
+            });
           });
+          if (_.isEmpty(pot_obj)) {
+            pot_obj = { usernames: usernames, value: 0 };
+            self.pots.push(pot_obj);
+          }
+          pot_value = pot_obj.value;
+          console.log('usernames is', usernames, ', pot_obj is', pot_obj, ', pot_value is', pot_value);
+          pot_value += usernames.length * min_bet;
+          console.log('pot_value is', pot_value);
+          console.log('About to iterate over forfeited_bets, which is', self.forfeited_bets);
+          pot_value += self.collectForfeitedBets(min_bet);
+          console.log('pot_value is', pot_value);
           // save the new pot value
-          self.pots[usernames] = pot;
+          pot_obj.value = pot_value;
         }
         if (self.players.length >= game.MIN_PLAYERS) {
           console.log('Betting round completed!', self.pots, self.players);
           setTimeout(function() {
-            self.broadcast('street_ends', self.getPots());
+            self.broadcast('street_ends', self.getPotValues());
             self.nextStage();
           }, game.STREET_END_DELAY);
         }
@@ -505,7 +499,7 @@ module.exports = (function () {
         // nothing here - call playerOut after emitting player_acts, for message order
         break;
       }
-      self.broadcast('player_acts', player.serialize(), action, self.getPots());
+      self.broadcast('player_acts', player.serialize(), action, self.calculatePotTotal());
       if (action === 'fold') {
         self.playerOut(self.to_act);
       }
@@ -578,11 +572,17 @@ module.exports = (function () {
       //, chips_won = game.roundNumChips(Math.floor(self.pot / winner_results.length))
       , player_objs = _.map(self.players, function(player) {
           return player.serialize(['hand']);
-    }), player_list
+    }), num_pots = self.pots.length
       , pot_winners
       , chips_won;
     console.log('paying out, results:', sorted_results, ', player_objs:', player_objs);
     self.broadcast('hands_shown', player_objs);
+    // initialize players' chips_won Arrays
+    _.each(self.players, function(player) {
+      var arr = [];
+      _.times(num_pots, function() { arr.push(0); });
+      player.chips_won = arr;
+    });
     // iterate over all active players, in order of best hands to worst
     _.each(sorted_results, function(result_obj) {
       // result_obj is { username: res } (see showing_down handler)
@@ -590,22 +590,22 @@ module.exports = (function () {
       console.log('result_obj is', result_obj, ', result_usernames is', result_usernames);
       // iterate over all pots
       console.log('paying_out: pots is now', self.pots);
-      _.each(self.pots, function(pot_value, pot_usernames) {
+      _.each(self.pots, function(pot_obj, pot_num) {
         // intersect winners' usernames with this pot's usernames
-        pot_usernames = pot_usernames.split(',');
-        pot_winners = _.intersection(result_usernames, pot_usernames);
+        pot_winners = _.intersection(result_usernames, pot_obj.usernames);
         num_winners = pot_winners.length;
-        console.log('pot_winners is', pot_winners, 'pot_value is', pot_value);
+        console.log('pot_winners is', pot_winners, 'pot_obj.value is', pot_obj.value);
         if (num_winners > 0) {
-          chips_won = game.roundNumChips(pot_value / num_winners);
+          chips_won = game.roundNumChips(pot_obj.value / num_winners);
           _.each(pot_winners, function(username) {
             //console.log('username is', username, 'player is', result_obj[username].player, 'chips_won is', chips_won);
-            result_obj[username].player.win(chips_won);
+            result_obj[username].player.win(chips_won, pot_num);
           });
-          delete self.pots[pot_usernames];
+          // remove this pot from self.pots (so future result_obj iterations don't check emptied pots)
+          self.pots = _.without(self.pots, pot_obj);
         }
         else {
-          // no winners in this result_usernames/pot_usernames intersection
+          // no winners in this result_usernames/pot_obj.usernames intersection
         }
       });
     });
@@ -719,12 +719,46 @@ module.exports = (function () {
     //console.log('calculated players:', self.players, 'small_blind_seat:', self.small_blind_seat);
   };
 
-  // calculate how much is in the pot, including current bets
-  HoldEmHandSchema.methods.getPots = function() {
-    console.log('pots:', this.pots);
-    var sorted_pots = _.sortBy(this.pots, function(pot_value, usernames) { return (- usernames.length); });
-    console.log('sorted pots:', sorted_pots);
-    return sorted_pots;
+  // calculate how much is in all pots, including current bets
+  HoldEmHandSchema.methods.calculatePotTotal = function() {
+    var pot_total = _.reduce(this.pots, function(memo, pot_obj) {
+      return memo + pot_obj.value;
+    }, 0);
+    //console.log('pot total:', pot_total);
+    _.each(this.players, function(player) {
+      pot_total += player.current_bet;
+    });
+    //console.log('pot total including bets:', pot_total);
+    return pot_total;
+  };
+
+  // sort pots by number of users in each
+  HoldEmHandSchema.methods.getPotValues = function() {
+    var pot_values = _.pluck(this.pots, 'value');
+    return pot_values;
+  };
+
+  HoldEmHandSchema.methods.collectForfeitedBets = function(min_bet) {
+    var collected = 0
+      , self = this;
+    _.each(self.forfeited_bets, function(forfeited_bet, i) {
+      if (forfeited_bet === 0) {
+        // skip this bet
+        return;
+      }
+      if (forfeited_bet >= min_bet) {
+        collected += min_bet;
+        forfeited_bet -+ min_bet;
+      }
+      else {
+        collected += forfeited_bet;
+        forfeited_bet = 0;
+      }
+      self.forfeited_bets[i] = forfeited_bet;
+      // remove zero-value bets so they are skipped by future iterations (removed - unnecessary)
+      //self.forfeited_bets = _.without(self.forfeited_bets, 0);
+    });
+    return collected;
   };
 
   // calculate what's the highest amount any player (other than the given one) can bet,
@@ -772,17 +806,11 @@ module.exports = (function () {
       self.to_act--;
     }
     // remove user's name from any and all pots
-    console.log('playerOut: pots is now', self.pots);
-    _.each(self.pots, function(pot_value, usernames) {
-      usernames = usernames.split(',');
-      if (_.contains(usernames, username)) {
-        // usernames are keys, so we need to delete and re-add
-        delete self.pots[usernames];
-        usernames = _.without(usernames, username);
-        self.pots[usernames] = pot_value;
-      }
+    console.log('playerOut: pots before:', self.pots);
+    _.each(self.pots, function(pot_obj) {
+      pot_obj.usernames = _.without(pot_obj.usernames, username);
     })
-    console.log('playerOut: pots is now', self.pots);
+    console.log('playerOut: pots after:', self.pots);
     //console.log('playerOut:', index, self.players[self.to_act]);
   };
 

@@ -33,8 +33,8 @@ module.exports = (function () {
     , seat: Number
       // which stages this player has acted in, in the current hand
     , has_acted: { type: Schema.Types.Mixed, default: function() { return {}; } }
-      // the number of chips thie player won this hand, if any
-    , chips_won: { type: Number, default: 0 }
+      // the numbers of chips thie player won this hand, from each pot (initialized before win is called)
+    , chips_won: { type: [Number] }
       // a reference to the game class which describes the game this player is playing
     , game: Schema.Types.Mixed
       // a reference to the table on which this player is playing
@@ -111,9 +111,9 @@ module.exports = (function () {
     this.current_bet -= amount;
   };
 
-  PlayerSchema.methods.win = function(amount) {
+  PlayerSchema.methods.win = function(amount, pot_num) {
     this.chips += amount;
-    this.chips_won += amount;
+    this.chips_won[pot_num] = amount;
   };
 
   PlayerSchema.methods.receiveHand = function(first_card, second_card) {
@@ -211,7 +211,7 @@ module.exports = (function () {
     self.pending_actions = {};
     self.hand = [];
     self.has_acted = {};
-    self.chips_won = 0;
+    self.chips_won = [];
     self.in_hand = false;
     if (self.idle) {
       self.sitOut();
