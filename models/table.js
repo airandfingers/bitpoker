@@ -158,21 +158,24 @@ module.exports = (function () {
 
   TableSchema.methods.newHand = function() {
     var self = this
-      , hand_num = this.hands.length + 1
+      , hand_num = self.hands.length + 1
       , hand = HoldEmHand.createHoldEmHand({
-          game: self.game
-        , seats: this.seats
+          hand_id: self.name + '.' + hand_num
+        , game: self.game
+        , seats: self.seats
         , broadcast: function() { self.room.broadcast.apply(self.room, arguments); }
-        , dealer: this.dealer
-        , hand_id: self.name + '.' + hand_num
+        , dealer: self.dealer
+        , initial_pot: self.initial_pot || 0
+        
     });
-    console.log('Pushing new hand onto hands, with hand_id: ', this.hands.length);
-    this.hands.push(hand);
+    console.log('Pushing new hand onto hands, with hand_id: ', self.hands.length);
+    self.hands.push(hand);
     
     hand.onStage('done', function() {
       self.room.broadcast('reset_table');
       console.log('Hand is over! Creating a new hand in 1 second...');
       self.dealer = hand.dealer + 1;
+      self.initial_pot = hand.pot_remainder;
       setTimeout(function() {
         self.newHand();
       }, 1000);

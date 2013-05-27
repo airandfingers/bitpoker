@@ -75,7 +75,11 @@ module.exports = (function () {
     // the cards that are visible to everyone
   , community        : { type: [String], default: function() { return []; } }
     // unique identifier for this HoldEmHand
-  , hand_id         : String
+  , hand_id          : String
+    // the number of chips to start with (carried over from previous hands)
+  , initial_pot      : Number
+  // the number of chips to carry over to next hand
+  , pot_remainder    : { type: Number, default: 0 }
   });
 
   // static methods - Model.method()
@@ -175,6 +179,8 @@ module.exports = (function () {
       , player;
 
     self.calculatePlayers();
+    usernames = _.pluck(self.players, 'username');
+    self.pots.push({ usernames: usernames, value: self.initial_pot });
 
     while (SMALL_BLIND_PAID === false && 
            self.players.length >= game.MIN_PLAYERS) {
@@ -186,7 +192,7 @@ module.exports = (function () {
         player.sitOut();
       }
       else {
-        console.log('player will post blind:', player, game.SMALL_BLIND);
+        //console.log('player will post small blind:', player, game.SMALL_BLIND);
         player.makeBet(game.SMALL_BLIND);
         self.broadcast('player_acts', player.serialize(), 'post_blind', self.calculatePotTotal());
         self.small_blind_seat = player.seat;
@@ -206,7 +212,7 @@ module.exports = (function () {
         player.sitOut();
       }
       else {
-        console.log('player will post blind:', player, game.BIG_BLIND);
+        //console.log('player will post big blind:', player, game.BIG_BLIND);
         player.makeBet(game.BIG_BLIND);
         self.broadcast('player_acts', player.serialize(), 'post_blind', self.calculatePotTotal());
         BIG_BLIND_PAID = true;
@@ -569,11 +575,12 @@ module.exports = (function () {
   static_properties.stage_handlers.paying_out = function(sorted_results) {
     var self = this
       , game = self.game
-      //, chips_won = game.roundNumChips(Math.floor(self.pot / winner_results.length))
       , player_objs = _.map(self.players, function(player) {
           return player.serialize(['hand']);
     }), num_pots = self.pots.length
       , pot_winners
+      , pot_value
+      , pot_remainder
       , chips_won;
     console.log('paying out, results:', sorted_results, ', player_objs:', player_objs);
     self.broadcast('hands_shown', player_objs);
@@ -596,7 +603,13 @@ module.exports = (function () {
         num_winners = pot_winners.length;
         console.log('pot_winners is', pot_winners, 'pot_obj.value is', pot_obj.value);
         if (num_winners > 0) {
-          chips_won = game.roundNumChips(pot_obj.value / num_winners);
+          pot_value = pot_obj.value
+          pot_remainder = pot_value % num_winners;
+          if (pot_remainder > 0) {
+            self.pot_remainder += pot_remainder;
+            pot_value -= pot_remainder;
+          }
+          chips_won = game.roundNumChips(pot_value / num_winners);
           _.each(pot_winners, function(username) {
             //console.log('username is', username, 'player is', result_obj[username].player, 'chips_won is', chips_won);
             result_obj[username].player.win(chips_won, pot_num);

@@ -31,6 +31,7 @@ var express = require('express')
   , secret: 'All1N0rGoH0M3'
   , sid_name: 'express.sid'
   };
+console.log('starting up.. version is', process.versions.node);
 
 module.exports = {
   app: app
