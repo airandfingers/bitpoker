@@ -628,7 +628,7 @@ module.exports = (function () {
     self.broadcast('winners', player_objs);
     setTimeout(function() {
       self.nextStage();
-    }, game.DISPLAY_HANDS_DURATION);
+    }, game.DISPLAY_HANDS_DURATION * num_pots);
   };
 
   static_properties.stage_handlers.done = function() {
