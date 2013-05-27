@@ -944,7 +944,7 @@ this.images.setDefaults = function(){
             var verticalBetSliderHeight = 13            
             var horizontalBetSliderWidth = 200
             var horizontalBetSliderHeight = 7
-      //      var horizontalBetSliderX = 215
+      //      var horizontalBetSliderX = 215  X value is currently equal to the X value of the FOLD button
             var horizontalBetSliderOffsetBottom =  19
             var distanceBetweenBetSizeAndHorizontalSlider = 15
             var betSizeWidth = 80
@@ -1011,23 +1011,18 @@ this.images.setDefaults = function(){
             this.pots[0].potSize = new this.Item(this.pots[0].firstChip.position.x, this.pots[0].firstChip.position.y+potHeight,potWidth,potHeight,self.gameState.containerImageIndexes.chips)
              this.addItemText(this.pots[0].potSize, '',potSizeAndFont, potTextColor)
                        
-                         var distanceBetweenPots = (this.pots[0].secondColumnChip.position.x-this.pots[0].firstChip.position.x)*(self.imageData.maxChipColumns)
+              var distanceBetweenPots = (this.pots[0].secondColumnChip.position.x-this.pots[0].firstChip.position.x)*(self.imageData.maxChipColumns)
            var distanceBetweenChipsInColumn =  this.pots[0].firstChip.position.y - this.pots[0].secondChip.position.y
            var chipColumnHeight = chipDiameter +(self.imageData.maxChipsPerColumn-1)*distanceBetweenChipsInColumn
 
+
                         this.totalPotSize  = new this.Item(this.pots[0].firstChip.position.x, this.pots[0].firstChip.position.y+chipDiameter-chipColumnHeight-potHeight,potWidth,potHeight,self.gameState.containerImageIndexes.chips)
              this.addItemText( this.totalPotSize, '',potSizeAndFont, potTextColor)
-
-             console.log('chipColumnHeight is '+chipColumnHeight)
-             console.log('total pot size Y is '+this.totalPotSize.position.y)
-             console.log('first chip position Y is '+this.pots[0].firstChip.position.y)
-             console.log('bottom of first Chip Y is  '+(this.pots[0].firstChip.position.y + chipDiameter))
             
 
-              for(var i=1;i<9;i++){
+              for(var i=1;i<this.seats.length-1;i++){
 
-
-             this.pots[i].firstChip = new this.Item( this.pots[0].firstChip+i*distanceBetweenPots, this.pots[0].firstChip.position.y ,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
+             this.pots[i].firstChip = new this.Item( this.pots[0].firstChip.position.x+i*distanceBetweenPots, this.pots[0].firstChip.position.y ,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
               this.pots[i].secondChip = new this.Item(this.pots[0].secondChip.position.x+i*distanceBetweenPots,this.pots[0].secondChip.position.y,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
               this.pots[i].secondColumnChip = new this.Item(this.pots[0].secondColumnChip.position.x+i*distanceBetweenPots,this.pots[0].secondColumnChip.position.y,chipDiameter,chipDiameter,self.gameState.containerImageIndexes.chips)
 
@@ -2197,7 +2192,7 @@ this.hideChildren(this.images.seats[seatNumber].shownCard0)
             this.displayChildren(this.images.totalPotSize)
             }
         else{
-this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
+this.images.pots[potNumber].potSize.text.text = potSize
    this.displayChildren(this.images.pots[potNumber].potSize)
    }
     }
@@ -2226,7 +2221,7 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
     }
 
    //this.images.seats[i] is parent for players bets, this.images.pots[i] is parent for pots
-    this.displayChipStack = function(chipAmount,parentOfChipArray, initialX, initialY, distanceBetweenColumns){
+    this.displayChipStack = function(chipAmount,parentOfChipArray, initialX, initialY, distanceBetweenColumns, options){
         //remove previous chips
         this.hideChildren(parentOfChipArray.chips)
         //reset chip array from memory
@@ -2244,53 +2239,53 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
 
         while(chipAmount>=1){
             if(chipAmount>=10000){
-            this.displayChip('10k',x,y, parentOfChipArray)
+            this.displayChip('10k',x,y, parentOfChipArray, options)
             y =y+chipIncrementY
             chipAmount = chipAmount -10000
         }
            else if(chipAmount>=5000){
-            this.displayChip('5k',x,y, parentOfChipArray)
+            this.displayChip('5k',x,y, parentOfChipArray, options)
             y =y+chipIncrementY
             chipAmount = chipAmount -5000
         }
         else     if(chipAmount>=1000){
             
-            this.displayChip('1k',x,y, parentOfChipArray)
+            this.displayChip('1k',x,y, parentOfChipArray, options)
             y =y+chipIncrementY
             chipAmount = chipAmount -1000
         }
               else    if(chipAmount>=500){
             
-            this.displayChip(500,x,y, parentOfChipArray)
+            this.displayChip(500,x,y, parentOfChipArray, options)
             y =y+chipIncrementY
             chipAmount = chipAmount -500
         }
            else    if(chipAmount>=100){
             
-            this.displayChip(100,x,y, parentOfChipArray)
+            this.displayChip(100,x,y, parentOfChipArray, options)
             y =y+chipIncrementY
             chipAmount = chipAmount -100
         }
         else if(chipAmount>=50){
             
-            this.displayChip(50,x,y, parentOfChipArray)
+            this.displayChip(50,x,y, parentOfChipArray, options)
             y =y+chipIncrementY
             chipAmount = chipAmount -50
         }
       else  if(chipAmount>=25){
             
-             this.displayChip(25,x,y, parentOfChipArray)
+             this.displayChip(25,x,y, parentOfChipArray, options)
             y =y+chipIncrementY
             chipAmount = chipAmount -25
 
         }
       else   if(chipAmount >=5){
-             this.displayChip(5,x,y, parentOfChipArray)
+             this.displayChip(5,x,y, parentOfChipArray, options)
             y =y+chipIncrementY
             chipAmount = chipAmount -5
         }
       else   if(chipAmount >=1){
-             this.displayChip(10,x,y, parentOfChipArray)
+             this.displayChip(10,x,y, parentOfChipArray, options)
             y =y+chipIncrementY
             chipAmount = chipAmount -1
         }
@@ -2314,7 +2309,7 @@ this.images.pots[potNumber].potSize.text.text = 'pot: '+potSize
 
 
     //this.images.seats[i] is parent for players bets, this.images.pots[i] is parent for pots
-    this.displayChip = function(chipValue, x, y, parentOfChipArray){
+    this.displayChip = function(chipValue, x, y, parentOfChipArray, options){
 
        var diameter = this.images.pots[0].firstChip.size.x
        
@@ -2368,7 +2363,8 @@ for(var i   = 0; i<parentOfChipArray.chips.length-1;i++){
     parentOfChipArray.chips[i].text = null
     }
 }
- this.displayChildren(parentOfChipArray.chips[parentOfChipArray.chips.length-1])
+ if(options && options.hidden == true){}
+  else{this.displayChildren(parentOfChipArray.chips[parentOfChipArray.chips.length-1])}
  }
 
 
@@ -2568,7 +2564,7 @@ else if(communityArray.length == 3){
      var initialX = this.images.startingCard.position.x
      var initialY = this.images.startingCard.position.y
      var animationTime = 100
-            var fractionDistancePerTick = .02
+            var fractionDistancePerTick = .5
             var lastTick = 1/fractionDistancePerTick -1 
 
             var   interval = fractionDistancePerTick*animationTime
@@ -2614,7 +2610,7 @@ _.each(_.range(playerArray.length * 2), function(cardsDealt) {
  callBackNumber ++
         asyncArray.push( function(callback){
 
-                       if(playerArray[playerArrayNumber] == self.gameState.userSeatNumber){  
+                       if(_.isNumber(self.gameState.userSeatNumber) && playerArray[playerArrayNumber] == self.gameState.userSeatNumber){  
                        
                        if(cardsDealt==playerArrayNumber){
                        self.displayShownCard(holeCardArray[0], self.images.seats[playerArray[playerArrayNumber]].shownCard0)  }
@@ -2840,17 +2836,24 @@ $('#betSize').css('display','none')
  }
 
 
- this.winners = function (pots, players){
+ this.winners = function (players) {
+//create pots array
+var potArrayLength = 0
+for(var i = 0;i<players.length;i++){
+if(players[i].chips_won.length>potArrayLength){potArrayLength = players[i].chips_won.length}
+}
+var pots = []
+for(var i =0;i<potArrayLength;i++){
+  pots.push('placeholder')
+}
+
      // player is array, so players[i].chips_won = array[amountWon, amountWon]
-      var animationTime = 800
-      var timeBetweenAnimations = 400
+      var chipAnimationTime = 1000
+      var timeBetweenAnimations = 3000
       var timeAtEnd = 700
         var ticks = 60
         var chipStacks = []
-        for(var i = 0;i<players.length;i++)
-        {
-            chipStacks.push([])
-        }
+        for(var i = 0;i<players.length;i++){chipStacks.push([])}
         var callbackNumber = 0
         //push animateImages into an array
        // we want to end up with an array of these for each pot: [seatNumber, amount]
@@ -2859,9 +2862,10 @@ $('#betSize').css('display','none')
     var potIntoChipAnimationArray = []
     var callbacks = []
     var finalArray = []
+    //create empty array for chips in front of each player
    var chipsInFrontOfPlayer =[]
-    for(var i =0;i<self.images.seats.length;i++){
-    chipsInFrontOfPlayer.push(0)}
+    for(var i =0;i<self.images.seats.length;i++){chipsInFrontOfPlayer.push(0)}
+
        for(var i=0;i<pots.length;i++){
            //increase the length of data array to match number of pots
           potWinners.push([])
@@ -2869,36 +2873,52 @@ $('#betSize').css('display','none')
            potIntoChipAnimationArray.push([])
            for(var n=0;n<players.length;n++){
               var winnings =  players[n].chips_won[i]
-              if(amountWon>0){potWinners[i].push({seat:players[n].seat, amountWon: winnings, id:temporaryStacks.length })}
-               temporaryStacks.push([])
+              if(winnings>0){
+                potWinners[i].push({seat:players[n].seat, amountWon: winnings, id:temporaryStacks.length })
+                temporaryStacks.push([])
+              }
+               
            }
        }
-
+   
        //now we create arrays of functions for animations FROM pot TO player
-        _.each(_.range(potWinners), function(potNumber) {
+        _.each(_.range(potWinners.length), function(potNumber) {
             var callID = 0
             //skip pot if empty
             if(!_.isEmpty(potWinners[potNumber])){
-                callbacks.push({callback:{}})
+             //   callbacks.push({callback:{}})
                 //iterate through all the data of winners in  potWinners[potNumber]
-                _.each(potWinners[potNumber], function(i) {
+    
+                _.each(_.range(potWinners[potNumber].length), function(i) {
                     //calculate distance each trip will travel based on bottom chip
+                    console.log(potWinners[potNumber])
                 var animationDistanceX = self.images.seats[potWinners[potNumber][i].seat].firstChip.position.x - self.images.pots[potNumber].firstChip.position.x 
                 var animationDistanceY = self.images.seats[potWinners[potNumber][i].seat].firstChip.position.y - self.images.pots[potNumber].firstChip.position.y 
                 //calculate distance between first and second chip column
                 var columnDistance = self.images.seats[potWinners[potNumber][i].seat].secondColumnChip.position.x - self.images.seats[potWinners[potNumber][i].seat].firstChip.position.x 
 
-                //display chips in pot
-                self.displayChipStack(potWinners[potNumber][i.amountWon], temporaryStacks[potWinners[potNumber][i].id], self.images.pots[potNumber].firstChip.position.x, self.images.pots[potNumber].firstChip.position.y, columnDistance)
+  //create each separate player's chip winnings in the pot, but do not display yet
+self.displayChipStack(potWinners[potNumber][i].amountWon, temporaryStacks[potWinners[potNumber][i].id], self.images.pots[potNumber].firstChip.position.x, self.images.pots[potNumber].firstChip.position.y, columnDistance, {hidden:true})
+               
+  potIntoChipAnimationArray[potNumber].push(function(callback){
+                self.displayChildren(temporaryStacks[potWinners[potNumber][i].id].chips)
+                console.log('displaying the chips of player '+ potWinners[potNumber][i].seat)
+                callback(null, callID)
+       })
+  callID++
+
                 //iterate through chipstack to push animations of each chip into an array
-                _.each(_.range(temporaryStacks[potWinners[potNumber][i].id].chips), function(n){
+                _.each(_.range(temporaryStacks[potWinners[potNumber][i].id].chips.length), function(n){
 
 potIntoChipAnimationArray[potNumber].push(function(callback){
-      self.animateImage(temporaryStacks[potWinners[potNumber][i].id].chips[n].position.x, temporaryStacks[potWinners[potNumber][i].id].chips[n].position.y, temporaryStacks[potWinners[potNumber][i].id].chips[n].position.x +animationDistanceX, temporaryStacks[potWinners[potNumber][i].id].chips[n].position.y+ animationDistanceY, function(){callback(null, callID)})
-     
+   //animate chipstacks to the players      
+
+      self.animateImage(temporaryStacks[potWinners[potNumber][i].id].chips[n].position.x, temporaryStacks[potWinners[potNumber][i].id].chips[n].position.y, chipAnimationTime,40, temporaryStacks[potWinners[potNumber][i].id].chips[n], temporaryStacks[potWinners[potNumber][i].id].chips[n].position.x +animationDistanceX, temporaryStacks[potWinners[potNumber][i].id].chips[n].position.y+ animationDistanceY, function(){callback(null, callID)})
+    
                 }) 
 
                 callID++
+
                 
                 })
 
@@ -2908,44 +2928,55 @@ potIntoChipAnimationArray[potNumber].push(function(callback){
     })
 
     var errorNumber = 0
-    _.each(_.range(potIntoChipAnimationArray), function(potNumber){
-        if(!_isEmpty(potNumber)){
+    _.each(_.range(potIntoChipAnimationArray.length), function(potNumber){
+        if(!_.isEmpty(potIntoChipAnimationArray[potNumber])){
 
-        finalArray.push(
-
-           function(next){
+        finalArray.push(function(next){
                //remove chip images from pot
                self.hideChildren(self.images.pots[potNumber].chips)
                self.hideChildren(self.images.pots[potNumber].potSize)
-    async.parallel(chipIntoPotAnimationArray[potNumber], function(err, results){next(null, errorNumber)})
+    async.parallel(potIntoChipAnimationArray[potNumber], function(err, results){next(null, errorNumber)})
+
 })
+
 errorNumber++
+
  finalArray.push(function(next){
 
-     _.each(potWinners[potNumber], function(i) {
+     _.each(_.range(potWinners[potNumber].length), function(i) {
          //define seatNumber
+
          var seatNumber = potWinners[potNumber][i].seat
          //update how many chips a player has
          chipsInFrontOfPlayer[seatNumber] = potWinners[potNumber][i].amountWon + chipsInFrontOfPlayer[seatNumber]
-    self.displayChipStack(chipsInFrontOfPlayer[seatNumber], self.images.seats[seatNumber], self.images.seats[seatNumber].chips.firstChip.position.x, self.images.seats[seatNumber].chips.firstChip.position.y)
+    self.displayChipStack(chipsInFrontOfPlayer[seatNumber], self.images.seats[seatNumber], self.images.seats[seatNumber].firstChip.position.x, self.images.seats[seatNumber].firstChip.position.y)
    
     self.images.seats[seatNumber].betSize =  chipsInFrontOfPlayer[seatNumber]
     //remove temporary animated chipstack
     self.hideChildren(temporaryStacks[potWinners[potNumber][i].id].chips)
 
+  
+
+})
+
+console.log('start waiting after pot number '+potNumber)
 var wait = setTimeout(function(){
     
     next(null, errorNumber)
 
-}, timeBetweenAnimations)
+}, timeBetweenAnimations) //end timeout function
+console.log('done waiting')
 
 })
- })
+
     errorNumber++
 
- }})
+ }// end check if pot is empty
+})
 
- async.series([finalArray])
+//console.log(finalArray)
+ async.series(finalArray)
+ 
  }
 
     this.displayopenSeats = function(openSeats){
@@ -3744,8 +3775,8 @@ this.restoreActiveContainers=function(activeContainerArray){
 }
     
 this.streetEnds = function(potSizes){
-      var animationTime = 300
-        var ticks = 40
+      var animationTime = 5
+        var ticks = 5
         var chipIntoPotAnimationArray = []
         var callBackNumber = 0
         //push animateImages into an array
@@ -3766,20 +3797,24 @@ chipIntoPotAnimationArray.push(function(callback){
                 })
                 }
                 })
-        
-                //update pot sizes
-                for(var i =0;i<potSizes.length;i++){
-                    
-                    self.updatePotSize(potSizes[i],i)
+ 
 
-                }
 async.series([
 function(next){
     async.parallel(chipIntoPotAnimationArray, function(err, results){next(null, 1)})
 },
 
 function(next){
-    self.displayChipStack(parseFloat(potSizes[0]), self.images.pots[0], self.images.pots[0].firstChip.position.x, self.images.pots[0].firstChip.position.y)
+  //update pot sizes
+
+                for(var i =0;i<potSizes.length;i++){
+                  if(parseFloat(potSizes[i])>0){
+                    console.log('updating pot '+i + ' with '+parseFloat(potSizes[i])+' number of chips')
+                    console.log(self.images.pots[i].firstChip)
+    self.displayChipStack(parseFloat(potSizes[i]), self.images.pots[i], self.images.pots[i].firstChip.position.x, self.images.pots[i].firstChip.position.y)
+     self.updatePotSize(potSizes[i],i)
+   }
+    }
     self.removeAllBets()
     next(null, 2)
 }
@@ -3974,14 +4009,14 @@ if(self.gameState.seats[i].displayMessageType == 'action'||'seat'||'openSeat'||'
 })
         
  //player is refunded chips
-       socket.on('player_gets_refund', function(player){
+       socket.on('player_gets_refund', function(player, stackSize, totalPotSize){
            var stackSize = player.chips
            var betSize = player.current_bet
            var seatNumber = player.seat
 
           self.playerPutsChipsInPot(seatNumber, betSize, stackSize)
            self.displayChipStack(betSize, self.images.seats[seatNumber], self.images.seats[seatNumber].firstChip.position.x, self.images.seats[seatNumber].firstChip.position.y)
-                
+                self.updatePotSize(totalPotSize)
 
 })
 
@@ -4334,9 +4369,8 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
 
 //round ends, all hole cards are shown
        socket.on('winners', function(players){
-        
 
-         //  self.winners()
+         self.winners(players)
 
 
 
@@ -4347,7 +4381,7 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
         self.playerSits(players[i].seat, players[i].username, players[i].chips)
         self.playerWins(players[i].seat, players[i].chips_won)
         }
-        
+      
 
         
 
