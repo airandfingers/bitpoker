@@ -38,8 +38,8 @@ module.exports = (function () {
   , SKIP_PLAYER_DELAY : { type: Number, default: 1000 }
     // how long (in ms) to wait for players to respond to prompts
   , ACT_TIMEOUT: { type: Number, default: 10000 }
-    // how long (in ms) to wait for players to respond to prompts
-  , DISPLAY_HANDS_DURATION: { type: Number, default: 5000 }
+    // how long (in ms, per pot) to wait after winners message and before reset_table message
+  , DISPLAY_HANDS_DURATION: { type: Number, default: 3000 }
     // how long (in ms) players can sit out before being forced from their seats
   , SIT_OUT_TIME_ALLOWED: { type: Number, default: 30000 } // 30 seconds (for testing)
     // how long (in ms) players are forced to wait before buying with less than they stood up with
