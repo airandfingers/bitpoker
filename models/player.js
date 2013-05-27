@@ -389,6 +389,7 @@ module.exports = (function () {
   PlayerSchema.methods.sitIn = function() {
     console.log('sitIn called!');
     if (this.sitting_out) {
+      clearInterval(this.full_table_check);
       this.sitting_out = false;
       this.setFlag('post_blind', true);
       this.emit('sit_in');
