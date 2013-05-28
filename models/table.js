@@ -224,6 +224,21 @@ module.exports = (function () {
     }
     // set socket.player to player
     socket.player = player;
+    // disconnect player's existing socket, if any
+    if (player.socket) {
+      player.socket.emit(
+        'error'
+      , 'You have connected to the same table multiple times.\n' +
+        'This window will close now.\n' +
+        'You may continue playing on the newest browser connected to this table.'
+      , {
+          title: 'Multiple Connections Detected'
+        , okayText: 'Close Window'
+        }
+      );
+      player.socket.disconnect();
+      delete player.socket;
+    }
     // set player.socket to socket
     player.socket = socket;
     // send current table state
