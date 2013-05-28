@@ -3616,8 +3616,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
   
         //background bitmap and closeX image are in the this.setDefaults() function
         //set proper x, y, width, and height of background and closeX image
-        console.log(messageBoxImageContainerIndex)
-        console.log(self.images.messageBox[messageBoxImageContainerIndex])
+        
         self.images.messageBox[messageBoxImageContainerIndex].window.position.x = messageBoxWindowX
         self.images.messageBox[messageBoxImageContainerIndex].window.position.y = messageBoxWindowY
         self.images.messageBox[messageBoxImageContainerIndex].window.size.x = messageBoxWindowWidth
@@ -3670,10 +3669,12 @@ if(messageInfo.closeWindowMessages){
             if(messageInfo.okayMessages){    
             self.images.messageBox[messageBoxImageContainerIndex].okay.messages = messageInfo.okayMessages}
                 //assign event if assigned
-               
+
        if(messageInfo.okayEvent){
         //check if is a string submitted via server
+
           if(_.isString(messageInfo.okayEvent) ){
+
             self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = eval(messageInfo.okayEvent)
           }
           else{self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = messageInfo.okayEvent}
@@ -4088,10 +4089,11 @@ if(self.gameState.seats[i].displayMessageType == 'action'||'seat'||'openSeat'||'
 
     //error received
        socket.on('error', function(errorString, messageInfo){
+
+
            if(messageInfo){}
             else{
            var messageInfo = {}
-          errorString
            messageInfo.okay = true
             
           }
