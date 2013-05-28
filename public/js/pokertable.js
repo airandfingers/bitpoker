@@ -308,6 +308,78 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
 
     }
 
+this.events.cashierTextFieldFocused = function(event){
+
+//select the text when highlighted
+           $(event.target).one('mouseup', function(e){e.preventDefault()}).select()
+          
+
+}
+
+
+this.events.cashierInputSelected = function(event){
+
+var min
+
+var allRadios = $(event.target.parentElement.parentElement).find("input[type='radio']")
+var parentID = false
+
+if(event.target.parentElement.id == 'otherAmountDiv')
+{
+
+  min = self.gameState.cashier.min
+parentID = event.target.parentElement.id
+
+}
+else if (event.target.parentElement.id == 'autoRebuyDiv')
+{
+
+  min = self.gameState.cashier.table_min
+parentID = event.target.parentElement.id
+}
+
+else if(event.target.parentElement.id == 'maxDiv'){
+  min = self.gameState.cashier.max
+parentID = event.target.parentElement.id
+
+}
+
+if(parentID){
+
+//adjust radio buttons appropriately
+//check if radio button is already checked
+var radioInClickedDiv = $('#'+parentID).find("input[type='radio']")
+
+if(radioInClickedDiv && radioInClickedDiv.prop('checked') == false){
+allRadios.prop('checked', false)
+          radioInClickedDiv.prop('checked', true)
+}//end check if otherAmound radio is checked
+
+//check if amount is acceptable
+textField = $(event.target.parentElement).find("input[type='text']")
+var alreadySelected = false
+          if(typeof parseFloat(textField.val()) == 'number' &&  parseFloat(textField.val()) >= min){}
+          else{    
+            //set textfield value to minimum
+         textField.val(min)
+                   //select text on clicking
+           textField.one('mouseup', function(e){e.preventDefault()}).select()
+           alreadySelected = true
+          }
+          if($(event.target).is("input[type='text']")){}
+            else if (alreadySelected != true){ textField.one('mouseup', function(e){e.preventDefault()}).select()   }
+
+        }//end check if parentID exists/not false
+
+}
+
+this.events.onCashierTextFieldFocus = function(event){
+
+  $(event.target).one('mouseup', function(event){event.preventDefault()}).select()
+
+}
+
+
     this.events.onAddChipsClick = function(event){
         if($('#maxRadio').is(':checked'))
         {
@@ -1041,7 +1113,7 @@ $('#chat').val(defaultMessage)
 $('#chat').css('color', htmlTableChatBoxReminderTextColor)
 
 //remove reminder text when clicked
-$('#chat').focusin(function(){
+$('#chat').focus(function(){
     if($('#chat').val() == defaultMessage){
     $('#chat').val('')
 $('#chat').css('color', self.userPreferences.chatTextColor)}
@@ -1439,7 +1511,7 @@ var betSizeY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.si
 self.updateBetSize('')
 
 //highlight when clicked
-$('#betSize').focusin(function(){
+$('#betSize').focus(function(){
                $("#betSize").one('mouseup', function(event){
         event.preventDefault();
        }).select()
@@ -1726,6 +1798,7 @@ var containersPerMessageBox = self.gameState.containerImageIndexes.containersPer
         // pokerTableWrapper and canvas to absolute (won't wrk in css)
         $("#pokerTableWrapper").css('position', 'absolute')
          $("#pokerTableWrapper").children().css('position', 'absolute')
+$("#cashierDiv").children().css('position', 'absolute')
 
         
 
@@ -1743,7 +1816,7 @@ var containersPerMessageBox = self.gameState.containerImageIndexes.containersPer
       })
 
       //set text size and font
-        $("#cashier").children().css({
+        $("#cashier").children().children().css({
             'position':'absolute',
             'font':sizeAndFont,
         'margin-left':'0px',
@@ -3616,7 +3689,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
   
         //background bitmap and closeX image are in the this.setDefaults() function
         //set proper x, y, width, and height of background and closeX image
-        
+
         self.images.messageBox[messageBoxImageContainerIndex].window.position.x = messageBoxWindowX
         self.images.messageBox[messageBoxImageContainerIndex].window.position.y = messageBoxWindowY
         self.images.messageBox[messageBoxImageContainerIndex].window.size.x = messageBoxWindowWidth
@@ -3660,6 +3733,8 @@ if(messageInfo.closeWindowMessages){
          //message
         self.images.messageBox[messageBoxImageContainerIndex].message = new self.images.Item (textX,innerMessageBoxY+textTopOffset, innerMessageBoxWidth -textLeftOffset*2 ,textHeight,messageBoxImageContainerIndex+1)
         self.images.addItemText(self.images.messageBox[messageBoxImageContainerIndex].message, messageString, messageInfo.messageSizeAndFont, messageInfo.messageColor)
+        self.images.messageBox[messageBoxImageContainerIndex].message.text.lineWidth = self.images.messageBox[messageBoxImageContainerIndex].message.size.x*.9
+ self.images.messageBox[messageBoxImageContainerIndex].message.text.maxWidth = null
 
    //OK button
         self.images.messageBox[messageBoxImageContainerIndex].okay =  new self.images.Item (okayX,buttonY, buttonWidth,buttonHeight,messageBoxImageContainerIndex+1) 
@@ -3774,48 +3849,21 @@ if(messageInfo.closeWindowMessages){
 
 //check radio buttons when textbox is focused
 
-    $("#otherAmount").focus(function() {
-        var min = self.gameState.cashier.min
-                 $('#maxRadio').prop('checked', false)
-          $('#autoRebuyRadio').prop('checked', false)
-          $('#otherAmountRadio').prop('checked', true)
-          //do nothing if amount to add is acceptable
-          if(typeof parseFloat($("#otherAmount").val()) == 'number' &&  parseFloat($("#otherAmount").val()) >=min){}
-          else{
-              
-          $("#otherAmount").val(min)
-
-          //select text on clicking
-           $("#otherAmount").one('mouseup', function(event){
-        event.preventDefault();
-       }).select()
-          }
+    $("#otherAmountDiv").children().mousedown(function(event) {
+      self.events.cashierInputSelected(event)
         })
 
-            $("#autoRebuyAmount").focus(function() {
-                
-        var min = self.gameState.cashier.table_min
-         $('#maxRadio').prop('checked', false)
-          $('#otherAmountRadio').prop('checked', false)
-          $('#autoRebuyRadio').prop('checked', true)
-          //do nothing if autorebuy is acceptable
-           if(typeof parseFloat($("#autoRebuyAmount").val()) == 'number' &&  parseFloat($("#autoRebuyAmount").val()) >=min){}
-          else{
-          $("#autoRebuyAmount").val(min)
-          //select text on clicking
-           $("#autoRebuyAmount").one('mouseup', function(event){
-        event.preventDefault();
-       }).select()
-          }
+            $("#autoRebuyDiv").children().mousedown(function(event) {
+                 self.events.cashierInputSelected(event)
         })
         
-
-          $("#maxAmount").focus(function() {
-        
-         $('#maxRadio').prop('checked', true)
-          $('#otherAmountRadio').prop('checked', false)
-          $('#autoRebuyRadio').prop('checked', false)
+          $("#maxDiv").children().mousedown(function(event) {
+self.events.cashierInputSelected(event)
         })
+
+          $('#cashierDiv').find("input[type = 'text']").focus(function(event){
+            self.events.onCashierTextFieldFocus(event)
+          })
 
 //display textboxes for adding chips
           var htmlcashier = document.getElementById('cashier')
@@ -4432,8 +4480,7 @@ self.images.seats[chatInfo.seat].chat.text.alpha = 1
   
   //player sets a flag
        socket.on('player_sets_flag', function(player){
-        console.log(player)
-        
+    
         }
   )
 
