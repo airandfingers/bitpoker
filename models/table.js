@@ -234,6 +234,7 @@ module.exports = (function () {
       , {
           title: 'Multiple Connections Detected'
         , okayText: 'Close Window'
+        , okayEvent: self.events.exit
         }
       );
       player.socket.disconnect();
