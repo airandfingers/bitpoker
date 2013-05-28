@@ -108,6 +108,7 @@ window.onKeydown = onKeyDown
             messageBoxCloseX:'img/messageBox_closeWindowX.jpg',
             checkBox: 'img/check_box.png',
             checkBoxChecked:'img/check_box_clicked.png',
+
             
 
             chips: {
@@ -139,6 +140,9 @@ window.onKeydown = onKeyDown
             this.images.betSlider ={}
             this.images.cashier  = {}
             this.images.messageBox=[]
+            for(var i = 0;i<this.images.containers.length;i++){
+              this.images.messageBox.push({})
+            }
            
 
             this.images.community = [{}, {}, {}, {}, {}]
@@ -174,8 +178,8 @@ window.onKeydown = onKeyDown
 //-----------START CONSTRUCTORS----------------
 this.images.Item = function (x,y,width,height, zOfImageEvenIfNoImageExists,messages){
      this.position = {}
-this.position.x = x
-this.position.y = y
+this.position.x = Math.floor(x)
+this.position.y = Math.floor(y)
 this.position.z = zOfImageEvenIfNoImageExists
 this.size = {}
 this.size.x = width
@@ -286,7 +290,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.posit
      }
       
   this.events.onButtonClick = function(event){
-        socket.emit.apply(socket, event.target.parentOfImageObject.messages)
+        if(event.target.parentOfImageObject.messages)(socket.emit.apply(socket, event.target.parentOfImageObject.messages))
         if(event.target.parentOfImageObject.otherMessages){socket.emit.apply(socket, event.target.parentOfImageObject.otherMessages)}
     }
   
@@ -1587,6 +1591,20 @@ var fourColorDeckData = {
 }
 
 this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
+//=====================MESSAGE BOX=======================================
+var containersPerMessageBox = self.gameState.containerImageIndexes.containersPerMessageBox
+  for(var messageBoxImageContainerIndex = self.gameState.containerImageIndexes.initialMessageBox; messageBoxImageContainerIndex < this.containers.length-containersPerMessageBox;messageBoxImageContainerIndex=messageBoxImageContainerIndex+containersPerMessageBox){
+       
+
+        //background bitmap 
+        self.images.messageBox[messageBoxImageContainerIndex].window = new self.images.Item(0,0,0,0,messageBoxImageContainerIndex)
+        self.images.itemAsBitmap(self.images.messageBox[messageBoxImageContainerIndex].window, self.images.sources.messageBoxBackground)
+        
+    //add closeX Image
+         self.images.messageBox[messageBoxImageContainerIndex].closeWindow =  new self.images.Item (0, 0,0,0,messageBoxImageContainerIndex) 
+       self.images.itemAsBitmap(self.images.messageBox[messageBoxImageContainerIndex].closeWindow, self.images.sources.messageBoxCloseX)
+       
+}
 
 //======================CASHIER=======================================
 
@@ -3509,7 +3527,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
            }
         }
 
-        self.images.messageBox[messageBoxImageContainerIndex] = {}
+
 
         //check if this is the first(bottom) messagebox displayed
         if(messageBoxImageContainerIndex == this.gameState.containerImageIndexes.initialMessageBox){
@@ -3551,8 +3569,8 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         var asdf = document.getElementById('canvas')
         var stageWidth = asdf.width
         var stageHeight = asdf.height
-        var messageBoxWindowX = stageWidth/2 - messageBoxWindowWidth/2
-        var messageBoxWindowY = stageHeight/2 - messageBoxWindowHeight/2
+        var messageBoxWindowX = Math.floor(stageWidth/2 - messageBoxWindowWidth/2)
+        var messageBoxWindowY = Math.floor(stageHeight/2 - messageBoxWindowHeight/2)
         
 
         var innerMessageBoxX = messageBoxWindowX+outerSideWidth
@@ -3574,7 +3592,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
 
          //-------------------set defaults---------------------------
          //set default font sizes and colors
-       if(_.isNull(messageInfo.title)||_.isUndefined(messageInfo.title)||!(_.isString(messageInfo.title)||!_.isNumber(messageInfo.title))){messageInfo.title = 'Error'}
+       if(_.isNull(messageInfo.title)||_.isUndefined(messageInfo.title)||!(_.isString(messageInfo.title)||!_.isNumber(messageInfo.title))){messageInfo.title = 'Undefined Error'}
        if(_.isNull(messageInfo.titleSizeAndFont)||_.isUndefined(messageInfo.titleSizeAndFont)){messageInfo.titleSizeAndFont = '18px Arial'}
        if(_.isNull(messageInfo.titleColor)||_.isUndefined(messageInfo.titleColor)){ messageInfo.titleColor = '#000000'}
        if(_.isNull(messageInfo.sizeAndFont)||_.isUndefined(messageInfo.sizeAndFont)){messageInfo.messageSizeAndFont = '13px Arial'}
@@ -3582,7 +3600,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
     if(_.isNull(messageInfo.buttonSizeAndFont)||_.isUndefined(messageInfo.buttonSizeAndFont)){messageInfo.buttonSizeAndFont = '13px Arial'}
      if(_.isNull(messageInfo.buttonTextColor)||_.isUndefined(messageInfo.buttonTextColor)){ messageInfo.buttonTextColor = '#000000'}
     if(_.isNull(messageInfo.buttonBackgroundColor)||_.isUndefined(messageInfo.buttonBackgroundColor)){ messageInfo.buttonBackgroundColor = '#0000FF'}
-    if(_.isNull(messageInfo.okayText)||_.isUndefined(messageInfo.Text)){ messageInfo.okayText = 'OK'}
+    if(_.isNull(messageInfo.okayText)||_.isUndefined(messageInfo.okayText)){ messageInfo.okayText = 'OK'}
     if(_.isNull(messageInfo.cancelText)||_.isUndefined(messageInfo.cancelText)){ messageInfo.cancelText = 'Cancel'}
 
 
@@ -3596,10 +3614,45 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
      var cancelX =  stageWidth/2 + distanceBetweenButtons/2 
         }
   
-        //background bitmap
-        self.images.messageBox[messageBoxImageContainerIndex].window = new self.images.Item(messageBoxWindowX,messageBoxWindowY,messageBoxWindowWidth,messageBoxWindowHeight,messageBoxImageContainerIndex)
-        self.images.itemAsBitmap(self.images.messageBox[messageBoxImageContainerIndex].window, self.images.sources.messageBoxBackground)
+        //background bitmap and closeX image are in the this.setDefaults() function
+        //set proper x, y, width, and height of background and closeX image
         
+        self.images.messageBox[messageBoxImageContainerIndex].window.position.x = messageBoxWindowX
+        self.images.messageBox[messageBoxImageContainerIndex].window.position.y = messageBoxWindowY
+        self.images.messageBox[messageBoxImageContainerIndex].window.size.x = messageBoxWindowWidth
+        self.images.messageBox[messageBoxImageContainerIndex].window.size.y = messageBoxWindowHeight
+        self.images.messageBox[messageBoxImageContainerIndex].window.positionImage()
+        
+
+    //add closeX Image
+            var closeX =messageBoxWindowX+messageBoxWindowWidth- closeXRightOffset- closeXWidth
+        var closeY =  messageBoxWindowY+ closeXTopOffset 
+    self.images.messageBox[messageBoxImageContainerIndex].closeWindow.position.x = closeX
+      self.images.messageBox[messageBoxImageContainerIndex].closeWindow.position.y = closeY
+        self.images.messageBox[messageBoxImageContainerIndex].closeWindow.size.x = closeXWidth
+        self.images.messageBox[messageBoxImageContainerIndex].closeWindow.size.y = closeXHeight
+        self.images.messageBox[messageBoxImageContainerIndex].closeWindow.positionImage()
+
+if(messageInfo.closeWindowMessages){
+  self.images.messageBox[messageBoxImageContainerIndex].closeWindow.messages = messageInfo.closeWindowMessages
+}
+        if(messageInfo.closeWindowEvent){
+          //check if is a string submitted via server
+          if(_.isString(messageInfo.closeWindowEvent) ){
+            self.images.messageBox[messageBoxImageContainerIndex].closeWindow.image.onClick = eval(messageInfo.closeWindowEvent)
+          }
+          else{self.images.messageBox[messageBoxImageContainerIndex].closeWindow.image.onClick = messageInfo.closeWindowEvent}
+        } //end check if messageInfo.closeWindowEvent exists
+        else{
+ self.images.messageBox[messageBoxImageContainerIndex].closeWindow.image.onClick = function(event){
+  self.events.onButtonClick(event)
+  self.hideMessageBox()
+}
+}
+
+
+
+
         //title
         self.images.messageBox[messageBoxImageContainerIndex].windowTitle = new self.images.Item (messageBoxWindowX,messageBoxWindowY, messageBoxWindowWidth,outerTopHeight,messageBoxImageContainerIndex+1)
          self.images.addItemText(self.images.messageBox[messageBoxImageContainerIndex].windowTitle, messageInfo.title, messageInfo.titleSizeAndFont, messageInfo.titleColor)
@@ -3612,20 +3665,29 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
         self.images.messageBox[messageBoxImageContainerIndex].okay =  new self.images.Item (okayX,buttonY, buttonWidth,buttonHeight,messageBoxImageContainerIndex+1) 
         self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].okay, messageInfo.buttonBackgroundColor )
         self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].okay, messageInfo.okayText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
-            //asign messages if exists
+            //asign messages if okaymessages exists
             if(messageInfo.okayMessages){    
             self.images.messageBox[messageBoxImageContainerIndex].okay.messages = messageInfo.okayMessages}
                 //assign event if assigned
-               
+
        if(messageInfo.okayEvent){
-           self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = messageInfo.okayEvent
-           }
+        //check if is a string submitted via server
+
+          if(_.isString(messageInfo.okayEvent) ){
+
+            self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = eval(messageInfo.okayEvent)
+          }
+          else{self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = messageInfo.okayEvent}
+         
+           }//end check if messageInfo.okayEvent exists
       else{
-            self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = self.events.onButtonClick
-        self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = self.hideMessageBox
+            self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = function(event){
+              self.events.onButtonClick(event)
+      self.hideMessageBox()
         }
+      }
 //cancel button
-        if(messageInfo.cancel){
+        if(messageInfo.cancel && messageInfo.cancel == true){
         self.images.messageBox[messageBoxImageContainerIndex].cancel =  new self.images.Item (cancelX,buttonY, buttonWidth,buttonHeight,messageBoxImageContainerIndex+1) 
         self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].cancel, messageInfo.buttonBackgroundColor )
         self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].cancel, messageInfo.cancelText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
@@ -3635,29 +3697,27 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
           }
           //add cancel event if availble
            if(messageInfo.cancelEvent){
-               self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = messageInfo.cancelEvent
-               }
+             //check if is a string submitted via server
+          if(_.isString(messageInfo.cancelEvent) ){
+            self.images.messageBox[messageBoxImageContainerIndex].cancel.image.onClick = eval(messageInfo.cancelEvent)
+          }
+          else{self.images.messageBox[messageBoxImageContainerIndex].cancel.image.onClick = messageInfo.cancelEvent}
+             }//end check if messageInfo.cancelEvent exists
        else{  
-        self.images.messageBox[messageBoxImageContainerIndex].cancel.image.onClick = self.hideMessageBox
+        self.images.messageBox[messageBoxImageContainerIndex].cancel.image.onClick = function(event){
+ self.events.onButtonClick(event)
+      self.hideMessageBox()
         }
        }
-        //add closeX Image
-        var closeX =messageBoxWindowX+messageBoxWindowWidth- closeXRightOffset- closeXWidth
-        var closeY =  messageBoxWindowY+ closeXTopOffset
-         self.images.messageBox[messageBoxImageContainerIndex].closeWindow =  new self.images.Item (closeX, closeY,closeXWidth,closeXHeight,messageBoxImageContainerIndex) 
-       self.images.itemAsBitmap(self.images.messageBox[messageBoxImageContainerIndex].closeWindow, self.images.sources.messageBoxCloseX)
-        self.images.messageBox[messageBoxImageContainerIndex].closeWindow.image.onClick = self.hideMessageBox
-
+     }//end checking if messageInfo.cancel is true
+       //remove previous instances of cancel if it doesn't exist
+    else{self.images.messageBox[messageBoxImageContainerIndex].cancel = null}
         //disable mouse events for all containers under the messageBox
         for(var i = 0; i<messageBoxImageContainerIndex;i++){
             self.images.containers[i].mouseEnabled = false
         }
 
                 self.displayChildren(self.images.messageBox[messageBoxImageContainerIndex])
-   self.hideChildren(self.images.messageBox[messageBoxImageContainerIndex].window.okay)
-              console.log(self.images.messageBox[messageBoxImageContainerIndex].window.image.y)
-          console.log(    self.images.containers[messageBoxImageContainerIndex].contains(self.images.messageBox[messageBoxImageContainerIndex].window.image) )
-                console.log(self.images.messageBox[messageBoxImageContainerIndex].window.image.isVisible())
 
     }
 
@@ -4029,10 +4089,11 @@ if(self.gameState.seats[i].displayMessageType == 'action'||'seat'||'openSeat'||'
 
     //error received
        socket.on('error', function(errorString, messageInfo){
+
+
            if(messageInfo){}
             else{
            var messageInfo = {}
-          errorString
            messageInfo.okay = true
             
           }
