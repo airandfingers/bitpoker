@@ -91,7 +91,7 @@ window.onKeydown = onKeyDown
      //       fold: 'img/fold.jpg',
       //      sideButton :'img/side_button.jpg',
             background: 'img/table_background.jpg',
-            fourColorDeck: 'img/sheet4color.png',
+     //       fourColorDeck: 'img/sheet4color.png',
             dealerButton: 'img/dealer_button.png',
             verticalSlider: 'img/raise_slider.png',
             horizontalSlider: 'img/small_slider_bg.png',
@@ -108,8 +108,12 @@ window.onKeydown = onKeyDown
             messageBoxCloseX:'img/messageBox_closeWindowX.jpg',
             checkBox: 'img/check_box.png',
             checkBoxChecked:'img/check_box_clicked.png',
-
-            
+            dealCardSound: 'sound/deal_card.swf',
+            checkSound: 'sound/check.swf',
+            betSound: 'sound/bet.wav',
+            shuffleSound: 'sound/shuffle.wav',
+            dealCommunity: 'sound/deal_community.wav',
+moveChipsSound: 'sound/move_chips.wav',
 
             chips: {
                 red:'img/chips/red_chip.png',
@@ -356,18 +360,19 @@ allRadios.prop('checked', false)
 }//end check if otherAmound radio is checked
 
 //check if amount is acceptable
-textField = $(event.target.parentElement).find("input[type='text']")
+var textField= $(event.target.parentElement).find("input[type='text']")
 var alreadySelected = false
           if(typeof parseFloat(textField.val()) == 'number' &&  parseFloat(textField.val()) >= min){}
+         //set textfield value to minimum
           else{    
-            //set textfield value to minimum
          textField.val(min)
                    //select text on clicking
-           textField.one('mouseup', function(e){e.preventDefault()}).select()
+           textField.select()
            alreadySelected = true
           }
+          console.log(textField)
           if($(event.target).is("input[type='text']")){}
-            else if (alreadySelected != true){ textField.one('mouseup', function(e){e.preventDefault()}).select()   }
+            else if (alreadySelected != true){   textField.select()   }
 
         }//end check if parentID exists/not false
 
@@ -691,20 +696,60 @@ self.images.raise.image.onPress = self.events.buttonMouseDown
 //-----------functions below this line ---------------------
 this.initialize= function(){
 
-    var fileSourceArray = []
+    var imageSourceArray = []
+    var soundSourceArray = []
+    var flashSoundSourceArray = []
 
-    //push items to preload into array
+    var resourceID = 0
+var isImageSource = function(source){
+  var sourceEnding = source.substr(source.length-4).toUpperCase()
+  if(sourceEnding == '.PNG'){return true}
+  else if (sourceEnding == '.JPG'){return true}
+    else{return false}
+}
+var isSoundSource = function(source){
+var sourceEnding = source.substr(source.length-4).toUpperCase()
+if (sourceEnding == '.MP3'){return true}
+  else if(sourceEnding == '.WAV'){return true}
+    else{return false}
+}
+
+var isFlashSoundSource = function(source){
+  var sourceEnding = source.substr(source.length-4).toUpperCase()
+if(sourceEnding == '.SWF'){return true}
+    else{return false}
+}
+
+    //push items to preload into arrays
     for(var i in this.images.sources){
-        for(var n in this.images.sources[i][n]){
-            if(typeof this.images.sources[i][n] == 'string'){
-                fileSourceArray.push({src: this.images.sources[i][n], id:fileSourceArray.length-1})
-            }
-        }
-       if((typeof this.images.sources[i] == 'string') && (this.images.sources[i].indexOf('fourColorDeck') == -1)){
-           fileSourceArray.push({src: this.images.sources[i], id:fileSourceArray.length-1})
-    }
-    }
+       if(_.isString(this.images.sources[i])){
 
+        if(isImageSource(this.images.sources[i])){
+           imageSourceArray.push({src: this.images.sources[i], id:resourceID})
+           resourceID++
+    }//end check if this.images.sources[i] = image
+
+    else if(isFlashSoundSource(this.images.sources[i])){
+           flashSoundSourceArray.push({src: this.images.sources[i], id:resourceID})
+           resourceID++
+    }//end check if this.images.sources[i] = flashSound
+    else if(isSoundSource(this.images.sources[i])){
+           soundSourceArray.push({src: this.images.sources[i], id:resourceID})
+           resourceID++
+    }//end check if this.images.sources[i] = sound
+  }//end check if this.images.sources[i] = string
+    else if (_.isObject(this.images.sources[i])){
+        for(var n in this.images.sources[i]){
+            if(_.isString(this.images.sources[i][n])){
+                imageSourceArray.push({src: this.images.sources[i][n], id:resourceID})
+                resourceID++
+            }
+        }//end iteration through this.images.sources[i]
+      }//end check if this.images.sources[i] is object
+      
+    }//end iteration through this.images.sources
+
+//push individual cards
     for(var i = 2;i<=14;i++){
         var cardRank
            if(i==10){cardRank = 't'}
@@ -713,12 +758,20 @@ this.initialize= function(){
 else if(i==13){cardRank = 'k'}
     else    if(i==14){cardRank = 'a'}
     else{cardRank = i}
-        fileSourceArray.push({src: this.images.sources.cardImageFolder+cardRank+'c.png', id: fileSourceArray.length-1})
-        fileSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'d.png', id: fileSourceArray.length-1})
-        fileSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'h.png', id: fileSourceArray.length-1})
-        fileSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'s.png', id: fileSourceArray.length-1})
+        imageSourceArray.push({src: this.images.sources.cardImageFolder+cardRank+'c.png', id: resourceID})
+      resourceID++
+        imageSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'d.png', id: resourceID})
+        resourceID++
+        imageSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'h.png', id: resourceID})
+        resourceID++
+        imageSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'s.png', id: resourceID})
+        resourceID++
     }
-    //console.log(fileSourceArray)
+
+
+
+
+    //console.log(imageSourceArray)
     //define dimensions of preloading screen
     var introScreen = {}
     var titleSizeAndFont = '20px Arial'
@@ -745,9 +798,10 @@ else if(i==13){cardRank = 'k'}
      //define function for drawing the loading bar graphic
      introScreen.preloadBar.image  = new createjs.Shape()
      introScreen.preloadBar.drawBar  = function (progressRatio){
-         //determine x coordinate of where fills end and start
+         //where to start fill
          var progressX = introScreen.preloadBar.size.x*progressRatio + introScreen.preloadBar.position.x
-         var unfinishedX
+         // where to end fill
+         var unfinishedX 
          //insure fill does not surpass the loading bar
          if(progressX>=introScreen.preloadBar.size.x+ introScreen.preloadBar.position.x){
              progressX = introScreen.preloadBar.size.x+ introScreen.preloadBar.position.x
@@ -757,7 +811,8 @@ else if(i==13){cardRank = 'k'}
              progressX = false
              unfinishedX = introScreen.preloadBar.position.x
              }
-             else{unfinishedX = progressX + 1}
+             //if progress is within bounds, set end of fill to end of bar
+             else{unfinishedX = progressX}
 
          //clear previous graphics
          introScreen.preloadBar.image.graphics.clear()
@@ -772,7 +827,7 @@ else if(i==13){cardRank = 'k'}
    }
 if(unfinishedX != false && unfinishedX<introScreen.preloadBar.position.x+introScreen.preloadBar.size.x){
        introScreen.preloadBar.image.graphics.setStrokeStyle(0).beginFill(preloadBarUnfinishedColor)
-       .beginStroke(null).drawRect(introScreen.preloadBar.position.x + unfinishedX, introScreen.preloadBar.position.y, introScreen.preloadBar.position.x+introScreen.preloadBar.size.x - unfinishedX, introScreen.preloadBar.size.y)
+       .beginStroke(null).drawRect(unfinishedX, introScreen.preloadBar.position.y, introScreen.preloadBar.position.x+introScreen.preloadBar.size.x - unfinishedX, introScreen.preloadBar.size.y)
 
    }
      }
@@ -825,52 +880,91 @@ this.images.imageLoading.title.text.x= this.images.imageLoading.title.position.x
         
 
     }
-
-    function preloadImages(imageArray, onComplete){
-    var newImages=[]
-    var loadedImages=0
-
-    //define image.onload functions
-    function handleImageLoad(src){
-        loadedImages++
+   var loadedFiles=0
+    var totalSources = imageSourceArray.length+soundSourceArray.length+flashSoundSourceArray.length
+ //define image.onload functions
+    function handleLoad(src, id){
+        loadedFiles++
         introScreen.status.text.text = src + ' loaded'
-        console.log(src + ' loaded')
-        introScreen.preloadBar.drawBar(loadedImages/imageArray.length)
-        console.log(loadedImages+','+imageArray.length)
-        if (loadedImages==imageArray.length){
-            console.log("loaded")
+        introScreen.preloadBar.drawBar(loadedFiles/totalSources)
+        console.log(src +' loaded file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
+        if (id == imageSourceArray[imageSourceArray.length-1].id){
+            console.log("image load completed")
+        }
+         else if(id == soundSourceArray[soundSourceArray.length-1].id){
+          console.log('non-flash sound load completed')
         }
         self.stage.update()
         
     }
-    function handleImageLoadError(src){
-        loadedImages++
+    function handleLoadError(src,id){
+        loadedFiles++
         introScreen.status.text.text = src + ' loaded'
-        console.log(src + ' loading error')
-        introScreen.preloadBar.drawBar(loadedImages/imageArray.length)
-         if (loadedImages==imageArray.length){
-            console.log('error')
+         console.log(src + ' error loading file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
+        introScreen.preloadBar.drawBar(loadedFiles/totalSources)
+         if (id == imageSourceArray[imageSourceArray.length-1].id)  {
+            console.log('image load completed')
+        }
+        else if(id == soundSourceArray[soundSourceArray.length-1].id){
+          console.log('non-flash sound load completed')
         }
         self.stage.update()
     }
+
+    var handleSoundLoad = function(event){
+      console.log(event)
+      console.log('loading 1 sound')
+    }
+
+    function preloadFiles(imageArray, onComplete){
+    var newImages=[]
     //iterate through imageArray to preload images
     _.each(_.range(imageArray.length), function(i){
         newImages[i]=new Image()
         if(typeof imageArray[i] == 'string'){newImages[i].src=imageArray[i]}
         else if (typeof imageArray[i] == 'object'){newImages[i].src=imageArray[i].src}
         
-        newImages[i].onload=function(){handleImageLoad(newImages[i].src)}
-        newImages[i].onerror=function(){handleImageLoadError(newImages[i].src) }
+        newImages[i].onload=function(){handleLoad(newImages[i].src, imageArray[i].id)}
+        newImages[i].onerror=function(){handleLoadError(newImages[i].src, imageArray[i].id) }
         //on last iteration call onComplete function
         if(i == imageArray.length-1){onComplete()}
     })
-    }
+
+  }
+
+var preloadSounds = function(flashArray, soundArray){
+
+
+createjs.FlashPlugin.BASE_PATH = "js/vendor/" //tell createjs where to find default flash audio
+createjs.Sound.registerPlugins([createjs.WebAudioPlugin, createjs.HTMLAudioPlugin, createjs.FlashPlugin]) //enable soundjs to play .swf files
+//createjs.Sound.registerPlugin(createjs.FlashPlugin)
+
+createjs.Sound.addEventListener("fileload", function(event){handleLoad(event.src, event.id)}) // add an event listener for when load is completed
+createjs.Sound.addEventListener("error", function(event){handleLoadError(event.src, event.id)}) // add an event listener for when load is completed
+//load flash sounds with createjs.FlashPlugin
+
+for(var i =0;i<flashArray.length;i++){
+  console.log(flashArray[i].src)
+  var temp = createjs.Sound.createInstance(flashArray[i].src)
+  console.log(temp)
+  temp.play()
+  handleLoad(flashArray[i].src, flashArray[i].id )
+}
+
+//preload other sounds
+//soundArray.push({src:'sound/aqua_vitae.mp3', id:999})
+createjs.Sound.registerManifest(soundArray)
+//createjs.Sound.registerManifest(flashArray)
+}
+
+
     displayPreloadScreen()
-    preloadImages(fileSourceArray, function(){
+    preloadFiles(imageSourceArray, function(){
         self.createAllItems()
         self.images.loadingContainers[self.images.imageLoading.title.position.z+1].addChild(self.images.imageLoading.title.text)
 
         } )
+    preloadSounds(flashSoundSourceArray, soundSourceArray)
 
     
 
@@ -892,7 +986,7 @@ this.images.imageLoading.title.text.x= this.images.imageLoading.title.position.x
   //    preload.onFileLoad = handleFileLoad
    //  preload.onProgress = handleProgress
   //  preload.onLoadStart = handleLoadStart
-   preload.loadManifest(fileSourceArray)
+   preload.loadManifest(imageSourceArray)
 
    var handleLoadStart = function(event){
        
@@ -1661,8 +1755,10 @@ var fourColorDeckData = {
      frames: {width:37, height:45}
 
 }
-
+/*
 this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
+
+*/
 //=====================MESSAGE BOX=======================================
 var containersPerMessageBox = self.gameState.containerImageIndexes.containersPerMessageBox
   for(var messageBoxImageContainerIndex = self.gameState.containerImageIndexes.initialMessageBox; messageBoxImageContainerIndex < this.containers.length-containersPerMessageBox;messageBoxImageContainerIndex=messageBoxImageContainerIndex+containersPerMessageBox){
@@ -1793,14 +1889,7 @@ var containersPerMessageBox = self.gameState.containerImageIndexes.containersPer
         cashierItems.autoRebuy ={name: 'autoRebuy',location:  [0,6],  text: 'Auto-Rebuy:'}
         cashierItems.autoRebuyValue ={name: 'autoRebuyValue' ,location: [1,6]}
 
-        var rowsUsed = 7
-
-        // pokerTableWrapper and canvas to absolute (won't wrk in css)
-        $("#pokerTableWrapper").css('position', 'absolute')
-         $("#pokerTableWrapper").children().css('position', 'absolute')
-$("#cashierDiv").children().css('position', 'absolute')
-
-        
+        var rowsUsed = 7        
 
         //use jquery to position divs to appropriate locations
 
@@ -1808,27 +1897,12 @@ $("#cashierDiv").children().css('position', 'absolute')
        $("#cashier input[type='text']").css('width', textBoxWidth+'px')
        $("#cashier input[type='text']").css('height', textBoxHeight+'px')
 
-       //set all inputs to position absolute
-      $("#cashier").css(
-      {
-      'position': 'absolute'
-      
-      })
 
       //set text size and font
         $("#cashier").children().children().css({
-            'position':'absolute',
-            'font':sizeAndFont,
-        'margin-left':'0px',
-        'margin-top': '0px',
-       'margin-bottom':'0px',
-           'margin-right':'0px',
-           'padding':'0px',
-           'text-align':'left'
-          
-  
-   
+            'font':sizeAndFont
            })
+
 
            //customize radio buttons
            $("#cashier input[type='radio']").css({
@@ -1896,8 +1970,6 @@ var textX = radioX + radioWidth+distanceFromRadioToText
         $('#autoRebuyAmount').css('top', autoRebuyTextBoxY+'px')
 
 
-
-
         //iterate through cashierItems to create all texts
         for(var i in cashierItems){
             if(_.isArray(cashierItems[i].location)){
@@ -1940,8 +2012,9 @@ this.cashier[cashierItems[i].name].text.maxWidth = this.cashier[cashierItems[i].
 
    // =============================================SOUNDS========================================
 
-    createjs.Sound.registerSound("sounds/deal_card.swf", "dealCard")
+   /* createjs.Sound.registerSound("sounds/deal_card.swf", "dealCard")
             createjs.Sound.registerSound("sounds/player_checks.swf", "check")
+            */
 
 }
 
@@ -2576,8 +2649,8 @@ clearInterval(imageAnimation)
      var   interval = fractionDistancePerTick*animationTime
 
      //play deal sound
-     createjs.Sound.play('dealCard')
-     console.log('deal card sound should play now')
+     var communitySound = createjs.Sound.createInstance(this.images.sources.dealCommunity)
+     communitySound.play()
 
      //river animation
 if(communityArray.length ==5){
@@ -2678,10 +2751,11 @@ _.each(_.range(playerArray.length * 2), function(cardsDealt) {
     var playerArrayNumber = cardsDealt % playerArray.length
     
     //push dealing facedown card to the player animation function into async array
-
+var dealCardSound =  createjs.Sound.createInstance(self.images.sources.dealCardSound)
     asyncArray.push(function(callback){
 
-                    createjs.Sound.play("dealCard")
+                 dealCardSound.play() //play sound
+
         if(cardsDealt==playerArrayNumber){
             
                     animatedCards0[cardsDealt] = new self.images.Item(initialX, initialY, self.images.community[0].size.x, self.images.community[0].size.y, self.gameState.containerImageIndexes.cardAnimation)
@@ -3916,6 +3990,9 @@ this.streetEnds = function(potSizes){
         var ticks = 5
         var chipIntoPotAnimationArray = []
         var callBackNumber = 0
+
+var chipMoveSound = createjs.Sound.createInstance(this.images.sources.moveChipsSound)
+
         //push animateImages into an array
         _.each(_.range(self.images.seats.length), function(seatNumber) {
 
@@ -3938,6 +4015,7 @@ chipIntoPotAnimationArray.push(function(callback){
 
 async.series([
 function(next){
+  chipMoveSound.play()
     async.parallel(chipIntoPotAnimationArray, function(err, results){next(null, 1)})
 },
 
@@ -3951,6 +4029,7 @@ function(next){
      self.updatePotSize(potSizes[i],i)
    }
     }
+     chipMoveSound.play()
     self.removeAllBets()
     next(null, 2)
 }
@@ -3960,8 +4039,8 @@ function(next){
    this.displayInitialTableState=function(table_state){
 
  //set up animation variables
- var tickerInterval = 25
-var ticksPerAnimation = 3
+ var tickerInterval = 5
+var ticksPerAnimation = 1
 var numTicks = 0
 createjs.Ticker.addEventListener('tick', tick)
 createjs.Ticker.setInterval(tickerInterval)
@@ -3974,7 +4053,7 @@ this.stage.update()
 function tick(event){
   
     //update loading images graphic evert 3 ticks
-    if(numTicks%3 == 0){
+    if(numTicks%ticksPerAnimation == 0){
         
         self.images.imageLoading.title.text.text = self.images.imageLoading.title.text.text+ '.'
     }
@@ -4253,25 +4332,33 @@ break;
             break;
 
             case 'check':
-             createjs.Sound.play("check")
+            // createjs.Sound.play()
             break;
 
             case'bet':
+            var betSound = createjs.Sound.createInstance(self.images.sources.betSound)
+            betSound.play()
             self.displayChipStack(player.current_bet, self.images.seats[player.seat], self.images.seats[player.seat].firstChip.position.x,self.images.seats[player.seat].firstChip.position.y )
             self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
             break;
 
             case'call':
+              var betSound = createjs.Sound.createInstance(self.images.sources.betSound)
+            betSound.play()
              self.displayChipStack(player.current_bet, self.images.seats[player.seat], self.images.seats[player.seat].firstChip.position.x,self.images.seats[player.seat].firstChip.position.y )
             self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
              break;
 
             case 'raise':
+              var betSound = createjs.Sound.createInstance(self.images.sources.betSound)
+            betSound.play()
              self.displayChipStack(player.current_bet, self.images.seats[player.seat], self.images.seats[player.seat].firstChip.position.x,self.images.seats[player.seat].firstChip.position.y )
             self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
             break;
 
             case'post_blind':
+              var betSound = createjs.Sound.createInstance(self.images.sources.betSound)
+            betSound.play()
             self.displayChipStack(player.current_bet, self.images.seats[player.seat], self.images.seats[player.seat].firstChip.position.x,self.images.seats[player.seat].firstChip.position.y )
             self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
             break;
