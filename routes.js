@@ -33,6 +33,12 @@ module.exports = (function () {
     });
   });
 
+  //Bitcoin Deposit route: I believe this is the callback route for BlockChain.
+  app.get('/bitcoin_deposit/:username', function (req, res) {
+    var username = req.params.username;
+    console.log('bitcoin_deposit request came in for username ' + username, ':', req.query);
+  });
+
   app.get('/deposit_bitcoins', function(req, res) {
     console.log(req.user.deposit_address);
     res.render('deposit_bitcoins', {

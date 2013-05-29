@@ -172,17 +172,6 @@ h1 {
     padding: 0 2%;
 }
 
-#pokerTable {
-    position: absolute;
-    margin: 0 5%;
-
-}
-
-#pokerTableWrapper {
-    height: 480px;
-    width: 690px;
-}
-
 /*datatables table list */
 #table_list {
     position: relative;    
