@@ -1,7 +1,18 @@
-#pokerTableWrapper{
+*{
     position: absolute;
-    left: 0px;
-    top: 0px;
+            position:absolute;
+        margin-left:0px;
+        margin-top: 0px;
+       margin-bottom:0px;
+           margin-right:0px;
+           padding:0px;
+           text-align:left;
+white-space: nowrap;
+
+}
+
+#cashier{
+    display:none;
 }
 
 #pokerCanvasDiv {
@@ -12,9 +23,7 @@
 	background-repeat:repeat;
 	border:1px solid #d1c7ac;
 	color:#333333;
-    margin-right: 0px;
 	font-family:tahoma, arial, sans-serif;
-    position: absolute;
     z-index: 1;
     text-align: left;
 }
@@ -43,18 +52,4 @@
     color: #FFFFFF;
     border: 1px solid #FFFFFF;
     border-radius: 0px;
-}
-
-
-#maxRadio{
-    position: absolute
-}
-#otherAmountText {
-    position: absolute;
-}
-    #maxText {
-    position: absolute;
-}
-#autoRebuyText {
-    position: absolute;
 }
