@@ -1044,7 +1044,7 @@ this.images.setDefaults = function(){
                 cardHeight = 64
             }
 
-            var spaceBetweenHoleCards = -cardWidth/7
+            var spaceBetweenHoleCards = -cardWidth/8
 
             //percentage of vertical card to show
             var shownCardY = 0.85
