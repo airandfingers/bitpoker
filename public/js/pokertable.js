@@ -108,11 +108,13 @@ window.onKeydown = onKeyDown
             messageBoxCloseX:'img/messageBox_closeWindowX.jpg',
             checkBox: 'img/check_box.png',
             checkBoxChecked:'img/check_box_clicked.png',
-            dealCardSound: 'sound/deal_card.swf',
-            checkSound: 'sound/check.swf',
+            dealHoleCardSound: 'sound/deal_hole_card.wav',
+            checkSound: 'sound/check.wav',
             betSound: 'sound/bet.wav',
             shuffleSound: 'sound/shuffle.wav',
             dealCommunity: 'sound/deal_community.wav',
+            foldsound: 'sound/fold.wav',
+
 moveChipsSound: 'sound/move_chips.wav',
 
             chips: {
@@ -701,6 +703,10 @@ this.initialize= function(){
     var flashSoundSourceArray = []
 
     var resourceID = 0
+   var loadedFiles=0
+   var errorFiles = 0
+   var errorSrcArray = []
+
 var isImageSource = function(source){
   var sourceEnding = source.substr(source.length-4).toUpperCase()
   if(sourceEnding == '.PNG'){return true}
@@ -880,7 +886,7 @@ this.images.imageLoading.title.text.x= this.images.imageLoading.title.position.x
         
 
     }
-   var loadedFiles=0
+
     var totalSources = imageSourceArray.length+soundSourceArray.length+flashSoundSourceArray.length
  //define image.onload functions
     function handleLoad(src, id){
@@ -899,24 +905,26 @@ this.images.imageLoading.title.text.x= this.images.imageLoading.title.position.x
     }
     function handleLoadError(src,id){
         loadedFiles++
+        errorFiles++
+        errorSrcArray.push(src)
         introScreen.status.text.text = src + ' loaded'
          console.log(src + ' error loading file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
         introScreen.preloadBar.drawBar(loadedFiles/totalSources)
          if (id == imageSourceArray[imageSourceArray.length-1].id)  {
-            console.log('image load completed')
+            console.log('last image loaded')
         }
         else if(id == soundSourceArray[soundSourceArray.length-1].id){
-          console.log('non-flash sound load completed')
+          console.log('last non-flash sound loaded')
+        }
+        if(loadedFiles>=totalSources){
+console.log('load completed with total of '+ errorFiles +' image and sound errors whose sources are in the following array:')
+console.log(errorSrcArray)
         }
         self.stage.update()
     }
 
-    var handleSoundLoad = function(event){
-      console.log(event)
-      console.log('loading 1 sound')
-    }
 
-    function preloadFiles(imageArray, onComplete){
+    function preloadImages(imageArray, onComplete){
     var newImages=[]
     //iterate through imageArray to preload images
     _.each(_.range(imageArray.length), function(i){
@@ -929,7 +937,6 @@ this.images.imageLoading.title.text.x= this.images.imageLoading.title.position.x
         //on last iteration call onComplete function
         if(i == imageArray.length-1){onComplete()}
     })
-
   }
 
 var preloadSounds = function(flashArray, soundArray){
@@ -941,6 +948,13 @@ createjs.Sound.registerPlugins([createjs.WebAudioPlugin, createjs.HTMLAudioPlugi
 
 createjs.Sound.addEventListener("fileload", function(event){handleLoad(event.src, event.id)}) // add an event listener for when load is completed
 createjs.Sound.addEventListener("error", function(event){handleLoadError(event.src, event.id)}) // add an event listener for when load is completed
+
+
+//preload other sounds
+//soundArray.push({src:'sound/aqua_vitae.mp3', id:999})
+createjs.Sound.registerManifest(soundArray)
+//createjs.Sound.registerManifest(flashArray)
+
 //load flash sounds with createjs.FlashPlugin
 
 for(var i =0;i<flashArray.length;i++){
@@ -951,20 +965,17 @@ for(var i =0;i<flashArray.length;i++){
   handleLoad(flashArray[i].src, flashArray[i].id )
 }
 
-//preload other sounds
-//soundArray.push({src:'sound/aqua_vitae.mp3', id:999})
-createjs.Sound.registerManifest(soundArray)
-//createjs.Sound.registerManifest(flashArray)
+
 }
 
-
     displayPreloadScreen()
-    preloadFiles(imageSourceArray, function(){
+    preloadImages(imageSourceArray, function(){
         self.createAllItems()
         self.images.loadingContainers[self.images.imageLoading.title.position.z+1].addChild(self.images.imageLoading.title.text)
 
         } )
-    preloadSounds(flashSoundSourceArray, soundSourceArray)
+    
+preloadSounds(flashSoundSourceArray, soundSourceArray)
 
     
 
@@ -2012,10 +2023,6 @@ this.cashier[cashierItems[i].name].text.maxWidth = this.cashier[cashierItems[i].
 
    // =============================================SOUNDS========================================
 
-   /* createjs.Sound.registerSound("sounds/deal_card.swf", "dealCard")
-            createjs.Sound.registerSound("sounds/player_checks.swf", "check")
-            */
-
 }
 
         this.setBackground = function(){    
@@ -2751,10 +2758,10 @@ _.each(_.range(playerArray.length * 2), function(cardsDealt) {
     var playerArrayNumber = cardsDealt % playerArray.length
     
     //push dealing facedown card to the player animation function into async array
-var dealCardSound =  createjs.Sound.createInstance(self.images.sources.dealCardSound)
+var dealHoleCardSound =  createjs.Sound.createInstance(self.images.sources.dealHoleCardSound)
     asyncArray.push(function(callback){
 
-                 dealCardSound.play() //play sound
+                 dealHoleCardSound.play() //play sound
 
         if(cardsDealt==playerArrayNumber){
             
@@ -4322,6 +4329,8 @@ break;
 
         switch(action){
         case 'fold':
+        var foldSound = createjs.Sound.createInstance(self.images.sources.foldSound)
+            foldSound.play()
         self.hideHoleCards(player.seat)
         self.hideBet(player.seat)
         if(player.seat == self.gameState.userSeatNumber){
@@ -4332,7 +4341,8 @@ break;
             break;
 
             case 'check':
-            // createjs.Sound.play()
+            var checkSound = createjs.Sound.createInstance(self.images.sources.checkSound)
+            checkSound.play()
             break;
 
             case'bet':
@@ -4634,6 +4644,7 @@ jQuery(document).ready(function(){
 
 jQuery(window).load(function (){
      
+
  //   holdemCanvas.createAllItems()
   holdemCanvas.receiveTableState()
      console.log(document.getElementById('chatDiv'))
