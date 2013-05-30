@@ -113,7 +113,7 @@ window.onKeydown = onKeyDown
             betSound: 'sound/bet.wav',
             shuffleSound: 'sound/shuffle.wav',
             dealCommunity: 'sound/deal_community.wav',
-            foldsound: 'sound/fold.wav',
+            foldSound: 'sound/fold.wav',
 
 moveChipsSound: 'sound/move_chips.wav',
 
@@ -1047,7 +1047,7 @@ this.images.setDefaults = function(){
             var spaceBetweenHoleCards = -cardWidth/8
 
             //percentage of vertical card to show
-            var shownCardY = 0.85
+            var shownCardY = 0.92
 
             var sideButtonWidth = 100
             var sideButtonHeight = 13
