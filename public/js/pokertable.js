@@ -1035,16 +1035,16 @@ this.images.setDefaults = function(){
      var cardHeight
 
      if(this.sources.cardImageFolder.indexOf('resize') >= 0){
-         cardWidth = 37
-       cardHeight = 45
+         cardWidth = 36
+       cardHeight = 44
 
             }
             else{
-                cardWidth = 48
-                cardHeight = 76
+                cardWidth = 40
+                cardHeight = 64
             }
 
-            var spaceBetweenHoleCards = -10
+            var spaceBetweenHoleCards = -cardWidth/7
 
             //percentage of vertical card to show
             var shownCardY = 0.85
