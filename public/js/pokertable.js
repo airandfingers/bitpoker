@@ -99,7 +99,7 @@ window.onKeydown = onKeyDown
       //      sideButton :'img/side_button.jpg',
             background: 'img/table_background.jpg',
      //       fourColorDeck: 'img/sheet4color.png',
-            dealerButton: 'img/dealer_button.png',
+            dealerButton: 'img/dealer_button_red.png',
             verticalSlider: 'img/raise_slider.png',
             horizontalSlider: 'img/small_slider_bg.png',
             cashierBackground: 'img/cashier_background.png',
@@ -1094,8 +1094,8 @@ this.images.setDefaults = function(){
             var communityY = 220
             var distanceBetweenCommunityCards = 2
 
-            var dealerButtonWidth = 25
-            var dealerButtonHeight = 26
+            var dealerButtonWidth = 30
+            var dealerButtonHeight = 22
 
             var topRowSeatDealerButtonX = -dealerButtonWidth/3
             var topRowSeatDealerButtonY = seatHeight+dealerButtonHeight*.1
