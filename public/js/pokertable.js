@@ -57,12 +57,12 @@ window.onKeydown = onKeyDown
            
             background:0,
             holeCard:1,
-            chips:2,
-            cardAnimation:3,
-            button:4,
+            chips:5,
+            cardAnimation:7,
+            button:3,
             chat:5,
-             cashier:7,
-            initialMessageBox:9,
+             cashier:9,
+            initialMessageBox:11,
             containersPerCashier:2,
             containersPerMessageBox:3,
             loadingBackground: 0,
@@ -2405,16 +2405,23 @@ this.images.pots[potNumber].potSize.text.text = potSize
         var chipIncrementY = this.images.pots[0].secondChip.position.y-this.images.pots[0].firstChip.position.y
         var totalChips = 0
         var columnCounter = 1
+        var distanceBetweenColumns
         if(options){
-        if(_.isNull(options.distanceBetweenColumns)||_.isUndefined(options.distanceBetweenColumns)){
-            if(!_.isNull(parentOfChipArray.secondColumnChip.position.x) && !_.isUndefined(parentOfChipArray.secondColumnChip.position.x)&&!_.isNull(parentOfChipArray.firstChip.position.x)&&!_.isUndefined(parentOfChipArray.firstChip.position.x))
+        if(options.distanceBetweenColumns){ distanceBetweenColumns = options.distanceBetweenColumns }
+}//done checking if options
+else{
+
+  if(distanceBetweenColumns){}
+    else{
+ if(!_.isNull(parentOfChipArray.secondColumnChip.position.x) && !_.isUndefined(parentOfChipArray.secondColumnChip.position.x)&&!_.isNull(parentOfChipArray.firstChip.position.x)&&!_.isUndefined(parentOfChipArray.firstChip.position.x))
             {
-var distanceBetweenColumns = this.images.pots[0].secondColumnChip.position.x - this.images.pots[0].firstChip.position.x 
+distanceBetweenColumns = this.images.pots[0].secondColumnChip.position.x - this.images.pots[0].firstChip.position.x 
             }
-                    else{var distanceBetweenColumns = parentOfChipArray.secondColumnChip.position.x-parentOfChipArray.firstChip.position.x}
+                    else{ distanceBetweenColumns = parentOfChipArray.secondColumnChip.position.x-parentOfChipArray.firstChip.position.x}
                     
 }
-}
+  }//done checking if distanceBetweenColumns doesnt exist
+
         while(chipAmount>=1){
             if(chipAmount>=10000){
             this.displayChip('10k',x,y, parentOfChipArray, options)
@@ -2474,7 +2481,7 @@ var distanceBetweenColumns = this.images.pots[0].secondColumnChip.position.x - t
             y = initialY
             //increase column number counter and exit loop
             columnCounter ++
-            if(columnCounter>this.imageData.maxChipColumns){chipAmount = 0}
+            if(columnCounter>=this.imageData.maxChipColumns){chipAmount = 0}
         }
         }
     }
