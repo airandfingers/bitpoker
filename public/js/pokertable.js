@@ -506,6 +506,20 @@ this.events.onCashierTextFieldFocus = function(event){
 
      //===============START BET SLIDER===================
 
+    this.events.wheelScroll = function(numScrolls){
+      if(_.isNumber(numScrolls) == false){return 'scroll failed'}
+      var change = numScrolls*self.userPreferences.bigBlindsPerMouseScroll*self.gameState.bigBlind
+          var betValue  = parseFloat($('#betSize').val())
+    var isBetValueValid = ( !isNaN(betValue)) && _.isNumber(betValue) 
+     if(isBetValueValid == true){ var newBet = change+betValue} //use current value
+      else{var newBet = change + self.gameState.betSize} //use previous known value if current value is invalid
+console.log(newBet+'before rounding')
+        //round the new  bet
+      newBet = self.returnRoundedDownBetSize(newBet)
+      console.log(newBet+'after rounding')
+        self.adjustBetDisplay(newBet)
+    }
+
      this.events.betSliderHorizontalMouseDown = function(event){
 
         var minX = self.images.betSlider.horizontal.position.x
@@ -576,7 +590,6 @@ self.adjustBetDisplay(roundedBet)
              createjs.Tween.removeTweens(self.images.betSlider.vertical.image)
        }
 
- 
      }
 
      this.events.betSliderVerticalMouseDown = function(event){
@@ -2074,18 +2087,18 @@ this.displayChildren(this.images.background)
 //return betsize that is rounded down or FALSE if betsize is not a number, also checks to make sure betsize is within in and max
 this.returnRoundedDownBetSize = function(betSize){
 
-var betSizeInTextField  = parseFloat($('#betSize').val())
-//check to insure betSize is not outside of bounds, return min or max if it is
-if(betSizeInTextField>self.gameState.maxBet){return self.gameState.maxBet}
-  else if (betSizeInTextField<self.gameState.minBet){return self.gameState.minBet}
 
-    var isNumber =  !isNaN(betSizeInTextField) && _.isNumber(betSizeInTextField) 
+//check to insure betSize is not outside of bounds, return min or max if it is
+if(betSize>self.gameState.maxBet){return self.gameState.maxBet}
+  else if (betSize<self.gameState.minBet){return self.gameState.minBet}
+
+    var isNumber =  !isNaN(betSize) && _.isNumber(betSize) 
     var roundedBetSize
     //if not a number use last known number and round
     if(isNumber == false ){
  return false    }
     else{
-      roundedBetSize = Math.floor(betSizeInTextField/self.gameState.minIncrement)*self.gameState.minIncrement    }
+      roundedBetSize = Math.floor(betSize/self.gameState.minIncrement)*self.gameState.minIncrement    }
 
         return roundedBetSize
 
@@ -2858,22 +2871,24 @@ callback(null, callBackNumber)
       //make sure newX is within the bounds of min and max
       if(newX>=maxX){
         newX = maxX
-self.images.bet.text.text = 'All-In'
-self.images.raise.text.text = 'All-In'
+self.images.bet.text.text = 'Bet All-In'
+self.images.raise.text.text = 'Raise All-In'
       }//if all in
       else{
         if(newX<minX){newX = minX}
 
-            self.images.betSlider.vertical.image.x = newX
-
     if(self.stage.contains(self.images.bet.text)){
         self.images.bet.text.text = 'Bet '+betSize
-        self.images.bet.messages = ['act','bet',betSize]}
+        }
     
     else if(self.stage.contains(self.images.raise.text)){
         self.images.raise.text.text = 'Raise to '+betSize
-    self.images.raise.messages = ['act','raise',betSize]}
+    }
 }//if not all in
+self.images.betSlider.vertical.image.x = newX //adjust vertical slider location
+//adjust messages
+self.images.bet.messages = ['act','bet',betSize]
+self.images.raise.messages = ['act','raise',betSize]
 self.updateBetSize(betSize)
 self.stage.update()
          }
@@ -3041,6 +3056,9 @@ $('#betSize').css('display','none')
          for(var i=0; i<this.images.pots.length;i++){
         self.hideChildren(self.images.pots[i].potSize)
         self.hideChildren(self.images.pots[i].chips)}
+
+        //unbind scroll wheel events
+         $(document).unbind('mousewheel')
  }
 
 
@@ -3243,10 +3261,15 @@ this.hideAllActionButtons()
 $('#betSize').css('display','inline')
 
 //scroll wheel
-  $("input").keypress(function (e){
-      console.log(event)
-  })
+
+    $(document).bind('mousewheel', function(event) {
+console.log(event)
+wheelScrolls = event.originalEvent.wheelDelta/120
+self.events.wheelScroll(wheelScrolls)
+        })
+
     }
+
 
     this.displayCorrectSeatMessage = function(seatNumber){
 
@@ -4017,6 +4040,10 @@ this.restoreActiveContainers=function(activeContainerArray){
 }
     
 this.streetEnds = function(potSizes){
+
+        //unbind scroll wheel events
+         $(document).unbind('mousewheel')
+
       var animationTime = 5
         var ticks = 5
         var chipIntoPotAnimationArray = []
@@ -4239,7 +4266,7 @@ self.playerSitsOut(table_state.seats[i].seat)
 }
         //display player's cards
          for(var i=0;i<table_state.players.length;i=i+1){
-               if(!table_state.players[i].hand){this.displayHiddenCards(table_state.players[i].seat) }
+               if(!table_state.players[i].hand || table_state.players[i].hand.length == 0){this.displayHiddenCards(table_state.players[i].seat) }
               
                    else if(table_state.players[i].hand) {
                     this.displayHoleCards(table_state.players[i].hand, table_state.players[i].seat)
@@ -4492,6 +4519,7 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
              //clear preactions.once for user
              if(player.seat == self.gameState.userSeatNumber){
               self.gameState.seats[self.gameState.userSeatNumber].preActions.once = {}
+               $(document).unbind('mousewheel')
             }
 })
 
