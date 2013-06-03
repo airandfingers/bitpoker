@@ -3059,6 +3059,7 @@ $('#betSize').css('display','none')
 
         //unbind scroll wheel events
          $(document).unbind('mousewheel')
+         $(document).unbind('DOMMouseScroll')
  }
 
 
@@ -3263,7 +3264,12 @@ $('#betSize').css('display','inline')
 //scroll wheel
 
     $(document).bind('mousewheel', function(event) {
-console.log(event)
+
+wheelScrolls = event.originalEvent.wheelDelta/120
+self.events.wheelScroll(wheelScrolls)
+        })
+     $(document).bind('DOMMouseScroll', function(event) {
+      
 wheelScrolls = event.originalEvent.wheelDelta/120
 self.events.wheelScroll(wheelScrolls)
         })
@@ -4519,7 +4525,9 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
              //clear preactions.once for user
              if(player.seat == self.gameState.userSeatNumber){
               self.gameState.seats[self.gameState.userSeatNumber].preActions.once = {}
-               $(document).unbind('mousewheel')
+        //unbind scroll wheel events
+         $(document).unbind('mousewheel')
+         $(document).unbind('DOMMouseScroll')
             }
 })
 
