@@ -31,7 +31,8 @@ window.onKeydown = onKeyDown
   this.userPreferences = {
       
 
-      bigBlindsPerHorizontalSliderTick : 3,
+      bigBlindsPerHorizontalSliderTick : 0.5,
+      bigBlindsPerMouseScroll: 3,
       timePerHorizontalSliderTick: 500,
       animate: true,
       chatTextColor: '#FFFFFF'
@@ -126,7 +127,8 @@ moveChipsSound: 'sound/move_chips.wav',
 
             chips: {
                 red:'img/chips/red_chip.png',
-                black: 'img/chips/black_chip.png'
+                black: 'img/chips/black_chip.png',
+                10: 'img/chips/10.png'
             }
             }
             if(this.gameState.displaySize == 'mobile'){this.images.sources.cardImageFolder = 'img/fourColorDeck/resize/'}
@@ -631,7 +633,7 @@ self.adjustBetDisplay(roundedBet)
  }
 
 this.events.betSizeUnfocused = function(event){
-
+console.log('betsizeunfocused called')
     var newBetSize  = parseFloat($('#betSize').val())
     var isNumber = ( !isNaN(newBetSize)) && _.isNumber(newBetSize) 
     var roundedBetSize
@@ -659,6 +661,7 @@ self.images.raise.image.onClick = self.events.onButtonClick
 
 
 this.events.betSizeChanged = function(){
+  console.log('betsize changed')
     //check if betSize value is different than the old value and is not empty
     var newBetSize = parseFloat($('#betSize').val())
   var hasValue = /\S/.test($('#betSize').val())
@@ -667,12 +670,12 @@ this.events.betSizeChanged = function(){
         var isChanged = newBetSize!=self.gameState.betSize
 if(hasValue && isNumber && isChanged){
 //if value is different and is a number, store it
-  self.gameState.betSize = newBetSize}
+  self.adjustBetDisplay(newBetSize)}
 
 //if new betsize is not rounded to nearest increment, then set disable raise and bet buttons
   if(self.returnRoundedDownBetSize(newBetSize) == false || self.returnRoundedDownBetSize(newBetSize) != newBetSize){
 
-
+console.log('disabling 1 click on raise/bet')
 self.images.bet.image.onPress = disableOneClick
 self.images.raise.image.onPress = disableOneClick
 self.images.bet.image.onClick = null
@@ -2524,8 +2527,10 @@ this.images.pots[potNumber].potSize.text.text = potSize
      else {
            chipColor = 'blue'
        }
-
-       if(chipColor == 'red'){
+if( chipValue == 10){
+var chipImageSource = this.images.sources.chips['10']
+}
+  else   if(chipColor == 'red'){
            var chipImageSource = this.images.sources.chips.black
        }
        else if(chipColor == 'black'){
@@ -2851,8 +2856,13 @@ callback(null, callBackNumber)
      var betSizePercent = (betSize-self.gameState.minBet)/(self.gameState.maxBet-self.gameState.minBet)
       var newX = (maxX-minX)*betSizePercent+minX
       //make sure newX is within the bounds of min and max
-      if(newX>maxX){newX = maxX}
-        else if(newX<minX){newX = minX}
+      if(newX>=maxX){
+        newX = maxX
+self.images.bet.text.text = 'All-In'
+self.images.raise.text.text = 'All-In'
+      }//if all in
+      else{
+        if(newX<minX){newX = minX}
 
             self.images.betSlider.vertical.image.x = newX
 
@@ -2863,7 +2873,7 @@ callback(null, callBackNumber)
     else if(self.stage.contains(self.images.raise.text)){
         self.images.raise.text.text = 'Raise to '+betSize
     self.images.raise.messages = ['act','raise',betSize]}
-
+}//if not all in
 self.updateBetSize(betSize)
 self.stage.update()
          }
