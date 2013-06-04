@@ -4121,19 +4121,32 @@ var preActionOnce = self.gameState.seats[self.gameState.userSeatNumber].preActio
               if(flags.pending_sit_out == true){
 self.hideChildren(self.images.sitOutNextBlind)
 self.hideChildren(self.images.sitOutNextBlindOn)
+self.hideChildren(self.images.sitOutNextHand)
                 self.displayChildren(self.images.sitOutNextHandOn)
               }
-             else if (self.gameState.seats[self.gameState.userSeatNumber].sitting_out != true){self.displayChildren(self.images.sitOutNextHand)}
+             else if (self.gameState.seats[self.gameState.userSeatNumber].sitting_out != true){
+              self.hideChildren(self.images.sitOutNextHandOn)
+              self.displayChildren(self.images.sitOutNextHand)
+            }
 
                   //check if user is sitting out
                   if(user.sitting_out == true){
                     self.hideChildren(self.images.sitOutNextBlind)
 self.hideChildren(self.images.sitOutNextBlindOn)
+self.hideChildren(self.images.foldToAnyBet)
+self.hideChildren(self.images.foldToAnyBetOn)
                     this.playerSitsOut(self.gameState.userSeatNumber)
+                    self.hideChildren(self.images.sitOutNextHand)
                      self.displayChildren(self.images.sitOutNextHandOn)
                        //either display rebuy OR sitin if user is sitting out
-             if(user.notEnoughChips == true){self.displayChildren(self.images.rebuy)}
-                 else{ self.displayChildren(self.images.sitIn)}
+             if(user.notEnoughChips == true){
+              self.hideChildren(self.images.sitIn)
+              self.displayChildren(self.images.rebuy)
+}
+                 else{ 
+                  self.hideChildren(self.images.rebuy)
+                  self.displayChildren(self.images.sitIn)
+                }
 }//user.sitting_out == true
 
          //if user is not sitting out
@@ -4316,6 +4329,8 @@ self.playerSitsOut(table_state.seats[i].seat)
         
 
     socket.on('street_ends', function (potSizes){
+
+
         for(var i = 0;i<self.images.seats.length;i++){
 if(self.gameState.seats[i].displayMessageType == 'action'||'seat'||'openSeat'||'disabledSeat'){}
     else{self.gameState.seats[i].displayMessageType = 'seat'}
@@ -4799,26 +4814,9 @@ jQuery(window).load(function (){
 
  //   holdemCanvas.createAllItems()
   holdemCanvas.receiveTableState()
-     console.log(document.getElementById('chatDiv'))
-      console.log(document.getElementById('cashierDiv'))
-/*
-      //background bitmap
-        self.window = new self.images.Item(80,80,9,9,9)
-        self.images.itemAsBitmap( self.window, self.images.sources.messageBoxBackground)
-        
-        self.displayChildren( self.window)
-        */
+
+      console.log(document)
+
     })
- /*
-     tick=function(event) {
-         if(holdemCanvas.gameState.countdownOn) {
-       
-    // console.log(createjs.Ticker.getMeasuredFPS())
- holdemCanvas.countdown()
-    }
-}
  
-createjs.Ticker.addEventListener("tick", tick)
-createjs.Ticker.setInterval(1000)
     
-*/
