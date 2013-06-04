@@ -4,7 +4,6 @@ var socket = io.connect(window.location.origin, {
   , 'xhr-multipart'
   , 'htmlfile'
   , 'xhr-polling'
-  , 'jsonp-polling'
   ]
 })
   , $chat_form = $('#chat_form')

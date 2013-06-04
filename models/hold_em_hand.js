@@ -8,8 +8,8 @@ module.exports = (function () {
     
     , io = require('../sockets') // configured and listening Socket.IO
 
-    , PokerEvaluator = require('poker-evaluator')
-    , evaluator = new PokerEvaluator('./node_modules/poker-evaluator/HandRanks.dat')
+    //, PokerEvaluator = require('poker-evaluator')
+    //, evaluator = new PokerEvaluator('./node_modules/poker-evaluator/HandRanks.dat')
     
     , db = require('./db') // make sure mongoose is connected
 
@@ -549,7 +549,7 @@ module.exports = (function () {
     self.showed_down = true;
     results = _.map(self.players, function(player) {
           whole_hand = _.union(player.hand, self.community);
-          res = evaluator.evalHand(whole_hand);
+          res = {}//evaluator.evalHand(whole_hand);
           //console.log(whole_hand, 'evaluated as', res);
           res.player = player;
           return res;
