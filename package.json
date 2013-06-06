@@ -11,6 +11,7 @@
     "mongoose": "latest",
     "passport": "latest",
     "passport-local": "latest",
+    "poker-evaluator": "latest",
     "socket.io": "latest",
     "underscore": "latest",
     "underscore.string": "latest",
@@ -23,7 +24,7 @@
     "start": "app.js"
   },
   "engines": {
-    "node": "0.8.19"
+    "node": "0.10.x"
   },
   "devDependencies": {
     "chai": "~1.4.2",
