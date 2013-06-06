@@ -23,7 +23,7 @@ module.exports = (function () {
       email: req.user.email,
       maobucks: req.user.maobucks,
       email_confirmed: req.user.email_confirmed,
-      bitcoins: req.user.satoshi / 10E8,
+      bitcoins: req.user.satoshi / 1E8,
     });
   });
 
@@ -59,7 +59,7 @@ module.exports = (function () {
               console.error('error when updating bitcoin balance to database.'); 
             }
             else {
-            console.log("Deposited " + bitcoin_update + " into " + username + "'s account.\nNew balance is "+ new_bitcoin_balance + "satoshis.");
+            console.log("Deposited " + bitcoin_update + " into " + username + "'s account.\nNew balance is "+ new_bitcoin_balance + " satoshis.");
             }
           } );          
         }
