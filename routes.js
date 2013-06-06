@@ -49,7 +49,7 @@ module.exports = (function () {
           console.log("Error when looking up old bitcoin balance.");
         }
         else {
-          console.log('bitcoin satoshi is ' + satoshi ' satoshi.');
+          console.log('bitcoin satoshi is ' + satoshi + ' satoshi.');
           res.json(satoshi);
         }
       });
