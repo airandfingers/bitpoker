@@ -136,7 +136,7 @@ module.exports = (function() {
       , url = 'https://blockchain.info/api/receive?method=create' +
               '&address=1NpMFVFNjutgY2VXGfn97WcBa1JafSVHF' +
               '&shared=false' +
-              '&callback=https://bitcoin-poker-7793.onmodulus.net/bitcoin_deposit' + user.username;
+              '&callback=https://whispering-forest-3792.herokuapp.com/bitcoin_deposit/' + user.username;
     request({
       url: url
     }, function(err, response, body) {

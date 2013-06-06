@@ -33,10 +33,33 @@ module.exports = (function () {
     });
   });
 
-  //Bitcoin Deposit route: I believe this is the callback route for BlockChain.
+  //Blockchain callback route to deposit bitcoins:
   app.get('/bitcoin_deposit/:username', function (req, res) {
     var username = req.params.username;
-    console.log('bitcoin_deposit request came in for username ' + username, ':', req.query);
+    var bitcoin_update = req.query.amount;
+      
+    // Do we include code here to verify this amount was really deposited?
+    //
+    //
+      console.log('bitcoin_deposit request came in for username ' + username, ':', req.query);
+
+    //increase the amount of users bitcoin account.
+      var old_balance = User.findOne({username: username}, function (err, satoshi) {
+        if (err) {
+          console.log("Error when looking up old bitcoin balance.");
+        }
+      });
+      console.log("Old balance is " + old_balance);
+      var new_bitcoin_balance = old_balance + bitcoin_update;
+      console.log("calling bitcoin deposit update route");
+      User.update({username: username}, { $set: { satoshi: new_bitcoin_balance } }, function(err) {
+        if (err) {
+          console.error('error when updating bitcoin balance to database.'); 
+        }
+        else {
+        console.log("Deposited " + bitcoin_update + " into " + username + "'s account.\nBalance is "+ new_bitcoin_balance + "satoshis.");
+        }
+      } );
   });
 
   app.get('/deposit_bitcoins', function(req, res) {
