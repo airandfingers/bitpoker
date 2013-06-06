@@ -24,6 +24,7 @@ module.exports = (function () {
       maobucks: req.user.maobucks,
       email_confirmed: req.user.email_confirmed,
       bitcoins: req.user.satoshi / 1E8,
+      message: req.flash('error'),
     });
   });
 
@@ -99,12 +100,14 @@ module.exports = (function () {
    app.get('/', function(req, res) {
     res.render('index', {
       title: 'Homepage',
+      message: req.flash('error'),      
     });
   });
 
   app.get('/home', function(req, res) {
     res.render('index', {
       title: 'Homepage',
+      message: req.flash('error'),      
     });
   });
 
@@ -112,6 +115,7 @@ module.exports = (function () {
   app.get('/index', function(req, res) {
     res.render('index', {
       title: 'Homepage',
+      message: req.flash('error'),
     });
   });
 
@@ -236,6 +240,21 @@ module.exports = (function () {
       });
     }
     res.redirect('/account'); 
+  });
+
+  //delete account
+  app.post('/delete_account', function (req, res) {
+    console.log('delete_account route fired.');
+    User.remove({ _id: req.user.id }, function(err) {
+        if (!err) {
+                console.log('Account deleted!');
+                req.flash('error', 'Account deleted. Play again soon!');
+                res.redirect('/index');
+        }
+        else {
+                console.error('Error when attempting to delete account');
+        }
+    });
   });
 
   //submit password recovery to user's e-mail address route.
