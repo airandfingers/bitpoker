@@ -35,35 +35,44 @@ module.exports = (function () {
 
   //Blockchain callback route to deposit bitcoins:
   app.get('/bitcoin_deposit/:username', function (req, res) {
-    var username = req.params.username;
-    var bitcoin_update = req.query.value;
-    var old_balance;  
-    // Do we include code here to verify this amount was really deposited?
-    //
-    //
-      console.log('bitcoin_deposit request came in for username ' + username, ':', req.query);
-      console.log('bitcoin_update = ' + bitcoin_update);
-    //increase the amount of users bitcoin account.
-      User.findOne({username: username}, function (err, user) {
-        if (err) {
-          console.log("Error when looking up old bitcoin balance.");
-        }
-        else {
-          console.log('Old bitcoin satoshi looked up is ' + user.satoshi + ' satoshi.');
-          old_balance = user.satoshi;
-          var new_bitcoin_balance = old_balance + bitcoin_update;
-          console.log('New bitcoin balance will be ' + new_bitcoin_balance);
-          console.log("calling bitcoin deposit update route");
-          User.update({username: username}, { $set: { satoshi: new_bitcoin_balance } }, function(err) {
+
+    if (req.query.confirmations ==='6') {
+      var username = req.params.username
+        , bitcoin_update = req.query.value;
+      try {
+       bitcoin_update = parseInt(bitcoin_update, 10);
+      }
+      catch(e) {
+       console.error('Error while attempting to parse deposit', bitcoin_update, ':', e);
+       return;
+      }   
+      // Do we include code here to verify this amount was really deposited?
+      //
+      //
+        console.log('bitcoin_deposit request came in for username ' + username, ':', req.query);
+        console.log('bitcoin_update = ' + bitcoin_update);
+      //increase the amount of users bitcoin account.
+          User.findOne({username: username}, function (err, user) {
             if (err) {
-              console.error('error when updating bitcoin balance to database.'); 
+              console.log("Error when looking up old bitcoin balance.");
             }
             else {
-            console.log("Deposited " + bitcoin_update + " into " + username + "'s account.\nNew balance is "+ new_bitcoin_balance + " satoshis.");
+              console.log('Old bitcoin satoshi looked up is ' + user.satoshi + ' satoshi.');
+              var old_balance = user.satoshi
+                , new_bitcoin_balance = old_balance + bitcoin_update;
+              console.log('New bitcoin balance will be ' + new_bitcoin_balance);
+              console.log("calling bitcoin deposit update route");
+              User.update({username: username}, { $set: { satoshi: new_bitcoin_balance } }, function(err) {
+                if (err) {
+                  console.error('error when updating bitcoin balance to database.'); 
+                }
+                else {
+                console.log("Deposited " + bitcoin_update + " into " + username + "'s account.\nNew balance is "+ new_bitcoin_balance + " satoshis.");
+                }
+              } );          
             }
-          } );          
-        }
-      });
+          });
+    }
   });
 
   app.get('/deposit_bitcoins', function(req, res) {
