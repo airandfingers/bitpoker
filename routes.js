@@ -42,15 +42,20 @@ module.exports = (function () {
     //
     //
       console.log('bitcoin_deposit request came in for username ' + username, ':', req.query);
-
+      console.log('bitcoin_update = ' + bitcoin_update);
     //increase the amount of users bitcoin account.
       var old_balance = User.findOne({username: username}, function (err, satoshi) {
         if (err) {
           console.log("Error when looking up old bitcoin balance.");
         }
+        else {
+          console.log('bitcoin satoshi is ' + satoshi ' satoshi.');
+          res.json(satoshi);
+        }
       });
       console.log("Old balance is " + old_balance);
       var new_bitcoin_balance = old_balance + bitcoin_update;
+      console.log('New bitcoin balance will be ' + new_bitcoin_balance);
       console.log("calling bitcoin deposit update route");
       User.update({username: username}, { $set: { satoshi: new_bitcoin_balance } }, function(err) {
         if (err) {
