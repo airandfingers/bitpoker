@@ -14,17 +14,17 @@
     "socket.io": "latest",
     "underscore": "latest",
     "underscore.string": "latest",
-    "poker-evaluator": "~0.0.4",
     "async": "~0.2.6",
     "nodemailer": "~0.4.1",
     "request": "~2.21.0"
   },
   "domains": [],
   "scripts": {
-    "start": "app.js"
+    "start": "app.js",
+    "postinstall": "npm install ./custom_modules"
   },
   "engines": {
-    "node": "0.8.19"
+    "node": "0.10.x"
   },
   "devDependencies": {
     "chai": "~1.4.2",

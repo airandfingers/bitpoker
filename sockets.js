@@ -17,9 +17,28 @@ module.exports = (function () {
     , 'xhr-polling'
     //, 'flashsocket'
     , 'htmlfile'
-    , 'jsonp-polling'
   ]);
   io.set('close timeout', 30);
+
+
+  var RedisStore = require('socket.io/lib/stores/redis')
+    , redis  = require('socket.io/node_modules/redis')
+    , pub    = redis.createClient(18034, 'pub-redis-18034.us-west-1.1.azure.garantiadata.com')
+    , sub    = redis.createClient(18034, 'pub-redis-18034.us-west-1.1.azure.garantiadata.com')
+    , client = redis.createClient(18034, 'pub-redis-18034.us-west-1.1.azure.garantiadata.com')
+    , password = 'stmu68z8B4bz6Wajaw0xv4O2kDNmzfsR';
+
+  pub.auth(password, function (err) { if (err) throw err; });
+  sub.auth(password, function (err) { if (err) throw err; });
+  client.auth(password, function (err) { if (err) throw err; });
+
+  io.set('store', new RedisStore({
+    redis: redis
+  , redisPub: pub
+  , redisSub: sub
+  , redisClient : client
+  }));
+
   
   //authorization handler - 
   io.set('authorization', function (data, cb) {
