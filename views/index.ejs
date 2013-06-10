@@ -2,6 +2,10 @@
 <% include head %>
     <div>
         <h1>Welcome to Bitcoin Poker v1.0</h1>
+
+        <% if (message) { %>
+          <p><%= message %></p>
+        <% } %>        
         
         <a href="/lobby"><button class="btn btn-custom" autofocus>Go in. All in.</button></a>
     </div>

@@ -23,7 +23,8 @@ module.exports = (function () {
       email: req.user.email,
       maobucks: req.user.maobucks,
       email_confirmed: req.user.email_confirmed,
-      bitcoins: req.user.satoshi / 10E8,
+      bitcoins: req.user.satoshi / 1E8,
+      message: req.flash('error'),
     });
   });
 
@@ -33,10 +34,46 @@ module.exports = (function () {
     });
   });
 
-  //Bitcoin Deposit route: I believe this is the callback route for BlockChain.
+  //Blockchain callback route to deposit bitcoins:
   app.get('/bitcoin_deposit/:username', function (req, res) {
-    var username = req.params.username;
-    console.log('bitcoin_deposit request came in for username ' + username, ':', req.query);
+
+    if (req.query.confirmations ==='6') {
+      var username = req.params.username
+        , bitcoin_update = req.query.value;
+      try {
+       bitcoin_update = parseInt(bitcoin_update, 10);
+      }
+      catch(e) {
+       console.error('Error while attempting to parse deposit', bitcoin_update, ':', e);
+       return;
+      }   
+      // Do we include code here to verify this amount was really deposited?
+      //
+      //
+        console.log('bitcoin_deposit request came in for username ' + username, ':', req.query);
+        console.log('bitcoin_update = ' + bitcoin_update);
+      //increase the amount of users bitcoin account.
+          User.findOne({username: username}, function (err, user) {
+            if (err) {
+              console.log("Error when looking up old bitcoin balance.");
+            }
+            else {
+              console.log('Old bitcoin satoshi looked up is ' + user.satoshi + ' satoshi.');
+              var old_balance = user.satoshi
+                , new_bitcoin_balance = old_balance + bitcoin_update;
+              console.log('New bitcoin balance will be ' + new_bitcoin_balance);
+              console.log("calling bitcoin deposit update route");
+              User.update({username: username}, { $set: { satoshi: new_bitcoin_balance } }, function(err) {
+                if (err) {
+                  console.error('error when updating bitcoin balance to database.'); 
+                }
+                else {
+                console.log("Deposited " + bitcoin_update + " into " + username + "'s account.\nNew balance is "+ new_bitcoin_balance + " satoshis.");
+                }
+              } );          
+            }
+          });
+    }
   });
 
   app.get('/deposit_bitcoins', function(req, res) {
@@ -63,12 +100,14 @@ module.exports = (function () {
    app.get('/', function(req, res) {
     res.render('index', {
       title: 'Homepage',
+      message: req.flash('error'),      
     });
   });
 
   app.get('/home', function(req, res) {
     res.render('index', {
       title: 'Homepage',
+      message: req.flash('error'),      
     });
   });
 
@@ -76,6 +115,7 @@ module.exports = (function () {
   app.get('/index', function(req, res) {
     res.render('index', {
       title: 'Homepage',
+      message: req.flash('error'),
     });
   });
 
@@ -200,6 +240,21 @@ module.exports = (function () {
       });
     }
     res.redirect('/account'); 
+  });
+
+  //delete account
+  app.post('/delete_account', function (req, res) {
+    console.log('delete_account route fired.');
+    User.remove({ _id: req.user.id }, function(err) {
+        if (!err) {
+                console.log('Account deleted!');
+                req.flash('error', 'Account deleted. Play again soon!');
+                res.redirect('/index');
+        }
+        else {
+                console.error('Error when attempting to delete account');
+        }
+    });
   });
 
   //submit password recovery to user's e-mail address route.
