@@ -268,6 +268,14 @@ module.exports = (function () {
         console.error('Error during findOne:', err);
         res.json({ error: 'Error during findOne:' + JSON.stringify(err) });
       }
+      else if (user === null) {
+        req.flash('error', 'Sorry. There is no such user as ' + username + '. Hope you did not forget your username. That could be bad.');
+        res.redirect('/password_recovery');
+      }
+      else if (_.isEmpty(user.email)) {
+        req.flash('error', 'Sorry. There is no e-mail registered with the account for ' + username + '. You cannot recover your password.');
+        res.redirect('/password_recovery');
+      }
       else {
         User.generatePasswordRecoveryCode(function (err, recovery_code) {
           if (err) {
@@ -441,23 +449,24 @@ module.exports = (function () {
         username: username,
         pt_password: pt_password,
       });
-      var user = User.createUser({
+      User.createUser({
         username: username,
         pt_password: pt_password,
-      });
-      user.save(function(err, result) {
-        if (err) {
-          req.flash('error', err.message);
-          res.redirect('/register?next=' + target);
-        }
-        else {
-          // Registration successful. Redirect.
-          console.log('registration successful on ' + user.registration_date + ' !');
-          req.flash('error', 'Please log in with your new username and password.');
-          res.redirect('/login');
-          /*req.url = req.originalUrl = '/login';
-          app.router._dispatch(req, res, next);*/
-        }
+      }, function(user) {
+        user.save(function(err, result) {
+          if (err) {
+            req.flash('error', err.message);
+            res.redirect('/register?next=' + target);
+          }
+          else {
+            // Registration successful. Redirect.
+            console.log('registration successful on ' + user.registration_date + ' !');
+            req.flash('error', 'Please log in with your new username and password.');
+            res.redirect('/login');
+            /*req.url = req.originalUrl = '/login';
+            app.router._dispatch(req, res, next);*/
+          }
+        });
       });
     }
     else {

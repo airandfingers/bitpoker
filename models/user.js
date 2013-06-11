@@ -32,7 +32,7 @@ module.exports = (function() {
   });
 
   // static methods - Model.method()
-  UserSchema.statics.createUser = function(spec) {
+  UserSchema.statics.createUser = function(spec, cb) {
     console.log('createUser called for', spec);
     var pt_password = spec.pt_password
       , shasum = crypto.createHash('sha1');
@@ -44,13 +44,13 @@ module.exports = (function() {
     }
     else {
       console.error('User.createUser called on user without pt_password!');
-      return null;
+      cb(null);
     }
     console.log('creating user with', spec);
     var user = new User(spec);
-    //user.initialize();
-
-    return user;
+    user.generateDepositAddress(function() {
+      cb(user);
+    });
   };
 
   UserSchema.statics.authenticate = function(username, password, cb) {
@@ -65,14 +65,14 @@ module.exports = (function() {
     }, cb);
   };
 
-  UserSchema.statics.generateConfirmationCode = function(callback) {
+  UserSchema.statics.generateConfirmationCode = function(cb) {
     crypto.randomBytes(16, function(err, buf) {
       if (err) {
-        callback(err);
+        cb(err);
       }
       else {
         var confirmation_code = buf.toString('hex');
-        callback(null, confirmation_code);
+        cb(null, confirmation_code);
       }
     });
   };
@@ -117,31 +117,30 @@ module.exports = (function() {
     });
   };
 
-  // gets called before a document is saved
-  UserSchema.pre('save', function(next) {
-    var user = this
-    // generate deposit public address for this user
-      , url = 'https://blockchain.info/api/receive?method=create' +
-              '&address=1NpMFVFNjutgY2VXGfn97WcBa1JafSVHF' +
-              '&shared=false' +
-              '&callback=https://bitcoin-poker-7793.onmodulus.net/bitcoin_deposit/' + user.username;
-    request({
-      url: url
-    }, function(err, response, body) {
-      if (err) {
-        console.error('Error while creating deposit address:', err);
-      }
-      else if (response.statusCode !== 200 && response.statusCode !== 201) {
-        console.error('Unsuccessful response code while creating deposit address:', response.statusCode);
-      }
-      else {
-        var body = JSON.parse(response.body);
-        user.deposit_address = body.input_address;
-      }
-      next();
-    });
-  });
-
+  UserSchema.methods.generateDepositAddress = function(cb) {
+      var user = this
+      // generate deposit public address for this user
+        , url = 'https://blockchain.info/api/receive?method=create' +
+                '&address=1NpMFVFNjutgY2VXGfn97WcBa1JafSVHF' +
+                '&shared=false' +
+                '&callback=https://bitcoin-poker-7793.onmodulus.net/bitcoin_deposit/' + user.username;
+      request({
+        url: url
+      }, function(err, response, body) {
+        if (err) {
+          console.error('Error while creating deposit address:', err);
+        }
+        else if (response.statusCode !== 200 && response.statusCode !== 201) {
+          console.error('Unsuccessful response code while creating deposit address:', response.statusCode);
+        }
+        else {
+          var body = JSON.parse(response.body);
+          user.deposit_address = body.input_address;
+          console.log('user.deposit_address is ' + user.deposit_address);
+        }
+        cb();
+      });
+    };  
   /* the model - a fancy constructor compiled from the schema:
    *   a function that creates a new document
    *   has static methods and properties attached to it
