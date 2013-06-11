@@ -24,7 +24,7 @@ module.exports = (function() {
   , confirmation_code: String
     //whether the user has confirmed his/r email address
   , email_confirmed  : { type: Boolean, default: false }
-  , maobucks         : { type: Number, default: 0, min: 0 }
+  , maobucks         : { type: Number, default: 100, min: 0 }
   , satoshi          : { type: Number, default: 0, min: 0 }
   , recovery_code    : { type: String }
   , registration_date: { type: Date, default: Date.now }
@@ -95,28 +95,16 @@ module.exports = (function() {
     console.log(this.username);
   };
 
-  // lookup and return current maobucks value
-  UserSchema.methods.maobucks_inquire = function(cb) {
+  // lookup and return current currency value of the given type
+  UserSchema.methods.checkBalance = function(type, cb) {
     User.findOne({ _id: this._id }, function(err, user) {
       if (err) {
         cb(err);
+        return;
       }
       else {
-        console.log(user.username + " has " + (user && user.maobucks) + " in maobucks on " + Date());
-        cb(null, user && user.maobucks)
-      }
-    });
-  };
-
-  // lookup and return current satoshi value
-  UserSchema.methods.satoshi_inquire = function(cb) {
-    User.findOne({ _id: this._id }, function(err, user) {
-      if (err) {
-        cb(err);
-      }
-      else {
-        console.log(user.username + " has " + (user && user.satoshi) + " in satoshi on " + Date());
-        cb(null, user && user.satoshi)
+        console.log(user.username + ' has ' + (user && user[type]) + ' in ' + type + ' on ' + Date());
+        cb(null, user && user[type])
       }
     });
   };

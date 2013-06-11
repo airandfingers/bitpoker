@@ -327,8 +327,9 @@ module.exports = (function () {
           return;
         }
         var stack_in_currency = self.chips * game.CURRENCY_PER_CHIP
-          , new_maobucks = user.maobucks + stack_in_currency;
-        user.update({ $set: { maobucks: new_maobucks } }, function(save_err) {
+          , new_balance = user[game.CURRENCY] + stack_in_currency;
+        user[game.CURRENCY] = new_balance;
+        user.save(function(save_err) {
           if (save_err) {
             self.sendMessage('error', 'error while saving user: ' + save_err.message || save_err);
             return;
@@ -404,18 +405,18 @@ module.exports = (function () {
   PlayerSchema.methods.calculateAddChipsInfo = function(cb) {
     var self = this
       , game = self.game;
-    self.socket.user.maobucks_inquire(function(err, maobucks) {
+    self.socket.user.checkBalance(game.CURRENCY, function(err, balance) {
       if (err) {
         cb(err);
       }
       else {
         var currency_per_chip = game.CURRENCY_PER_CHIP
-          , balance_in_chips = game.roundNumChips(maobucks / currency_per_chip)
+          , balance_in_chips = game.roundNumChips(balance / currency_per_chip)
           , stack = self.chips
           , num_to_min = game.MIN_CHIPS - stack
           , num_to_max = game.MAX_CHIPS - stack
           , add_chips_info = {
-              balance_in_currency: maobucks
+              balance_in_currency: balance
             , balance_in_chips: balance_in_chips
             , stack: stack
             , currency_per_chip: currency_per_chip
@@ -465,7 +466,7 @@ module.exports = (function () {
       self.sendMessage('error', error);
       return;
     }
-    if (currency_or_chips === 'maobucks') {
+    if (currency_or_chips === game.CURRENCY) {
       num_chips = amount / add_chips_info.currency_per_chip;
     }
     else if (currency_or_chips === 'chips') {
@@ -518,14 +519,15 @@ module.exports = (function () {
         self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);
         return;
       }
-      var num_maobucks = num_chips * game.CURRENCY_PER_CHIP
-        , new_maobucks = user.maobucks - num_maobucks;
-      if (new_maobucks < 0) {
-        self.sendMessage('error', 'player no longer has enough maobucks to add ' + num_chips + ' chips!');
+      var num_currency = num_chips * game.CURRENCY_PER_CHIP
+        , new_balance = user[game.CURRENCY] - num_currency;
+      if (new_balance < 0) {
+        self.sendMessage('error', 'player no longer has enough currency to add ' + num_chips + ' chips!');
         return;
       }
       else {
-        user.update({ $set: { maobucks: new_maobucks } }, function(save_err) {
+        user[game.CURRENCY] = new_balance;
+        user.save(function(save_err) {
           if (save_err) {
             self.sendMessage('error', 'error while saving user: ' + save_err.message || save_err);
             return;

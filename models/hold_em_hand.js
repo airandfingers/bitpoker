@@ -290,7 +290,7 @@ module.exports = (function () {
 
     async.whilst(
       function shouldRunBody() { // test called before body - determines whether to run or skip
-        console.log('testing:',
+        console.log('testing ' + player.username + ':',
                       '# of players: ' + self.players.length + ' vs. MIN_PLAYERS: ' + game.MIN_PLAYERS,
                       'Has player acted yet? ' + player.hasActedIn(self.stage_num),
                       'current_bet: ' + player.current_bet + ' vs. high_bet: ' + self.high_bet);

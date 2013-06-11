@@ -3,48 +3,68 @@ module.exports = (function () {
     , Schema = mongoose.Schema // Mongoose Schema constructor
     , ObjectId = Schema.ObjectId // Mongoose ObjectId type
 
-    , _ = require('underscore'); // list utility library
+    , _ = require('underscore') // list utility library
+
+    , game_types = require('./game_types')
+    , defaults = game_types.defaults;
+
+  var static_properties = {
+    // all the games in the world
+    games: []
+  }
 
   var NoLimitGameSchema = new Schema({
   // instance properties - document.field_name
     // the number of players who need to be sitting/blinding before the hand can begin
-    MIN_PLAYERS: { type: Number, default: 2 }
+    MIN_PLAYERS: { type: Number, default: defaults.MIN_PLAYERS }
     // the maximum number of players this came can have
-  , MAX_PLAYERS: { type: Number, default: 10 }
+  , MAX_PLAYERS: { type: Number, default: defaults.MAX_PLAYERS }
     // at least how many chips must players bring to the table to play?
-  , MIN_CHIPS: { type: Number, default: 50 }
+  , MIN_CHIPS: { type: Number, default: defaults.MIN_CHIPS }
     // at most how many chips can players bring to the table to play?
-  , MAX_CHIPS: { type: Number, default: 10000 }
+  , MAX_CHIPS: { type: Number, default: defaults.MAX_CHIPS }
     // how many chips the big blind costs
-  , SMALL_BLIND: { type: Number, default: 10 }
+  , SMALL_BLIND: { type: Number, default: defaults.SMALL_BLIND }
     // how many chips the small blind costs
-  , BIG_BLIND: { type: Number, default: 20 }
-    // how many maobucks it takes to buy a single chip at this table
-  , CURRENCY_PER_CHIP: { type: Number, default: 1E-5 }
+  , BIG_BLIND: { type: Number, default: defaults.BIG_BLIND }
 
+    // how much currency it takes to buy a single chip at this table
+  , CURRENCY_PER_CHIP: { type: Number, default: defaults.CURRENCY_PER_CHIP }
     // which currency this game deals in (maobucks or cash)
-  , CURRENCY: { type: String, default: 'maobucks' }
+  , CURRENCY: { type: String, default: defaults.CURRENCY }
     // the minimum difference between two possible chip amounts at this table
-  , MIN_INCREMENT: { type: Number, default: 1 }
+  , MIN_INCREMENT: { type: Number, default: defaults.MIN_INCREMENT }
 
-  // CONSTANT FOR ALL GAMES
     // how many ms to wait between polling to see how many players are ready
-  , WAIT_POLL_INTERVAL: { type: Number, default: 5000 }
+  , WAIT_POLL_INTERVAL: { type: Number, default: defaults.WAIT_POLL_INTERVAL }
     // how long (in ms) between last betting action and street_ends message
-  , STREET_END_DELAY: { type: Number, default: 1000 }
+  , STREET_END_DELAY: { type: Number, default: defaults.STREET_END_DELAY }
     // how long (in ms) between street_ends and community_dealt messages
-  , PRE_DEAL_DELAY: { type: Number, default: 1000 }
+  , PRE_DEAL_DELAY: { type: Number, default: defaults.PRE_DEAL_DELAY }
     // how long (in ms) to wait before automatically skipping players who should be skipped
-  , SKIP_PLAYER_DELAY : { type: Number, default: 1000 }
+  , SKIP_PLAYER_DELAY : { type: Number, default: defaults.SKIP_PLAYER_DELAY }
     // how long (in ms) to wait for players to respond to prompts
-  , ACT_TIMEOUT: { type: Number, default: 10000 }
+  , ACT_TIMEOUT: { type: Number, default: defaults.ACT_TIMEOUT }
     // how long (in ms, per pot) to wait after winners message and before reset_table message
-  , DISPLAY_HANDS_DURATION: { type: Number, default: 3000 }
+  , DISPLAY_HANDS_DURATION: { type: Number, default: defaults.DISPLAY_HANDS_DURATION }
     // how long (in ms) players can sit out before being forced from their seats
-  , SIT_OUT_TIME_ALLOWED: { type: Number, default: 30000 } // 30 seconds (for testing)
+  , SIT_OUT_TIME_ALLOWED: { type: Number, default: defaults.SIT_OUT_TIME_ALLOWED } // 30 seconds (for testing)
     // how long (in ms) players are forced to wait before buying with less than they stood up with
-  , MIN_BUYIN_TIME_ENFORCED: { type: Number, default: 30000 } // 30 seconds (for testing)
+  , MIN_BUYIN_TIME_ENFORCED: { type: Number, default: defaults.MIN_BUYIN_TIME_ENFORCED } // 30 seconds (for testing)
   });
+
+  NoLimitGameSchema.statics.setup = function() {
+    var currency_constants
+      , game_constants;
+    _.each(game_types.currency_types, function(currency_values) {
+      currency_constants = _.object(game_types.set_per_currency, currency_values);
+      _.each(game_types.game_types, function(game_values) {
+        game_constants = _.object(game_types.set_per_game, game_values);
+        _.extend(game_constants, currency_constants);
+        NoLimitGame.createNoLimitGame(game_constants);
+      });
+    });
+  };
 
   NoLimitGameSchema.statics.createNoLimitGame = function(spec) {
     if (_.isNumber(spec.SMALL_BLIND) && _.isUndefined(spec.BIG_BLIND)) {
@@ -52,6 +72,7 @@ module.exports = (function () {
     }
     //console.log('creating NoLimitGame:', spec);
     var game = new NoLimitGame(spec);
+    NoLimitGame.games.push(game);
 
     return game;
   };
@@ -76,7 +97,7 @@ module.exports = (function () {
       rounded_amount = rounded_amount / round_by_inverse;
       //console.log('after dividing:', rounded_amount);
     }
-    console.log('rounded', amount, 'to', rounded_amount);
+    //console.log('rounded', amount, 'to', rounded_amount);
     return rounded_amount;
   }
 
@@ -103,10 +124,6 @@ module.exports = (function () {
     return serialized;
   }
 
-  var static_properties = {
-  // static properties (attached below) - Model.property_name
-  };
-
   /* the model - a fancy constructor compiled from the schema:
    *   a function that creates a new document
    *   has static methods and properties attached to it
@@ -115,6 +132,8 @@ module.exports = (function () {
 
   // static properties (defined above)
   _.extend(NoLimitGame, static_properties);
+
+  NoLimitGame.setup();
   
   return NoLimitGame;
 })();

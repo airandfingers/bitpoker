@@ -24,6 +24,7 @@ module.exports = (function () {
       maobucks: req.user.maobucks,
       email_confirmed: req.user.email_confirmed,
       bitcoins: req.user.satoshi / 1E8,
+      satoshi: req.user.satoshi,
       message: req.flash('error'),
     });
   });
@@ -392,7 +393,7 @@ module.exports = (function () {
               '&to=' + withdraw_address +
               '&amount=' + num_satoshi;
     console.log('num_satoshi:', num_satoshi, 'withdraw_address:', withdraw_address, 'url:', url);
-    req.user.satoshi_inquire(function(err, balance_in_satoshi) {
+    req.user.checkBalance('satoshi', function(err, balance_in_satoshi) {
       if (err) {
         console.error('Error while looking up bitcoin balance:', err);
         res.redirect('back');

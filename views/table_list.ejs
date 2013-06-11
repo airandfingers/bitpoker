@@ -1,6 +1,7 @@
 <table id="table_list">
   <thead>
     <tr>
+      <th>Currency</th>
       <th>#</th>
       <th>Blinds</th>
       <th>Buyin Limits</th>
@@ -22,7 +23,7 @@
       table_name = table_game.table_name;
       table_id = table_game.table_id;
       constants = game.constants();
-      CURRENCY_ABBREV = game.CURRENCY === 'maobucks' ? 'MB' : 'BTC';
+      CURRENCY_ABBREV = game.CURRENCY === 'maobucks' ? 'MB' : 'sat';
       CURRENCY_PER_CHIP = game.CURRENCY_PER_CHIP;
       SMALL_BLIND = game.roundNumCurrency(game.SMALL_BLIND * CURRENCY_PER_CHIP);
       BIG_BLIND = game.roundNumCurrency(game.BIG_BLIND * CURRENCY_PER_CHIP);
@@ -33,6 +34,7 @@
       MAX_PLAYERS = game.MAX_PLAYERS;
     %>
       <tr id="<%=table_name %>">
+        <td> <%= game.CURRENCY %> </td>
         <td> <%= table_id %> </td>
         <td> <%= SMALL_BLIND %> / <%= BIG_BLIND %> <%= CURRENCY_ABBREV %> </td>
         <td> <%= MIN_CHIPS %> - <%= MAX_CHIPS %> <%= CURRENCY_ABBREV %> </td>

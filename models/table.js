@@ -17,31 +17,8 @@ module.exports = (function () {
 
   var static_properties = {
   // static properties (attached below) - Model.property_name
-  TABLE_CONSTANTS: ['SMALL_BLIND', 'MIN_CHIPS', 'MAX_CHIPS', 'MAX_PLAYERS'],
-  // describes the constants to initialize tables with,
-  // listing constants in TABLE_CONSTANTS' order
-  TABLE_TYPES: [
-// small blind    max stack
-//          min stack    max players
-    // SB     MIN    MAX    MAXP
-      [   1,    5,   100,    10]
-    , [   5,   25,   500,     2]
-    , [  25,  100,  2500,     3]
-    , [ 100,  500,   1E4,     4]
-    , [ 500, 2500,   5E4,     5]
-    , [2500,  1E4,  25E4,     6]
-    , [ 1E4,  5E4,   1E6,     7]
-    , [ 5E4, 25E4,   5E6,     8]
-    , [25E4,  1E5,  25E6,     9]
-    , [ 1E5,  5E5,   1E7,    10]
-    , [ 5E5, 25E5,   5E7,    10]
-    , [25E5,  1E6,  25E7,    10]
-    , [ 1E6,  5E6,   1E8,    10]
-    , [ 5E6, 25E6,   5E8,    10]
-    , [25E6,100E6,  25E8,     2]
-    ]
     // [this string] + table_id = room_name
-  , TABLE_PREFIX: 'table_'
+    TABLE_PREFIX: 'table_'
     // the events a Table should react to, on its room
     // {String event_name: String handler_name}
   , room_events: {}
@@ -78,13 +55,8 @@ module.exports = (function () {
   TableSchema.statics.setup = function() {
     var game
       , i = 0;
-      //, sb_min_max_mbpc;
-    _.each( Table.TABLE_TYPES, function(constants) {
-      //sb_min_max_mbpc = constants.join('_');
-      constants = _.object(Table.TABLE_CONSTANTS, constants);
-      game = NoLimitGame.createNoLimitGame(constants);
+    _.each( NoLimitGame.games, function(game) {
       Table.createTable({
-        //table_id: sb_min_max_mbpc + '_a' // constants plus a (first table of this type)
         table_id: ++i
       , game: game
       });
@@ -111,14 +83,14 @@ module.exports = (function () {
 
   TableSchema.statics.getTableGames = function() {
     // console.log('getting table games');
-    var table_games = []
-      , table_game;
+    var table_games = [];
     _.each(Table.tables, function(table, table_name) {
-      table_game = { game: table.game };
-      table_game.table_name = table_name;
-      table_game.table_id = table.table_id;
-      table_game.seats_taken = table.getNumSeatsTaken();
-      table_games.push(table_game);
+      table_games.push({
+        game: table.game
+      , table_name: table_name
+      , table_id: table.table_id
+      , seats_taken: table.getNumSeatsTaken()
+      });
     });
     //console.log('Returning table_games:', table_games);
     return table_games;
@@ -309,7 +281,7 @@ module.exports = (function () {
     else {
       console.error('No player currently exists for username', username);
     }
-    user.maobucks_inquire(function(err, maobucks) {
+    user.checkBalance('maobucks', function(err, maobucks) {
       if (err) {
         console.error('Error while looking up number of maobucks:', err);
         cb(err);
