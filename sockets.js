@@ -21,7 +21,7 @@ module.exports = (function () {
   io.set('close timeout', 30);
 
 
-  var RedisStore = require('socket.io/lib/stores/redis')
+  /*var RedisStore = require('socket.io/lib/stores/redis')
     , redis  = require('socket.io/node_modules/redis')
     , pub    = redis.createClient(18034, 'pub-redis-18034.us-west-1.1.azure.garantiadata.com')
     , sub    = redis.createClient(18034, 'pub-redis-18034.us-west-1.1.azure.garantiadata.com')
@@ -37,8 +37,7 @@ module.exports = (function () {
   , redisPub: pub
   , redisSub: sub
   , redisClient : client
-  }));
-
+  }));*/
   
   //authorization handler - 
   io.set('authorization', function (data, cb) {
