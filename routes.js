@@ -448,23 +448,24 @@ module.exports = (function () {
         username: username,
         pt_password: pt_password,
       });
-      var user = User.createUser({
+      User.createUser({
         username: username,
         pt_password: pt_password,
-      });
-      user.save(function(err, result) {
-        if (err) {
-          req.flash('error', err.message);
-          res.redirect('/register?next=' + target);
-        }
-        else {
-          // Registration successful. Redirect.
-          console.log('registration successful on ' + user.registration_date + ' !');
-          req.flash('error', 'Please log in with your new username and password.');
-          res.redirect('/login');
-          /*req.url = req.originalUrl = '/login';
-          app.router._dispatch(req, res, next);*/
-        }
+      }, function(user) {
+        user.save(function(err, result) {
+          if (err) {
+            req.flash('error', err.message);
+            res.redirect('/register?next=' + target);
+          }
+          else {
+            // Registration successful. Redirect.
+            console.log('registration successful on ' + user.registration_date + ' !');
+            req.flash('error', 'Please log in with your new username and password.');
+            res.redirect('/login');
+            /*req.url = req.originalUrl = '/login';
+            app.router._dispatch(req, res, next);*/
+          }
+        });
       });
     }
     else {
