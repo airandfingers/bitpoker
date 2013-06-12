@@ -877,7 +877,7 @@ module.exports = (function () {
     if (_.contains(hand_include, 'big_blind')) hand_obj.big_blind = game.BIG_BLIND;
     if (_.contains(hand_include, 'currency')) hand_obj.currency = game.CURRENCY;
     if (_.contains(hand_include, 'min_increment')) hand_obj.min_increment = game.MIN_INCREMENT;
-    if (_.contains(hand_include, 'currency_per_chip')) hand_obj.currency_per_chip = game.currency_PER_CHIP;
+    if (_.contains(hand_include, 'currency_per_chip')) hand_obj.currency_per_chip = game.CURRENCY_PER_CHIP;
     if (_.contains(hand_include, 'seats')) hand_obj.seats = _.map(hand_obj.seats, serializePlayer);
     if (_.contains(hand_include, 'players')) hand_obj.players = _.map(hand_obj.players, serializePlayer);
     function serializePlayer(player) {

@@ -71,7 +71,7 @@ module.exports = (function() {
   , currency_types: [
     // currency   $/chip
       ['maobucks', 1E-5]
-    , ['satoshi', 1   ]
+    , ['satoshi',  1   ]
     ]
   };
 })();
