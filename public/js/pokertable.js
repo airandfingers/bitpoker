@@ -1106,6 +1106,11 @@ this.images.setDefaults = function(){
             var thirdColumnX = canvasWidth/2 - seatWidth/2 
             var fourthColumnX = thirdColumnX + seatWidth + distanceBetweenSeatsX
 
+var currencyDisplayWidth = 80
+var currencyDisplayHeight = 15
+var currencyDisplayTopOffset = 10
+var currencyDisplaySizeAndFont = '12px Arial'
+var currencyDisplayColor = 'white'
 
             var communityY = 220
             var distanceBetweenCommunityCards = 2
@@ -1778,6 +1783,11 @@ this.addItemText(this.rebuy,'Get Chips','10px Arial','white')
 this.sitIn.image.onClick = self.events.onButtonClick
 this.rebuy.image.onClick  = self.events.onButtonClick
 
+//-------------------------currency display--------------------------
+var currencyDisplayX = stageWidth/2 - currencyDisplayWidth/2
+
+this.currencyDisplay = new this.Item(currencyDisplayX, curencyDisplayTopOffset, currencyDisplayWidth, curencyDisplayHeght, self.gameState.containerImageIndexes.buttons)
+this.addItemText(this.currencyDisplay, '', currencyDisplaySizeAndFont, currencyDisplayColor)
 //========================4 color deck sprite sheet=============================
 
 var fourColorDeckData = {
@@ -1790,6 +1800,7 @@ var fourColorDeckData = {
 this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
 
 */
+
 //=====================MESSAGE BOX=======================================
 var containersPerMessageBox = self.gameState.containerImageIndexes.containersPerMessageBox
   for(var messageBoxImageContainerIndex = self.gameState.containerImageIndexes.initialMessageBox; messageBoxImageContainerIndex < this.containers.length-containersPerMessageBox;messageBoxImageContainerIndex=messageBoxImageContainerIndex+containersPerMessageBox){
@@ -4258,6 +4269,9 @@ function tick(event){
          this.displayChildren(this.images.getChips)
          this.displayChildren(this.images.viewLobby)
          this.displayChildren(this.images.exitTable)
+
+         this.images.currencyDisplay.text.text = '1 chip is equal to ' + table_state.currency_per_chip + ' ' + table_state.currency
+this.displayChildren(this.images.currencyDisplay)
 
         //remove extra seats
         this.setNumberOfSeats(table_state.max_players)
