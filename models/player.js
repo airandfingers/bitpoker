@@ -433,6 +433,9 @@ module.exports = (function () {
         if (balance_in_chips < min) {
           min = max = -1;
         }
+        else if (balance_in_chips < max) {
+          max = balance_in_chips;
+        }
         _.extend(add_chips_info, {
           min: min
         , max: max
