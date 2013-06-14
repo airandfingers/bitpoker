@@ -174,6 +174,12 @@ module.exports = (function () {
     });
   });
 
+  app.get('/bug_report', function (req, res) {
+    res.render('bug_report', {
+      title: 'Report Bugs',
+    });
+  });
+
   app.get('/register', function(req, res) {
     res.render('register', {
       message: req.flash('error'),
