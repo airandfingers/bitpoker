@@ -5,13 +5,13 @@ module.exports = (function () {
   var smtp_transport = nodemailer.createTransport('SMTP', {
     service: 'Gmail',
     auth: {
-      user: 'red5wanderer@gmail.com',
-      pass: 'Usetheforce'
+      user: 'cryptopoker@gmail.com',
+      pass: 'thebigfinish'
     }
   });
 
   var mail_options = {
-    from: 'Bobby Poker Jedi <red5wanderer@gmail.com>', //sender address
+    from: 'Crypto Poker <cryptopoker@gmail.com>', //sender address
     to: 'robertnakano@gmail.com', //list of receivers
     subject: 'E-mail Confirmation', // subject line
     text: 'This should only be sent when the mail route is called.',
@@ -23,7 +23,7 @@ module.exports = (function () {
                            '&confirmation_code=' + confirmation_code
       , greeting = 'Hi ' + username + '!'
       , confirmation_email = {
-          from: 'Bobby Poker Jedi <red5wanderer@gmail.com>' //sender address
+          from: 'Crypto Poker <cryptopoker@gmail.com>' //sender address
         , to: email_address //list of receivers
         , subject: 'Bitpoker E-mail Confirmation' // subject line
         , text: greeting + '\nClick here to confirm your email address for bitpoker:\n' + confirmation_url
@@ -48,7 +48,7 @@ module.exports = (function () {
                         '&recovery_code=' + recovery_code + '&username=' + username
         , greeting = 'Hello ' + username + ','
         , password_recovery_email = {
-          from: 'Bobby Poker Jedi <red5wanderer@gmail.com>' //sender address
+          from: 'Crypto Poker <cryptopoker@gmail.com>' //sender address
         , to: email_address //list of receivers
         , subject: 'Bitpoker Password Recovery' // subject line
         , text: greeting + '\nClick here to reset your password:\n' + recovery_url

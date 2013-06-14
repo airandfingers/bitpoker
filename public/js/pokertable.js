@@ -1050,9 +1050,10 @@ preloadSounds(flashSoundSourceArray, soundSourceArray)
 
 this.images.setDefaults = function(){
     
-    var canvasWidth = document.getElementById('canvas').width
+   
+//========================IMAGE STATIC VARIABLES ==============================
+ var canvasWidth = document.getElementById('canvas').width
      var canvasHeight = document.getElementById('canvas').height
-
      //small cards are 37 x 45
      //big cards are 48 x 76
      var cardWidth
@@ -1106,6 +1107,11 @@ this.images.setDefaults = function(){
             var thirdColumnX = canvasWidth/2 - seatWidth/2 
             var fourthColumnX = thirdColumnX + seatWidth + distanceBetweenSeatsX
 
+var currencyDisplayWidth = canvasWidth
+var currencyDisplayHeight = 15
+var currencyDisplayTopOffset = 3
+var currencyDisplaySizeAndFont = 'bold 16px Arial'
+var currencyDisplayColor = 'white'
 
             var communityY = 220
             var distanceBetweenCommunityCards = 2
@@ -1767,8 +1773,8 @@ getChipsHit.graphics.beginFill('#000000')
 this.exitTable.image.onClick = self.events.exitTableClick
 
         //----------------not in hand action buttons------------------
-        this.sitIn = new this.Item(205,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['sit_in'])
-        this.rebuy = new this.Item(205,419,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['get_add_chips_info'])
+        this.sitIn = new this.Item(actionButtonLeftX,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['sit_in'])
+        this.rebuy = new this.Item(actionButtonLeftX,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['get_add_chips_info'])
 
          this.itemAsRectangle(this.sitIn,'black')
 this.addItemText(this.sitIn,'Deal Me In','10px Arial','white')
@@ -1778,6 +1784,11 @@ this.addItemText(this.rebuy,'Get Chips','10px Arial','white')
 this.sitIn.image.onClick = self.events.onButtonClick
 this.rebuy.image.onClick  = self.events.onButtonClick
 
+//-------------------------currency display--------------------------
+var currencyDisplayX = canvasWidth/2 - currencyDisplayWidth/2
+
+this.currencyDisplay = new this.Item(currencyDisplayX, currencyDisplayTopOffset, currencyDisplayWidth, currencyDisplayHeight, self.gameState.containerImageIndexes.button)
+this.addItemText(this.currencyDisplay, '', currencyDisplaySizeAndFont, currencyDisplayColor)
 //========================4 color deck sprite sheet=============================
 
 var fourColorDeckData = {
@@ -1790,6 +1801,7 @@ var fourColorDeckData = {
 this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
 
 */
+
 //=====================MESSAGE BOX=======================================
 var containersPerMessageBox = self.gameState.containerImageIndexes.containersPerMessageBox
   for(var messageBoxImageContainerIndex = self.gameState.containerImageIndexes.initialMessageBox; messageBoxImageContainerIndex < this.containers.length-containersPerMessageBox;messageBoxImageContainerIndex=messageBoxImageContainerIndex+containersPerMessageBox){
@@ -4258,6 +4270,10 @@ function tick(event){
          this.displayChildren(this.images.getChips)
          this.displayChildren(this.images.viewLobby)
          this.displayChildren(this.images.exitTable)
+
+console.log(this.images.currencyDisplay)
+         this.images.currencyDisplay.text.text = '1 chip is equal to ' + table_state.currency_per_chip + ' ' + table_state.currency
+this.displayChildren(this.images.currencyDisplay)
 
         //remove extra seats
         this.setNumberOfSeats(table_state.max_players)
