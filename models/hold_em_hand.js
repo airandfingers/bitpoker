@@ -506,10 +506,10 @@ module.exports = (function () {
         break;
       }
       self.broadcast('player_acts', player.serialize(), action, self.calculatePotTotal());
+      player.actedIn(self.stage_num);
       if (action === 'fold') {
         self.playerOut(self.to_act);
       }
-      player.actedIn(self.stage_num);
       player = self.nextPlayer();
     }
   };
