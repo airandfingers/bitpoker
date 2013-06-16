@@ -233,7 +233,7 @@ module.exports = (function () {
     var self = this
       , first_card
       , second_card
-      , player_objs = _.map(self.players, function(player) { return player.serialize(); });
+      , player_objs = self.getPlayerObjs();
     _.each(self.players, function(player) {
       first_card = self.deck.deal();
       second_card = self.deck.deal();
@@ -314,8 +314,8 @@ module.exports = (function () {
         if (player.chips === 0) {
           console.log('player is out of chips, so skipping!', player);
           setTimeout(function() {
-            actions = [{ check: true}];
-            performAction('check', undefined);
+            actions = [{ skip: true}];
+            performAction('skip', undefined);
             cb();
           }, game.SKIP_PLAYER_DELAY);
           return;
@@ -327,8 +327,8 @@ module.exports = (function () {
         if (high_stack === 0) {
           console.log('all other players are out of chips, so skipping!', player);
           setTimeout(function() {
-            actions = [{ check: true}];
-            performAction('check', undefined);
+            actions = [{ skip: true}];
+            performAction('skip', undefined);
             cb();
           }, game.SKIP_PLAYER_DELAY);
           return;
@@ -385,6 +385,13 @@ module.exports = (function () {
         self.broadcast('player_to_act', player.serialize(), game.ACT_TIMEOUT);
       },
       function loopComplete() {
+        // send hands_shown message if only one player has chips
+        if (! self.hands_shown && self.getNumPlayersWithChips() < game.MIN_PLAYERS) {
+          console.log('Hands not yet shown and only 1 player with chips, so showing hands');
+          var player_objs = self.getPlayerObjs(['hand']);
+          self.broadcast('hands_shown', player_objs);
+          self.hands_shown = true;
+        }
         // construct an Object of the form { bet_amount : [usernames] }
         var bets_obj = {}
           , bet;
@@ -473,6 +480,7 @@ module.exports = (function () {
       }
       switch(action) {
       case 'check':
+      case 'skip':
         break;
       case 'call':
         if (num_chips > player.chips) {
@@ -575,15 +583,18 @@ module.exports = (function () {
   static_properties.stage_handlers.paying_out = function(sorted_results) {
     var self = this
       , game = self.game
-      , player_objs = _.map(self.players, function(player) {
-          return player.serialize(['hand']);
-    }), num_pots = self.pots.length
+      , num_pots = self.pots.length
+      , player_objs
       , pot_winners
       , pot_value
       , pot_remainder
       , chips_won;
-    console.log('paying out, results:', sorted_results, ', player_objs:', player_objs);
-    self.broadcast('hands_shown', player_objs);
+    console.log('paying out, results:', sorted_results);
+    if (! self.hands_shown) {
+      console.log('Hands not yet shown and showdown over, so showing hands');
+      player_objs = self.getPlayerObjs(['hand']);
+      self.broadcast('hands_shown', player_objs);
+    }
     // initialize players' chips_won Arrays
     _.each(self.players, function(player) {
       var arr = [];
@@ -622,9 +633,7 @@ module.exports = (function () {
         }
       });
     });
-    player_objs = _.map(self.players, function(player) {
-      return player.serialize(['hand', 'chips_won']);
-    });
+    player_objs = self.getPlayerObjs(['hand', 'chips_won']);
     self.broadcast('winners', player_objs);
     setTimeout(function() {
       self.nextStage();
@@ -789,6 +798,23 @@ module.exports = (function () {
       // else ignore
     });
     return high_stack;
+  };
+
+  HoldEmHandSchema.methods.getNumPlayersWithChips = function() {
+    var num_players = 0;
+    _.each(this.players, function(player) {
+      if (player.chips > 0) {
+        num_players++;
+      }
+      // else ignore
+    });
+    return num_players;
+  };
+
+  HoldEmHandSchema.methods.getPlayerObjs = function(player_include) {
+    return _.map(this.players, function(player) {
+      return player.serialize(player_include);
+    });
   };
 
   HoldEmHandSchema.methods.currentPlayer = function() {
