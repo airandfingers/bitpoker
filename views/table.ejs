@@ -1,4 +1,9 @@
-<% var title = 'Table ' + table_id; %>
+<%
+var title = 'Table ' + table_id;
+title += ' - NLHE ' + game.SMALL_BLIND * game.CURRENCY_PER_CHIP;
+title += '/' + game.BIG_BLIND  * game.CURRENCY_PER_CHIP + ' ' + game.CURRENCY_ABBREV;
+title += ' - Logged in as ' + username;
+%>
 <% include head_start %>
         <link type="text/css" rel="stylesheet" href="/css/pokertable.css" />
     <% include head_end_and_header %>

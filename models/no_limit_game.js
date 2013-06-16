@@ -15,23 +15,25 @@ module.exports = (function () {
 
   var NoLimitGameSchema = new Schema({
   // instance properties - document.field_name
-    // the number of players who need to be sitting/blinding before the hand can begin
-    MIN_PLAYERS: { type: Number, default: defaults.MIN_PLAYERS }
-    // the maximum number of players this came can have
-  , MAX_PLAYERS: { type: Number, default: defaults.MAX_PLAYERS }
-    // at least how many chips must players bring to the table to play?
-  , MIN_CHIPS: { type: Number, default: defaults.MIN_CHIPS }
-    // at most how many chips can players bring to the table to play?
-  , MAX_CHIPS: { type: Number, default: defaults.MAX_CHIPS }
     // how many chips the big blind costs
-  , SMALL_BLIND: { type: Number, default: defaults.SMALL_BLIND }
+    SMALL_BLIND: { type: Number }
     // how many chips the small blind costs
-  , BIG_BLIND: { type: Number, default: defaults.BIG_BLIND }
+  , BIG_BLIND: { type: Number }
+    // at least how many chips must players bring to the table to play?
+  , MIN_CHIPS: { type: Number }
+    // at most how many chips can players bring to the table to play?
+  , MAX_CHIPS: { type: Number }
+    // the number of players who need to be sitting/blinding before the hand can begin
+  , MIN_PLAYERS: { type: Number, default: defaults.MIN_PLAYERS }
+    // the maximum number of players this came can have
+  , MAX_PLAYERS: { type: Number }
 
     // how much currency it takes to buy a single chip at this table
-  , CURRENCY_PER_CHIP: { type: Number, default: defaults.CURRENCY_PER_CHIP }
+  , CURRENCY_PER_CHIP: { type: Number }
     // which currency this game deals in (maobucks or cash)
-  , CURRENCY: { type: String, default: defaults.CURRENCY }
+  , CURRENCY: { type: String }
+    // which currency this game deals in (maobucks or cash)
+  , CURRENCY_ABBREV: { type: String }
     // the minimum difference between two possible chip amounts at this table
   , MIN_INCREMENT: { type: Number, default: defaults.MIN_INCREMENT }
 
@@ -70,6 +72,7 @@ module.exports = (function () {
     if (_.isNumber(spec.SMALL_BLIND) && _.isUndefined(spec.BIG_BLIND)) {
       spec.BIG_BLIND = spec.SMALL_BLIND * 2;
     }
+    spec.CURRENCY_ABBREV  = spec.CURRENCY === 'maobucks' ? 'MB' : 'sat';
     //console.log('creating NoLimitGame:', spec);
     var game = new NoLimitGame(spec);
     NoLimitGame.games.push(game);
