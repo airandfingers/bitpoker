@@ -23,7 +23,7 @@
       table_name = table_game.table_name;
       table_id = table_game.table_id;
       constants = game.constants();
-      CURRENCY_ABBREV = game.CURRENCY === 'maobucks' ? 'MB' : 'sat';
+      CURRENCY_ABBREV = game.CURRENCY_ABBREV;
       CURRENCY_PER_CHIP = game.CURRENCY_PER_CHIP;
       SMALL_BLIND = game.roundNumCurrency(game.SMALL_BLIND * CURRENCY_PER_CHIP);
       BIG_BLIND = game.roundNumCurrency(game.BIG_BLIND * CURRENCY_PER_CHIP);
