@@ -2054,6 +2054,23 @@ this.cashier[cashierItems[i].name].text.maxWidth = this.cashier[cashierItems[i].
 
 
    // =============================================SOUNDS========================================
+//---------------------------------------report bug-----------------------------------------------------
+
+this.reportBug = new this.Item(0, this.getChips.size.y, 300,22,self.gameState.containerImageIndexes.button)
+this.addItemText (this.reportBug, 'click to report bugs via email to: CryptoPoker@gmail.com', '13px arial' ,'white')
+ var reportBugHitArea = new createjs.Shape()
+        reportBugHitArea.graphics.beginFill('#FFFFFF').beginStroke(0)
+        .drawRect(0, 0, this.reportBug.size.x, this.reportBug.size.y)
+
+console.log(this.reportBug)
+        this.reportBug.text.hitArea = reportBugHitArea
+
+
+this.reportBug.text.onClick = function(event){
+popup('mailto:CryptoPoker@gmail.com')
+
+}
+
 
 }
 
@@ -2113,8 +2130,6 @@ if(betSize>self.gameState.maxBet){return self.gameState.maxBet}
       roundedBetSize = Math.floor(betSize/self.gameState.minIncrement)*self.gameState.minIncrement    }
 
         return roundedBetSize
-
-
 }
 
     //does not update a player's stack size
@@ -4271,9 +4286,10 @@ function tick(event){
          this.displayChildren(this.images.viewLobby)
          this.displayChildren(this.images.exitTable)
 
-console.log(this.images.currencyDisplay)
          this.images.currencyDisplay.text.text = '1 chip is equal to ' + table_state.currency_per_chip + ' ' + table_state.currency
 this.displayChildren(this.images.currencyDisplay)
+
+this.displayChildren(this.images.reportBug)
 
         //remove extra seats
         this.setNumberOfSeats(table_state.max_players)
