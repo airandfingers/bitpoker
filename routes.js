@@ -174,6 +174,12 @@ module.exports = (function () {
     });
   });
 
+  app.get('/bug_report', function (req, res) {
+    res.render('bug_report', {
+      title: 'Report Bugs',
+    });
+  });
+
   app.get('/register', function(req, res) {
     res.render('register', {
       message: req.flash('error'),
@@ -505,11 +511,11 @@ module.exports = (function () {
         , room_state = { users: users };
       res.render('table', {
         table_id: table_id
+      , username: username
+      , game: table.game
       , hide_navbar: true
       , room_state : JSON.stringify(room_state)
       , table_state: JSON.stringify(table_state)
-      , maobucks: req.user.maobucks
-
       });
     }
     else {

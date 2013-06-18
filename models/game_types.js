@@ -1,27 +1,12 @@
 module.exports = (function() {
   return {
+    // CONSTANT FOR ALL GAMES
     defaults: {
       // the number of players who need to be sitting/blinding before the hand can begin
       MIN_PLAYERS: 2
-      // the maximum number of players this came can have
-    , MAX_PLAYERS: 10
-      // at least how many chips must players bring to the table to play?
-    , MIN_CHIPS: 50
-      // at most how many chips can players bring to the table to play?
-    , MAX_CHIPS: 10000
-      // how many chips the big blind costs
-    , SMALL_BLIND: 10
-      // how many chips the small blind costs
-    , BIG_BLIND: 20
-
-      // how much currency it takes to buy a single chip at this table
-    , CURRENCY_PER_CHIP: 1E-5
-      // which currency this game deals in (maobucks or cash)
-    , CURRENCY: 'maobucks'
       // the minimum difference between two possible chip amounts at this table
     , MIN_INCREMENT: 1
 
-    // CONSTANT FOR ALL GAMES
       // how many ms to wait between polling to see how many players are ready
     , WAIT_POLL_INTERVAL: 5000
       // how long (in ms) between last betting action and street_ends message
@@ -65,13 +50,13 @@ module.exports = (function() {
     ]
 
   // which values are enumerated below for each currency type
-  , set_per_currency: ['CURRENCY', 'CURRENCY_PER_CHIP']
+  , set_per_currency: ['CURRENCY', 'CURRENCY_ABBREV', 'CURRENCY_PER_CHIP']
   // list of currencies and their associated values
   // each entry lists the constants in set_per_currency's order
   , currency_types: [
     // currency   $/chip
-      ['maobucks', 1E-5]
-    , ['satoshi',  1   ]
+      ['maobucks', 'MB', 1E-5]
+    , ['satoshi', 'sat', 1   ]
     ]
   };
 })();
