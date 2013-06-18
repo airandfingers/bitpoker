@@ -2146,11 +2146,17 @@ if(betSize>self.gameState.maxBet){return self.gameState.maxBet}
     //does not update a player's stack size
     this.playerPutsChipsInPot =function(seatNumber,betSize, stackSize){
         
+        if(betSize>0){
          this.images.seats[seatNumber].bet.text.text = betSize
+ this.displayChildren(this.images.seats[seatNumber].bet)
+       }
+         else{this.images.seats[seatNumber].bet.text.text = ''
+ this.hideChildren(this.images.seats[seatNumber].bet)
+       }
          if(stackSize && stackSize <=0){stackSize = 'All In'}
          this.images.seats[seatNumber].status.text.text = stackSize
 
-           this.displayChildren(this.images.seats[seatNumber].bet)
+          
 
     }
 
