@@ -2056,8 +2056,19 @@ this.cashier[cashierItems[i].name].text.maxWidth = this.cashier[cashierItems[i].
    // =============================================SOUNDS========================================
 //---------------------------------------report bug-----------------------------------------------------
 
-this.reportBug = new this.Item(0, this.getChips.size.y, 300,22,self.gameState.containerImageIndexes.button)
-this.addItemText (this.reportBug, 'click to report bugs via email to: CryptoPoker@gmail.com', '13px arial' ,'white')
+this.reportBug = new this.Item(0, this.getChips.size.y, 165,30,self.gameState.containerImageIndexes.holeCards)
+
+
+   this.reportBug.text = new createjs.Text('click to report bugs via email to: CryptoPoker@gmail.com', '13px arial' ,'white')
+this.reportBug.text.x=this.reportBug.position.x
+this.reportBug.text.y=this.reportBug.position.y
+this.reportBug.text.baseline = 'top'
+this.reportBug.text.textAlign = 'left'
+this.reportBug.text.lineWidth = this.reportBug.size.x
+this.reportBug.text.lineHeight = this.reportBug.size.y/2
+this.reportBug.textColor = 'white'
+
+
  var reportBugHitArea = new createjs.Shape()
         reportBugHitArea.graphics.beginFill('#FFFFFF').beginStroke(0)
         .drawRect(0, 0, this.reportBug.size.x, this.reportBug.size.y)
