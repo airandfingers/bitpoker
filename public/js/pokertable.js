@@ -3971,6 +3971,8 @@ if(messageInfo.closeWindowMessages){
         }
 
                 self.displayChildren(self.images.messageBox[messageBoxImageContainerIndex])
+              console.log( self.images.messageBox[messageBoxImageContainerIndex].closeWindow)
+              console.log(self.images.messageBox[messageBoxImageContainerIndex].window)
 
     }
 
