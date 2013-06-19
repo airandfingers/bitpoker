@@ -3255,10 +3255,20 @@ var wait = setTimeout(function(){
  }// end check if pot is empty
 })
 
+//update player stack sizes
+finalArray.push(function(next){
+for(var i = 0;i<players.length;i++){
+
+  self.images.seats[players[i].seat].status.text.text = players[i].chips
+if(i == players.length-1){next(null, errorNumber)}
+}
+
+}
+)//end push
 
  async.series(finalArray, function(err, results){
   self.stage.update()
-    console.log('winners async series completed with the following error and results')
+    console.log('winners async series completed with the following errors next line and results 2nd line')
   console.log(err)
   console.log(results)
 
