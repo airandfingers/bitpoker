@@ -98,7 +98,7 @@ window.onKeydown = onKeyDown
       //      community: 'img/card_back.jpg',
      //       fold: 'img/fold.jpg',
       //      sideButton :'img/side_button.jpg',
-            background: 'img/table_background.jpg',
+            background: 'img/table_background_green.jpg',
      //       fourColorDeck: 'img/sheet4color.png',
             dealerButton: 'img/dealer_button_red.png',
             verticalSlider: 'img/raise_slider.png',
@@ -2086,8 +2086,29 @@ popup('mailto:CryptoPoker@gmail.com')
 }
 
         this.setBackground = function(){    
-        this.images.background = new this.images.Item(0,0,9999,9999,this.gameState.containerImageIndexes.background)
+          var canvasHeight = document.getElementById('canvas').height
+          var canvasWidth = document.getElementById('canvas').width
+        this.images.background = new this.images.Item(0,0,canvasWidth,canvasHeight,this.gameState.containerImageIndexes.background)
         this.images.itemAsBitmap(this.images.background, this.images.sources.background)
+
+/*
+ var matrix = new createjs.ColorMatrix().adjustHue(-100)
+ this.images.background.image.filters = [
+  
+ new createjs.ColorFilter(0,0,0,1, -50,50,0,0)
+  // new createjs.ColorMatrixFilter(matrix)
+ ]
+
+ //this.images.background.image.updateCache()
+
+ this.images.background.image.cache(0, 0,canvasWidth-1, canvasHeight-1)
+
+
+// this.images.background.image.cache(0, 0,canvasWidth, canvasHeight)
+this.images.background.image.updateCache()
+console.log(this.images.background.image)
+console.log(this.images.background.image.isVisible())
+*/
 this.displayChildren(this.images.background)
     }
 
