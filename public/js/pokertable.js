@@ -247,15 +247,20 @@ if(item.messages){
             }
 
             //draws a seat
-                  this.images.drawSeat = function (parent, borderColor, fillColor, middleDividerColor){
+                  this.images.drawSeat = function (parent, borderColor, fillColor, middleDividerColor, options){
           if(parent.image instanceof createjs.Shape){}
           else{
               parent.image = new createjs.Shape()
               parent.image.parentOfImageObject = parent
           }
 
-              var x = parent.position.x; var y = parent.position.y
-              var width = parent.size.x;  var height = parent.size.y
+          if(options && options.outerStrokeWidth){var outerStrokeWidth = options.outerStrokeWidth}
+            else{var outerStrokeWidth = 4}
+if(options && options.middleDividerStrokeWidth){var middleDividerStrokeWidth = options.middleDividerStrokeWidth}
+            else{var middleDividerStrokeWidth = 1}
+
+              var x = parent.position.x + outerStrokeWidth/2; var y = parent.position.y + outerStrokeWidth/2
+              var width = parent.size.x - outerStrokeWidth;  var height = parent.size.y - outerStrokeWidth
 
               parent.image.graphics.clear() //clear previous graphics on the shape
               parent.image.x = 0 //reset previous transformations of the image
@@ -263,12 +268,81 @@ if(item.messages){
               parent.image.alpha = 1
    parent.image.snapToPixel = true
 
- parent.image.graphics.setStrokeStyle(2,'square').beginStroke(borderColor).beginFill(fillColor).drawRect(x, y, width, height)
-    parent.image.graphics.setStrokeStyle(1).beginStroke(middleDividerColor).moveTo(x+1,y+height/2).lineTo(x+width-1,y+height/2)
+//draw border
+ parent.image.graphics.setStrokeStyle(outerStrokeWidth,'square').beginStroke(borderColor).beginFill(fillColor).drawRect(x, y, width, height)
+
+//draw filled area for countdown
+if(options && options.borderFillRatio && _.isNumber(options.borderFillRatio) && options.borderFillRatio > 0){
+
+//set new color as yellow
+if(options && options.newFillColor){var newFillColor = options.newFillColor}
+  else{newFillColor = '#FFFF00'}
+
+
+parent.image.graphics.setStrokeStyle(outerStrokeWidth,'square').beginStroke(newFillColor)
+
+var totalDistance = width*2+height*2
+var distanceToFill = options.borderFillRatio*totalDistance
+
+//start at upper left
+parent.image.graphics.moveTo(x,y)
+
+//start filling counterclockwise
+
+//left side
+if(distanceToFill>=height){
+  parent.image.graphics.lineTo(x, y + height)
+  distanceToFill = distanceToFill - height
+}
+else if (distanceToFill>0){
+
+  parent.image.graphics.lineTo(x, y + distanceToFill)
+distanceToFill = 0
+}
+
+//bottom
+if(distanceToFill>=width){
+
+  parent.image.graphics.lineTo(x+width, y+height)
+  distanceToFill = distanceToFill - width
+}
+ else  if (distanceToFill>0){
+  parent.image.graphics.lineTo(x + distanceToFill, y+height)
+distanceToFill = 0
+}
+
+//right
+if(distanceToFill>=height){
+
+  parent.image.graphics.lineTo(x+width, y)
+  distanceToFill = distanceToFill - height
+}
+ else if (distanceToFill>0){
+  parent.image.graphics.lineTo(x+width, y + height -  distanceToFill)
+distanceToFill = 0
+}
+
+//top
+if(distanceToFill>=width){
+
+  parent.image.graphics.lineTo(x, y)
+  distanceToFill = distanceToFill - width
+}
+ else  if (distanceToFill>0){
+  parent.image.graphics.lineTo(x + width - distanceToFill, y)
+distanceToFill = 0
+}
+
+}//end playerToAct fill
+
+    parent.image.graphics.setStrokeStyle(middleDividerStrokeWidth).beginStroke(middleDividerColor).moveTo(x+outerStrokeWidth/2,y+height/2).lineTo(x+width-outerStrokeWidth/2,y+height/2)
             
           parent.image.borderColor = borderColor
           parent.image.fillColor = fillColor
            parent.image.middleDividerColor = middleDividerColor
+            parent.image.outerStrokeWidth = outerStrokeWidth
+             parent.image.middleDividerStrokeWidth = middleDividerStrokeWidth
+
           
       }
 
@@ -1208,6 +1282,8 @@ var currencyDisplayColor = 'white'
             var getChipsHitAreaUpperRightOffset  = 12  
             var getChipsHitAreaLowerRightOffset  = 41
 
+            var openSeatOuterStrokeWidth = 2
+
             //dealerButton
            this.dealerButton = new this.Item(0,0,dealerButtonWidth, dealerButtonHeight,self.gameState.containerImageIndexes.chips)
             this.itemAsBitmap(this.dealerButton, this.sources.dealerButton)
@@ -1385,7 +1461,7 @@ parentOfImageObject.textColor = sideButtonTextColor
   //=================-seat images=========================================
 for(var i =0;i<this.seats.length;i++){
 
-self.images.drawSeat(this.seats[i].seat, '#1520b9','#000000', '#7d7d7d')
+self.images.drawSeat(this.seats[i].seat, '#000000','#000000', '#7d7d7d')
 
     //--------------------empty seats and text----------------- 
          this.seats[i].openSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,self.gameState.containerImageIndexes.button)
@@ -1417,7 +1493,7 @@ self.images.drawSeat(this.seats[i].seat, '#1520b9','#000000', '#7d7d7d')
             var openSeatMiddle = openSeatMiddle
             var openSeatBorder = '#FFFFFF'
 
-self.images.drawSeat(this.seats[i].openSeat, openSeatBorder, openSeatFill, openSeatMiddle)
+self.images.drawSeat(this.seats[i].openSeat, openSeatBorder, openSeatFill, openSeatMiddle, {outerStrokeWidth: openSeatOuterStrokeWidth})
 this.seats[i].openSeat.image.parentOfImageObject = this.seats[i].openSeat  
 
                 this.seats[i].openSeat.text = new createjs.Text('Open Seat', '15px Arial', "#FFFFFF")
@@ -1432,7 +1508,7 @@ this.seats[i].openSeat.textColor = "#FFFFFF"
             var disabledBorder = "#544E4F"
             var disabledFill = 'black'
             var disabledMiddle = disabledFill
-            self.images.drawSeat (this.seats[i].disabledSeat, disabledBorder, disabledFill, disabledMiddle)
+            self.images.drawSeat (this.seats[i].disabledSeat, disabledBorder, disabledFill, disabledMiddle, {outerStrokeWidth: openSeatOuterStrokeWidth})
    this.seats[i].disabledSeat.image.parentOfImageObject = this.seats[i].disabledSeat     
 /*
             this.seats[i].disabledSeat.image = new createjs.Shape()
@@ -3118,9 +3194,12 @@ $('#betSize').css('display','none')
      //remove all player's bets
         self.hideAllBets()
         //hide the pot
+        self.hideChildren(self.images.totalPotSize) //main pot
+        //side pots
          for(var i=0; i<this.images.pots.length;i++){
         self.hideChildren(self.images.pots[i].potSize)
         self.hideChildren(self.images.pots[i].chips)}
+
 
         //unbind scroll wheel events
          $(document).unbind('mousewheel')
@@ -3541,7 +3620,7 @@ self.displayCorrectSeatMessage(seatNumber)
 
     }
 
-    this.playerToAct =function(seatNumber){
+    this.playerToAct =function(seatNumber, timeoutInMS){
          self.gameState.seats[seatNumber].toAct = true
 
         //function that will convert hex to RGB
@@ -3588,12 +3667,16 @@ var rgbArrayToString = function(rgbArray){
         colorString = 'rgb('+rgbArray[0]+','+rgbArray[1]+','+rgbArray[2]+')'
         return colorString
 }
-var toActBorderColor = '#FFFFFF'
-var toActMiddleDividerColor = '#FFFFFF'
+
 var originalBorderColor = self.images.seats[0].seat.image.borderColor
 var originalMiddleDividerColor = self.images.seats[0].seat.image.middleDividerColor
-        var timeToChangeColors = 2000
-        var ticksPerColorChange = 35
+
+var toActTimeLeftBorderColor = '#FFFF00'
+var toActBorderColor = originalBorderColor
+var toActMiddleDividerColor = '#FFFFFF'
+
+        var timeToChangeColors = 3000
+        var ticksPerColorChange = 30
         var interval = timeToChangeColors/ticksPerColorChange
         var lastTick = ticksPerColorChange-1
          var tick = 0
@@ -3602,7 +3685,7 @@ var originalMiddleDividerColor = self.images.seats[0].seat.image.middleDividerCo
          var lastCompletedFillColorCounter = -1
 
 
-
+ self.gameState.seats[seatNumber].timeToAct = timeoutInMS
 //-----------start swapping colors until toAct becomes false----------------
               var countdown = setInterval(function() {
                  //get RGBA fill color of seat
@@ -3687,8 +3770,9 @@ var nextCounter = lastCompletedFillColorCounter+1
 
     //concatanate to create new fill color
     newFillColor = rgbArrayToString([nextRed, nextGreen, nextBlue])
-
-   self.images.drawSeat( self.images.seats[seatNumber].seat, toActBorderColor, newFillColor, toActMiddleDividerColor)
+console.log('current time left to act = ' + self.gameState.seats[seatNumber].timeToAct)
+console.log('original time to act = ' + timeoutInMS)
+   self.images.drawSeat(self.images.seats[seatNumber].seat, toActBorderColor, newFillColor, toActMiddleDividerColor, {borderFillRatio: self.gameState.seats[seatNumber].timeToAct/timeoutInMS, newFillColor:toActTimeLeftBorderColor})
     self.stage.update()
     
                 if (self.gameState.seats[seatNumber].toAct==false)
@@ -3696,9 +3780,13 @@ var nextCounter = lastCompletedFillColorCounter+1
                       clearInterval(countdown)
                      self.images.drawSeat(self.images.seats[seatNumber].seat, originalBorderColor, originalFillColor, originalMiddleDividerColor)
                       }
+                      self.gameState.seats[seatNumber].timeToAct = self.gameState.seats[seatNumber].timeToAct - interval
         },interval)
 
     }
+
+
+
     
 
  this.startCountdown = function(seatNumber, secondsToAct){
@@ -4631,7 +4719,7 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
 //user to act 
  socket.on('act_prompt', function(actions, timeout){
 
-self.playerToAct(self.gameState.userSeatNumber)
+self.playerToAct(self.gameState.userSeatNumber, timeout)
      self.startCountdown(self.gameState.userSeatNumber,Math.round(timeout/1000))
 
      for (var i = 0; i < actions.length; i++){
@@ -4668,11 +4756,19 @@ self.playerToAct(self.gameState.userSeatNumber)
 
 })
 
+//hands turned face up
+ socket.on('update_time_to_act', function(seatNumber, time){
+
+self.gameState.seats[seatNumber].timeToAct = time
+
+})
 
 //player to act (not the user)
  socket.on('player_to_act', function(player, timeout){
     var timeToCountDown = 3000
-     self.playerToAct(player.seat)
+
+//if user = player, do not initiate to act function, as act_prompt will be sent instead
+    if(player.seat != self.gameState.userSeatNumber){self.playerToAct(player.seat, timeout)}
 
 var delayedCountDown = function(){
 if( self.gameState.seats[player.seat].toAct == true){self.startCountdown(player.seat, Math.round(timeToCountDown/1000))}
@@ -4860,6 +4956,8 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
         }
         self.stage.update()
  }  );   
+
+
 
 
 //round ends, all hole cards are shown
