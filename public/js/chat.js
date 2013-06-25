@@ -36,7 +36,7 @@ socket.on('user_chats', function(data) {
     .append($message)
     .scrollTop($('#chat_messages').height());
   $('#new_message')
-    .effect('highlight', {color: 'chartreuse'}, 4000)
+    .effect('highlight', {color: '#b3d4fc'}, 4000)
     .removeAttr('id');
 });
 

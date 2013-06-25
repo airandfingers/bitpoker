@@ -1,13 +1,13 @@
 <% var title = 'Bitcoin Poker- Are you all in?'; %>
 <% include head %>
     <div>
-        <h1>Welcome to Bitcoin Poker v1.0</h1>
+        <h1>Welcome to Bitcoin Poker v<%= version %></h1>
 
         <% if (message) { %>
           <p><%= message %></p>
         <% } %>        
-        
-        <a href="/lobby"><button class="btn btn-custom" autofocus>Go in. All in.</button></a>
+
+        <a href="/lobby"><button class="btn btn-custom" id="go_all_in" autofocus>Go in. All in.</button></a>
     </div>
     <% include plugins %>
 <% include foot %>

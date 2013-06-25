@@ -3,3 +3,14 @@
 
 // Include responsive Bootstrap styles
 @import "bootstrap-responsive";
+
+html {
+  height: 100%;
+}
+
+body {
+    height: 100%;
+    background-image: url('../../img/file000348075748.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+  }

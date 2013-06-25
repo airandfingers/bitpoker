@@ -89,3 +89,28 @@ h3 {
 }
 
 #login a:visited { color: #2f96b4; }
+
+.footer {
+    color: #FFFFCC;
+    font-family: DESTROY, sans-serif;   
+    background: black;
+    position: -webkit-sticky;
+    position: -moz-sticky;
+    position: -ms-sticky;
+    position: -o-sticky;
+    bottom:0;
+    left: 0;
+    width: 100%;
+    font-size: 1em;
+    padding: 0;
+    margin: 0;
+    height: 1.625em; /*26px/16px*/
+}
+
+.footer * {
+    display: inline;
+}
+
+.footer li {
+    color: white;
+}
