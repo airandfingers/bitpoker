@@ -2250,7 +2250,7 @@ if(betSize>self.gameState.maxBet){return self.gameState.maxBet}
          else{this.images.seats[seatNumber].bet.text.text = ''
  this.hideChildren(this.images.seats[seatNumber].bet)
        }
-         if(stackSize && stackSize <=0){stackSize = 'All In'}
+         if(!_.isNull(stackSize) && !_.isUndefined(stackSize) && stackSize <=0 ){stackSize = 'All In'}
          this.images.seats[seatNumber].status.text.text = stackSize
 
           
@@ -3621,6 +3621,7 @@ self.displayCorrectSeatMessage(seatNumber)
     }
 
     this.playerToAct =function(seatNumber, timeoutInMS){
+      self.gameState.seats[seatNumber].timeToAct = timeoutInMS
          self.gameState.seats[seatNumber].toAct = true
 
         //function that will convert hex to RGB
@@ -3685,7 +3686,7 @@ var toActMiddleDividerColor = '#FFFFFF'
          var lastCompletedFillColorCounter = -1
 
 
- self.gameState.seats[seatNumber].timeToAct = timeoutInMS
+ 
 //-----------start swapping colors until toAct becomes false----------------
               var countdown = setInterval(function() {
                  //get RGBA fill color of seat
@@ -4681,7 +4682,7 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
             var betSound = createjs.Sound.createInstance(self.images.sources.betSound)
             betSound.play()
             self.displayChipStack(player.current_bet, self.images.seats[player.seat], self.images.seats[player.seat].firstChip.position.x,self.images.seats[player.seat].firstChip.position.y )
-            self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
+            self.playerPutsChipsInPot(player.seat, player.current_bet, player.chips)
             break;
 
             case'call':
