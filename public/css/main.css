@@ -135,6 +135,9 @@ html {
 
 .main {
     list-style-type: none;
+    overflow: auto;
+    height: 95%;
+    opacity: .85;
 }
 
 h1 {
@@ -157,7 +160,6 @@ h1 {
     margin: auto;
     display: table-cell;
     /*width: 690px;*/
-    clear: both;
 }
 
 #chat_form input {
@@ -167,7 +169,7 @@ h1 {
 #chat_messages {
     background-color: #ccc;
     min-height: 3em;
-    height: 450px;
+    max-height: 6em;
     margin: 0 auto;
     overflow: auto;
     border: .02em solid #ddd;
@@ -199,9 +201,9 @@ h1 {
     cursor: pointer;
 }
 
-/*#users {
+#users {
     display: inline-block;
-}*/
+}
 
 #users h3 {
     display: inline-block;

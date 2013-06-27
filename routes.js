@@ -11,6 +11,10 @@ module.exports = (function () {
     , mailer = require('./mailer')
     , request = require('request');
 
+  var version_file = require('./package.json');
+  console.log('version_file is ' + version_file);
+  console.log('version_file package is ' + version_file.version);
+
   var base_page = '/lobby';
   
   //These app.get functions will display their respective ejs page.
@@ -101,7 +105,8 @@ module.exports = (function () {
    app.get('/', function(req, res) {
     res.render('index', {
       title: 'Homepage',
-      message: req.flash('error'),      
+      message: req.flash('error'),
+      version: version_file.version,      
     });
   });
 
@@ -109,16 +114,19 @@ module.exports = (function () {
     res.render('index', {
       title: 'Homepage',
       message: req.flash('error'),      
+      version: version_file.version,
     });
   });
 
-    //home and index link to the same page
   app.get('/index', function(req, res) {
     res.render('index', {
       title: 'Homepage',
       message: req.flash('error'),
+      version: version_file.version,
     });
   });
+    //
+    //
 
   app.get('/legal_info', function (req, res) {
     res.render('legal_info', {

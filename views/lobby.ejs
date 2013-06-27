@@ -1,20 +1,30 @@
 <% var title = 'Welcome to Bitcoin Poker!'; %>
 <% include head %>
+<style>
+body {background-image: none;}
+</style>
     <div id="container" class="row-fluid">
-        <!-- display list of tables -->
-        <div id="table_list_lobby" class="span6">
-            <% include table_list %>
-        </div>
-
-        <div class="chat_container">
-            <div id="chat_lobby" class="span6">
-                <% include chat %>
+        <div class="row-fluid">
+            <!-- display list of tables -->
+            <div id="table_list_lobby" class="span12">
+                <% include table_list %>
             </div>
         </div>
-        <!-- include values to expose to scripts -->
-        <input type="hidden" id="server_values" data-room_state="<%= room_state %>" />
-            
+        <div class="row-fluid">
+            <div class="chat_container row-fluid">
+                <div id="chat_lobby" class="row-fluid">
+                    <% include chat %>
+                </div>
+            </div>
+            <!-- include values to expose to scripts -->
+            <input type="hidden" id="server_values" data-room_state="<%= room_state %>" />
+        </div>
+
+        <!-- display list of users -->
+        <% include users %>
+
     </div> <!-- container-->
+
     <% include plugins %>
     <!-- DataTable -->
     <script src="/js/jquery.dataTables.js"></script>

@@ -8285,3 +8285,15 @@ a.label:hover, a.label:focus, a.badge:hover, a.badge:focus {
     overflow: visible !important;
   }
 }
+/* line 7, ../sass/styles.scss */
+html {
+  height: 100%;
+}
+
+/* line 11, ../sass/styles.scss */
+body {
+  height: 100%;
+  background-image: url("../../img/file000348075748.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+}
