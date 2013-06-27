@@ -113,7 +113,7 @@ window.onKeydown = onKeyDown
             viewLobby: 'img/view_lobby.png',
             exitTable: 'img/exit_table.png',
             messageBoxBackground: 'img/messagebox.png',
-            messageBoxCloseX:'img/messagebox_closeWindowX.jpg',
+            messageBoxCloseX:'img/messageBox_closeWindowX.jpg',
             checkBox: 'img/check_box.png',
             checkBoxChecked:'img/check_box_clicked.png',
             dealHoleCardSound: 'sound/deal_hole_card.wav',
