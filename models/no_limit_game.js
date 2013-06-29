@@ -50,9 +50,11 @@ module.exports = (function () {
     // how long (in ms, per pot) to wait after winners message and before reset_table message
   , DISPLAY_HANDS_DURATION: { type: Number, default: defaults.DISPLAY_HANDS_DURATION }
     // how long (in ms) players can sit out before being forced from their seats
-  , SIT_OUT_TIME_ALLOWED: { type: Number, default: defaults.SIT_OUT_TIME_ALLOWED } // 30 seconds (for testing)
+  , SIT_OUT_TIME_ALLOWED: { type: Number, default: defaults.SIT_OUT_TIME_ALLOWED }
     // how long (in ms) players are forced to wait before buying with less than they stood up with
-  , MIN_BUYIN_TIME_ENFORCED: { type: Number, default: defaults.MIN_BUYIN_TIME_ENFORCED } // 30 seconds (for testing)
+  , MIN_BUYIN_TIME_ENFORCED: { type: Number, default: defaults.MIN_BUYIN_TIME_ENFORCED }
+    // how often (in ms) to update the active player's time_to_act
+  , TO_ACT_UPDATE_INTERVAL: { type: Number, default: defaults.TO_ACT_UPDATE_INTERVAL }
   });
 
   NoLimitGameSchema.statics.setup = function() {
@@ -123,7 +125,7 @@ module.exports = (function () {
     delete serialized.serialize;
     delete serialized.roundNumChips;
     delete serialized._id;
-    console.log('serialized:', serialized);
+    //console.log('serialized:', serialized);
     return serialized;
   }
 
