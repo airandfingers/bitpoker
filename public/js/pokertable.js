@@ -255,7 +255,7 @@ if(item.messages){
           }
 
           if(options && options.outerStrokeWidth){var outerStrokeWidth = options.outerStrokeWidth}
-            else{var outerStrokeWidth = 4}
+            else{var outerStrokeWidth = 2}
 if(options && options.middleDividerStrokeWidth){var middleDividerStrokeWidth = options.middleDividerStrokeWidth}
             else{var middleDividerStrokeWidth = 1}
 
@@ -581,16 +581,19 @@ this.events.onCashierTextFieldFocus = function(event){
      //===============START BET SLIDER===================
 
     this.events.wheelScroll = function(numScrolls){
+      console.log(numScrolls)
       if(_.isNumber(numScrolls) == false){return 'scroll failed'}
       var change = numScrolls*self.userPreferences.bigBlindsPerMouseScroll*self.gameState.bigBlind
           var betValue  = parseFloat($('#betSize').val())
     var isBetValueValid = ( !isNaN(betValue)) && _.isNumber(betValue) 
-     if(isBetValueValid == true){ var newBet = change+betValue} //use current value
-      else{var newBet = change + self.gameState.betSize} //use previous known value if current value is invalid
+     if(isBetValueValid == true){  var newBet = change+betValue } //use current value
+      else{ var newBet = change + self.gameState.betSize} //use previous known value if current value is invalid
 console.log(newBet+'before rounding')
         //round the new  bet
       newBet = self.returnRoundedDownBetSize(newBet)
       console.log(newBet+'after rounding')
+
+      if(isNaN(newBet) || !_.isNumber(betValue)){newBet = 0}
         self.adjustBetDisplay(newBet)
     }
 
@@ -1715,7 +1718,7 @@ var betSizeY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.si
       this.itemAsBitmap(this.betSlider.horizontal, this.sources.horizontalSlider)
         this.itemAsBitmap(this.betSlider.vertical, this.sources.verticalSlider)
 
-self.updateBetSize('')
+self.updateAndStoreBetSize('')
 
 //highlight when clicked
 $('#betSize').focus(function(){
@@ -1919,6 +1922,9 @@ var containersPerMessageBox = self.gameState.containerImageIndexes.containersPer
 
         var cashierWindowX = canvasWidth/2 - cashierWindowWidth/2
         var cashierWindowY = canvasHeight/2 - cashierWindowHeight/2
+
+        var buttonFillColor = 'blue'
+        var buttonTextColor = '#FFFFFF'
         
         
         var closeWindowWidth = 31
@@ -1962,6 +1968,11 @@ var containersPerMessageBox = self.gameState.containerImageIndexes.containersPer
         var textColumnWidth = []
         var textRowY = []
         
+        var buttonWidth = 55
+        var buttonHeight = 25
+var buttonDistance   =  (innerCashierWidth - buttonWidth*2)/3 // space buttons evenly with left and right being innnerCashier
+var buttonBottomToButtonOfInnerCashierDistance = 7
+
 
         for (var i = 0;i<rows;i++){
             textRowY.push(cashierWindowY+outerTopHeight+textTopOffset +i*(textHeight + distanceBetweenTextY))
@@ -2114,14 +2125,14 @@ this.cashier[cashierItems[i].name].text.maxWidth = this.cashier[cashierItems[i].
 // location of html textboxes for adding chips
      this.cashier.addChipsTextBox = new this.Item (textX,this.cashier.accountBalance.position.y +25, innerCashierWidth,25,cashierImageContainerIndex)
 
-      this.cashier.addChips =  new this.Item (cashierWindowX + 10,cashierWindowY+cashierWindowHeight-40, 50,25,cashierImageContainerIndex) 
-        this.itemAsRectangle( this.cashier.addChips, '#0000FF')
-        this.addItemText( this.cashier.addChips, 'add chips', '13px arial', '#000000')
+      this.cashier.addChips =  new this.Item (innerCashierX + buttonDistance, innerCashierY+innerCashierHeight-buttonHeight - buttonBottomToButtonOfInnerCashierDistance, buttonWidth,buttonHeight,cashierImageContainerIndex) 
+        this.itemAsRectangle( this.cashier.addChips, buttonFillColor)
+        this.addItemText( this.cashier.addChips, 'add chips', '13px arial', buttonTextColor)
         this.cashier.addChips.image.onClick = self.events.onAddChipsClick
 
-        this.cashier.cancel =  new this.Item (cashierWindowX + 100,cashierWindowY+cashierWindowHeight-40, 50,25,cashierImageContainerIndex) 
-        this.itemAsRectangle( this.cashier.cancel, '#0000FF')
-        this.addItemText( this.cashier.cancel, 'cancel', '13px arial', '#000000')
+        this.cashier.cancel =  new this.Item (this.cashier.addChips.position.x + buttonWidth + buttonDistance, this.cashier.addChips.position.y, buttonWidth,buttonHeight,cashierImageContainerIndex) 
+        this.itemAsRectangle( this.cashier.cancel, buttonFillColor)
+        this.addItemText( this.cashier.cancel, 'cancel', '13px arial', buttonTextColor)
         this.cashier.cancel.image.onClick = self.hideCashier
 
          this.cashier.closeWindow =  new this.Item (closeWindowX,closeWindowY, closeWindowWidth,closeWindowHeight,cashierImageContainerIndex) 
@@ -3030,7 +3041,7 @@ self.images.betSlider.vertical.image.x = newX //adjust vertical slider location
 //adjust messages
 self.images.bet.messages = ['act','bet',betSize]
 self.images.raise.messages = ['act','raise',betSize]
-self.updateBetSize(betSize)
+self.updateAndStoreBetSize(betSize)
 self.stage.update()
          }
 
@@ -3043,7 +3054,8 @@ self.stage.update()
     }
     }
 
-this.updateBetSize = function(betSize){
+//also stores betsize
+this.updateAndStoreBetSize = function(betSize){
  $('#betSize').val(betSize)
  self.gameState.betSize = betSize
 }
@@ -3409,7 +3421,7 @@ this.hideAllActionButtons()
 
  //reset slider to original position and color
  this.images.betSlider.vertical.image.x =  this.images.betSlider.vertical.position.x
-  this.updateBetSize(minBet)
+  this.updateAndStoreBetSize(minBet)
 
   //display betSlider 
   this.displayChildren(this.images.betSlider)
@@ -3417,15 +3429,26 @@ $('#betSize').css('display','inline')
 
 //scroll wheel
 
+//most other browsers
     $(document).bind('mousewheel', function(event) {
+      var wheelScrolls
+if(event.originalEvent){wheelScrolls = event.originalEvent.wheelDelta/120}
 
-wheelScrolls = event.originalEvent.wheelDelta/120
-self.events.wheelScroll(wheelScrolls)
+if(!isNaN(wheelScrolls) && _.isNumber(wheelScrolls)){
+event.preventDefault() //prevent page scrolling
+  self.events.wheelScroll(wheelScrolls)}
+
         })
+
+//firefox
      $(document).bind('DOMMouseScroll', function(event) {
-      
-wheelScrolls = event.originalEvent.wheelDelta/120
-self.events.wheelScroll(wheelScrolls)
+var wheelScrolls
+
+if(event.originalEvent) {wheelScrolls = (-1)*event.originalEvent.detail}
+
+if(!isNaN(wheelScrolls) && _.isNumber(wheelScrolls)){
+event.preventDefault() //prevent page scrolling
+  self.events.wheelScroll(wheelScrolls)}
         })
 
     }
@@ -3771,8 +3794,10 @@ var nextCounter = lastCompletedFillColorCounter+1
 
     //concatanate to create new fill color
     newFillColor = rgbArrayToString([nextRed, nextGreen, nextBlue])
+    /*
 console.log('current time left to act = ' + self.gameState.seats[seatNumber].timeToAct)
 console.log('original time to act = ' + timeoutInMS)
+*/
    self.images.drawSeat(self.images.seats[seatNumber].seat, toActBorderColor, newFillColor, toActMiddleDividerColor, {borderFillRatio: self.gameState.seats[seatNumber].timeToAct/timeoutInMS, newFillColor:toActTimeLeftBorderColor})
     self.stage.update()
     
@@ -3969,7 +3994,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
        if(_.isNull(messageInfo.sizeAndFont)||_.isUndefined(messageInfo.sizeAndFont)){messageInfo.messageSizeAndFont = '13px Arial'}
     if(_.isNull(messageInfo.messageColor)||_.isUndefined(messageInfo.messageColor)){ messageInfo.messageColor = '#000000'}
     if(_.isNull(messageInfo.buttonSizeAndFont)||_.isUndefined(messageInfo.buttonSizeAndFont)){messageInfo.buttonSizeAndFont = '13px Arial'}
-     if(_.isNull(messageInfo.buttonTextColor)||_.isUndefined(messageInfo.buttonTextColor)){ messageInfo.buttonTextColor = '#000000'}
+     if(_.isNull(messageInfo.buttonTextColor)||_.isUndefined(messageInfo.buttonTextColor)){ messageInfo.buttonTextColor = '#FFFFFF'}
     if(_.isNull(messageInfo.buttonBackgroundColor)||_.isUndefined(messageInfo.buttonBackgroundColor)){ messageInfo.buttonBackgroundColor = '#0000FF'}
     if(_.isNull(messageInfo.okayText)||_.isUndefined(messageInfo.okayText)){ messageInfo.okayText = 'OK'}
     if(_.isNull(messageInfo.cancelText)||_.isUndefined(messageInfo.cancelText)){ messageInfo.cancelText = 'Cancel'}
@@ -4265,6 +4290,7 @@ if(potSizes.length > 1){
     }
     if(chipIntoPotAnimationArray.length>0){chipMoveSound.play()    }
   self.hideAllBets()  
+
     next(null, 2)
 }//end check if potSizes.length>1
 //if only 1 pot do not display individual potsizes
@@ -4505,6 +4531,7 @@ self.playerSitsOut(table_state.seats[i].seat)
         for(var i = 0;i<self.images.seats.length;i++){
 if(self.gameState.seats[i].displayMessageType == 'action'||'seat'||'openSeat'||'disabledSeat'){}
     else{self.gameState.seats[i].displayMessageType = 'seat'}
+
 //clear preactions for the street
 self.gameState.seats[i].preActions.street = {}
         }
@@ -4766,11 +4793,13 @@ self.gameState.seats[seatNumber].timeToAct = time
 
 //player to act (not the user)
  socket.on('player_to_act', function(player, timeout){
+
     var timeToCountDown = 3000
 
 //if user = player, do not initiate to act function, as act_prompt will be sent instead
     if(player.seat != self.gameState.userSeatNumber){self.playerToAct(player.seat, timeout)}
 
+/*
 var delayedCountDown = function(){
 if( self.gameState.seats[player.seat].toAct == true){self.startCountdown(player.seat, Math.round(timeToCountDown/1000))}
 }
@@ -4780,6 +4809,8 @@ if( self.gameState.seats[player.seat].toAct == true){self.startCountdown(player.
      .wait(timeout-timeToCountDown)
     .call(delayedCountDown)
      }
+     */
+
 })
 
 //player to act (not the user)
