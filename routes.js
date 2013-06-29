@@ -12,7 +12,6 @@ module.exports = (function () {
     , request = require('request');
 
   var version_file = require('./package.json');
-  console.log('version_file is ' + version_file);
   console.log('version_file package is ' + version_file.version);
 
   var base_page = '/lobby';
