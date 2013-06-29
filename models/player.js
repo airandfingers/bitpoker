@@ -124,7 +124,8 @@ module.exports = (function () {
   PlayerSchema.methods.prompt = function(actions, timeout, default_action, cb) {
     var self = this
       , auto_action
-      , act_timeout;
+      , act_timeout
+      , update_interval;
 
     _.all(actions, function(action_params, action) {
       if (self.isFlagSet(action)) {
@@ -145,6 +146,7 @@ module.exports = (function () {
         self.current_prompt = undefined;
         self.idle = false;
         clearTimeout(act_timeout);
+        clearInterval(update_interval);
         cb(action, num_chips);
       });
       act_timeout = setTimeout(function() {
@@ -152,8 +154,13 @@ module.exports = (function () {
         self.current_prompt = undefined;
         self.idle = true;
         self.socket.removeAllListeners('act');
+        clearInterval(update_interval);
         cb(default_action);
       }, timeout);
+      update_interval = setInterval(function() {
+        timeout -= self.game.TO_ACT_UPDATE_INTERVAL;
+        self.sendMessage('update_time_to_act', self.seat, timeout);
+      }, self.game.TO_ACT_UPDATE_INTERVAL);
       self.current_prompt = {
         actions: actions
       , timeout: timeout

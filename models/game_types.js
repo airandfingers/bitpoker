@@ -23,6 +23,8 @@ module.exports = (function() {
     , SIT_OUT_TIME_ALLOWED: 30000 // 30 seconds (for testing)
       // how long (in ms) players are forced to wait before buying with less than they stood up with
     , MIN_BUYIN_TIME_ENFORCED: 30000 // 30 seconds (for testing)
+    // how often (in ms) to update the active player's time_to_act
+    , TO_ACT_UPDATE_INTERVAL: 1000
     }
   // which values are enumerated below for each game type
   , set_per_game: ['SMALL_BLIND', 'MIN_CHIPS', 'MAX_CHIPS', 'MAX_PLAYERS'] 
