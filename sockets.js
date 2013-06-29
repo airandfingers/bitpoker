@@ -19,25 +19,6 @@ module.exports = (function () {
     , 'htmlfile'
   ]);
   io.set('close timeout', 30);
-
-
-  /*var RedisStore = require('socket.io/lib/stores/redis')
-    , redis  = require('socket.io/node_modules/redis')
-    , pub    = redis.createClient(18034, 'pub-redis-18034.us-west-1.1.azure.garantiadata.com')
-    , sub    = redis.createClient(18034, 'pub-redis-18034.us-west-1.1.azure.garantiadata.com')
-    , client = redis.createClient(18034, 'pub-redis-18034.us-west-1.1.azure.garantiadata.com')
-    , password = 'stmu68z8B4bz6Wajaw0xv4O2kDNmzfsR';
-
-  pub.auth(password, function (err) { if (err) throw err; });
-  sub.auth(password, function (err) { if (err) throw err; });
-  client.auth(password, function (err) { if (err) throw err; });
-
-  io.set('store', new RedisStore({
-    redis: redis
-  , redisPub: pub
-  , redisSub: sub
-  , redisClient : client
-  }));*/
   
   //authorization handler - 
   io.set('authorization', function (data, cb) {
@@ -49,14 +30,14 @@ module.exports = (function () {
       sioCookieParser(data, {}, function(err) {
         // get the session ID off where the cookie parser added it ('req')
         data.sessionID = data.signedCookies[session_settings.sid_name];
-        if (session_settings.store.getCollection() === null) {
-          error = 'Session store isn\'t ready yet.';
-          cb(error, authorized);
-        }
-        else {
+        //if (session_settings.store.connected !== true) {
+        //  error = 'Session store isn\'t ready yet.';
+        //  cb(error, authorized);
+        //}
+        //else {
           // attempt to look up the session from our session store
-          session_settings.store.get(data.sessionID, onSessionLookup);
-        }
+        session_settings.store.get(data.sessionID, onSessionLookup);
+        //}
       });
     } else {
       // if there isn't, turn down the connection with a message

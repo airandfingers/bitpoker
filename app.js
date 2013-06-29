@@ -27,10 +27,11 @@ var express = require('express')
 // Declare what port to listen on - set to "process.env.PORT" per modulus getting started.
   , EXPRESS_PORT = process.env.PORT || 9000
 // Define some session-related settings
+  , db = require('./models/db')
   , session_settings = {
-    store: require('./models/db').session_store
-  , secret: 'All1N0rGoH0M3'
-  , sid_name: 'express.sid'
+      store: db.session_store
+    , secret: 'All1N0rGoH0M3'
+    , sid_name: 'express.sid'
   };
 
 function start() {
