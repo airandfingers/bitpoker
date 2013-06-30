@@ -2564,8 +2564,8 @@ this.images.pots[potNumber].potSize.text.text = potSize
 
             this.images.seats[seatNumber].chips.length = 0
 
-            console.log('finished hiding chips of player number '+seatNumber)
-            console.log(this.images.seats[seatNumber].chips)
+       //     console.log('finished hiding chips of player number '+seatNumber)
+        //    console.log(this.images.seats[seatNumber].chips)
     }
 
    //this.images.seats[i] is parent for players bets, this.images.pots[i] is parent for pots
@@ -2573,7 +2573,8 @@ this.images.pots[potNumber].potSize.text.text = potSize
         //remove previous chips
         this.hideChildren(parentOfChipArray.chips)
         //reset chip array from memory
-        parentOfChipArray.chips.length = 0
+        parentOfChipArray.chips = new Array
+         parentOfChipArray.chips.length = 0
         var x = initialX
         var y = initialY
         var chipIncrementY = this.images.pots[0].secondChip.position.y-this.images.pots[0].firstChip.position.y
@@ -3233,8 +3234,8 @@ for(var i =0;i<potArrayLength;i++){
 }
 
      // player is array, so players[i].chips_won = array[amountWon, amountWon]
-      var chipAnimationTime = 1000
-      var timeBetweenAnimations = 3000
+      var chipAnimationTime = 500
+      var timeBetweenAnimations = 1000
       var timeAtEnd = 700
         var ticks = 60
         var chipStacks = []
@@ -3351,8 +3352,21 @@ if(self.stage.contains(self.images.seats[seatNumber].chips[0].image)) {
         self.hideChildren(temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips)
             console.log('finished hiding temporary stack number '+potWinners[potNumber][i].temporaryStackNumber)
 
+//update player's stack size
+var currentStackSize
+
+if(_.isNumber(self.images.seats[seatNumber].status.text.text)){currentStackSize = parseFloat(self.images.seats[seatNumber].status.text.text)}
+
+else {currentStackSize = 0}
+
+  currentStackSize = currentStackSize + potWinners[potNumber][i].amountWon
+
+self.images.seats[seatNumber].status.text.text =  currentStackSize
+
+//---------end update of player stack size
+
 self.stage.update()
-})
+})//iterate through pot  into chip animations
 
 console.log('start waiting after pot number '+potNumber)
 var wait = setTimeout(function(){
