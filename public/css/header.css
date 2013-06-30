@@ -75,13 +75,16 @@ h3 {
 */
 
 #login, #register {
+    background-color: rgba(0,0,0,.9);
+    color: #CCCCCC;
     width: 200px;
-    height: 200px;
+    min-height: 200px;
     position: absolute;
     display: none;
     font-size: .8em;
-    margin: 1em;
-
+    padding: 1em;
+    text-align: center;
+    z-index: 1;
 }
 
 #login form {
@@ -89,6 +92,10 @@ h3 {
 }
 
 #login a:visited { color: #2f96b4; }
+
+#login input, #register input {
+    width: 150px;
+}
 
 .footer {
     color: #FFFFCC;
