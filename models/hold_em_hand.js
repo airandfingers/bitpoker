@@ -14,7 +14,8 @@ module.exports = (function () {
     , db = require('./db') // make sure mongoose is connected
 
     , Deck = require('./deck')
-    , Player = require('./player');
+    , Player = require('./player')
+    , HandHistory = require('./hand_history');
 
   var static_properties = {
   // static properties (attached below) - Model.property_name
@@ -39,7 +40,6 @@ module.exports = (function () {
     // how a HoldEmHand should handle each stage
     // {String stage_name: Function stage_handler}
   , stage_handlers: {}
-    // how many ms to wait between polling to see how many players are ready
   };
 
   /* the schema - defines the "shape" of the documents:
@@ -53,7 +53,7 @@ module.exports = (function () {
     // the current stage, an index of HoldEmHand.STAGES
   , stage_num        : { type: Number, default: 0 }
     // the current stage, one of HoldEmHand.STAGES
-  , stage_name        : { type: String, default: 'initializing' }
+  , stage_name       : { type: String, default: 'initializing' }
     // the function this hand can call to broadcast to all players in the room
   , broadcast        : Schema.Types.Mixed
     // the seat number of the dealer (use to calculate order-adjusted players)
@@ -72,13 +72,15 @@ module.exports = (function () {
   , forfeited_bets   : { type: [Schema.Types.Mixed], default: function() { return []; } }
     // the deck this hand uses (created in initialize)
   , deck             : Schema.Types.Mixed
+    // the recorded history of this hand
+  , hand_history     : Schema.Types.Mixed
     // the cards that are visible to everyone
   , community        : { type: [String], default: function() { return []; } }
     // unique identifier for this HoldEmHand
   , hand_id          : String
     // the number of chips to start with (carried over from previous hands)
   , initial_pot      : Number
-  // the number of chips to carry over to next hand
+    // the number of chips to carry over to next hand
   , pot_remainder    : { type: Number, default: 0 }
   });
 
@@ -121,6 +123,10 @@ module.exports = (function () {
       , handler;
 
     self.deck = Deck.createDeck({});
+    
+    self.hand_history = HandHistory.createHandHistory({
+      hand_id: self.hand_id
+    });
 
     _.each(HoldEmHand.stage_handlers, function(handler, stage_name) {
       self.onStage(stage_name, handler);
@@ -182,6 +188,11 @@ module.exports = (function () {
     usernames = _.pluck(self.players, 'username');
     self.pots.push({ usernames: usernames, value: self.initial_pot });
 
+    self.hand_history.update({
+      started_at: new Date()
+    , initial_player_objs: self.getPlayerObjs()
+    });
+
     while (SMALL_BLIND_PAID === false && 
            self.players.length >= game.MIN_PLAYERS) {
       player = self.players[self.to_act];
@@ -234,14 +245,16 @@ module.exports = (function () {
       , first_card
       , second_card
       , player_objs = self.getPlayerObjs();
+
     _.each(self.players, function(player) {
       first_card = self.deck.deal();
       second_card = self.deck.deal();
       player.receiveHand(first_card, second_card);
       player.sendMessage('hole_cards_dealt', player.hand);
     });
-    this.broadcast('hands_dealt', player_objs, { dealer: self.dealer, small_blind_seat: self.small_blind_seat });
-    this.nextStage();
+    self.broadcast('hands_dealt', player_objs, { dealer: self.dealer, small_blind_seat: self.small_blind_seat });
+
+    self.nextStage();
   };
 
   static_properties.stage_handlers.betting_preflop   =
@@ -634,6 +647,13 @@ module.exports = (function () {
       });
     });
     player_objs = self.getPlayerObjs(['hand', 'chips_won']);
+
+    self.hand_history.update({
+      finished_at: new Date()
+    , final_player_objs: player_objs
+    });
+    self.hand_history.save();
+    
     self.broadcast('winners', player_objs);
     setTimeout(function() {
       self.nextStage();
@@ -924,7 +944,7 @@ module.exports = (function () {
    *   a function that creates a new document
    *   has static methods and properties attached to it
    *   gets exported by this module */
-  var HoldEmHand = mongoose.model('HoldEmHand', HoldEmHandSchema);
+  var HoldEmHand = mongoose.model('hold_em_hand', HoldEmHandSchema);
 
   //static properties (defined above)
   _.extend(HoldEmHand, static_properties);

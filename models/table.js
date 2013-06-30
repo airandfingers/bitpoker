@@ -140,7 +140,7 @@ module.exports = (function () {
         , initial_pot: self.initial_pot || 0
         
     });
-    console.log('Pushing new hand onto hands, with hand_id: ', self.hands.length);
+    console.log('Pushing new hand onto hands, with hand_id: ', hand.hand_id);
     self.hands.push(hand);
     
     hand.onStage('done', function() {
