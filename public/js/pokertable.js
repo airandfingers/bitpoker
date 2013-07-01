@@ -3439,7 +3439,9 @@ this.hideAllActionButtons()
  this.images.betSlider.vertical.image.x =  this.images.betSlider.vertical.position.x
   this.updateAndStoreBetSize(minBet)
 
-  //display betSlider 
+  this.updateAndStoreBetSize(minBet) //set betbox to min bet
+
+  //display betSlider  and bet text box
   this.displayChildren(this.images.betSlider)
 $('#betSize').css('display','inline')
 

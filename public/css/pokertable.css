@@ -46,7 +46,7 @@ body {
     border-radius: 0px;
 }
 #betSizeDiv input[type = 'text']{
-   background: transparent url('img/chat_bg.jpg') no-repeat;
+   background: #FFFFFF;
     border:0;
     color : #747862;
     margin-right:0px;
