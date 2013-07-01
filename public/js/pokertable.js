@@ -2229,7 +2229,7 @@ this.displayChildren(this.images.background)
         this.images.setDefaults()
        this.images.setDefaultEvents()
        this.images.setDefaultMessages()
-      this.displayTableChatBox()
+       
     }
      
 //return betsize that is rounded down or FALSE if betsize is not a number, also checks to make sure betsize is within in and max
@@ -2282,9 +2282,7 @@ if(betSize>self.gameState.maxBet){return self.gameState.maxBet}
 
     this.displayTableChatBox = function (){
 
-$('#chat').css({
- 'display'   : 'inline'
-})
+$('#chat').css('display', 'inline')
 
 
     }
@@ -4470,6 +4468,8 @@ function tick(event){
                       //add all containers to the stage
                       for(var i = 0;i<self.images.containers.length;i++){
                       self.stage.addChild(    self.images.containers[i])
+                      //displaychat box
+                      self.displayTableChatBox()
            }
            
        }

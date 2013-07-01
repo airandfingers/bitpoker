@@ -45,6 +45,10 @@ body {
     border: 1px solid #FFFFFF;
     border-radius: 0px;
 }
+#chat{
+       position: absolute;
+       display:none;
+}
 #betSizeDiv input[type = 'text']{
    background: #FFFFFF;
     border:0;
