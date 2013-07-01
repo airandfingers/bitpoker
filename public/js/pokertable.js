@@ -131,8 +131,8 @@ moveChipsSound: 'sound/move_chips.wav',
                 10: 'img/chips/10.png'
             }
             }
-            if(this.gameState.displaySize == 'mobile'){this.images.sources.cardImageFolder = 'img/fourColorDeck/resize/'}
-            else {this.images.sources.cardImageFolder = 'img/fourColorDeck/'}
+            if(this.gameState.displaySize == 'mobile'){this.images.sources.cardImageFolder = 'img/fourcolordeck/resize/'}
+            else {this.images.sources.cardImageFolder = 'img/fourcolordeck/'}
 
             this.images.background = {}
             this.images.pots = []
