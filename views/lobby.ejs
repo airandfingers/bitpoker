@@ -6,8 +6,11 @@ body {background-image: none;}
     <div id="container" class="row-fluid">
         <div class="row-fluid">
             <!-- display list of tables -->
-            <div id="table_list_lobby" class="span12">
+            <div id="table_list_lobby" class="span11">
                 <% include table_list %>
+            </div>
+            <div class="span1">
+                <% include users %>
             </div>
         </div>
         <div class="row-fluid">
@@ -19,9 +22,6 @@ body {background-image: none;}
             <!-- include values to expose to scripts -->
             <input type="hidden" id="server_values" data-room_state="<%= room_state %>" />
         </div>
-
-        <!-- display list of users -->
-        <% include users %>
 
     </div> <!-- container-->
 

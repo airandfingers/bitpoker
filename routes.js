@@ -454,8 +454,8 @@ module.exports = (function () {
   //Send register the new information
   app.post('/register', function (req, res, next) {
     var username = req.body.username
-      , pt_password = req.body.password
-      , password_confirm = req.body.password2
+      , pt_password = req.body.new_password
+      , password_confirm = req.body.new_password_confirm
       , target = req.body.next || '/';
 
     if (pt_password === password_confirm) {
