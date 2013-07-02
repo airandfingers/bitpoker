@@ -8,6 +8,11 @@ header {
     font-family: DESTROY, sans-serif;
 }
 
+
+
+@media all and (min-width: 762px) {
+
+}
 .navbar {
     background: black;
     position: -webkit-sticky;
@@ -121,3 +126,5 @@ h3 {
 .footer li {
     color: white;
 }
+
+
