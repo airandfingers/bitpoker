@@ -133,7 +133,7 @@ module.exports = (function () {
    *   a function that creates a new document
    *   has static methods and properties attached to it
    *   gets exported by this module */
-  var NoLimitGame = mongoose.model('NoLimitGame', NoLimitGameSchema);
+  var NoLimitGame = mongoose.model('no_limit_game', NoLimitGameSchema);
 
   // static properties (defined above)
   _.extend(NoLimitGame, static_properties);

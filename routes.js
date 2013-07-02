@@ -7,6 +7,7 @@ module.exports = (function () {
     , User = require('./models/user')
     , Room = require('./models/room')
     , Table = require('./models/table')
+    , HandHistory = require('./models/hand_history')
     , db_config = require('./models/db.config')
     , mailer = require('./mailer')
     , request = require('request');
@@ -584,6 +585,17 @@ module.exports = (function () {
       res.json({ error: 'Cant get preferences when not at table!' });
     }
   });
+
+  app.get('/hand_histories', auth.ensureAuthenticated, function(req, res) {
+    HandHistory.find(function(err, hand_histories) {
+      if (err) {
+        res.json({ error: 'Error while looking up hand histories:' + err });
+      }
+      else {
+        res.json(hand_histories);
+      }
+    })
+  })
 
   //Handle all other cases with a 404
   //Note: ONLY do this if app.use(app.router) comes after
