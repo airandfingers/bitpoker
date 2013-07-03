@@ -24,7 +24,7 @@ body {
     position: absolute;
 }
 #cashier input[type = 'text']{
-    background-image:url(img/cashier_textbox_bg.jpg);
+  background-image:url('/img/cashier_textbox_bg.jpg');
 	background-repeat:repeat;
 	border:1px solid #d1c7ac;
 	color:#333333;
@@ -33,7 +33,7 @@ body {
     text-align: left;
 }
 #chatDiv input[type = 'text']{
-   background: transparent url('img/chat_bg.jpg') no-repeat;
+  background: transparent url('/img/chat_bg.jpg') no-repeat;
 	border:0;
 	color : #747862;
 	margin-right:0px;
