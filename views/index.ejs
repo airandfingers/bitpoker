@@ -1,4 +1,4 @@
-<% var title = 'Bitcoin Poker- Are you all in?'; %>
+<% var title = 'Bitcoin Poker- Welcome!'; %>
 <% include head %>
     <div>
         <h1>Welcome to Bitcoin Poker v<%= version %></h1>
@@ -9,5 +9,13 @@
 
         <a href="/lobby"><button class="btn btn-custom" id="go_all_in" autofocus>Go in. All in.</button></a>
     </div>
-    <% include plugins %>
+
+    <div>
+      <h1> Or </h1>
+      <form action="/guest_login" method="post">
+        <button class="btn btn-inverse">Play as Guest</button>
+      </form>
+    </div>
+
+<% include plugins %>
 <% include foot %>

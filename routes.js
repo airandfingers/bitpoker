@@ -272,6 +272,11 @@ module.exports = (function () {
     });
   });
 
+  //Guest Login Route
+  app.post('/guest_login', function (req, res) {
+    console.log('guest_login route fired!');
+  });
+  
   //submit password recovery to user's e-mail address route.
   app.post('/password_recovery', function (req, res) {
     var username = req.body.username;

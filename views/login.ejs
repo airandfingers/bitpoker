@@ -1,33 +1,41 @@
 <% include head %>
+  <div id="container">
+    <div class="span6 offset5 inverse"> 
+      <h1>login</h1>
+      <% if (message) { %>
+        <p><%= message %></p>
+      <% } %>  
 
-  <h4>login</h4>
-  <% if (message) { %>
-    <p><%= message %></p>
-  <% } %>
-  <div id="login_main">
-    <div>
-      <a href="/register"> Don't have a login? Register here</a>
-      </br>
-    </div>
-    <form action="/login" method="post">
-      <div class="username">
-        <label>Username:</label>
-        <input type="text" name="username" placeholder="username" autofocus /><br/>
+      <div>
+        <a href="/register"> Don't have a login? Register here</a>
+        or
+        <div id="play_as_guest">
+          <form action="/guest_login" method="post">
+            <button class="btn btn-inverse">Play as Guest</button>
+          </form>
+        </div>
       </div>
-      <div class="password">
-        <label>Password:</label>
-        <input type="password" name="password" placeholder="password" />
-      </div>
-      <div class="submit_button">
-        <input type="submit" value="Boomcat!" class="button" />
-      </div>
-      <% if (next) { %>
-        <input type="hidden" name="next" value="<%= next %>" />
-      <% } %>
-    </form>
-    <div>
-    Forgetting your password? <a href="/password_recovery">Click here.</a>
-    </div>    
-  </div>
+
+      <form action="/login" method="post">
+        <div class="username">
+          <label>Username:</label>
+          <input type="text" name="username" placeholder="username" autofocus /><br/>
+        </div>
+        <div class="password">
+          <label>Password:</label>
+          <input type="password" name="password" placeholder="password" />
+        </div>
+        <div class="submit_button">
+          <input type="submit" value="Boomcat!" class="button btn btn-inverse" />
+        </div>
+        <% if (next) { %>
+          <input type="hidden" name="next" value="<%= next %>" />
+        <% } %>
+      </form>
+      Forgetting your password? <a href="/password_recovery">Click here.</a>
+    </div> <!--well-->
+  </div>  <!--container-->  
+
+
   <% include plugins %>
 <% include foot %>
