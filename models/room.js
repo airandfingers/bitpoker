@@ -184,15 +184,14 @@ module.exports = (function () {
 
     var room_id = socket.handshake.room_id //socket.handshake = data object from authorization handler
       , room = Room.getRoom(room_id);
-    if (room !== undefined) {
-      room.join(socket);
-      socket.on('disconnect', function() {
-        room.leave(socket);
-      });
-    }
-    else {
+    if (room === undefined) {
       console.error('no room with room_id', room_id);
+      room = Room.getRoom('table_1');
     }
+    room.join(socket);
+    socket.on('disconnect', function() {
+      room.leave(socket);
+    });
   });
 
   return Room;

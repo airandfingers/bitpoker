@@ -101,32 +101,30 @@ module.exports = (function () {
     });
   });
 
-    //home, index and "/" link to the same page
-   app.get('/', function(req, res) {
-    res.render('index', {
-      title: 'Homepage',
-      message: req.flash('error'),
-      version: version_file.version,      
-    });
-  });
-
-  app.get('/home', function(req, res) {
-    res.render('index', {
-      title: 'Homepage',
-      message: req.flash('error'),      
-      version: version_file.version,
-    });
-  });
-
-  app.get('/index', function(req, res) {
-    res.render('index', {
-      title: 'Homepage',
-      message: req.flash('error'),
-      version: version_file.version,
-    });
-  });
-    //
-    //
+  //home, index and "/" link to the same page
+  var renderHome = function(req, res) {
+    var table_id = '1'
+      , table = Table.getTable(table_id)
+      , username = req.user.username;
+    if (table instanceof Table) {
+      var table_state = table.getCurrentHand().serialize(username)
+        , users = table.room.getUsernames()
+        , room_state = { users: users };
+      res.render('index', {
+        version: version_file.version
+      , table_id: table_id
+      , username: username
+      , game: table.game
+      , hide_navbar: true
+      , room_state : JSON.stringify(room_state)
+      , table_state: JSON.stringify(table_state)
+      });
+    }
+    else { console.error('wat'); }
+  }
+  app.get('/', renderHome);
+  app.get('/home', renderHome);
+  app.get('/index', renderHome);
 
   app.get('/legal_info', function (req, res) {
     res.render('legal_info', {

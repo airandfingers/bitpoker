@@ -19,9 +19,9 @@ module.exports = (function () {
   var HandHistorySchema = new Schema({
   // instance properties - document.field_name
     // the HoldEmHand this HandHistory is recording (not stored in DB)
-    //hand               : Schema.Types.Mixed
+    hand               : Schema.Types.Mixed
     // the hand history string, compatible with pokerhand.org
-    history_string     : { type: String, default: '' }
+  , history_string     : { type: String, default: '' }
     // time at which hands were dealt
   , started_at         : Date
     // serialized player objects at deal-time
@@ -40,7 +40,6 @@ module.exports = (function () {
        (see Schema definition for list of properties)*/
     //console.log('HandHistory.createHandHistory called!', spec);
     var hand_history = new HandHistory(spec);
-    //console.log('created hand history:', hand_history);
     return hand_history;
   };
 
@@ -182,10 +181,10 @@ module.exports = (function () {
     this.history_string += line_to_append + '\n';
   };
 
-  /*HandHistorySchema.pre('save', function(next) {
+  HandHistorySchema.pre('save', function(next) {
     this.hand = null;
     next();
-  });*/
+  });
 
   /* the model - a fancy constructor compiled from the schema:
    *   a function that creates a new document

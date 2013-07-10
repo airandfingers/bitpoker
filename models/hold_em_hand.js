@@ -205,7 +205,7 @@ module.exports = (function () {
         //console.log('player will post small blind:', player, game.SMALL_BLIND);
         player.makeBet(game.SMALL_BLIND);
         self.broadcast('player_acts', player.serialize(), 'post_blind', self.calculatePotTotal());
-        self.hand_history.logAction(player.username, 'post_blind', game.SMALL_BLIND);
+        self.hand_history.logAction(player, 'post_blind', game.SMALL_BLIND);
         self.small_blind_seat = player.seat;
         SMALL_BLIND_PAID = true;
       }
@@ -226,7 +226,7 @@ module.exports = (function () {
         //console.log('player will post big blind:', player, game.BIG_BLIND);
         player.makeBet(game.BIG_BLIND);
         self.broadcast('player_acts', player.serialize(), 'post_blind', self.calculatePotTotal());
-        self.hand_history.logAction(player.username, 'post_blind', game.BIG_BLIND);
+        self.hand_history.logAction(player, 'post_blind', game.BIG_BLIND);
         BIG_BLIND_PAID = true;
       }
       self.nextPlayer();

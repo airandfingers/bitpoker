@@ -1,21 +1,115 @@
 <% var title = 'Bitcoin Poker- Welcome!'; %>
-<% include head %>
-    <div>
-        <h1>Welcome to Bitcoin Poker v<%= version %></h1>
+<% include head_start %>
+        <link type="text/css" rel="stylesheet" href="/css/pokertable.css" />
+<% include head_end_and_header %>
+		<div>
+		    <h1>Welcome to Bitcoin Poker v<%= version %></h1>
 
-        <% if (message) { %>
-          <p><%= message %></p>
-        <% } %>        
+		    <a href="/lobby"><button class="btn btn-custom" id="go_all_in" autofocus>Go in. All in.</button></a>
+		</div>
 
-        <a href="/lobby"><button class="btn btn-custom" id="go_all_in" autofocus>Go in. All in.</button></a>
-    </div>
+		<div>
+		  	<h1> Or </h1>
+		  	<form action="/guest_login" method="post">
+		    	<button class="btn btn-inverse">Play as Guest</button>
+		  	</form>
+		</div>
+        <div id="pokerTableWrapper">
+            <div id="pokerCanvasDiv">
+                    <canvas id="canvas" width="690" height="480" style= 'z-index :0'></canvas>
+                   </div> <!-- pokerCanvasDiv-->
+            <div id="cashierDiv">
+                <form id = 'cashier' style='display: none'>    
 
-    <div>
-      <h1> Or </h1>
-      <form action="/guest_login" method="post">
-        <button class="btn btn-inverse">Play as Guest</button>
-      </form>
-    </div>
+  <div id="maxDiv">
+                       <input type = 'radio' id ="maxRadio" name = 'addChipsRadio' value="max" size="-4">
+                    <p id = 'maxText'>Max:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;</p>
+                    <input type = 'text' id="maxAmount">
 
-<% include plugins %>
+</div> <!-- maxDiv-->
+
+<div id="otherAmountDiv">
+            <input type = 'radio' id ="otherAmountRadio" name = 'addChipsRadio' >
+                <p id = 'otherAmountText'>    Other Amount: </p>
+                    <input type = 'text' id="otherAmount"> 
+
+</div> <!-- otherAmountDiv-->
+
+<div id="autoRebuyDiv">
+
+                      <input type = 'radio' id ="autoRebuyRadio" name = 'addChipsRadio' >
+                 <p id = 'autoRebuyText'>   Auto-Rebuy to: </p>
+                    <input type = 'text' id="autoRebuyAmount" >     </form>  
+
+</div> <!-- autoRebuyDiv-->
+
+            </div> <!-- cashier-->
+            <div id="chatDiv">
+                <form id='chatForm'>
+           <input type = 'text' id="chat">
+                <input type = 'text' id="trolol" style ="display :none">
+                </form>
+             </div> <!-- chatDiv-->
+
+             <!-- bet size DIV-->
+            <div id="betSizeDiv">
+                <form id='betSizeForm'>
+           <input type = 'text' id="betSize">
+                <input type = 'text' id="trololol" style ="display :none">
+                </form>
+             </div> <!-- bet size DIV-->
+               
+        </div> <!-- poker table wrapper -->
+
+        <!--include values to expose to scripts-->
+        <input type="hidden" id="server_values"
+            data-table_state="<%= table_state %>"\
+            data-table_state_url="/table_state/<%= table_id %>"
+            data-room_state="<%= room_state %>"
+        />
+
+        <% include plugins %>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/js/chat.js"></script>
+        <script src="/js/vendor/easeljs-0.6.1.min.js"></script>
+  <script src="/js/vendor/easeljs-0.6.0.min.js"></script>
+
+
+<!--
+        <script src="/js/vendor/easeljs/AlphaMapFilter.js"></script>
+    <script src="/js/vendor/easeljs/AlphaMaskFilter.js"></script>
+        <script src="/js/vendor/easeljs/BoxBlurFilter.js"></script>
+            <script src="/js/vendor/easeljs/ColorFilter.js"></script>
+                <script src="/js/vendor/easeljs/ColorMatrix.js"></script>
+                <script src="/js/vendor/easeljs/ColorMatrixFilter.js"></script>
+                <script src="/js/vendor/easeljs/EventDispatcher.js"></script>
+                <script src="/js/vendor/easeljs/Filter.js"></script>
+-->
+
+
+        <script src="/js/vendor/soundjs-0.4.1.min.js"></script>
+         <script src="/js/vendor/soundjs.flashplugin-0.4.1.min.js"></script>
+        <script src="/js/vendor/tweenjs-0.4.0.min.js"></script>
+        <script src="/js/vendor/preloadjs-0.3.0.min.js"></script>
+        <script src="/js/vendor/jquery-ui.js"></script>
+
+
+
+
+        <!--
+          <script src="/js/vendor/easeljs-0.6.0.min.js"></script>
+        <script src="/js/vendor/preloadjs/AbstractLoader.js"></script>
+        <script src="/js/vendor/preloadjs/LoadQueue.js"></script>
+        <script src="/js/vendor/preloadjs/TagLoader.js"></script>
+        <script src="/js/vendor/preloadjs/XHRLoader.js"></script>
+        <script src="/js/vendor/easeljs/EventDispatcher.js"></script>
+
+        <script src="/js/vendor/easeljs/container.js"></script>
+
+        -->
+
+        <script src="js/vendor/async.js"></script>
+
+        <script src="/js/pokertable.js"></script>
 <% include foot %>
