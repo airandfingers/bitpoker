@@ -587,7 +587,9 @@ module.exports = (function () {
   });
 
   app.get('/hand_histories', auth.ensureAuthenticated, function(req, res) {
-    HandHistory.find(function(err, hand_histories) {
+    HandHistory.find()
+      .sort('-finished_at')
+      .exec(function(err, hand_histories) {
       if (err) {
         res.json({ error: 'Error while looking up hand histories:' + err });
       }

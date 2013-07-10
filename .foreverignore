@@ -19,3 +19,6 @@
 
 **/*.sublime-project
 **/*.sublime-workspace
+
+# Ignore HandRanks.dat
+HandRanks.dat

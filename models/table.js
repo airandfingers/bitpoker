@@ -132,7 +132,8 @@ module.exports = (function () {
     var self = this
       , hand_num = self.hands.length + 1
       , hand = HoldEmHand.createHoldEmHand({
-          hand_id: self.name + '.' + hand_num
+          table_name: self.name
+        , hand_num: hand_num
         , game: self.game
         , seats: self.seats
         , broadcast: function() { self.room.broadcast.apply(self.room, arguments); }
@@ -140,7 +141,7 @@ module.exports = (function () {
         , initial_pot: self.initial_pot || 0
         
     });
-    console.log('Pushing new hand onto hands, with hand_id: ', hand.hand_id);
+    console.log('Pushing new hand onto hands: ', hand.table_name, hand.hand_num);
     self.hands.push(hand);
     
     hand.onStage('done', function() {

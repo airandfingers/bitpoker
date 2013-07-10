@@ -76,8 +76,10 @@ module.exports = (function () {
   , hand_history     : Schema.Types.Mixed
     // the cards that are visible to everyone
   , community        : { type: [String], default: function() { return []; } }
-    // unique identifier for this HoldEmHand
-  , hand_id          : String
+    // unique identifier for the table at which this HoldEmHand is being played
+  , table_name       : String
+    // number of this HoldEmHand (unique when combined with table_name)
+  , hand_num         : Number
     // the number of chips to start with (carried over from previous hands)
   , initial_pot      : Number
     // the number of chips to carry over to next hand
@@ -125,7 +127,7 @@ module.exports = (function () {
     self.deck = Deck.createDeck({});
     
     self.hand_history = HandHistory.createHandHistory({
-      hand_id: self.hand_id
+      hand: self
     });
 
     _.each(HoldEmHand.stage_handlers, function(handler, stage_name) {
@@ -188,10 +190,7 @@ module.exports = (function () {
     usernames = _.pluck(self.players, 'username');
     self.pots.push({ usernames: usernames, value: self.initial_pot });
 
-    self.hand_history.update({
-      started_at: new Date()
-    , initial_player_objs: self.getPlayerObjs()
-    });
+    self.hand_history.logStart(new Date(), self.getPlayerObjs());
 
     while (SMALL_BLIND_PAID === false && 
            self.players.length >= game.MIN_PLAYERS) {
@@ -206,6 +205,7 @@ module.exports = (function () {
         //console.log('player will post small blind:', player, game.SMALL_BLIND);
         player.makeBet(game.SMALL_BLIND);
         self.broadcast('player_acts', player.serialize(), 'post_blind', self.calculatePotTotal());
+        self.hand_history.logAction(player.username, 'post_blind', game.SMALL_BLIND);
         self.small_blind_seat = player.seat;
         SMALL_BLIND_PAID = true;
       }
@@ -226,6 +226,7 @@ module.exports = (function () {
         //console.log('player will post big blind:', player, game.BIG_BLIND);
         player.makeBet(game.BIG_BLIND);
         self.broadcast('player_acts', player.serialize(), 'post_blind', self.calculatePotTotal());
+        self.hand_history.logAction(player.username, 'post_blind', game.BIG_BLIND);
         BIG_BLIND_PAID = true;
       }
       self.nextPlayer();
@@ -253,6 +254,7 @@ module.exports = (function () {
       player.sendMessage('hole_cards_dealt', player.hand);
     });
     self.broadcast('hands_dealt', player_objs, { dealer: self.dealer, small_blind_seat: self.small_blind_seat });
+    self.hand_history.logStage('dealing');
 
     self.nextStage();
   };
@@ -527,6 +529,7 @@ module.exports = (function () {
         break;
       }
       self.broadcast('player_acts', player.serialize(), action, self.calculatePotTotal());
+      self.hand_history.logAction(player, action, num_chips, self.high_bet);
       player.actedIn(self.stage_num);
       if (action === 'fold') {
         self.playerOut(self.to_act);
@@ -540,6 +543,7 @@ module.exports = (function () {
     setTimeout(function() {
       self.community.push(self.deck.deal(), self.deck.deal(), self.deck.deal());
       self.broadcast('community_dealt', self.community);
+      self.hand_history.logStage('flopping');
       self.nextStage();
     }, self.game.PRE_DEAL_DELAY);
   };
@@ -549,6 +553,7 @@ module.exports = (function () {
     setTimeout(function() {
       self.community.push(self.deck.deal());
       self.broadcast('community_dealt', self.community);
+      self.hand_history.logStage('turning');
       self.nextStage();
     }, self.game.PRE_DEAL_DELAY);
   };
@@ -558,6 +563,7 @@ module.exports = (function () {
     setTimeout(function() {
       self.community.push(self.deck.deal());
       self.broadcast('community_dealt', self.community);
+      self.hand_history.logStage('rivering');
       self.nextStage();
     }, self.game.PRE_DEAL_DELAY);
   };
@@ -648,11 +654,7 @@ module.exports = (function () {
     });
     player_objs = self.getPlayerObjs(['hand', 'chips_won']);
 
-    self.hand_history.update({
-      finished_at: new Date()
-    , final_player_objs: player_objs
-    });
-    self.hand_history.save();
+    self.hand_history.logEnd(new Date(), player_objs);
     
     self.broadcast('winners', player_objs);
     setTimeout(function() {
