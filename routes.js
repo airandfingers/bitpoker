@@ -7,6 +7,7 @@ module.exports = (function () {
     , User = require('./models/user')
     , Room = require('./models/room')
     , Table = require('./models/table')
+    , Guest = require('./models/guest')
     , HandHistory = require('./models/hand_history')
     , db_config = require('./models/db.config')
     , mailer = require('./mailer')
@@ -271,8 +272,35 @@ module.exports = (function () {
   });
 
   //Guest Login Route
-  app.post('/guest_login', function (req, res) {
+  app.post('/guest_login', function (req, res, next) {
     console.log('guest_login route fired!');
+    console.log('Guest is ' + Guest);
+
+    var username = "guest" + guest_number
+      , target = req.body.next || '/';
+
+      console.log('creating user with spec:', {
+        username: username,
+      });
+      User.createUser({
+        username: username,
+        registration_date: null,
+      }, function(user) {
+        user.save(function(err, result) {
+          if (err) {
+            req.flash('error', err.message);
+            res.redirect('/guest_login?next=' + target);
+          }
+          else {
+            // Guest_Registration successful. Redirect.
+            console.log('Guest registration successful!');
+            req.flash('error', 'Welcome ' + username);
+            res.redirect('back');
+            /*req.url = req.originalUrl = '/login';
+            app.router._dispatch(req, res, next);*/
+          }
+        });
+      });
   });
   
   //submit password recovery to user's e-mail address route.
