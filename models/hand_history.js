@@ -9,7 +9,7 @@ module.exports = (function () {
 
   var static_properties = {
   // static properties (attached below) - Model.property_name
-    SITE_NAME: 'bitpoker'
+    SITE_NAME: 'Bitpoker'
   , TABLE_TYPE: 'Cash Game'
   , GAME_TYPE: 'No Limit Hold\'em'
   };
@@ -58,7 +58,7 @@ module.exports = (function () {
     
     // add first line
     self.appendToHistoryString(_.str.sprintf(
-      '%s Game #%s, %d/%d %s %s - %s\n'
+      '%s Game #%s, %d/%d %s %s - %s'
     , HandHistory.SITE_NAME
     , self.hand.table_name + '.' + self.hand.hand_num
     , game.SMALL_BLIND
@@ -69,7 +69,7 @@ module.exports = (function () {
     ));
     // add second line
     self.appendToHistoryString(_.str.sprintf(
-      "Table '%s' %d-max Seat #%d is the dealer\n"
+      "Table '%s' %d-max Seat #%d is the dealer"
     , self.hand.table_name
     , game.MAX_PLAYERS
     , self.hand.dealer
@@ -79,7 +79,7 @@ module.exports = (function () {
     _.each(_.sortBy(self.hand.seats, 'seat'), function(player, seat_num) {
       if (player.in_hand) {
         self.appendToHistoryString(_.str.sprintf(
-          'Seat %d: %s (%d in chips)\n'
+          'Seat %d: %s (%d in chips)'
         , player.seat
         , player.username
         , player.chips
@@ -91,7 +91,7 @@ module.exports = (function () {
     });
   };
 
-  HandHistorySchema.methods.logStage = function(stage_name) {
+  HandHistorySchema.methods.logStage = function(stage_name, arg) {
     // log based on stage that just happened
     var self = this
       , community = self.hand.community;
@@ -117,18 +117,37 @@ module.exports = (function () {
         '*** FLOP *** [%s %s %s]'
       , community[0], community[1], community[2]
       ));
+      break;
     case 'turning':
       self.appendToHistoryString(_.str.sprintf(
         '*** TURN *** [%s %s %s] [%s]'
       , community[0], community[1], community[2]
       , community[3]
       ));
+      break;
     case 'rivering':
       self.appendToHistoryString(_.str.sprintf(
         '*** RIVER *** [%s %s %s %s] [%s]'
       , community[0], community[1], community[2], community[3]
       , community[4]
       ));
+      break;
+    case 'showing_down':
+      self.appendToHistoryString('*** SHOW DOWN ***');
+      // arg is sorted [{ username: player }] in order of hand value
+      _.each(arg, function(player_obj) {
+        _.each(player_obj, function(player, username) {
+          self.appendToHistoryString(_.str.sprintf(
+            '%s: shows [%s %s] (%s, %s)'
+          , username
+          , player.hand[0]
+          , player.hand[1]
+          , player.result.handName
+          , player.result.handType + '.' + player.result.handRank
+          ));
+        });
+      });
+      break;
     default: console.error('Unknown stage name', stage_name);
     }
   };
@@ -169,9 +188,22 @@ module.exports = (function () {
     this.appendToHistoryString(line);
   };
 
-  HandHistorySchema.methods.logEnd = function(finished_at, final_player_objs) {
+  HandHistorySchema.methods.logEnd = function(finished_at, final_player_objs, pot_total) {
     this.finished_at = finished_at;
     this.final_player_objs = final_player_objs;
+
+    this.appendToHistoryString('*** SUMMARY ***');
+    this.appendToHistoryString(_.str.sprintf(
+      'Total pot %d | Rake %d'
+    , pot_total
+    , 0
+    ));
+    var community = this.hand.community;
+    this.appendToHistoryString(_.str.sprintf(
+      'Board [%s %s %s %s %s]'
+    , community[0], community[1], community[2], community[3], community[4]
+    ));
+
     this.save(function(err, result) {
       console.log('Returned from hand_history.save:', err, result);
     });

@@ -1,11 +1,11 @@
 var socket = io.connect(window.location.origin, {
-  transports: [
-    'websocket'
-  , 'xhr-multipart'
-  , 'htmlfile'
-  , 'xhr-polling'
-  ]
-})
+    transports: [
+      'websocket'
+    , 'xhr-multipart'
+    , 'htmlfile'
+    , 'xhr-polling'
+    ]
+  })
   , $chat_form = $('#chat_form')
   , $chat_sender = $('#chat_sender')
   , $chat_message = $('#chat_message')
@@ -48,8 +48,13 @@ $chat_form.submit(function(e) {
   , message: $chat_message.val()
   };
   $chat_message.val('');
-  console.log('Emitting message', 'chat', data);
-  socket.emit('chat', data);
+  if (! _.isEmpty(data.message)) {
+    console.log('Emitting message', 'chat', data);
+    socket.emit('chat', data);
+  }
+  else {
+    console.log('Ignoring empty chat message!');
+  }
 });
 
 var users = $('#server_values').data('room_state').users

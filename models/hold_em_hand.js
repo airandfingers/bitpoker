@@ -572,64 +572,74 @@ module.exports = (function () {
     var self = this
       , whole_hand
       , res
-      , results;
+      , players;
     self.showed_down = true;
-    results = _.map(self.players, function(player) {
-          whole_hand = _.union(player.hand, self.community);
-          res = evaluator.evalHand(whole_hand);
-          //console.log(whole_hand, 'evaluated as', res);
-          res.player = player;
-          return res;
+    // evaluate each player's hand and attach result object
+    players = _.map(self.players, function(player) {
+      whole_hand = _.union(player.hand, self.community);
+      res = evaluator.evalHand(whole_hand);
+      console.log(whole_hand, 'evaluated as', res);
+      player.result = res;
+      //res.player = player;
+      return player;
     });
-    //console.log('results is', results);
-    results = _.groupBy(results, function(result) {
-      return result.value;
+    console.log('players is', players);
+    // group players by their hands' values
+    // [player] -> { result.value : [player] }
+    // equal value means equal hand rank (tie)
+    players = _.groupBy(players, function(player) {
+      return player.result.value;
     });
-    //console.log('grouped results:', results);
-    results = _.sortBy(results, function(result_list, value) {
+    console.log('grouped players:', players);
+    // sort grouped_by_value players by value
+    // { result.value : [player] } -> [[player]], in order of hand value
+    players = _.sortBy(players, function(player_list, value) {
       return (- parseInt(value, 10));
     });
-    //console.log('sorted results:', results);
-    _.each(results, function(result_list, i) {
-      // replace result_list with { username: result_list }
-      results[i] = _.object(_.map(result_list, function(res) { return res.player.username; }),
-                            result_list);
+    console.log('sorted players:', players);
+    // replace internal player list with { username: player }
+    // [[player]] -> [{ username: player }], in order of hand value
+    _.each(players, function(player_list, i) {
+      players[i] = _.object(_.pluck(player_list, 'username'), player_list);
     });
-    //console.log('transformed results:', results);
-    self.nextStage(results);
+    console.log('transformed players:', players);
+    // pass player list to next stage (paying_out)
+    self.hand_history.logStage('showing_down', players);
+    self.nextStage(players);
   };
 
-  static_properties.stage_handlers.paying_out = function(sorted_results) {
+  static_properties.stage_handlers.paying_out = function(sorted_players) {
     var self = this
       , game = self.game
       , num_pots = self.pots.length
+      , pot_total = self.calculatePotTotal()
       , player_objs
       , pot_winners
       , pot_value
       , pot_remainder
       , chips_won;
-    console.log('paying out, results:', sorted_results);
+    console.log('paying out, results:', sorted_players);
     if (! self.hands_shown) {
       console.log('Hands not yet shown and showdown over, so showing hands');
       player_objs = self.getPlayerObjs(['hand']);
       self.broadcast('hands_shown', player_objs);
     }
-    // initialize players' chips_won Arrays
+    // (re)initialize players' chips_won Arrays
     _.each(self.players, function(player) {
       var arr = [];
       _.times(num_pots, function() { arr.push(0); });
       player.chips_won = arr;
     });
-    // iterate over all active players, in order of best hands to worst
-    _.each(sorted_results, function(result_obj) {
-      // result_obj is { username: res } (see showing_down handler)
-      result_usernames = _.keys(result_obj);
-      console.log('result_obj is', result_obj, ', result_usernames is', result_usernames);
+    // iterate over all active players, in order of their hand rank, best to worst
+    _.each(sorted_players, function(player_obj) {
+      // player_obj is { username: player } (see showing_down handler)
+      rank_usernames = _.keys(player_obj);
+      console.log('player_obj is', player_obj, ', rank_usernames is', rank_usernames);
       // iterate over all pots
       console.log('paying_out: pots is now', self.pots);
       _.each(self.pots, function(pot_obj, pot_num) {
         // intersect winners' usernames with this pot's usernames
-        pot_winners = _.intersection(result_usernames, pot_obj.usernames);
+        pot_winners = _.intersection(rank_usernames, pot_obj.usernames);
         num_winners = pot_winners.length;
         console.log('pot_winners is', pot_winners, 'pot_obj.value is', pot_obj.value);
         if (num_winners > 0) {
@@ -641,10 +651,10 @@ module.exports = (function () {
           }
           chips_won = game.roundNumChips(pot_value / num_winners);
           _.each(pot_winners, function(username) {
-            //console.log('username is', username, 'player is', result_obj[username].player, 'chips_won is', chips_won);
-            result_obj[username].player.win(chips_won, pot_num);
+            //console.log('username is', username, 'player is', player_obj[username].player, 'chips_won is', chips_won);
+            player_obj[username].win(chips_won, pot_num);
           });
-          // remove this pot from self.pots (so future result_obj iterations don't check emptied pots)
+          // remove this pot from self.pots (so future player_obj iterations don't check emptied pots)
           self.pots = _.without(self.pots, pot_obj);
         }
         else {
@@ -654,7 +664,7 @@ module.exports = (function () {
     });
     player_objs = self.getPlayerObjs(['hand', 'chips_won']);
 
-    self.hand_history.logEnd(new Date(), player_objs);
+    self.hand_history.logEnd(new Date(), player_objs, pot_total);
     
     self.broadcast('winners', player_objs);
     setTimeout(function() {
@@ -852,7 +862,7 @@ module.exports = (function () {
     return this.players[this.to_act];
   };
 
-  HoldEmHandSchema.methods.playerOut = function(index) {
+  HoldEmHandSchema.methods.playerOut = function(index, result_string) {
     var self = this
       , player = self.players[index]
       , username = player.username
