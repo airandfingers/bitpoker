@@ -15,6 +15,7 @@ module.exports = (function() {
   var GuestSchema = new Schema({
   	_id: String,
     next: Number
+
   });
 
   /* Create static method on schema, exposing findAndModify */
@@ -23,14 +24,16 @@ module.exports = (function() {
   };
 
   /* Create model */
-	var guest_counter = mongoose.model('guest_schema', GuestSchema);
+	var Guest_counter = mongoose.model('guest_schema', GuestSchema);
 
-  /*Find and modify */
-  guest_counter.findAndModify({ _id: 'messagetransaction' }, [], { $inc: { next: 1 } }, {}, function (err) {
-    if (err) throw err;
-    console.log('updated guest counter to: \n' + guest_counter);
+  /* create a single counter if none currently exists */
+  Guest_counter.find(function(err, Guest_counters) {
+    if (Guest_counters.length === 0) {
+      console.log('Creating guest counter with next=0');
+      Guest_counter.update({ next: 0 }, {upsert : true});
+    }
   });
 
-  return guest_counter;
+  return Guest_counter;
 
 })();

@@ -7,7 +7,7 @@ module.exports = (function () {
     , User = require('./models/user')
     , Room = require('./models/room')
     , Table = require('./models/table')
-    , Guest = require('./models/guest')
+    , Guest_counter = require('./models/guest')
     , HandHistory = require('./models/hand_history')
     , db_config = require('./models/db.config')
     , mailer = require('./mailer')
@@ -274,9 +274,15 @@ module.exports = (function () {
   //Guest Login Route
   app.post('/guest_login', function (req, res, next) {
     console.log('guest_login route fired!');
-    console.log('Guest is ' + Guest);
+  /*Find and modify */
+  Guest_counter.findAndModify({}, [], { $inc: { next: 1 } }, {}, function (err, counter) {
+    if (err) throw err;
+    // guest counter value is only available here
+    console.log('updated guest counter to \n:' + counter.next);
+  });
 
-    var username = "guest" + guest_number
+    console.log(Guest_counter + " is Guest_counter");
+    var username = "guest" + Guest_counter.find({_id: 'guest_schema'})
       , target = req.body.next || '/';
 
       console.log('creating user with spec:', {

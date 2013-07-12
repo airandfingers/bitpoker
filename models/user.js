@@ -36,15 +36,18 @@ module.exports = (function() {
     console.log('createUser called for', spec);
     var pt_password = spec.pt_password
       , shasum = crypto.createHash('sha1');
-    if (_.isString(pt_password)) {
-      shasum.update(pt_password);
-      shasum = shasum.digest('hex');
-      spec.password = shasum;
-      delete spec.pt_password;
-    }
-    else {
-      console.error('User.createUser called on user without pt_password!');
-      cb(null);
+    if (!username.substring(0,4)=="guest") { 
+      
+      if (_.isString(pt_password)) {
+        shasum.update(pt_password);
+        shasum = shasum.digest('hex');
+        spec.password = shasum;
+        delete spec.pt_password;
+      }
+      else {
+        console.error('User.createUser called on user without pt_password!');
+        cb(null);
+      }
     }
     console.log('creating user with', spec);
     var user = new User(spec);
