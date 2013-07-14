@@ -206,7 +206,7 @@ module.exports = (function () {
       //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
       if (! player.isFlagSet('post_blind') || player.disconnected) {
         console.log('Player\'s post_blind flag is unset, or player is disconnected - sitting player out!');
-        self.playerOut(self.to_act);
+        self.playerOut(self.to_act, 'failed to pay small blind');
         player.sitOut();
       }
       else {
@@ -227,7 +227,7 @@ module.exports = (function () {
       //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
       if (! player.isFlagSet('post_blind') || player.disconnected || player.chips < game.BIG_BLIND) {
         console.log('Player\'s post_blind flag is unset, or player is disconnected - sitting player out!');
-        self.playerOut(self.to_act);
+        self.playerOut(self.to_act, 'failed to pay big blind');
         player.sitOut();
       }
       else {
@@ -262,7 +262,10 @@ module.exports = (function () {
       player.receiveHand(first_card, second_card);
       player.sendMessage('hole_cards_dealt', player.hand);
     });
-    self.broadcast('hands_dealt', player_objs, { dealer: self.dealer, small_blind_seat: self.small_blind_seat });
+    self.broadcast('hands_dealt', player_objs, {
+      dealer: self.dealer
+    , small_blind_seat: self.small_blind_seat
+    , big_blind_seat: self.big_blind_seat });
     self.hand_history.logStage('dealing');
 
     self.nextStage();
@@ -538,12 +541,15 @@ module.exports = (function () {
         break;
       }
       self.broadcast('player_acts', player.serialize(), action, self.calculatePotTotal());
-      if (action !== 'skip') {
-        self.hand_history.logAction(player, action, num_chips, self.high_bet);
+      if (action === 'raise') {
+        self.hand_history.logAction(player, action, last_raise, self.high_bet);
+      }
+      else if (action !== 'skip') {
+        self.hand_history.logAction(player, action, num_chips);
       }
       player.actedIn(self.stage_num);
       if (action === 'fold') {
-        self.playerOut(self.to_act);
+        self.playerOut(self.to_act, 'folded');
       }
       player = self.nextPlayer();
     }
@@ -590,20 +596,20 @@ module.exports = (function () {
       whole_hand = _.union(player.hand, self.community);
       res = evaluator.evalHand(whole_hand);
       console.log(whole_hand, 'evaluated as', res);
-      player.result = res;
+      player.setHandResult({ evaluated: res });
       //res.player = player;
       return player;
     });
     console.log('players is', players);
     // group players by their hands' values
-    // [player] -> { result.value : [player] }
+    // [player] -> { res.value : [player] }
     // equal value means equal hand rank (tie)
     players = _.groupBy(players, function(player) {
-      return player.result.value;
+      return player.hand_result.evaluated.value;
     });
     console.log('grouped players:', players);
     // sort grouped_by_value players by value
-    // { result.value : [player] } -> [[player]], in order of hand value
+    // { res.value : [player] } -> [[player]], in order of hand value
     players = _.sortBy(players, function(player_list, value) {
       return (- parseInt(value, 10));
     });
@@ -623,11 +629,13 @@ module.exports = (function () {
     var self = this
       , game = self.game
       , num_pots = self.pots.length
+      , pot_total = self.calculatePotTotal()
       , player_objs
       , pot_winners
       , pot_value
       , pot_remainder
-      , chips_won;
+      , chips_won
+      , hand_result;
     console.log('paying out, results:', sorted_players);
     if (! self.hands_shown) {
       console.log('Hands not yet shown and showdown over, so showing hands');
@@ -641,10 +649,10 @@ module.exports = (function () {
       player.chips_won = arr;
     });
     // iterate over all active players, in order of their hand rank, best to worst
-    _.each(sorted_players, function(player_obj) {
-      // player_obj is { username: player } (see showing_down handler)
-      rank_usernames = _.keys(player_obj);
-      console.log('player_obj is', player_obj, ', rank_usernames is', rank_usernames);
+    _.each(sorted_players, function(players_obj) {
+      // players_obj is { username: player } (see showing_down handler)
+      rank_usernames = _.keys(players_obj);
+      console.log('players_obj is', players_obj, ', rank_usernames is', rank_usernames);
       // iterate over all pots
       console.log('paying_out: pots is now', self.pots);
       _.each(self.pots, function(pot_obj, pot_num) {
@@ -661,11 +669,11 @@ module.exports = (function () {
           }
           chips_won = game.roundNumChips(pot_value / num_winners);
           _.each(pot_winners, function(username) {
-            //console.log('username is', username, 'player is', player_obj[username].player, 'chips_won is', chips_won);
-            player_obj[username].win(chips_won, pot_num);
+            //console.log('username is', username, 'player is', players_obj[username].player, 'chips_won is', chips_won);
+            players_obj[username].win(chips_won, pot_num);
             self.hand_history.logWinnings(username, chips_won);
           });
-          // remove this pot from self.pots (so future player_obj iterations don't check emptied pots)
+          // remove this pot from self.pots (so future players_obj iterations don't check emptied pots)
           self.pots = _.without(self.pots, pot_obj);
         }
         else {
@@ -673,9 +681,27 @@ module.exports = (function () {
         }
       });
     });
+    // set players' hand_result Objects
+    _.each(self.players, function(player) {
+      hand_result = player.hand_result;
+      hand_result.stage_name = self.stage_name;
+      hand_result.chips_won_total = _.reduce(player.chips_won,
+                                             function(memo, amount) { return memo + amount; },
+                                             0);
+      if (self.players.length === 1) {
+        hand_result.type = 'collected'; // all other players folded
+      }
+      else if (hand_result.chips_won_total > 0) {
+        hand_result.type = 'won';
+      }
+      else {
+        hand_result.type = 'lost';
+      }
+    });
+
     player_objs = self.getPlayerObjs(['hand', 'chips_won']);
 
-    self.hand_history.logEnd(player_objs);
+    self.hand_history.logEnd(pot_total, player_objs);
     
     self.broadcast('winners', player_objs);
     setTimeout(function() {
@@ -882,7 +908,7 @@ module.exports = (function () {
       console.log(username, 'forfeited', bet);
       self.forfeited_bets.push(bet);
     }
-    player.handEnd();
+    player.setHandResult({ result: result_string, stage_name: self.stage_name });
     self.players.splice(index, 1);
     if (self.to_act >= index) {
       self.to_act--;

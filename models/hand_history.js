@@ -149,8 +149,8 @@ module.exports = (function () {
           , username
           , player.hand[0]
           , player.hand[1]
-          , player.result.handName
-          , player.result.handRank
+          , player.hand_result.evaluated.handName
+          , player.hand_result.evaluated.handRank
           ));
         });
       });
@@ -203,19 +203,19 @@ module.exports = (function () {
     ));
   };
 
-  HandHistorySchema.methods.logEnd = function(final_player_objs) {
+  HandHistorySchema.methods.logEnd = function(pot_total, final_player_objs) {
     var self = this
       , hand = self.hand;
 
     // override instance properties
     self.finished_at = new Date();
     self.final_player_objs = final_player_objs;
-    self.pot_total = hand.calculatePotTotal();
+    self.pot_total = pot_total;
 
     self.appendToHistoryString('*** SUMMARY ***');
     self.appendToHistoryString(_.str.sprintf(
       'Total pot %d | Rake %d'
-    , self.pot_total
+    , pot_total
     , 0
     ));
 
@@ -229,10 +229,14 @@ module.exports = (function () {
     // print each seat's results
       // player's special position, e.g. (button), if any
     var seat_position
-      , hand_result_string;
+      , hand_result // player.hand_result
+      , result_type // player.hand_result.type
+      , hand_result_string; // string to print
     _.each(hand.seats, function(player, seat_num) {
       seat_num = parseInt(seat_num, 10);
       if (_.contains(self.initial_usernames, player.username)) {
+        hand_result = player.hand_result;
+        result_type = hand_result.type;
         // calculate seat_position
         switch(seat_num) {
         case hand.dealer: seat_position = '(button)'; break;
@@ -241,7 +245,38 @@ module.exports = (function () {
         default: seat_position = '';
         }
         // calculate hand_result_string
-
+        hand_result_string = '';
+        switch(result_type) {
+        case 'folded':
+          hand_result_string += 'folded ';
+          hand_result_string += {
+            'betting_preflop': 'before Flop'
+          , 'betting_postflop': 'at Flop'
+          , 'betting_preriver': 'at Turn'
+          , 'betting_postriver': 'at River'
+          }[hand_result.stage_name];
+          if (! player.has_bet) {
+            hand_result_string += ' (didn\'t bet)';
+          }
+          break;
+        case 'collected':
+          hand_result_string += 'collected ' + hand_result.chips_won_total;
+          break;
+        case 'won':
+        case 'lost':
+          hand_result_string += _.str.sprintf(
+            'showed [%s %s] and %s %swith %s #%s'
+          , player.hand[0]
+          , player.hand[1]
+          , result_type
+          , result_type === 'won' ? '(' + hand_result.chips_won_total + ') ' : ''
+          , hand_result.evaluated.handName
+          , hand_result.evaluated.handRank
+          );
+        default:
+          console.log('ignoring hand_result_string', hand_result_string);
+        }
+        // print this player's results
         self.appendToHistoryString(_.str.sprintf(
           'Seat %d: %s %s %s'
         , seat_num

@@ -25,6 +25,8 @@ module.exports = (function () {
     , hand: { type: [String], hand_default: function() { return []; } }
       // the number of chips this player is betting in the current stage
     , current_bet: { type: Number, hand_default: 0 }
+    // whether this player has made a bet in the current hand
+    , has_bet: { type: Boolean, hand_default: false }
     /*// whether this player has paid a big blind at this table yet
     , blind_paid: { type: Boolean, default: false }*/
       // the flags that describe how this player will act automatically
@@ -47,6 +49,8 @@ module.exports = (function () {
     , hand_result: { type: Schema.Types.Mixed, hand_default: function() { return {}; } }
       // whether this player is currently sitting out (not participating in future hands)
     , sitting_out: Boolean
+      // whether this player is currently idle (didn't respond to the last prompt)
+    , idle: Boolean
       // whether this player is currently disconnected
     , disconnected: Boolean
       // the outstanding prompt to the player, if any
@@ -92,6 +96,7 @@ module.exports = (function () {
     }
     this.chips -= amount;
     this.current_bet += amount;
+    this.has_bet = true;
     return amount;
   };
 
@@ -202,8 +207,12 @@ module.exports = (function () {
       else {
         console.log('No hand_default, so skipping', field_name);
       }
-    })
-  }
+    });
+  };
+
+  PlayerSchema.methods.setHandResult = function(hand_result) {
+    this.hand_result = hand_result;
+  };
 
   PlayerSchema.methods.handEnd = function() {
     var self = this
