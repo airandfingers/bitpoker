@@ -629,12 +629,12 @@ module.exports = (function () {
     var self = this
       , game = self.game
       , num_pots = self.pots.length
-      , pot_total = self.calculatePotTotal()
+      , pot_values = _.pluck(self.pots, 'value')
       , player_objs
       , pot_winners
       , pot_value
       , pot_remainder
-      , chips_won
+      , winnings
       , hand_result;
     console.log('paying out, results:', sorted_players);
     if (! self.hands_shown) {
@@ -656,28 +656,28 @@ module.exports = (function () {
       // iterate over all pots
       console.log('paying_out: pots is now', self.pots);
       _.each(self.pots, function(pot_obj, pot_num) {
-        // intersect winners' usernames with this pot's usernames
-        pot_winners = _.intersection(rank_usernames, pot_obj.usernames);
-        num_winners = pot_winners.length;
-        console.log('pot_winners is', pot_winners, 'pot_obj.value is', pot_obj.value);
-        if (num_winners > 0) {
-          pot_value = pot_obj.value
-          pot_remainder = pot_value % num_winners;
-          if (pot_remainder > 0) {
-            self.pot_remainder += pot_remainder;
-            pot_value -= pot_remainder;
+        pot_value = pot_obj.value
+        if (pot_value > 0) {
+          // intersect winners' usernames with this pot's usernames
+          pot_winners = _.intersection(rank_usernames, pot_obj.usernames);
+          num_winners = pot_winners.length;
+          console.log('pot_winners is', pot_winners, 'pot_obj.value is', pot_obj.value);
+          if (num_winners > 0) {
+            pot_remainder = pot_value % num_winners;
+            if (pot_remainder > 0) {
+              self.pot_remainder += pot_remainder;
+              pot_value -= pot_remainder;
+            }
+            winnings = game.roundNumChips(pot_value / num_winners);
+            _.each(pot_winners, function(username) {
+              //console.log('username is', username, 'player is', players_obj[username].player, 'winnings is', winnings);
+              players_obj[username].win(winnings, pot_num);
+              self.hand_history.logWinnings(username, winnings, pot_num, num_pots);
+            });
           }
-          chips_won = game.roundNumChips(pot_value / num_winners);
-          _.each(pot_winners, function(username) {
-            //console.log('username is', username, 'player is', players_obj[username].player, 'chips_won is', chips_won);
-            players_obj[username].win(chips_won, pot_num);
-            self.hand_history.logWinnings(username, chips_won);
-          });
-          // remove this pot from self.pots (so future players_obj iterations don't check emptied pots)
-          self.pots = _.without(self.pots, pot_obj);
-        }
-        else {
-          // no winners in this result_usernames/pot_obj.usernames intersection
+          else {
+            // no winners in this result_usernames/pot_obj.usernames intersection
+          }
         }
       });
     });
@@ -701,7 +701,7 @@ module.exports = (function () {
 
     player_objs = self.getPlayerObjs(['hand', 'chips_won']);
 
-    self.hand_history.logEnd(pot_total, player_objs);
+    self.hand_history.logEnd(pot_values, player_objs);
     
     self.broadcast('winners', player_objs);
     setTimeout(function() {

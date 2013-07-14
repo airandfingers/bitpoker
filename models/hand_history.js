@@ -195,17 +195,34 @@ module.exports = (function () {
     this.appendToHistoryString(line);
   };
 
-  HandHistorySchema.methods.logWinnings = function(username, chips_won) {
+  HandHistorySchema.methods.logWinnings = function(username, chips_won, pot_num, num_pots) {
+    // calculate pot_string
+    var pot_string = '';
+    if (num_pots > 1) {
+      if (pot_num === 0) {
+        pot_string += 'main';
+      }
+      else {
+        pot_string += 'side';
+      }
+      pot_string += ' ';
+    }
+    pot_string += 'pot';
+
     this.appendToHistoryString(_.str.sprintf(
-      '%s collected %d from pot'
+      '%s collected %d from %s'
     , username
     , chips_won
+    , pot_string
     ));
   };
 
-  HandHistorySchema.methods.logEnd = function(pot_total, final_player_objs) {
+  HandHistorySchema.methods.logEnd = function(pot_values, final_player_objs) {
     var self = this
-      , hand = self.hand;
+      , hand = self.hand
+      , pot_total = _.reduce(pot_values, 
+                             function(memo, amount) { return memo + amount; },
+                             0);
 
     // override instance properties
     self.finished_at = new Date();
@@ -213,9 +230,24 @@ module.exports = (function () {
     self.pot_total = pot_total;
 
     self.appendToHistoryString('*** SUMMARY ***');
+
+    // calculate pots_string
+    var pots_string = '';
+    if (pot_values.length > 1) {
+      _.each(pot_values, function(pot_value, i) {
+        if (i === 0) {
+          pots_string += 'Main pot ';
+        }
+        else {
+          pots_string += 'Side pot ';
+        }
+        pots_string += pot_value + '. ';
+      })
+    }
     self.appendToHistoryString(_.str.sprintf(
-      'Total pot %d | Rake %d'
+      'Total pot %d %s| Rake %d'
     , pot_total
+    , pots_string
     , 0
     ));
 
