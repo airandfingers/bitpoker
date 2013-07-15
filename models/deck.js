@@ -46,7 +46,7 @@ module.exports = (function () {
   DeckSchema.statics.createDeck = function(spec) {
     /* our "constructor" function. Usage: Deck.createDeck({prop: 'val'})
        (see Schema definition for list of properties)*/
-    console.log('Deck.createDeck called!');
+    //console.log('Deck.createDeck called!');
     var deck = new Deck(spec);
     return deck;
   };

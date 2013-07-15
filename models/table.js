@@ -64,7 +64,7 @@ module.exports = (function () {
   };
 
   TableSchema.statics.createTable = function(spec) {
-    console.log('creating table', spec.table_id);
+    //console.log('creating table', spec.table_id);
     var table = new Table(spec);
     table.initialize();
 
@@ -141,7 +141,7 @@ module.exports = (function () {
         , initial_pot: self.initial_pot || 0
         
     });
-    console.log('Pushing new hand onto hands: ', hand.table_name, hand.hand_num);
+    //console.log('Pushing new hand onto hands: ', hand.table_name, hand.hand_num);
     self.hands.push(hand);
     
     hand.onStage('done', function() {

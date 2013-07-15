@@ -500,12 +500,14 @@ module.exports = (function () {
     res.redirect(base_page);
   });
 
+  var table_games;
   app.get('/lobby', function(req, res) {
     var users = Room.getRoom('lobby').getUsernames()
       , room_state = { users: users }
-      , table_games = Table.getTableGames();
-    console.log('Got table_games:', table_games);
-    console.log('Table games.length is ', table_games.length);
+    // cache table_games in external variable; table games are static (for now)
+    table_games = table_games || Table.getTableGames();
+    //console.log('Got table_games:', table_games);
+    console.log('Table.getTableGames returns', table_games.length);
     res.render('lobby', {
       room_state: JSON.stringify(room_state)
     , table_games: table_games
@@ -600,7 +602,20 @@ module.exports = (function () {
         res.json(hand_histories);
       }
     })
-  })
+  });
+
+  app.get('/history', auth.ensureAuthenticated, function(req, res) {
+    HandHistory.find({ initial_usernames : req.username})
+      .sort('-finished_at')
+      .exec(function(err, hand_histories) {
+      if (err) {
+        res.json({ error: 'Error while looking up hand histories:' + err });
+      }
+      else {
+        res.json(hand_histories);
+      }
+    });
+  });
 
   //Handle all other cases with a 404
   //Note: ONLY do this if app.use(app.router) comes after

@@ -16,7 +16,8 @@
     "underscore.string": "latest",
     "async": "~0.2.6",
     "nodemailer": "~0.4.1",
-    "request": "~2.21.0"
+    "request": "~2.21.0",
+    "poker-evaluator": "0.0.x"
   },
   "domains": [],
   "scripts": {
@@ -30,5 +31,6 @@
     "chai": "~1.4.2",
     "mocha": "~1.8.1",
     "supertest": "~0.5.1"
-  }
+  },
+  "subdomain": "airandfingers-bitpoker"
 }

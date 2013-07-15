@@ -136,6 +136,8 @@ module.exports = (function () {
     
     self.hand_history = HandHistory.createHandHistory({
       hand: self
+    , table_name: self.table_name
+    , hand_num: self.hand_num
     });
 
     _.each(HoldEmHand.stage_handlers, function(handler, stage_name) {
@@ -747,7 +749,9 @@ module.exports = (function () {
     else {
       this.stage_num = stage_num;
       this.stage_name = stage_name;
-      console.log('*Stage: ' + stage_name + '*');
+      if (! _.contains(['shuffling', 'waiting'], stage_name) ) {
+        console.log('*Stage: ' + stage_name + '*');
+      }
       var args_array = [].slice.apply(arguments)
         , event_name = 'stage_' + stage_name;
       args_array[0] = event_name;

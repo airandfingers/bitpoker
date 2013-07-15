@@ -20,6 +20,10 @@ module.exports = (function () {
   // instance properties - document.field_name
     // the HoldEmHand this HandHistory is recording (not stored in DB)
     hand               : Schema.Types.Mixed
+    // unique identifier for the table at which this HoldEmHand is being played
+  , table_name         : String
+    // number of this HoldEmHand (unique when combined with table_name)
+  , hand_num           : Number
 
     // the hand history string, compatible with pokerhand.org
   , history_string     : { type: String, default: '' }
@@ -67,7 +71,7 @@ module.exports = (function () {
     self.appendToHistoryString(_.str.sprintf(
       '%s Game #%s, %d/%d %s %s - %s'
     , HandHistory.SITE_NAME
-    , hand.table_name + '.' + hand.hand_num
+    , self.table_name + '.' + self.hand_num
     , game.SMALL_BLIND
     , game.BIG_BLIND
     , game.CURRENCY_ABBREV
@@ -77,7 +81,7 @@ module.exports = (function () {
     // add second line
     self.appendToHistoryString(_.str.sprintf(
       "Table '%s' %d-max Seat #%d is the dealer"
-    , hand.table_name
+    , self.table_name
     , game.MAX_PLAYERS
     , hand.dealer
     ));
