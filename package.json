@@ -16,7 +16,7 @@
     "underscore.string": "latest",
     "async": "~0.2.6",
     "nodemailer": "~0.4.1",
-    "request": "~2.21.0",
+    "request": "~2.21.0"
   },
   "domains": [],
   "scripts": {
