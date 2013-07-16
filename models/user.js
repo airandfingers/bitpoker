@@ -36,7 +36,7 @@ module.exports = (function() {
     console.log('createUser called for', spec);
     var pt_password = spec.pt_password
       , shasum = crypto.createHash('sha1');
-    if (!username.substring(0,4)=="guest") { 
+    if (spec.username.substring(0, 5) !== 'guest') { 
       
       if (_.isString(pt_password)) {
         shasum.update(pt_password);

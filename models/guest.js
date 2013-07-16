@@ -13,24 +13,22 @@ module.exports = (function() {
 
   /* Create collection */
   var GuestSchema = new Schema({
-  	_id: String,
     next: Number
-
   });
 
-  /* Create static method on schema, exposing findAndModify */
-  GuestSchema.statics.findAndModify = function (query, sort, doc, options, callback) {
-    return this.collection.findAndModify(query, sort, doc, options, callback);
+  /* Create static method on schema, incrementing the guest counter */
+  GuestSchema.statics.increment = function (callback) {
+    return this.collection.findAndModify({}, [], { $inc: { next: 1 } }, {}, callback);
   };
 
   /* Create model */
-	var Guest_counter = mongoose.model('guest_schema', GuestSchema);
+	var Guest_counter = mongoose.model('guest_counter', GuestSchema);
 
   /* create a single counter if none currently exists */
-  Guest_counter.find(function(err, Guest_counters) {
-    if (Guest_counters.length === 0) {
+  Guest_counter.find(function(err, guest_counters) {
+    if (guest_counters.length === 0) {
       console.log('Creating guest counter with next=0');
-      Guest_counter.update({ next: 0 }, {upsert : true});
+      new Guest_counter({ next: 0 }).save();
     }
   });
 

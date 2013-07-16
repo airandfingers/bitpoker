@@ -274,23 +274,16 @@ module.exports = (function () {
   //Guest Login Route
   app.post('/guest_login', function (req, res, next) {
     console.log('guest_login route fired!');
-  /*Find and modify */
-  Guest_counter.findAndModify({}, [], { $inc: { next: 1 } }, {}, function (err, counter) {
-    if (err) throw err;
-    // guest counter value is only available here
-    console.log('updated guest counter to \n:' + counter.next);
-  });
 
-    console.log(Guest_counter + " is Guest_counter");
-    var username = "guest" + Guest_counter.find({_id: 'guest_schema'})
-      , target = req.body.next || '/';
+    Guest_counter.findOne(function (err, guest_counter) {
+      var username = 'guest' + guest_counter.next
+        , target = req.body.next || '/';
 
       console.log('creating user with spec:', {
         username: username,
       });
       User.createUser({
         username: username,
-        registration_date: null,
       }, function(user) {
         user.save(function(err, result) {
           if (err) {
@@ -301,12 +294,23 @@ module.exports = (function () {
             // Guest_Registration successful. Redirect.
             console.log('Guest registration successful!');
             req.flash('error', 'Welcome ' + username);
-            res.redirect('back');
+            req.login(user, function(err) {
+              console.log('error is', err, '\n req.user is', req.user);
+              if (err) {
+                req.flash('error', err.message);
+                return res.redirect('/login?next=' + target);
+              }
+             return res.redirect(target);
+            });
             /*req.url = req.originalUrl = '/login';
             app.router._dispatch(req, res, next);*/
           }
         });
       });
+      Guest_counter.increment(function (err) {
+        console.log('Increment returns', err);
+      });
+    });
   });
   
   //submit password recovery to user's e-mail address route.
@@ -494,6 +498,12 @@ module.exports = (function () {
       , pt_password = req.body.new_password
       , password_confirm = req.body.new_password_confirm
       , target = req.body.next || '/';
+
+    if (username.substring(0, 4) === 'guest') {
+      req.flash('error', 'You cannot create a username called guest');
+      res.redirect('/register?next=' + target);
+      return;      
+    }
 
     if (pt_password === password_confirm) {
       console.log('creating user with spec:', {
