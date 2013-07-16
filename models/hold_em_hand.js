@@ -47,43 +47,51 @@ module.exports = (function () {
   var HoldEmHandSchema = new Schema({
   // instance properties - document.field_name
     // the hold-em game this hand is an instance of (holds game constants)
-    game             : Schema.Types.Mixed
-    // a reference to the seats that can play, {seat_num: Player}
-  , seats            : { type: Schema.Types.Mixed, default: function() { return {}; } }
+    game            : Schema.Types.Mixed
+    // a reference to the seats at the table, {seat_num: Player}
+  , seats           : Schema.Types.Mixed
     // the current stage, an index of HoldEmHand.STAGES
-  , stage_num        : { type: Number, default: 0 }
+  , stage_num       : { type: Number, default: 0 }
     // the current stage, one of HoldEmHand.STAGES
-  , stage_name       : { type: String, default: 'initializing' }
+  , stage_name      : { type: String, default: 'initializing' }
     // the function this hand can call to broadcast to all players in the room
-  , broadcast        : Schema.Types.Mixed
-    // the seat number of the dealer (use to calculate order-adjusted players)
-  , dealer           : Number
+  , broadcast       : Schema.Types.Mixed
+  
+    // the seat number of the dealer (calculated and used to calculate order-adjusted players)
+  , dealer          : Number
     // the seat number of the small blind (as determined when collecting blinds)
-  , small_blind_seat : Number
+  , small_blind_seat: Number
+    // the seat number of the big blind (as determined when collecting blinds)
+  , big_blind_seat  : Number
+
+    // the names of the players sitting in when players are calculated (before blinds)
+  , initial_username: [String]
     // the players that are currently participating in the hand, in order of action
-  , players          : { type: [Schema.Types.Mixed], default: function() { return []; } }
+  , players         : { type: [Schema.Types.Mixed], default: function() { return []; } }
     // the index (within this.players) of the next player to act
-  , to_act           : { type: Number, default: 0 }
+  , to_act          : { type: Number, default: 0 }
     // the highest bet so far in this betting round
-  , high_bet         : Number
+  , high_bet        : Number
     // the number of chips in each pot [{ usernames: [active Players], value: pot value }]
-  , pots             : { type: Schema.Types.Mixed, default: function() { return []; } }
+  , pots            : { type: Schema.Types.Mixed, default: function() { return []; } }
     // any bets forfeited by folding players
-  , forfeited_bets   : { type: [Schema.Types.Mixed], default: function() { return []; } }
+  , forfeited_bets  : { type: [Schema.Types.Mixed], default: function() { return []; } }
     // the deck this hand uses (created in initialize)
-  , deck             : Schema.Types.Mixed
+  , deck            : Schema.Types.Mixed
     // the recorded history of this hand
-  , hand_history     : Schema.Types.Mixed
+  , hand_history    : Schema.Types.Mixed
     // the cards that are visible to everyone
-  , community        : { type: [String], default: function() { return []; } }
+  , community       : { type: [String], default: function() { return []; } }
+
     // unique identifier for the table at which this HoldEmHand is being played
-  , table_name       : String
+  , table_name      : String
     // number of this HoldEmHand (unique when combined with table_name)
-  , hand_num         : Number
+  , hand_num        : Number
+
     // the number of chips to start with (carried over from previous hands)
-  , initial_pot      : Number
+  , initial_pot     : Number
     // the number of chips to carry over to next hand
-  , pot_remainder    : { type: Number, default: 0 }
+  , pot_remainder   : { type: Number, default: 0 }
   });
 
   // static methods - Model.method()
@@ -128,6 +136,8 @@ module.exports = (function () {
     
     self.hand_history = HandHistory.createHandHistory({
       hand: self
+    , table_name: self.table_name
+    , hand_num: self.hand_num
     });
 
     _.each(HoldEmHand.stage_handlers, function(handler, stage_name) {
@@ -187,10 +197,10 @@ module.exports = (function () {
       , player;
 
     self.calculatePlayers();
-    usernames = _.pluck(self.players, 'username');
-    self.pots.push({ usernames: usernames, value: self.initial_pot });
+    self.initial_usernames = _.pluck(self.players, 'username');
+    self.pots.push({ usernames: self.initial_usernames, value: self.initial_pot });
 
-    self.hand_history.logStart(new Date(), self.getPlayerObjs());
+    self.hand_history.logStart();
 
     while (SMALL_BLIND_PAID === false && 
            self.players.length >= game.MIN_PLAYERS) {
@@ -198,7 +208,7 @@ module.exports = (function () {
       //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
       if (! player.isFlagSet('post_blind') || player.disconnected) {
         console.log('Player\'s post_blind flag is unset, or player is disconnected - sitting player out!');
-        self.playerOut(self.to_act);
+        self.playerOut(self.to_act, 'failed to pay small blind');
         player.sitOut();
       }
       else {
@@ -219,7 +229,7 @@ module.exports = (function () {
       //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
       if (! player.isFlagSet('post_blind') || player.disconnected || player.chips < game.BIG_BLIND) {
         console.log('Player\'s post_blind flag is unset, or player is disconnected - sitting player out!');
-        self.playerOut(self.to_act);
+        self.playerOut(self.to_act, 'failed to pay big blind');
         player.sitOut();
       }
       else {
@@ -227,6 +237,7 @@ module.exports = (function () {
         player.makeBet(game.BIG_BLIND);
         self.broadcast('player_acts', player.serialize(), 'post_blind', self.calculatePotTotal());
         self.hand_history.logAction(player, 'post_blind', game.BIG_BLIND);
+        self.big_blind_seat = player.seat;
         BIG_BLIND_PAID = true;
       }
       self.nextPlayer();
@@ -253,7 +264,10 @@ module.exports = (function () {
       player.receiveHand(first_card, second_card);
       player.sendMessage('hole_cards_dealt', player.hand);
     });
-    self.broadcast('hands_dealt', player_objs, { dealer: self.dealer, small_blind_seat: self.small_blind_seat });
+    self.broadcast('hands_dealt', player_objs, {
+      dealer: self.dealer
+    , small_blind_seat: self.small_blind_seat
+    , big_blind_seat: self.big_blind_seat });
     self.hand_history.logStage('dealing');
 
     self.nextStage();
@@ -472,7 +486,7 @@ module.exports = (function () {
           // create a results_obj that mimics that created by showing_down handler
           var winners = _.map(self.players, function(player) {
             var result_obj = {};
-            result_obj[player.username] = { player : player };
+            result_obj[player.username] = player;
             return result_obj;
           });
           self.toStage('paying_out', winners);
@@ -529,10 +543,15 @@ module.exports = (function () {
         break;
       }
       self.broadcast('player_acts', player.serialize(), action, self.calculatePotTotal());
-      self.hand_history.logAction(player, action, num_chips, self.high_bet);
+      if (action === 'raise') {
+        self.hand_history.logAction(player, action, last_raise, self.high_bet);
+      }
+      else if (action !== 'skip') {
+        self.hand_history.logAction(player, action, num_chips);
+      }
       player.actedIn(self.stage_num);
       if (action === 'fold') {
-        self.playerOut(self.to_act);
+        self.playerOut(self.to_act, 'folded');
       }
       player = self.nextPlayer();
     }
@@ -579,20 +598,20 @@ module.exports = (function () {
       whole_hand = _.union(player.hand, self.community);
       res = evaluator.evalHand(whole_hand);
       console.log(whole_hand, 'evaluated as', res);
-      player.result = res;
+      player.setHandResult({ evaluated: res });
       //res.player = player;
       return player;
     });
     console.log('players is', players);
     // group players by their hands' values
-    // [player] -> { result.value : [player] }
+    // [player] -> { res.value : [player] }
     // equal value means equal hand rank (tie)
     players = _.groupBy(players, function(player) {
-      return player.result.value;
+      return player.hand_result.evaluated.value;
     });
     console.log('grouped players:', players);
     // sort grouped_by_value players by value
-    // { result.value : [player] } -> [[player]], in order of hand value
+    // { res.value : [player] } -> [[player]], in order of hand value
     players = _.sortBy(players, function(player_list, value) {
       return (- parseInt(value, 10));
     });
@@ -612,12 +631,13 @@ module.exports = (function () {
     var self = this
       , game = self.game
       , num_pots = self.pots.length
-      , pot_total = self.calculatePotTotal()
+      , pot_values = _.pluck(self.pots, 'value')
       , player_objs
       , pot_winners
       , pot_value
       , pot_remainder
-      , chips_won;
+      , winnings
+      , hand_result;
     console.log('paying out, results:', sorted_players);
     if (! self.hands_shown) {
       console.log('Hands not yet shown and showdown over, so showing hands');
@@ -631,40 +651,59 @@ module.exports = (function () {
       player.chips_won = arr;
     });
     // iterate over all active players, in order of their hand rank, best to worst
-    _.each(sorted_players, function(player_obj) {
-      // player_obj is { username: player } (see showing_down handler)
-      rank_usernames = _.keys(player_obj);
-      console.log('player_obj is', player_obj, ', rank_usernames is', rank_usernames);
+    _.each(sorted_players, function(players_obj) {
+      // players_obj is { username: player } (see showing_down handler)
+      rank_usernames = _.keys(players_obj);
+      console.log('players_obj is', players_obj, ', rank_usernames is', rank_usernames);
       // iterate over all pots
       console.log('paying_out: pots is now', self.pots);
       _.each(self.pots, function(pot_obj, pot_num) {
-        // intersect winners' usernames with this pot's usernames
-        pot_winners = _.intersection(rank_usernames, pot_obj.usernames);
-        num_winners = pot_winners.length;
-        console.log('pot_winners is', pot_winners, 'pot_obj.value is', pot_obj.value);
-        if (num_winners > 0) {
-          pot_value = pot_obj.value
-          pot_remainder = pot_value % num_winners;
-          if (pot_remainder > 0) {
-            self.pot_remainder += pot_remainder;
-            pot_value -= pot_remainder;
+        pot_value = pot_obj.value
+        if (pot_value > 0) {
+          // intersect winners' usernames with this pot's usernames
+          pot_winners = _.intersection(rank_usernames, pot_obj.usernames);
+          num_winners = pot_winners.length;
+          console.log('pot_winners is', pot_winners, 'pot_obj.value is', pot_obj.value);
+          if (num_winners > 0) {
+            pot_remainder = pot_value % num_winners;
+            if (pot_remainder > 0) {
+              self.pot_remainder += pot_remainder;
+              pot_value -= pot_remainder;
+            }
+            winnings = game.roundNumChips(pot_value / num_winners);
+            _.each(pot_winners, function(username) {
+              //console.log('username is', username, 'player is', players_obj[username].player, 'winnings is', winnings);
+              players_obj[username].win(winnings, pot_num);
+              self.hand_history.logWinnings(username, winnings, pot_num, num_pots);
+            });
           }
-          chips_won = game.roundNumChips(pot_value / num_winners);
-          _.each(pot_winners, function(username) {
-            //console.log('username is', username, 'player is', player_obj[username].player, 'chips_won is', chips_won);
-            player_obj[username].win(chips_won, pot_num);
-          });
-          // remove this pot from self.pots (so future player_obj iterations don't check emptied pots)
-          self.pots = _.without(self.pots, pot_obj);
-        }
-        else {
-          // no winners in this result_usernames/pot_obj.usernames intersection
+          else {
+            // no winners in this result_usernames/pot_obj.usernames intersection
+          }
         }
       });
     });
+    // set players' hand_result Objects
+    _.each(self.players, function(player) {
+      hand_result = player.hand_result;
+      hand_result.stage_name = self.stage_name;
+      hand_result.chips_won_total = _.reduce(player.chips_won,
+                                             function(memo, amount) { return memo + amount; },
+                                             0);
+      if (self.players.length === 1) {
+        hand_result.type = 'collected'; // all other players folded
+      }
+      else if (hand_result.chips_won_total > 0) {
+        hand_result.type = 'won';
+      }
+      else {
+        hand_result.type = 'lost';
+      }
+    });
+
     player_objs = self.getPlayerObjs(['hand', 'chips_won']);
 
-    self.hand_history.logEnd(new Date(), player_objs, pot_total);
+    self.hand_history.logEnd(pot_values, player_objs);
     
     self.broadcast('winners', player_objs);
     setTimeout(function() {
@@ -681,7 +720,7 @@ module.exports = (function () {
     }
     console.log('Hand over! Notifying players...');
     _.each(self.players, function(player) {
-      player.handOver();
+      player.handEnd();
     });
   };
 
@@ -710,7 +749,9 @@ module.exports = (function () {
     else {
       this.stage_num = stage_num;
       this.stage_name = stage_name;
-      console.log('*Stage: ' + stage_name + '*');
+      if (! _.contains(['shuffling', 'waiting'], stage_name) ) {
+        console.log('*Stage: ' + stage_name + '*');
+      }
       var args_array = [].slice.apply(arguments)
         , event_name = 'stage_' + stage_name;
       args_array[0] = event_name;
@@ -753,7 +794,7 @@ module.exports = (function () {
       player = self.seats[seat_counter];
       if (player instanceof Player && ! player.sitting_out) {
         self.players.push(player);
-        player.in_hand = true;
+        player.handStart();
         if (_.isUndefined(calculated_dealer)) {
           calculated_dealer = player.seat;
           self.dealer = calculated_dealer;
@@ -871,7 +912,7 @@ module.exports = (function () {
       console.log(username, 'forfeited', bet);
       self.forfeited_bets.push(bet);
     }
-    player.handOver();
+    player.setHandResult({ result: result_string, stage_name: self.stage_name });
     self.players.splice(index, 1);
     if (self.to_act >= index) {
       self.to_act--;

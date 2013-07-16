@@ -22,9 +22,11 @@ module.exports = (function () {
       // the number of chips this player has at the current table
     , chips: { type: Number, default: 0 }
       // this player's hand, a list of Strings representing cards
-    , hand: { type: [String], default: function() { return []; } }
+    , hand: { type: [String], hand_default: function() { return []; } }
       // the number of chips this player is betting in the current stage
-    , current_bet: { type: Number, default: 0 }
+    , current_bet: { type: Number, hand_default: 0 }
+    // whether this player has made a bet in the current hand
+    , has_bet: { type: Boolean, hand_default: false }
     /*// whether this player has paid a big blind at this table yet
     , blind_paid: { type: Boolean, default: false }*/
       // the flags that describe how this player will act automatically
@@ -32,9 +34,9 @@ module.exports = (function () {
       // the seat number this player is currently sitting in, if any
     , seat: Number
       // which stages this player has acted in, in the current hand
-    , has_acted: { type: Schema.Types.Mixed, default: function() { return {}; } }
+    , has_acted: { type: Schema.Types.Mixed, hand_default: function() { return {}; } }
       // the numbers of chips thie player won this hand, from each pot (initialized before win is called)
-    , chips_won: { type: [Number] }
+    , chips_won: { type: [Number], hand_default: function() { return []; } }
       // a reference to the game class which describes the game this player is playing
     , game: Schema.Types.Mixed
       // a reference to the table on which this player is playing
@@ -42,9 +44,13 @@ module.exports = (function () {
       // whether this player is currently participating in a hand
     , in_hand: Boolean
       // actions this player will perform once the current hand is over
-    , pending_actions: { type: Schema.Types.Mixed, default: function() { return {}; } }
+    , pending_actions: { type: Schema.Types.Mixed, hand_default: function() { return {}; } }
+      // what the outcome of the current (or last) hand was for this player
+    , hand_result: { type: Schema.Types.Mixed, hand_default: function() { return {}; } }
       // whether this player is currently sitting out (not participating in future hands)
     , sitting_out: Boolean
+      // whether this player is currently idle (didn't respond to the last prompt)
+    , idle: Boolean
       // whether this player is currently disconnected
     , disconnected: Boolean
       // the outstanding prompt to the player, if any
@@ -90,6 +96,7 @@ module.exports = (function () {
     }
     this.chips -= amount;
     this.current_bet += amount;
+    this.has_bet = true;
     return amount;
   };
 
@@ -181,7 +188,33 @@ module.exports = (function () {
     return this.has_acted[stage] || false;
   };
 
-  PlayerSchema.methods.handOver = function() {
+  PlayerSchema.methods.handStart = function() {
+    var self = this
+      , hand_default_value;
+    self.in_hand = true;
+
+    // set values for fields that have declared a hand_default value
+    _.each(PlayerSchema.tree, function(field_obj, field_name) {
+      hand_default_value = field_obj.hand_default;
+      if (_.isFunction(hand_default_value)) {
+        console.log('hand_default for', field_name, ', setting to', hand_default_value());
+        self[field_name] = hand_default_value();
+      }
+      else if (! _.isUndefined(hand_default_value)) {
+        console.log('hand_default for', field_name, ', setting to', hand_default_value);
+        self[field_name] = hand_default_value;
+      }
+      else {
+        console.log('No hand_default, so skipping', field_name);
+      }
+    });
+  };
+
+  PlayerSchema.methods.setHandResult = function(hand_result) {
+    this.hand_result = hand_result;
+  };
+
+  PlayerSchema.methods.handEnd = function() {
     var self = this
       , action_order = ['addChips', 'sitOut', 'vacateSeat']
       , complete_events = {
@@ -191,10 +224,12 @@ module.exports = (function () {
         }
       , action_to_flag_name = {
           addChips: 'add_chips'
-        , vacateSeat: 'stand'
         , sitOut: 'sit_out'
+        , vacateSeat: 'stand'
         }
       , actions = [];
+
+    self.in_hand = false;
     
     _.each(action_order, function(method_name) {
       var args_array = self.pending_actions[method_name];
@@ -209,17 +244,13 @@ module.exports = (function () {
         });
       }
     });
-    async.series(actions, function onComplete(err, result) {
+    async.series(actions, function onComplete(err) {
       if (err) {
         // will never get called (acb's aren't given arguments)
         console.error('error during pending_actions:', err);
       }
     });
-    self.pending_actions = {};
-    self.hand = [];
-    self.has_acted = {};
-    self.chips_won = [];
-    self.in_hand = false;
+
     if (self.idle) {
       self.sitOut();
     }
@@ -310,6 +341,10 @@ module.exports = (function () {
     var self = this
       , game = self.game
       , seat_num = self.seat;
+    if (self.in_hand) {
+      console.error('Cannot stand while currently in a hand!');
+      return;
+    }
     self.seat = undefined;
     // clear the sit-out timer, if any
     clearInterval(self.full_table_check);

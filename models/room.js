@@ -45,7 +45,7 @@ module.exports = (function () {
   };
 
   RoomSchema.statics.createRoom = function(spec) {
-    console.log('creating room:', spec.room_id);
+    //console.log('creating room:', spec.room_id);
     var room = new Room(spec);
     static_properties.rooms[room.room_id] = room;
     return room;
