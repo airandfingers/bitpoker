@@ -2820,7 +2820,7 @@ clearInterval(imageAnimation)
      var initialX = this.images.startingCard.position.x
      var initialY = this.images.startingCard.position.y
      var animationTime = 200
-     var fractionDistancePerTick = .02
+     var fractionDistancePerTick = .2
      var lastTick = 1/fractionDistancePerTick -1 
      var   interval = fractionDistancePerTick*animationTime
 
@@ -2911,7 +2911,7 @@ else if(communityArray.length == 3){
      var initialX = this.images.startingCard.position.x
      var initialY = this.images.startingCard.position.y
      var animationTime = 100
-            var fractionDistancePerTick = .5
+            var fractionDistancePerTick = .2
             var lastTick = 1/fractionDistancePerTick -1 
 
             var   interval = fractionDistancePerTick*animationTime
@@ -3222,7 +3222,7 @@ for(var i =0;i<potArrayLength;i++){
       var chipAnimationTime = 1000
       var timeBetweenAnimations = 3000
       var timeAtEnd = 700
-        var ticks = 60
+        var ticks = 8
         var chipStacks = []
         for(var i = 0;i<players.length;i++){chipStacks.push([])}
         var callbackNumber = 0
@@ -3285,7 +3285,7 @@ self.displayChipStack(potWinners[potNumber][i].amountWon, temporaryStacks[potWin
 potIntoChipAnimationArray[potNumber].push(function(callback){
    //animate chipstacks to the players      
 
-      self.animateImage(temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n].position.x, temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n].position.y, chipAnimationTime,40, temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n], temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n].position.x +animationDistanceX, temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n].position.y+ animationDistanceY, function(){callback(null, callID)})
+      self.animateImage(temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n].position.x, temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n].position.y, chipAnimationTime,ticks, temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n], temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n].position.x +animationDistanceX, temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n].position.y+ animationDistanceY, function(){callback(null, callID)})
   //   console.log('animating the '+ n+'th chip in the  temporary stack number '+potWinners[potNumber][i].temporaryStackNumber)
                 }) 
 
@@ -4647,8 +4647,10 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
 
 
 //hand dealt to user
-       socket.on('hole_cards_dealt', function(hand){
+       socket.on('hole_cards_dealt', function(hand, table_num, hand_num){
          self.gameState.holeCards = hand
+         self.reportBug.text.text = 'click to report bugs via email to: CryptoPoker@gmail.com'+'hand# '+hand.hand_num
+         self.stage.update()
 
      })
 
