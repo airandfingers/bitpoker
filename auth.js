@@ -34,7 +34,8 @@ module.exports = (function () {
 
   passport.deserializeUser(function(id, done) {
     //console.log("deserializeUser called!");
-    User.findById(id, 'username registration_date maobucks email email_confirmed satoshi deposit_address',
+    // everything except password (for security reasons)
+    User.findById(id, 'username registration_date maobucks email email_confirmed satoshi deposit_address recovery_code',
                   function(err, result) {
       if (err) { return done(err); }
       if (! result) {

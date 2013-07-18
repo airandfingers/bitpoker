@@ -104,11 +104,14 @@
                               <label>Password:</label>
                               <input type="password" name="password" placeholder="password" />
                             </div>
-                              <input type="submit" value="Login" class="btn btn-inverse" />
+                            <input type="submit" value="Login" class="btn btn-inverse" />
                           </form>
                           <div>
-                          Forgetting your password? <a href="/password_recovery">Click here.</a>
+                            Forgetting your password? <a href="/password_recovery">Recover it.</a>
                           </div>
+                          <form action="/guest_login" method="post">
+                            <button class="btn btn-inverse">Play as Guest</button>
+                          </form>
                         </div>                          
                             <% } %>
                 </ul>

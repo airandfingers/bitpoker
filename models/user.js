@@ -7,6 +7,8 @@ module.exports = (function() {
     , async = require('async') // flow control utility library
     , request = require('request') // HTTP/HTTPS request library
     , _ = require('underscore') // list utility library
+
+    , GuestCounter = require('./guest_counter')
     
     , db = require('./db'); // make sure db is connected
 
@@ -56,6 +58,19 @@ module.exports = (function() {
     });
   };
 
+  UserSchema.statics.createGuestUser = function(cb) {
+    GuestCounter.findOne(function (err, guest_counter) {
+      var username = 'guest' + guest_counter.next
+        , user = new User({ username: username });
+      user.generateDepositAddress(function() {
+        cb(user);
+      });
+    });
+    GuestCounter.increment(function (err) {
+      console.log('Increment returns', err);
+    });
+  };
+
   UserSchema.statics.authenticate = function(username, password, cb) {
     var model = this
       , shasum = crypto.createHash('sha1');
@@ -96,6 +111,47 @@ module.exports = (function() {
   // example method
   UserSchema.methods.sayName = function() {
     console.log(this.username);
+  };
+
+  UserSchema.methods.convertFromGuest = function(username, pt_password, cb) {
+    var self = this
+      , error = null
+      , shasum = crypto.createHash('sha1')
+      , spec = { username: username };
+    console.log('convertFromGuest called for', self.username);
+    
+    if (self.username.substring(0, 5) !== 'guest') {
+      error = 'User.convertFromGuest called for non-guest user ' + self.username;
+      console.error(error);
+      return cb(error);
+    }
+
+    if (! _.isString(username)) {
+      error = 'User.convertFromGuest called without username!';
+      console.error(error);
+      return cb(error);
+    }
+
+    if (! _.isString(pt_password)) {
+      error = 'User.convertFromGuest called without pt_password!';
+      console.error(error);
+      return cb(error);
+    }
+
+    // encrypt pt_password and save it as pt_password
+    shasum.update(pt_password);
+    shasum = shasum.digest('hex');
+    spec.password = shasum;
+    
+    console.log('updating user with', spec);
+    self.update(spec, function(err, result) {
+      console.log('update callback called with', err, result);
+      if (err) {
+        error = 'Error in User.convertFromGuest: ' + err.message;
+        console.error(error);
+      }
+      cb(error, self);
+    });
   };
 
   // lookup and return current currency value of the given type

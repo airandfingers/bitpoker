@@ -7,7 +7,6 @@ module.exports = (function () {
     , User = require('./models/user')
     , Room = require('./models/room')
     , Table = require('./models/table')
-    , Guest_counter = require('./models/guest')
     , HandHistory = require('./models/hand_history')
     , db_config = require('./models/db.config')
     , mailer = require('./mailer')
@@ -82,11 +81,12 @@ module.exports = (function () {
     }
   });
 
-  app.get('/deposit_bitcoins', function(req, res) {
+  app.get('/deposit_bitcoins', auth.ensureAuthenticated, function(req, res) {
     console.log(req.user.deposit_address);
     res.render('deposit_bitcoins', {
       title: 'Deposit Bitcoins',
       deposit_address: req.user.deposit_address,
+      username: req.user.username
     });
   });
 
@@ -95,7 +95,7 @@ module.exports = (function () {
     console.log('payment made to', username, req);
   });
 
-  app.get('/withdraw_bitcoins', function(req, res) {
+  app.get('/withdraw_bitcoins', auth.ensureAuthenticated, function(req, res) {
     res.render('withdraw_bitcoins', {
      title: 'withdraw_bitcoins',
      bitcoins: req.user.satoshi / 10E8,
@@ -106,6 +106,7 @@ module.exports = (function () {
   var renderHome = function(req, res) {
     res.render('index', {
       version: version_file.version
+    , user: req.user
     });
   };
   app.get('/', renderHome);
@@ -172,17 +173,41 @@ module.exports = (function () {
     });
   });
 
-  app.get('/register', function(req, res) {
-    res.render('register', {
-      message: req.flash('error'),
-      next: req.query.next,
-      title: 'Ready to play?', 
-    });
-  });
+  //home, index and "/" link to the same page
+  var renderRegister = function(req, res) {
+    var next_page = req.query.next || base_page;
+    if (! auth.isAuthenticated(req)) {
+      //Show the registration form.
+      res.render('register', {
+        message: req.flash('error'),
+        next: req.query.next,
+        title: 'Ready to play?',
+        mode: 'register'
+      });
+    }
+    else {
+      if (req.user.username.substring(0, 5) === 'guest') {
+        //Show the "conversion" form.
+        res.render('register', {
+          message: req.flash('error'),
+          next: req.query.next,
+          title: 'Ready to play?',
+          mode: 'convert'
+        });
+      }
+      else {
+        //Redirect to "next" URL.
+        res.redirect(next_page);
+      }
+    }
+    
+  };
+  app.get('/register', renderRegister);
+  app.get('/guest_convert', renderRegister);
 
   app.get('/site_info', function(req, res) {
     res.render('site_info', {
-      title: 'site_info', 
+      title: 'site_info',
     });
   });
 
@@ -260,40 +285,26 @@ module.exports = (function () {
   app.post('/guest_login', function (req, res, next) {
     console.log('guest_login route fired!');
 
-    Guest_counter.findOne(function (err, guest_counter) {
-      var username = 'guest' + guest_counter.next
-        , target = req.body.next || '/';
-
-      console.log('creating user with spec:', {
-        username: username,
-      });
-      User.createUser({
-        username: username,
-      }, function(user) {
-        user.save(function(err, result) {
-          if (err) {
-            req.flash('error', err.message);
-            res.redirect('/guest_login?next=' + target);
-          }
-          else {
-            // Guest_Registration successful. Redirect.
-            console.log('Guest registration successful!');
-            req.flash('error', 'Welcome ' + username);
-            req.login(user, function(err) {
-              console.log('error is', err, '\n req.user is', req.user);
-              if (err) {
-                req.flash('error', err.message);
-                return res.redirect('/login?next=' + target);
-              }
-             return res.redirect(target);
-            });
-            /*req.url = req.originalUrl = '/login';
-            app.router._dispatch(req, res, next);*/
-          }
-        });
-      });
-      Guest_counter.increment(function (err) {
-        console.log('Increment returns', err);
+    var target = req.body.next || base_page;
+    User.createGuestUser(function(user) {
+      user.save(function(err, result) {
+        if (err) {
+          req.flash('error', err.message);
+          res.redirect('/login?next=' + target);
+        }
+        else {
+          // Guest_Registration successful. Redirect.
+          console.log('Guest registration successful!');
+          //req.flash('error', 'Welcome ' + username);
+          req.login(user, function(err) {
+            console.log('error is', err, '\n req.user is', req.user);
+            if (err) {
+              req.flash('error', err.message);
+              return res.redirect('/login?next=' + target);
+            }
+           res.redirect(target);
+          });
+        }
       });
     });
   });
@@ -441,40 +452,46 @@ module.exports = (function () {
               '&to=' + withdraw_address +
               '&amount=' + num_satoshi;
     console.log('num_satoshi:', num_satoshi, 'withdraw_address:', withdraw_address, 'url:', url);
-    req.user.checkBalance('satoshi', function(err, balance_in_satoshi) {
-      if (err) {
-        console.error('Error while looking up bitcoin balance:', err);
-        res.redirect('back');
-        return;
-      }
-      if (num_satoshi <= balance_in_satoshi) {
-        request({
-          url: url
-        }, function(err, response, body) {
-          if (err) {
-            console.error('Error while withdrawing:', err);
-          }
-          else if (response.statusCode !== 200 && response.statusCode !== 201) {
-            console.error('Unsuccessful response code while withdrawing:', response.statusCode);
-          }
-          else {
-            var body = JSON.parse(response.body)
-              , new_satoshi = req.user.satoshi - num_satoshi;
-            console.log('Withdraw successful!', num_satoshi, new_satoshi);
-            req.user.update({ $set: { satoshi: new_satoshi } }, function(save_err) {
-              if (save_err) {
-                console.error('Error while updating bitcoin balance:', save_err);
-              }
-            });
-          }
-          res.redirect('/account');
-        });
-      }
-      else {
-        console.error('Tried to withdraw', num_satoshi, 'when balance is only', balance_in_satoshi);
-        res.redirect('back');
-      }
-    });
+    if (num_satoshi > 0) {
+      req.user.checkBalance('satoshi', function(err, balance_in_satoshi) {
+        if (err) {
+          console.error('Error while looking up bitcoin balance:', err);
+          res.redirect('back');
+          return;
+        }
+        if (num_satoshi <= balance_in_satoshi) {
+          request({
+            url: url
+          }, function(err, response, body) {
+            if (err) {
+              console.error('Error while withdrawing:', err);
+            }
+            else if (response.statusCode !== 200 && response.statusCode !== 201) {
+              console.error('Unsuccessful response code while withdrawing:', response.statusCode);
+            }
+            else {
+              var body = JSON.parse(response.body)
+                , new_satoshi = req.user.satoshi - num_satoshi;
+              console.log('Withdraw successful!', num_satoshi, new_satoshi);
+              req.user.update({ $set: { satoshi: new_satoshi } }, function(save_err) {
+                if (save_err) {
+                  console.error('Error while updating bitcoin balance:', save_err);
+                }
+              });
+            }
+            res.redirect('/account');
+          });
+        }
+        else {
+          console.error('Tried to withdraw', num_satoshi, 'when balance is only', balance_in_satoshi);
+          res.redirect('back');
+        }
+      });
+    }
+    else {
+      console.error('Tried to withdraw', num_satoshi);
+      res.redirect('back');
+    }
   });
 
   //Send register the new information
@@ -482,43 +499,66 @@ module.exports = (function () {
     var username = req.body.username
       , pt_password = req.body.new_password
       , password_confirm = req.body.new_password_confirm
-      , target = req.body.next || '/';
+      , target = req.body.next || base_page;
 
-    if (username.substring(0, 4) === 'guest') {
+    if (username.substring(0, 5) === 'guest') {
       req.flash('error', 'You cannot create a username called guest');
       res.redirect('/register?next=' + target);
-      return;      
+      return;
     }
 
-    if (pt_password === password_confirm) {
-      console.log('creating user with spec:', {
-        username: username,
-        pt_password: pt_password,
-      });
-      User.createUser({
-        username: username,
-        pt_password: pt_password,
-      }, function(user) {
+    if (pt_password !== password_confirm) {
+      console.log('password fields did not match!');
+      req.flash('error', 'password fields did not match!');
+      res.redirect('/register?next=' + target);
+      return;
+    }
+
+    if (auth.isAuthenticated(req)) {
+      if (req.user.username.substring(0, 5) === 'guest') {
+        console.log('augmenting', req.user.username, 'with spec:',
+                    { username: username, pt_password: pt_password });
+        req.user.convertFromGuest(username, pt_password, function(err, user) {
+          if (err) {
+            req.flash('error', err.message);
+            res.redirect('/register?next=' + target);
+          }
+          else {
+            req.login(user, function(err) {
+              console.log('error is', err, '\n req.user is', req.user);
+              if (err) {
+                req.flash('error', err.message);
+                return res.redirect('/login?next=' + target);
+              }
+             res.redirect(target);
+            });
+          }
+        });
+      }
+    }
+    else {
+      console.log('creating user with spec:',
+                  { username: username, pt_password: pt_password });
+      User.createUser({ username: username, pt_password: pt_password}, 
+        function(user) {
         user.save(function(err, result) {
           if (err) {
             req.flash('error', err.message);
             res.redirect('/register?next=' + target);
           }
           else {
-            // Registration successful. Redirect.
-            console.log('registration successful on ' + user.registration_date + ' !');
-            req.flash('error', 'Please log in with your new username and password.');
-            res.redirect('/login');
-            /*req.url = req.originalUrl = '/login';
-            app.router._dispatch(req, res, next);*/
+            // Registration successful. Log in.
+            req.login(user, function(err) {
+              console.log('error is', err, '\n req.user is', req.user);
+              if (err) {
+                req.flash('error', err.message);
+                return res.redirect('/login?next=' + target);
+              }
+             res.redirect(target);
+            });
           }
         });
       });
-    }
-    else {
-      console.log('password fields did not match!');
-      req.flash('error', 'password fields did not match!');
-      res.redirect('/register?next=' + target);
     }
   });
 

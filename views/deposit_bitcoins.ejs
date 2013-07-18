@@ -1,7 +1,11 @@
 <% var title = 'Bitcoin Poker- Deposit Page'; %>
 <% include head %>
     <div>
-      To deposit into your account, send Bitcoins to <%= deposit_address %>
+      <%if (username.substring(0, 5) === 'guest') { %>
+      	To deposit into your account, send Bitcoins to <%= deposit_address %>
+      <% } else { %>
+      	Sorry, but guest accounts can't deposit Bitcoins; please <a href="/guest_convert">register a full account</a>.
+      <% } %>
     </div>
     <% include plugins %>
 <% include foot %>

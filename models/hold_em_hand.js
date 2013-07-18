@@ -267,7 +267,10 @@ module.exports = (function () {
     self.broadcast('hands_dealt', player_objs, {
       dealer: self.dealer
     , small_blind_seat: self.small_blind_seat
-    , big_blind_seat: self.big_blind_seat });
+    , big_blind_seat: self.big_blind_seat
+    , table_name: self.table_name
+    , hand_num: self.hand_num
+    });
     self.hand_history.logStage('dealing');
 
     self.nextStage();

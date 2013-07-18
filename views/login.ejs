@@ -12,6 +12,9 @@
         <div id="play_as_guest">
           <form action="/guest_login" method="post">
             <button class="btn btn-inverse">Play as Guest</button>
+            <% if (next) { %>
+              <input type="hidden" name="next" value="<%= next %>" />
+            <% } %>
           </form>
         </div>
       </div>

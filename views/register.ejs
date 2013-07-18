@@ -2,15 +2,17 @@
 
     <div role="main" class="main" id="registration_main">
         <h1>
-          Pick your username and password.
+            Pick your username and password.
         </h1>
         <% if (message) { %>
-          <p><%= message %></p>
+            <p><%= message %></p>
         <% } %>
-        <div>
-            <a href="/login"> Already have an account? Login here</a>
-            </br>
-        </div>
+        <% if (mode === 'register') { %>
+            <div>
+                <a href="/login"> Already have an account? Login here</a>
+                </br>
+            </div>
+        <% } %>
         <div class="uglyregistration">
             <form action="/register" method="post">
                 <div class="username">
