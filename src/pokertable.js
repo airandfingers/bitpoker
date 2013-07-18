@@ -4979,6 +4979,10 @@ socket.on('reset_table', function(players){
    self.gameState.seats[i].preActions.hand = {}
 }
 
+self.reportBug.text.text = 'click to report bugs via email to: CryptoPoker@gmail.com'
+         self.stage.update()
+
+
 })
     }
 
