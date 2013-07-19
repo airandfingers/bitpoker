@@ -918,6 +918,7 @@ module.exports = (function () {
       self.forfeited_bets.push(bet);
     }
     player.setHandResult({ result: result_string, stage_name: self.stage_name });
+    player.handEnd();
     self.players.splice(index, 1);
     if (self.to_act >= index) {
       self.to_act--;
