@@ -569,12 +569,11 @@ module.exports = (function () {
     res.redirect(base_page);
   });
 
-  var table_games;
   app.get('/lobby', function(req, res) {
     var users = Room.getRoom('lobby').getUsernames()
       , room_state = { users: users }
-    // cache table_games in external variable; table games are static (for now)
-    table_games = table_games || Table.getTableGames();
+      // cache table_games in external variable; table games are static (for now)
+      , table_games = Table.getTableGames();
     //console.log('Got table_games:', table_games);
     console.log('Table.getTableGames returns', table_games.length);
     res.render('lobby', {

@@ -30,17 +30,21 @@ body {background-image: none;}
     <!-- DataTable -->
     <script src="/js/jquery.dataTables.js"></script>
     <script>
-    //$(document).ready(function() {
-    $('#table_list').dataTable({
+    var $table_list = $('#table_list').dataTable({
         bJQueryUI: true,
-        sDom: 'tf',
-        sPaginationType: 'full_numbers',
-        iDisplayLength: 20
+        sDom: 't',
+        bPaginate: false,
+        iDisplayLength: 20,
+        sScrollY: '561px'
     });
 
     $('#table_list tbody').on('click', 'tr', function(e) {
       var table_name = $(this).attr('id');
       return popup(table_name);
+    });
+
+    $(window).bind('resize', function() {
+      $table_list.fnAdjustColumnSizing();
     });
     </script>
     <script src="/socket.io/socket.io.js"></script>
