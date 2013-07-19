@@ -679,6 +679,8 @@ module.exports = (function () {
               players_obj[username].win(winnings, pot_num);
               self.hand_history.logWinnings(username, winnings, pot_num, num_pots);
             });
+            // set this pot's value to 0 (so future players_obj iterations don't check emptied pots)
+            pot_obj.value = 0;
           }
           else {
             // no winners in this result_usernames/pot_obj.usernames intersection
