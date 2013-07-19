@@ -1,5 +1,6 @@
 <% var title = 'Bitcoin Poker- Welcome!'; %>
 <% include head %>
+    <div id="container_index">
         <h1>Welcome to Bitcoin Poker v<%= version %></h1>
         <% if (typeof user === 'undefined') { %>
             <h1>Choose one:</h1>
@@ -20,5 +21,6 @@
                 </form>
             </div>
         <% } %>
+    </div> <!-- container index -->
     <% include plugins %>
 <% include foot %>

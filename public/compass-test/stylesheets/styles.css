@@ -8293,7 +8293,6 @@ html {
 /* line 11, ../sass/styles.scss */
 body {
   height: 100%;
-  background-image: url("../../img/file000348075748.jpg");
+  background: url("../../img/file000348075748.jpg") no-repeat center center fixed;
   background-size: cover;
-  background-repeat: no-repeat;
 }
