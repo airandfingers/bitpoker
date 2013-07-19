@@ -12,7 +12,6 @@
                     var pages = [
                         { name: 'home', href: '/' },                  
                         { name: 'lobby', href: '/lobby' },
-                        { name: 'account', href: '/account' },
                         { name: 'bitcoins', href: '/bitcoin_info' },
                         { name: 'report bugs', href: '/bug_report' }
                         /*
@@ -60,7 +59,7 @@
                         <!-- REGISTER dropdown Link -->
                         <li class="right">
                           <% if (locals.username) { %>
-                            <%= locals.username.toUpperCase() %>    
+                            <a href="/logout">LOGOUT</a>
                           <% } else { %>
                             <a href="#" id="register_trigger">REGISTER</a>
                           <% } %>
@@ -88,7 +87,9 @@
                         <!--Login or Logout Link-->
                         <li class="right">
                             <% if (locals.username) { %>
-                              <a href="/logout">LOGOUT</a>
+                              <a href="/account" title="My Account">
+                                  <%= locals.username.toUpperCase() %>
+                              </a>
                             <% } else { %>
                               <a href="#" id="login_trigger">LOGIN</a>
                             <% } %>
