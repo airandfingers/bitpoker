@@ -114,6 +114,10 @@ h1 {
     font-size: 1.5em; /* 24px/16 */
 }
 
+#button_groups {
+    margin: 2em;
+}
+
 #account_info {
     background-color: rgba(0, 0, 0, .9);
     font-size: 1.2em;
@@ -141,6 +145,15 @@ h1 {
 #container h1 {
     color: #DDDDDD;
     font-family: DESTROY, "Helvetica Neue", Helvetica, sans-serif;
+}
+
+#container_index h1 {
+    margin-top: 1em;
+    font-family: DESTROY, "Helvetica Neue", Helvetica, sans-serif;
+}
+
+#container_index button, #container_index form {
+    display: inline;
 }
 
 #chat_form {
