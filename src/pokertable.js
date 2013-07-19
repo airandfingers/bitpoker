@@ -4550,6 +4550,10 @@ self.gameState.seats[i].preActions.street = {}
 })
 
 socket.on('hands_dealt', function(players, tableInfo){
+//show hand number
+         self.reportBug.text.text = 'click to report bugs via email to: CryptoPoker@gmail.com'+'hand# '+tableInfo.hand_num
+         self.stage.update()
+
     //show dealer button
     self.images.dealerButton.image.x = self.images.seats[tableInfo.dealer].dealerButton.position.x
      self.images.dealerButton.image.y = self.images.seats[tableInfo.dealer].dealerButton.position.y
@@ -4647,10 +4651,9 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
 
 
 //hand dealt to user
-       socket.on('hole_cards_dealt', function(hand, table_num, hand_num){
+       socket.on('hole_cards_dealt', function(hand){
          self.gameState.holeCards = hand
-         self.reportBug.text.text = 'click to report bugs via email to: CryptoPoker@gmail.com'+'hand# '+hand.hand_num
-         self.stage.update()
+
 
      })
 
