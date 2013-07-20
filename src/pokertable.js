@@ -3360,6 +3360,7 @@ finalArray.push(function(next){
 for(var i = 0;i<players.length;i++){
 
   self.images.seats[players[i].seat].status.text.text = players[i].chips
+  console.log('setting player number 'players[i].seat)
 if(i == players.length-1){next(null, errorNumber)}
 }
 
