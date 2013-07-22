@@ -1,12 +1,11 @@
-<table id="table_list">
+<!-- table_list.ejs - Requires /js/table_list.js -->
+<table id="table_list" class="table_list">
   <thead>
     <tr>
-      <th>Currency</th>
       <th>#</th>
       <th>Blinds</th>
-      <th>Buyin Limits</th>
+      <th>Currency</th>
       <th># Players</th>
-      <th>Max Players</th>
     </tr>
   </thead>
   <tbody>
@@ -34,12 +33,13 @@
       MAX_PLAYERS = game.MAX_PLAYERS;
     %>
       <tr id="<%=table_name %>">
-        <td> <%= game.CURRENCY %> </td>
         <td> <%= table_id %> </td>
-        <td> <%= SMALL_BLIND %> / <%= BIG_BLIND %> <%= CURRENCY_ABBREV %> </td>
-        <td> <%= MIN_CHIPS %> - <%= MAX_CHIPS %> <%= CURRENCY_ABBREV %> </td>
-        <td> <%= seats_taken %> </td>
-        <td> <%= MAX_PLAYERS %> </td>
+        <td> <%= SMALL_BLIND %> / <%= BIG_BLIND %> </td>
+        <td>
+            <%= game.CURRENCY %>
+            (<%= CURRENCY_ABBREV === 'sat' ? '10E-8 BTC' : 'play money' %>)
+        </td>
+        <td> <%= seats_taken %> / <%= MAX_PLAYERS %> </td>
       </tr> 
    <% } %>
   </tbody>

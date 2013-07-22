@@ -1,47 +1,24 @@
 <% var title = 'Bitcoin Poker- Welcome!'; %>
 <% include head %>
-<<<<<<< HEAD
-        <h1>Welcome to Bitcoin Poker v<%= version %></h1>
-        <% if (typeof user === 'undefined') { %>
-            <h1>Choose one:</h1>
-        <% } %>
-        <form action="/lobby" method="get">
-            <button id="go_all_in" class="btn btn-custom" title="Lobby" autofocus>Go in. All in.</button>
-        </form>
-        <% if (typeof user === 'undefined') { %>
-            <div>
-                <form action="/register" method="get">
-                    <button class="btn btn-success">Register</button>
-                </form>
-            </div>
-            <div>
-                <form action="/guest_login" method="post">
-                    <button class="btn btn-inverse">Play as Guest</button>
-                </form>
-            </div>
-        <% } %>
-        <h1>Check out what's going on at our tables!</h1>
-        <iframe src="/table_1" width="690" height="480">
-            <p>Your browser does not support iframes.</p>
-        </iframe>
-    <div id="container_index">
+    <div id="container" class="container_index">
         <h1>Welcome to Bitcoin Poker</h1>
         <div id="button_groups"> 
             <% if (typeof user === 'undefined') { %>
                 <h1>Choose one:</h1>
-            <% } %>
-            <form action="/lobby" method="get">
-                <button id="go_all_in" class="btn btn-custom btn-large" title="Lobby">Lobby</button>
-            </form>
-            <% if (typeof user === 'undefined') { %>
-                    <form action="/register" method="get">
-                        <button class="btn btn-success btn-large">Register</button>
-                    </form>
-                    <form action="/guest_login" method="post">
-                        <button class="btn btn-inverse btn-large">Play as Guest</button>
-                        <input type="hidden" name="next" value="/lobby" />
-                    </form>
+                <form action="/lobby" method="get">
+                    <button id="go_all_in" class="btn btn-custom btn-large" title="Lobby">Lobby</button>
+                </form>
+                <form action="/register" method="get">
+                    <button class="btn btn-success btn-large">Register</button>
+                </form>
+                <form action="/guest_login" method="post">
+                    <button class="btn btn-inverse btn-large">Play as Guest</button>
+                </form>
             <% } %>
         </div>
+        <iframe src="/lobby" width="690" height="480">
+            <p>Your browser does not support iframes.</p>
+        </iframe>
     </div> <!-- container index -->
+    <% include plugins %>
 <% include foot %>

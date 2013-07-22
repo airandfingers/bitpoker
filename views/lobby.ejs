@@ -1,18 +1,21 @@
 <% var title = 'Bitcoin Poker- Lobby'; %>
-<% include head %>
-<style>
-body {background-image: none;}
-</style>
+<% include head_start %>
+    <link rel="stylesheet" href="/css/bootstrap-switch.css" />
+    <style>
+        body {
+            background-image: none;
+        }
+    </style>
+<% include head_end_and_header %>
     <div id="container" class="row-fluid">
         <div>
-        <h1>Lobby</h1>
         </div>
         <div class="row-fluid">
             <!-- display list of tables -->
-            <div id="table_list_lobby" class="span10 offset1">
+            <div id="table_list_container" class="span10 offset1">
                 <% include table_list %>
             </div>
-                <% include users %>
+            <% include users %>
         </div>
         <div class="row-fluid">
             <div class="chat_container row-fluid">
@@ -28,25 +31,9 @@ body {background-image: none;}
 
     <% include plugins %>
     <!-- DataTable -->
-    <script src="/js/jquery.dataTables.js"></script>
-    <script>
-    var $table_list = $('#table_list').dataTable({
-        bJQueryUI: true,
-        sDom: 't',
-        bPaginate: false,
-        iDisplayLength: 20,
-        sScrollY: '561px'
-    });
+    <script src="/js/vendor/jquery.dataTables.min.js"></script>
+    <script src="/js/table_list.js"></script>
 
-    $('#table_list tbody').on('click', 'tr', function(e) {
-      var table_name = $(this).attr('id');
-      return popup(table_name);
-    });
-
-    $(window).bind('resize', function() {
-      $table_list.fnAdjustColumnSizing();
-    });
-    </script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/chat.js"></script>
 <% include foot %>
