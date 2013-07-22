@@ -15,10 +15,7 @@ header {
 }
 .navbar {
     background: black;
-    position: -webkit-sticky;
-    position: -moz-sticky;
-    position: -ms-sticky;
-    position: -o-sticky;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
@@ -26,6 +23,7 @@ header {
     padding: 0;
     margin: 0;
     height: 1.625em; /*26px/16px*/
+    z-index: 1;
 }
 
 .navbar ul {

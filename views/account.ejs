@@ -1,58 +1,59 @@
 <% var title = 'Bitcoin Poker- Account Information'; %>
 <% include head %>
-  <div id="account_info" class="inverse">  
-    <h1> Account Information</h1>
-    <div>
-    username: <%= username %>
-    </div>
-    <div>
-    registration date: <%= registration_date %>
-    </div>
-    <div>
-        <form action="/account" method="post">
-            email address: 
-                <% if (email === undefined) { %>
-                <input field="text" name="email" placeholder="enter e-mail address" />
-                <button class="btn btn-inverse"> submit </button>
-                <% } else { %>
-                     <%= email %>
-                   <% } %>
-       </form>
-    </div>
-    <div>
-        email confirmed: <%= email_confirmed %>
-        <form action="/remove_email" method="post">
-            <button class="btn btn-inverse"> Remove E-mail </button>
-        </form>
-    </div>
-    <div id="maobucks">
-        mao bucks: <%= maobucks %>
-        <form action ="/update_maobucks" method="post">
-        <input type="number" name="maobucks_update" placeholder="100" />
-        <button class="btn btn-inverse"> god mode my Maobuckz </button>
-        </form>
-    </div>
-    
-    <!--bitcoins-->
-    <div>
-        <h3>
-        Bitcoin Management
-        </h3>
-        <p>Satoshi are each .00000001 Bitcoin, often abbreviated "sat".</p>
-        Satoshi: <%= satoshi %>
-        <br />
-        <a href="/deposit_bitcoins"> <button class="btn btn-inverse">deposit bitcoins</button></a>
-        <a href="/withdraw_bitcoins"><button class="btn btn-inverse">withdraw bitcoins</button></a>
-    </div>
+    <div id="container">
+      <div id="account_info" class="inverse">  
+        <h1> Account Information</h1>
+        <div>
+        username: <%= username %>
+        </div>
+        <div>
+        registration date: <%= registration_date %>
+        </div>
+        <div>
+            <form action="/account" method="post">
+                email address: 
+                    <% if (email === undefined) { %>
+                    <input field="text" name="email" placeholder="enter e-mail address" />
+                    <button class="btn btn-inverse"> submit </button>
+                    <% } else { %>
+                         <%= email %>
+                       <% } %>
+           </form>
+        </div>
+        <div>
+            email confirmed: <%= email_confirmed %>
+            <form action="/remove_email" method="post">
+                <button class="btn btn-inverse"> Remove E-mail </button>
+            </form>
+        </div>
+        <div id="maobucks">
+            mao bucks: <%= maobucks %>
+            <!-- <form action ="/update_maobucks" method="post">
+            <input type="number" name="maobucks_update" placeholder="100" />
+            <button class="btn btn-inverse"> god mode my Maobuckz </button>
+            </form> -->
+        </div>
+        
+        <!--bitcoins-->
+        <div>
+            <h3>
+            Bitcoin Management
+            </h3>
+            <p>Satoshi are each .00000001 Bitcoin, often abbreviated "sat".</p>
+            Satoshi: <%= satoshi %>
+            <br />
+            <a href="/deposit_bitcoins"> <button class="btn btn-inverse">deposit bitcoins</button></a>
+            <a href="/withdraw_bitcoins"><button class="btn btn-inverse">withdraw bitcoins</button></a>
+        </div>
 
-    <!--delete account -->
-    <div>
-        <h3>Delete Account</h3>
-        <form action="/delete_account" method="post">
-        <button class="btn btn-inverse">Delete</button>
-        </form>
-    </div>
-  </div>
-
+        <!--delete account -->
+        <div>
+            <h3>Delete Account</h3>
+            <form action="/delete_account" method="post">
+            <button class="btn btn-inverse">Delete</button>
+            </form>
+        </div>
+      </div>
+    </div> <!-- container -->
     <% include plugins %>
 <% include foot %>

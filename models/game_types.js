@@ -16,7 +16,7 @@ module.exports = (function() {
       // how long (in ms) to wait before automatically skipping players who should be skipped
     , SKIP_PLAYER_DELAY : 1000
       // how long (in ms) to wait for players to respond to prompts
-    , ACT_TIMEOUT: 10000
+    , ACT_TIMEOUT: 16000
       // how long (in ms, per pot) to wait after winners message and before reset_table message
     , DISPLAY_HANDS_DURATION: 3000
       // how long (in ms) players can sit out before being forced from their seats

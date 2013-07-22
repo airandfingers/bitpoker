@@ -105,8 +105,7 @@ module.exports = (function () {
   //home, index and "/" link to the same page
   var renderHome = function(req, res) {
     res.render('index', {
-      version: version_file.version
-    , user: req.user
+      user: req.user
     });
   };
   app.get('/', renderHome);
