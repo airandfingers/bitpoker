@@ -16,9 +16,12 @@
             <div>
                 <form action="/guest_login" method="post">
                     <button class="btn btn-inverse">Play as Guest</button>
-                    <input type="hidden" name="next" value="/lobby" />
                 </form>
             </div>
         <% } %>
+        <h1>Check out what's going on at our tables!</h1>
+        <iframe src="/table_1" width="690" height="480">
+            <p>Your browser does not support iframes.</p>
+        </iframe>
     <% include plugins %>
 <% include foot %>

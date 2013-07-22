@@ -15,7 +15,7 @@ module.exports = (function () {
   var version_file = require('./package.json');
   console.log('version_file package is ' + version_file.version);
 
-  var base_page = '/lobby';
+  var base_page = '/';
   
   //These app.get functions will display their respective ejs page.
   app.get('/account', auth.ensureAuthenticated, function(req, res) {
@@ -433,13 +433,7 @@ module.exports = (function () {
            function (req, res) {
     // Authentication successful. Redirect.
     //console.log("POST /login called!");
-    var target = req.body.next;
-    if (target) {
-      res.redirect(target);
-    }
-    else {
-      res.redirect(base_page);
-    }
+    res.redirect(req.body.next || base_page);
   });
 
   //withdraw bitcoins
