@@ -194,6 +194,10 @@ h1 {
     padding: 0 2em;
 }
 
+#leaderboard {
+    max-width: 600px;
+}
+
 #play_as_guest {
     margin: .5em;
 }
