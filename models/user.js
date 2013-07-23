@@ -208,12 +208,12 @@ module.exports = (function() {
       });
     };  
 
-  UserSchema.statics.getLeaders = function(cb) {
+  UserSchema.statics.getLeaders = function(currency, cb) {
     console.log ('getLeaders function called');
     User.find()
       .limit(25)
-      .sort('-maobucks')
-      .select('username maobucks')
+      .sort('-' + currency)
+      .select('username maobucks satoshi')
       .exec(function (err, users) {
         if (err) return cb(err);
         console.log('users are', users);

@@ -114,6 +114,10 @@ h1 {
     font-size: 1.5em; /* 24px/16 */
 }
 
+h2 {
+    font-size: 1.4em; /* 22px/16 */
+}
+
 #button_groups {
     margin: 2em;
 }
@@ -143,12 +147,12 @@ h1 {
     position: fixed;
 }
 
-#container h1 {
+#container h1, #container h2 {
     color: #DDDDDD;
     font-family: DESTROY, "Helvetica Neue", Helvetica, sans-serif;
 }
 
-#container_index h1 {
+#container_index h1, #container_index h2 {
     margin-top: 1em;
     font-family: DESTROY, "Helvetica Neue", Helvetica, sans-serif;
 }
@@ -194,7 +198,7 @@ h1 {
     padding: 0 2em;
 }
 
-#leaderboard {
+#maobucks_leaderboard, #satoshi_leaderboard {
     max-width: 600px;
 }
 
@@ -255,6 +259,12 @@ h1 {
 
 .inverse {
     color: #ccc;
+}
+
+.leaderboard {
+    clear: none;
+    float: left;
+    width: 50%;
 }
 
 .main {

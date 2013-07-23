@@ -114,12 +114,16 @@ module.exports = (function () {
 
 
   app.get('/leaderboard', function (req, res) {
-    User.getLeaders(function (err, leaders) {
+    User.getLeaders('maobucks', function (err, maobucks_leaders) {
       if (err) return (err);
       //console.log('Callback called. User.getLeaders is', leaders);
-      res.render('leaderboard', {
-        title: 'leaderboard',
-        leaders: leaders,
+      User.getLeaders('satoshi', function (err, satoshi_leaders) {
+        if (err) return (err);
+        res.render('leaderboard', {
+          title: 'leaderboard',
+          maobucks_leaders: maobucks_leaders,
+          satoshi_leaders: satoshi_leaders
+        });        
       });
     });
   });
