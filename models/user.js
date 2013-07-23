@@ -65,9 +65,9 @@ module.exports = (function() {
       user.generateDepositAddress(function() {
         cb(user);
       });
-    });
-    GuestCounter.increment(function (err) {
-      console.log('Increment returns', err);
+      GuestCounter.increment(function (err) {
+        console.log('Increment returns', err);
+      });
     });
   };
 
