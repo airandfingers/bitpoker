@@ -3,7 +3,7 @@ module.exports = (function() {
     , Schema = mongoose.Schema // Mongoose Schema constructor
     , ObjectId = Schema.ObjectId // Mongoose ObjectId type
 
-    , crypto = require('crypto') // encryption utility library
+      , crypto = require('crypto') // encryption utility library
     , async = require('async') // flow control utility library
     , request = require('request') // HTTP/HTTPS request library
     , _ = require('underscore') // list utility library
@@ -200,6 +200,20 @@ module.exports = (function() {
         cb();
       });
     };  
+
+  UserSchema.statics.getLeaders = function(cb) {
+    console.log ('getLeaders function called');
+    User.find()
+      .limit(25)
+      .sort('-maobucks')
+      .select('username maobucks')
+      .exec(function (err, users) {
+        if (err) return cb(err);
+        console.log('users are', users);
+        cb(err, users);
+      });   
+  };
+
   /* the model - a fancy constructor compiled from the schema:
    *   a function that creates a new document
    *   has static methods and properties attached to it

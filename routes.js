@@ -112,6 +112,18 @@ module.exports = (function () {
   app.get('/home', renderHome);
   app.get('/index', renderHome);
 
+
+  app.get('/leaderboard', function (req, res) {
+    User.getLeaders(function (err, leaders) {
+      if (err) return (err);
+      //console.log('Callback called. User.getLeaders is', leaders);
+      res.render('leaderboard', {
+        title: 'leaderboard',
+        leaders: leaders,
+      });
+    });
+  });
+
   app.get('/legal_info', function (req, res) {
     res.render('legal_info', {
       title: 'legal_info',
