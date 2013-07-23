@@ -15,7 +15,8 @@ module.exports = (function () {
 
     , Deck = require('./deck')
     , Player = require('./player')
-    , HandHistory = require('./hand_history');
+    , HandHistory = require('./hand_history')
+    , HandCounter = require('./hand_counter');
 
   var static_properties = {
   // static properties (attached below) - Model.property_name
@@ -85,7 +86,7 @@ module.exports = (function () {
 
     // unique identifier for the table at which this HoldEmHand is being played
   , table_name      : String
-    // number of this HoldEmHand (unique when combined with table_name)
+    // number of this HoldEmHand (unique)
   , hand_num        : Number
 
     // the number of chips to start with (carried over from previous hands)
@@ -133,12 +134,6 @@ module.exports = (function () {
       , handler;
 
     self.deck = Deck.createDeck({});
-    
-    self.hand_history = HandHistory.createHandHistory({
-      hand: self
-    , table_name: self.table_name
-    , hand_num: self.hand_num
-    });
 
     _.each(HoldEmHand.stage_handlers, function(handler, stage_name) {
       self.onStage(stage_name, handler);
@@ -156,8 +151,8 @@ module.exports = (function () {
 
   static_properties.stage_handlers.waiting = function() {
     var self = this
-      , game = self.game
-      , wait_interval = setInterval(function() {
+      , game = self.game;
+    (function pollSeats() {
       //console.log('Checking if # ready players > ', game.MIN_PLAYERS);
       var num_ready = 0;
       _.each(self.seats, function(player, seat_num) {
@@ -183,10 +178,27 @@ module.exports = (function () {
       });
 
       if (num_ready >= game.MIN_PLAYERS) {
-        self.nextStage();
-        clearInterval(wait_interval);
+        // ready to go - grab a hand number
+        HandCounter.increment(function(err, hand_num) {
+          if (err) {
+            console.error('Error during HandCounter.increment:', err);
+            throw err;
+          }
+          self.hand_num = hand_num;
+          // create a HandHistory object to store what happens in this hand
+          self.hand_history = HandHistory.createHandHistory({
+            hand: self
+          , table_name: self.table_name
+          , hand_num: hand_num
+          });
+          // start the game
+          self.nextStage();
+        });
       }
-    }, game.WAIT_POLL_INTERVAL);
+      else {
+        setTimeout(pollSeats, game.WAIT_POLL_INTERVAL);
+      }
+    })();
   };
 
   static_properties.stage_handlers.blinding = function() {

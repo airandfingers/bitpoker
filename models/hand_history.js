@@ -22,8 +22,8 @@ module.exports = (function () {
     hand               : Schema.Types.Mixed
     // unique identifier for the table at which this HoldEmHand is being played
   , table_name         : String
-    // number of this HoldEmHand (unique when combined with table_name)
-  , hand_num           : Number
+    // number of this HoldEmHand (unique)
+  , hand_num           : { type: Number, unique: true }
 
     // the hand history string, compatible with pokerhand.org
   , history_string     : { type: String, default: '' }
@@ -34,6 +34,9 @@ module.exports = (function () {
   , initial_player_objs: { type: [Schema.Types.Mixed], default: function() { return []; } }
     // names of users who participated in this hand
   , initial_usernames  : { type: [String], default: function() { return []; } }
+
+    // community cards dealt
+  , community          : { type: [String], default: function() { return []; } }
 
     // time at which winnings were paid out
   , finished_at        : Date
@@ -47,7 +50,7 @@ module.exports = (function () {
   HandHistorySchema.statics.createHandHistory = function(spec) {
     /* our "constructor" function. Usage: HandHistory.createHandHistory({prop: 'val'})
        (see Schema definition for list of properties)*/
-    //console.log('HandHistory.createHandHistory called!', spec);
+    console.log('HandHistory.createHandHistory called!', spec);
     var hand_history = new HandHistory(spec);
     return hand_history;
   };
@@ -226,9 +229,11 @@ module.exports = (function () {
       , hand = self.hand
       , pot_total = _.reduce(pot_values, 
                              function(memo, amount) { return memo + amount; },
-                             0);
+                             0)
+      , community = hand.community;
 
     // override instance properties
+    self.community = community;
     self.finished_at = new Date();
     self.final_player_objs = final_player_objs;
     self.pot_total = pot_total;
@@ -256,7 +261,6 @@ module.exports = (function () {
     ));
 
     // print the "board"
-    var community = hand.community;
     self.appendToHistoryString(_.str.sprintf(
       'Board [%s]'
     , community.join(' ')

@@ -58,7 +58,8 @@
     // Add a click handler for the table rows
     $('#table_list tbody').on('click', 'tr', function(e) {
       var table_name = $(this).attr('id');
-      return popup(table_name);
+      window.location.href = '/' + table_name;
+      //return popup(table_name);
     });
 
     // Adjust column sizes when window resizes
