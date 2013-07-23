@@ -197,15 +197,15 @@ module.exports = (function () {
     _.each(PlayerSchema.tree, function(field_obj, field_name) {
       hand_default_value = field_obj.hand_default;
       if (_.isFunction(hand_default_value)) {
-        console.log('hand_default for', field_name, ', setting to', hand_default_value());
+        //console.log('hand_default for', field_name, ', setting to', hand_default_value());
         self[field_name] = hand_default_value();
       }
       else if (! _.isUndefined(hand_default_value)) {
-        console.log('hand_default for', field_name, ', setting to', hand_default_value);
+        //console.log('hand_default for', field_name, ', setting to', hand_default_value);
         self[field_name] = hand_default_value;
       }
       else {
-        console.log('No hand_default, so skipping', field_name);
+        //console.log('No hand_default, so skipping', field_name);
       }
     });
   };

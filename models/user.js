@@ -59,15 +59,14 @@ module.exports = (function() {
   };
 
   UserSchema.statics.createGuestUser = function(cb) {
-    GuestCounter.findOne(function (err, guest_counter) {
-      var username = 'guest' + guest_counter.next
+    GuestCounter.increment(function (err, guest_num) {
+      if (err) {
+        console.error('Error during GuestCounter.increment:', err);
+        return cb(null);
+      }
+      var username = 'guest' + guest_num
         , user = new User({ username: username });
-      user.generateDepositAddress(function() {
-        cb(user);
-      });
-      GuestCounter.increment(function (err) {
-        console.log('Increment returns', err);
-      });
+      cb(user);
     });
   };
 
@@ -149,8 +148,11 @@ module.exports = (function() {
       if (err) {
         error = 'Error in User.convertFromGuest: ' + err.message;
         console.error(error);
+        return cb(error);
       }
-      cb(error, self);
+      self.generateDepositAddress(function(generate_err) {
+        cb(generate_err, self);
+      });
     });
   };
 
@@ -182,22 +184,27 @@ module.exports = (function() {
         , url = 'https://blockchain.info/api/receive?method=create' +
                 '&address=1NpMFVFNjutgY2VXGfn97WcBa1JafSVHF' +
                 '&shared=false' +
-                '&callback=https://bitcoin-poker-7793.onmodulus.net/bitcoin_deposit/' + user.username;
+                '&callback=https://bitcoin-poker-7793.onmodulus.net/bitcoin_deposit/' + user.username
+        , error = null;
       request({
         url: url
       }, function(err, response, body) {
         if (err) {
-          console.error('Error while creating deposit address:', err);
+          error = 'Error while creating deposit address: ' + err.message;
+          console.error(error);
         }
-        else if (response.statusCode !== 200 && response.statusCode !== 201) {
-          console.error('Unsuccessful response code while creating deposit address:', response.statusCode);
+        else if (response &&
+                 response.statusCode !== 200 &&
+                 response.statusCode !== 201) {
+          error = 'Unsuccessful response code while creating deposit address: ' + response.statusCode
+          console.error(error);
         }
         else {
           var body = JSON.parse(response.body);
           user.deposit_address = body.input_address;
           console.log('user.deposit_address is ' + user.deposit_address);
         }
-        cb();
+        cb(error);
       });
     };  
   /* the model - a fancy constructor compiled from the schema:
