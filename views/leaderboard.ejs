@@ -1,0 +1,69 @@
+<% var title = 'Bitcoin Poker- Leaderboard'; %>
+<% include head_start %>
+<% include head_end_and_header %>
+
+    <div id="container" class="row-fluid">
+        <h1>Leaderboards</h1>
+
+        <div class="leaderboard">
+          <h2>Maobucks</h2>
+          <table id="maobucks_leaderboard">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Username</th>
+                <th>Maobucks</th>
+              </tr>
+            </thead>
+            <tbody>
+              <%
+              var i, len
+                , username, maobucks, satoshi;
+
+              for (i = 0, len = maobucks_leaders.length; i < len; i++ ) {
+              %>
+                  <tr>
+                      <td><%= i+1 %> </td>
+                      <td><%= maobucks_leaders[i].username %> </td>
+                      <td><%= maobucks_leaders[i].maobucks %> </td>
+                  </tr>
+             <% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="leaderboard">
+          <h2>Satoshi</h2>
+          <table id="satoshi_leaderboard">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Username</th>
+                <th>Satoshi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <%
+              var i, len
+                , username, maobucks, satoshi;
+
+              for (i = 0, len = satoshi_leaders.length; i < len; i++ ) {
+              %>
+                  <tr>
+                      <td><%= i+1 %> </td>
+                      <td><%= satoshi_leaders[i].username %> </td>
+                      <td><%= satoshi_leaders[i].satoshi %> </td>
+                  </tr>
+             <% } %>
+            </tbody>
+          </table>
+        </div>
+
+    </div> <!-- container-->
+
+    <% include plugins %>
+    <!-- DataTable -->
+    <script src="/js/vendor/jquery.dataTables.min.js"></script>
+    <script src="/js/leaderboard.js"></script>
+
+<% include foot %>
