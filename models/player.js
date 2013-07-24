@@ -130,15 +130,18 @@ module.exports = (function () {
 
   PlayerSchema.methods.prompt = function(actions, timeout, default_action, cb) {
     var self = this
+      , possible_actions = _.map(actions, function(action_obj) { return _.keys(action_obj)[0]; })
       , auto_action
       , act_timeout
       , update_interval;
 
-    _.all(actions, function(action_params, action) {
+    //console.log('Comparing', possible_actions, 'to', self.flags);
+    _.all(possible_actions, function(action) {
       if (self.isFlagSet(action)) {
         auto_action = action;
         return false; //break
       }
+      return true; //continue
     });
 
     if (_.isString(auto_action)) {
@@ -170,10 +173,12 @@ module.exports = (function () {
       }, self.game.TO_ACT_UPDATE_INTERVAL);
       self.current_prompt = {
         actions: actions
+      , possible_actions: possible_actions
       , timeout: timeout
       , prompt_sent: new Date()
       , callback: cb
       , act_timeout: act_timeout
+      , update_interval: update_interval
       };
     }
   };
@@ -206,6 +211,13 @@ module.exports = (function () {
       }
       else {
         //console.log('No hand_default, so skipping', field_name);
+      }
+    });
+
+    // clear any action flags (shouldn't persist between hands)
+    _.each(['check', 'fold'], function(flag) {
+      if (self.isFlagSet(flag)) {
+        self.setFlag(flag, false);
       }
     });
   };
@@ -591,6 +603,29 @@ module.exports = (function () {
     console.log(this.username, 'setting', name, 'to', value);
     this.flags[name] = value;
     this.sendMessage('flag_set', name, value);
+
+    if (value && _.isObject(this.current_prompt)) {
+      var current_prompt = this.current_prompt
+        , possible_actions = current_prompt.possible_actions
+        , act_timeout = current_prompt.act_timeout
+        , update_interval = current_prompt.update_interval
+        , cb = current_prompt.callback;
+
+      if (_.contains(possible_actions, name)) {
+        console.log(name, 'set, so immediately performing!');
+        this.current_prompt = undefined;
+        this.idle = false;
+        clearTimeout(act_timeout);
+        clearInterval(update_interval);
+        cb(name);
+      }
+      else {
+        //console.log('Not immediately performing', name, ', possible_actions is', possible_actions);
+      }
+    }
+    else {
+      //console.log('Not checking', name, ', value is', value, ', current_prompt is', current_prompt);
+    }
   };
 
   static_properties.messages.set_flags = 'setFlags';
@@ -626,27 +661,36 @@ module.exports = (function () {
     };
 
     // send outstanding prompt, if any
-    if (self.current_prompt) {
-      var current_prompt = self.current_prompt
+    self.sendCurrentPromptIfAny();
+
+    // attach handlers for messages as defined in Player.messages
+    io.bindMessageHandlers.call(this, this.socket, static_properties.messages);
+  };
+
+  PlayerSchema.methods.sendCurrentPromptIfAny = function() {
+    if (_.isObject(this.current_prompt)) {
+      var current_prompt = this.current_prompt
         , actions = current_prompt.actions
         , elapsed_timeout = new Date() - current_prompt.prompt_sent
         , remaining_timeout = current_prompt.timeout - elapsed_timeout
         , act_timeout = current_prompt.act_timeout
+        , update_interval = current_prompt.update_interval
         , cb = current_prompt.callback;
 
-      self.sendMessage('act_prompt', actions, remaining_timeout);
+      this.sendMessage('act_prompt', actions, remaining_timeout);
 
-      self.socket.once('act', function(action, num_chips) {
-        console.log(self.username, 'responds with', action, num_chips);
-        self.current_prompt = undefined;
-        self.idle = false;
+      this.socket.once('act', function(action, num_chips) {
+        console.log(this.username, 'responds with', action, num_chips);
+        this.current_prompt = undefined;
+        this.idle = false;
         clearTimeout(act_timeout);
+        clearInterval(update_interval);
         cb(action, num_chips);
       });
     }
-
-    // attach handlers for messages as defined in Player.messages
-    io.bindMessageHandlers.call(this, this.socket, static_properties.messages);
+    else {
+      //console.log('Not sending prompt because current_prompt is', this.current_prompt);
+    }
   };
 
   PlayerSchema.methods.onDisconnect = function(socket) {

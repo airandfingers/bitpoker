@@ -421,10 +421,11 @@ module.exports = (function () {
       // , free_action_obj
       // , bet_action
       // , bet_action_obj);
-        player.prompt(actions, game.ACT_TIMEOUT, free_action, function(action_choice, num_chips_choice) {
+        player.prompt(actions, game.ACT_TIMEOUT, free_action,
+                      _.once(function(action_choice, num_chips_choice) {
           performAction(action_choice, num_chips_choice);
           cb();
-        });
+        }));
         // notify everyone that this player is being waited on to act
         self.broadcast('player_to_act', player.serialize(), game.ACT_TIMEOUT);
       },

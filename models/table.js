@@ -263,6 +263,7 @@ module.exports = (function () {
     fields = fields || 'all';
     self.getTableState(player.socket.user, fields, function(err, table_state) {
       player.socket.emit('table_state', table_state);
+      player.sendCurrentPromptIfAny();
       if (_.isFunction(cb)) cb();
     })
   };

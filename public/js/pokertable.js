@@ -1393,12 +1393,12 @@ parentOfImageObject.text.textAlign = 'left'
 parentOfImageObject.textColor = sideButtonTextColor
 }
 //off state
-      addSideButtonText( this.foldToAnyBet, 'Fold to any bet' )
+      addSideButtonText( this.foldToAnyBet, 'Auto check/fold' )
       addSideButtonText(this.sitOutNextHand, 'Sit out next hand')
       addSideButtonText (  this.sitOutNextBlind,'Sit out next blind' )
       
       //on state
-      addSideButtonText( this.foldToAnyBetOn, 'Fold to any bet' )
+      addSideButtonText( this.foldToAnyBetOn, 'Auto check/fold' )
       addSideButtonText(this.sitOutNextHandOn, 'Sit out next hand')
       addSideButtonText (  this.sitOutNextBlindOn,'Sit out next blind' )
 
