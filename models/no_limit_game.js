@@ -30,9 +30,9 @@ module.exports = (function () {
 
     // how much currency it takes to buy a single chip at this table
   , CURRENCY_PER_CHIP: { type: Number }
-    // which currency this game deals in (maobucks or cash)
+    // which currency this game deals in (funbucks or satoshi)
   , CURRENCY: { type: String }
-    // which currency this game deals in (maobucks or cash)
+    // which currency this game deals in (FB or sat)
   , CURRENCY_ABBREV: { type: String }
     // the minimum difference between two possible chip amounts at this table
   , MIN_INCREMENT: { type: Number, default: defaults.MIN_INCREMENT }
@@ -74,7 +74,6 @@ module.exports = (function () {
     if (_.isNumber(spec.SMALL_BLIND) && _.isUndefined(spec.BIG_BLIND)) {
       spec.BIG_BLIND = spec.SMALL_BLIND * 2;
     }
-    spec.CURRENCY_ABBREV  = spec.CURRENCY === 'maobucks' ? 'MB' : 'sat';
     //console.log('creating NoLimitGame:', spec);
     var game = new NoLimitGame(spec);
     NoLimitGame.games.push(game);

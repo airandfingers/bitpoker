@@ -6,26 +6,26 @@
         <h1>Leaderboards</h1>
 
         <div class="leaderboard">
-          <h2>Maobucks</h2>
-          <table id="maobucks_leaderboard">
+          <h2>Funbucks</h2>
+          <table id="funbucks_leaderboard">
             <thead>
               <tr>
                 <th>#</th>
                 <th>Username</th>
-                <th>Maobucks</th>
+                <th>Funbucks</th>
               </tr>
             </thead>
             <tbody>
               <%
               var i, len
-                , username, maobucks, satoshi;
+                , username, funbucks, satoshi;
 
-              for (i = 0, len = maobucks_leaders.length; i < len; i++ ) {
+              for (i = 0, len = funbucks_leaders.length; i < len; i++ ) {
               %>
                   <tr>
                       <td><%= i+1 %> </td>
-                      <td><%= maobucks_leaders[i].username %> </td>
-                      <td><%= maobucks_leaders[i].maobucks %> </td>
+                      <td><%= funbucks_leaders[i].username %> </td>
+                      <td><%= funbucks_leaders[i].funbucks %> </td>
                   </tr>
              <% } %>
             </tbody>
@@ -45,7 +45,7 @@
             <tbody>
               <%
               var i, len
-                , username, maobucks, satoshi;
+                , username, funbucks, satoshi;
 
               for (i = 0, len = satoshi_leaders.length; i < len; i++ ) {
               %>

@@ -374,7 +374,7 @@ module.exports = (function () {
       self.emit('stand', seat_num);
     }
     else if (self.chips > 0) {
-      // credit this player's account with the appropriate number of maobucks
+      // credit this player's account with the appropriate number of funbucks
       self.socket.user.fetch(function(fetch_err, user) {
         if (fetch_err) {
           self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);

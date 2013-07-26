@@ -25,7 +25,7 @@ module.exports = (function () {
       username: req.user.username,
       registration_date: req.user.registration_date,
       email: req.user.email,
-      maobucks: req.user.maobucks,
+      funbucks: req.user.funbucks,
       email_confirmed: req.user.email_confirmed,
       bitcoins: req.user.satoshi / 1E8,
       satoshi: req.user.satoshi,
@@ -114,14 +114,14 @@ module.exports = (function () {
 
 
   app.get('/leaderboard', function (req, res) {
-    User.getLeaders('maobucks', function (err, maobucks_leaders) {
+    User.getLeaders('funbucks', function (err, funbucks_leaders) {
       if (err) return (err);
       //console.log('Callback called. User.getLeaders is', leaders);
       User.getLeaders('satoshi', function (err, satoshi_leaders) {
         if (err) return (err);
         res.render('leaderboard', {
           title: 'leaderboard',
-          maobucks_leaders: maobucks_leaders,
+          funbucks_leaders: funbucks_leaders,
           satoshi_leaders: satoshi_leaders
         });        
       });
@@ -235,7 +235,7 @@ module.exports = (function () {
       username: req.user.username,
       registration_date: req.user.registration_date,
       email: req.user.email,
-      maobucks: req.user.maobucks,
+      funbucks: req.user.funbucks,
       email_confirmed: req.user.email_confirmed,
     });
     console.log("HEY! We got to the verify e-mail route. good job son. req.query.email is ", req.query.email, " and req.query.confirmation code is ", req.query.confirmation_code);
@@ -426,16 +426,16 @@ module.exports = (function () {
     res.redirect('back');
   });
 
-  // update maobucks
-  app.post('/update_maobucks', function (req, res) {
-    var maobucks_update = req.body.maobucks_update;
-    console.log("calling maobucks update route");
-    User.update({_id: req.user._id}, { $set: { maobucks: maobucks_update } }, function(err) {
+  // update funbucks
+  app.post('/update_funbucks', function (req, res) {
+    var funbucks_update = req.body.funbucks_update;
+    console.log("calling funbucks update route");
+    User.update({_id: req.user._id}, { $set: { funbucks: funbucks_update } }, function(err) {
       if (err) {
-        console.error('error when updating maobucks to database.'); 
+        console.error('error when updating funbucks to database.'); 
       }
       else {
-      console.log("Updated " + req.user.username + "'s account to " + maobucks_update + "maobucks.");
+      console.log("Updated " + req.user.username + "'s account to " + funbucks_update + "funbucks.");
       }
     } );
     res.redirect('back');

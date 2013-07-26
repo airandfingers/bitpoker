@@ -1,6 +1,6 @@
 (function($) {
 
-    var $maobucks_leaderboard = $('#maobucks_leaderboard').dataTable({
+    var $funbucks_leaderboard = $('#funbucks_leaderboard').dataTable({
         bJQueryUI: true,
         sDom: 't',
         bPaginate: false,
@@ -9,7 +9,7 @@
 
     // Adjust column sizes when window resizes
     $(window).bind('resize', function() {
-      $maobucks_leaderboard.fnAdjustColumnSizing();
+      $funbucks_leaderboard.fnAdjustColumnSizing();
     });
 })(jQuery);
 

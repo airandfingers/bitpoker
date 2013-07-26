@@ -33,13 +33,13 @@
             null
         ]
     });
-    $table_list.fnFilter('maobucks', 2);
+    $table_list.fnFilter('funbucks', 2);
 
     // Add a bootstrap-switch button that toggles currency filter
     $('<div></div>', {
         'id': 'currency-switch',
         'class': 'switch switch-mini',
-        // green maobucks
+        // green funbucks
         'data-on': 'success',
         'data-on-label': 'MB',
         // orange satoshi
@@ -51,7 +51,7 @@
     .bootstrapSwitch()
     .on('switch-change', function (e, data) {
         // filter by second column (Currency), depending on switch value
-        $table_list.fnFilter( data.value ? 'maobucks' : 'satoshi', 2 );
+        $table_list.fnFilter( data.value ? 'funbucks' : 'satoshi', 2 );
     })
     .on('click', function(e) { e.stopPropagation(); });
 

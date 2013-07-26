@@ -280,13 +280,13 @@ module.exports = (function () {
     else {
       console.error('No player currently exists for username', username);
     }
-    user.checkBalance('maobucks', function(err, maobucks) {
+    user.checkBalance('funbucks', function(err, funbucks) {
       if (err) {
-        console.error('Error while looking up number of maobucks:', err);
+        console.error('Error while looking up number of funbucks:', err);
         cb(err);
       }
       else {
-        table_state.balance = maobucks;
+        table_state.balance = funbucks;
         if (_.isFunction(cb)) cb(null, table_state);
       }
     });

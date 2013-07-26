@@ -26,7 +26,7 @@ module.exports = (function() {
   , confirmation_code: String
     //whether the user has confirmed his/r email address
   , email_confirmed  : { type: Boolean, default: false }
-  , maobucks         : { type: Number, default: 100, min: 0 }
+  , funbucks         : { type: Number, default: 100, min: 0 }
   , satoshi          : { type: Number, default: 0, min: 0 }
   , recovery_code    : { type: String }
   , registration_date: { type: Date, default: Date.now }
@@ -213,7 +213,7 @@ module.exports = (function() {
     User.find()
       .limit(25)
       .sort('-' + currency)
-      .select('username maobucks satoshi')
+      .select('username funbucks satoshi')
       .exec(function (err, users) {
         if (err) return cb(err);
         console.log('users are', users);
