@@ -41,7 +41,7 @@
         'class': 'switch switch-mini',
         // green funbucks
         'data-on': 'success',
-        'data-on-label': 'MB',
+        'data-on-label': 'FB',
         // orange satoshi
         'data-off': 'warning',
         'data-off-label': 'sat'
