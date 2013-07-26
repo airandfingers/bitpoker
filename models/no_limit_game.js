@@ -1,4 +1,4 @@
-module.exports = (function () {
+  module.exports = (function () {
   var mongoose = require('mongoose') // MongoDB abstraction layer
     , Schema = mongoose.Schema // Mongoose Schema constructor
     , ObjectId = Schema.ObjectId // Mongoose ObjectId type

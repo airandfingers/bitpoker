@@ -57,8 +57,8 @@ module.exports = (function() {
   // each entry lists the constants in set_per_currency's order
   , currency_types: [
     // currency   $/chip
-      ['maobucks', 'MB', 1E-5]
-    , ['satoshi', 'sat', 1   ]
+      ['maobucks', 'MB', 1]
+    , ['satoshi', 'sat', 100   ]
     ]
   };
 })();
