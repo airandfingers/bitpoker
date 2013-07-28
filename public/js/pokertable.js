@@ -6,7 +6,7 @@ event.preventDefault() }
 window.onKeydown = onKeyDown
 
 
-/*function (dtnode, event) { 
+/*function (dtnode, event) {
         return false; 
     }*/
    
@@ -559,23 +559,30 @@ this.events.onCashierTextFieldFocus = function(event){
     this.events.exitTableClick = function(event){
        var  messageInfo = {}
        messageInfo.cancel = true
-       messageInfo.okayEvent = self.events.exit
+       messageInfo.okayEvent = self.events.leaveTable
         self.displayMessageBox("Are you sure you want to leave?",messageInfo)
 
     }
 
+     /* Commented out, 2013.07.27
      this.events.viewLobbyClick = function(event){
 
          var lobbyName = "Lobby"
          window.open('/lobby', lobbyName, 'width=800,height=770 ,left=200,top=200,location=0,toolbar=no,menubar=no,titlebar=no,directories=no,scrollbars=yes');
     //     window.open('/lobby')
 
-    }
+    }*/
 
+    /* Commented out, replaced by leaveTable, 2013.07.27
     this.events.exit = function(event){
         socket.emit('stand')
           var win = window.open('', '_self')
           win.close()
+    }*/
+
+    this.events.leaveTable = function(event){
+        socket.emit('stand')
+        window.location.href = '/lobby';
     }
 
      //===============START BET SLIDER===================
@@ -1801,6 +1808,7 @@ this.cashierButton.button = new createjs.ButtonHelper(this.cashierButton.bitmapA
 */
 
  //------------upper right view lobby--------------
+ /* Commented out, 2013.07.27
  this.viewLobby = new this.Item(canvasWidth - viewLobbyWidth, 0, viewLobbyWidth, viewLobbyHeight, self.gameState.containerImageIndexes.button)
    this.itemAsBitmap(this.viewLobby, this.sources.viewLobby)
    //define shape for hit area of  viewLobby
@@ -1816,6 +1824,7 @@ viewLobbyHit.graphics.beginFill('white').setStrokeStyle(2).beginStroke('#000000'
 .lineTo(viewLobbyHitAreaUpperLeftOffsetX, topY)
 this.viewLobby.image.hitArea = viewLobbyHit
 this.viewLobby.image.onClick = self.events.viewLobbyClick
+*/
 
 //-------------------------upper left Get Chips-------
  this.getChips = new this.Item(0, 0, getChipsWidth, getChipsHeight, self.gameState.containerImageIndexes.button, ['get_add_chips_info'])
@@ -1835,7 +1844,7 @@ getChipsHit.graphics.beginFill('#000000')
    this.getChips.image.onClick = self.events.onButtonClick
 
    //--------------upper right exit Table--------------
- this.exitTable = new this.Item(canvasWidth - exitTableWidth, viewLobbyHeight, exitTableWidth, exitTableHeight, self.gameState.containerImageIndexes.button)
+ this.exitTable = new this.Item(canvasWidth - exitTableWidth, 0, exitTableWidth, exitTableHeight, self.gameState.containerImageIndexes.button)
    this.itemAsBitmap(this.exitTable, this.sources.exitTable)
    //define shape of hit area
 
@@ -4004,7 +4013,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
 
          //-------------------set defaults---------------------------
          //set default font sizes and colors
-       if(_.isNull(messageInfo.title)||_.isUndefined(messageInfo.title)||!(_.isString(messageInfo.title)||!_.isNumber(messageInfo.title))){messageInfo.title = 'Undefined Error'}
+       if(_.isNull(messageInfo.title)||_.isUndefined(messageInfo.title)||!(_.isString(messageInfo.title)||!_.isNumber(messageInfo.title))){messageInfo.title = ''}
        if(_.isNull(messageInfo.titleSizeAndFont)||_.isUndefined(messageInfo.titleSizeAndFont)){messageInfo.titleSizeAndFont = '18px Arial'}
        if(_.isNull(messageInfo.titleColor)||_.isUndefined(messageInfo.titleColor)){ messageInfo.titleColor = '#000000'}
        if(_.isNull(messageInfo.sizeAndFont)||_.isUndefined(messageInfo.sizeAndFont)){messageInfo.messageSizeAndFont = '13px Arial'}
@@ -4479,10 +4488,14 @@ function tick(event){
 
                  //display static items
          this.displayChildren(this.images.getChips)
-         this.displayChildren(this.images.viewLobby)
+         //this.displayChildren(this.images.viewLobby) // Commented out, 2013.07.27
          this.displayChildren(this.images.exitTable)
 
-         this.images.currencyDisplay.text.text = '1 chip is equal to ' + table_state.currency_per_chip + ' ' + table_state.currency
+         var currency_string = table_state.currency;
+         if (table_state.currency_per_chip === 1 && currency_string === 'funbucks') {
+            currency_string = 'funbuck';
+         }
+         this.images.currencyDisplay.text.text = '1 chip is equal to ' + table_state.currency_per_chip + ' ' + currency_string
 this.displayChildren(this.images.currencyDisplay)
 
 this.displayChildren(this.images.reportBug)
