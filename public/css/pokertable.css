@@ -33,16 +33,17 @@ body {
     text-align: left;
 }
 #chatDiv input[type = 'text']{
-  background: transparent url('/img/chat_bg.jpg') no-repeat;
+  /*background: transparent url('/img/chat_bg.jpg') no-repeat; removed 07/28/2013 */
+  background-color: rgba(0,0,0,0);
 	border:0;
-	color : #747862;
+	color : black;
 	margin-right:0px;
 	font-family:tahoma, arial, sans-serif;
     position: absolute;
     z-index: 1;
     display: none;
     color: #FFFFFF;
-    border: 1px solid #FFFFFF;
+    border: 1px solid #747862;
     border-radius: 0px;
 }
 #chat{
