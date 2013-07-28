@@ -81,22 +81,24 @@
     return game;
   };
 
-  function roundBy(amount, round_by) {
-    var rounded_amount;
-    //console.log('game.roundNumChips called with', amount, round_by);
+  function roundBy(amount, round_by, round_type) {
+    var rounded_amount
+      , roundFunction = (round_type === 'floor') ? Math.floor :
+                        ((round_type === 'ceiling') ? Math.ceiling : Math.round);
+    //console.log('game.roundBy called with', amount, round_by);
     if (round_by > 1) {
       //divide by round_by, round, multiply
       rounded_amount = amount / round_by;
-      rounded_amount = Math.round(rounded_amount);
+      rounded_amount = roundFunction(rounded_amount);
       rounded_amount = rounded_amount * round_by;
     }
     else {
       //multiply by Math.round(1 / round_by), round, divide
       var round_by_inverse = Math.round(1 / round_by);
-      //console.log('min_increment_inverse:', min_increment_inverse);
+      //console.log('round_by_inverse:', round_by_inverse);
       rounded_amount = amount * round_by_inverse;
       //console.log('after multiplying:', rounded_amount);
-      rounded_amount = Math.round(rounded_amount);
+      rounded_amount = roundFunction(rounded_amount);
       //console.log('after rounding:', rounded_amount);
       rounded_amount = rounded_amount / round_by_inverse;
       //console.log('after dividing:', rounded_amount);
@@ -106,14 +108,14 @@
   }
 
   // rounds chip numbers to the nearest MIN_INCREMENT value
-  NoLimitGameSchema.methods.roundNumChips = function(amount) {
-    var rounded_amount = roundBy(amount, this.MIN_INCREMENT);
+  NoLimitGameSchema.methods.roundNumChips = function(amount, round_type) {
+    var rounded_amount = roundBy(amount, this.MIN_INCREMENT, round_type);
     //console.log('rounded', amount, 'to', rounded_amount);
     return rounded_amount;
   };
 
-  NoLimitGameSchema.methods.roundNumCurrency = function(amount) {
-    var rounded_amount = roundBy(amount, this.CURRENCY_PER_CHIP);
+  NoLimitGameSchema.methods.roundNumCurrency = function(amount, round_type) {
+    var rounded_amount = roundBy(amount, this.CURRENCY_PER_CHIP, round_type);
     //console.log('rounded', amount, 'to', rounded_amount);
     return rounded_amount;
   };

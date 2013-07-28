@@ -465,7 +465,7 @@ module.exports = (function () {
       }
       else {
         var currency_per_chip = game.CURRENCY_PER_CHIP
-          , balance_in_chips = game.roundNumChips(balance / currency_per_chip)
+          , balance_in_chips = game.roundNumChips(balance / currency_per_chip, 'floor')
           , stack = self.chips
           , num_to_min = game.MIN_CHIPS - stack
           , num_to_max = game.MAX_CHIPS - stack
