@@ -51,7 +51,7 @@ body {
        display:none;
 }
 #betSizeDiv input[type = 'text']{
-   background: #FFFFFF;
+   background: transparent;
     border:0;
     color : #747862;
     margin-right:0px;

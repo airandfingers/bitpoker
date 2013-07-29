@@ -13,11 +13,11 @@
             <form action="/account" method="post">
                 email address: 
                     <% if (email === undefined) { %>
-                    <input field="text" name="email" placeholder="enter e-mail address" />
-                    <button class="btn btn-inverse"> submit </button>
+                        <input field="text" name="email" placeholder="jklsemicolon@asdf.com" />
+                        <button class="btn btn-inverse"> submit </button>
                     <% } else { %>
-                         <%= email %>
-                       <% } %>
+                        <%= email %>
+                   <% } %>
            </form>
         </div>
         <div>
@@ -28,10 +28,9 @@
         </div>
         <div id="funbucks">
             fun bucks: <%= funbucks %>
-            <!-- <form action ="/update_funbucks" method="post">
-            <input type="number" name="funbucks_update" placeholder="100" />
-            <button class="btn btn-inverse"> God mode my funbucks </button>
-            </form> -->
+            <form action ="/increase_funbucks_by_100" method="post">
+                <button class="btn btn-inverse"> Give me 100 funbucks! </button>
+            </form>
         </div>
         
         <!--bitcoins-->

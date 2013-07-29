@@ -427,17 +427,17 @@ module.exports = (function () {
   });
 
   // update funbucks
-  app.post('/update_funbucks', function (req, res) {
-    var funbucks_update = req.body.funbucks_update;
-    console.log("calling funbucks update route");
-    User.update({_id: req.user._id}, { $set: { funbucks: funbucks_update } }, function(err) {
+  app.post('/increase_funbucks_by_100', function (req, res) {
+    var funbucks_to_add = 100;
+    console.log('calling funbucks update route');
+    User.update({_id: req.user._id}, { $inc: { funbucks: funbucks_to_add } }, function(err) {
       if (err) {
-        console.error('error when updating funbucks to database.'); 
+        console.error('Error when changing user\'s funbucks balance:', err); 
       }
       else {
-      console.log("Updated " + req.user.username + "'s account to " + funbucks_update + "funbucks.");
+        console.log('Added ' + funbucks_to_add + ' to '+ req.user.username + '\'s account.');
       }
-    } );
+    });
     res.redirect('back');
   });
 
