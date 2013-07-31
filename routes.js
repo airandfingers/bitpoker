@@ -19,7 +19,7 @@ module.exports = (function () {
   
   //These app.get functions will display their respective ejs page.
   app.get('/account', auth.ensureAuthenticated, function(req, res) {
-    console.log("req.user is " + req.user);
+    console.log('req.user is ' + req.user);
     res.render('account', {
       title: 'Account',
       username: req.user.username,
@@ -60,20 +60,20 @@ module.exports = (function () {
       //increase the amount of users bitcoin account.
           User.findOne({username: username}, function (err, user) {
             if (err) {
-              console.log("Error when looking up old bitcoin balance.");
+              console.log('Error when looking up old bitcoin balance.');
             }
             else {
               console.log('Old bitcoin satoshi looked up is ' + user.satoshi + ' satoshi.');
               var old_balance = user.satoshi
                 , new_bitcoin_balance = old_balance + bitcoin_update;
               console.log('New bitcoin balance will be ' + new_bitcoin_balance);
-              console.log("calling bitcoin deposit update route");
+              console.log('calling bitcoin deposit update route');
               User.update({username: username}, { $set: { satoshi: new_bitcoin_balance } }, function(err) {
                 if (err) {
                   console.error('error when updating bitcoin balance to database.'); 
                 }
                 else {
-                console.log("Deposited " + bitcoin_update + " into " + username + "'s account.\nNew balance is "+ new_bitcoin_balance + " satoshis.");
+                console.log('Deposited ' + bitcoin_update + ' into ' + username + '\'s account.\nNew balance is '+ new_bitcoin_balance + ' satoshi.');
                 }
               } );          
             }
@@ -102,7 +102,7 @@ module.exports = (function () {
     });
   });
 
-  //home, index and "/" link to the same page
+  //home, index and '/' link to the same page
   var renderHome = function(req, res) {
     res.render('index', {
       user: req.user
@@ -145,7 +145,7 @@ module.exports = (function () {
       });
     }
     else {
-      //Redirect to "next" URL.
+      //Redirect to 'next' URL.
       res.redirect(next_page);
     }
   });
@@ -173,7 +173,7 @@ module.exports = (function () {
       recovery_code: recovery_code,
       username: username,
     });
-    console.log("Password reset page loaded with username " + username + ", recovery code " + recovery_code + ", and e-mail " + email + ".");
+    console.log('Password reset page loaded with username ' + username + ', recovery code ' + recovery_code + ', and e-mail ' + email + '.');
   });
 
   app.get('/promo', function (req, res) {
@@ -188,7 +188,7 @@ module.exports = (function () {
     });
   });
 
-  //home, index and "/" link to the same page
+  //home, index and '/' link to the same page
   var renderRegister = function(req, res) {
     var next_page = req.query.next || base_page;
     if (! auth.isAuthenticated(req)) {
@@ -201,8 +201,8 @@ module.exports = (function () {
       });
     }
     else {
-      if (req.user.username.substring(0, 5) === 'guest') {
-        //Show the "conversion" form.
+      if (User.isGuest(req.user.username)) {
+        //Show the 'conversion' form.
         res.render('register', {
           message: req.flash('error'),
           next: req.query.next,
@@ -211,7 +211,7 @@ module.exports = (function () {
         });
       }
       else {
-        //Redirect to "next" URL.
+        //Redirect to 'next' URL.
         res.redirect(next_page);
       }
     }
@@ -238,7 +238,7 @@ module.exports = (function () {
       funbucks: req.user.funbucks,
       email_confirmed: req.user.email_confirmed,
     });
-    console.log("HEY! We got to the verify e-mail route. good job son. req.query.email is ", req.query.email, " and req.query.confirmation code is ", req.query.confirmation_code);
+    console.log('HEY! We got to the verify e-mail route. good job son. req.query.email is ', req.query.email, ' and req.query.confirmation code is ', req.query.confirmation_code);
     //check user database for users with matching email and confirmation code, then update email_confirmed property to true.
     User.findOneAndUpdate( {email: email, confirmation_code: confirmation_code}, {email_confirmed: true}, function(err) {
       if (err) {
@@ -248,11 +248,10 @@ module.exports = (function () {
   });
 
   // validate e-mail address & save to MongoDB & send an e-mail confirmation.
-  app.post('/account', function (req, res) {
+  app.post('/set_email', function (req, res) {
     var email = req.body.email
       , valid = true; //this is a stub to hold the place for a email validator functionality. 
-      console.log("POST /account called " + req.body.email +"req.user is ", req.user);
-      console.log("req is ", req);
+      console.log('POST /set_email called ' + req.body.email +'req.user is ', req.user);
     //if email is valid, save it to MondoDB
     if (valid) {
       //attach e-mail to user
@@ -271,7 +270,7 @@ module.exports = (function () {
               console.error('Failed to update any users with', req.user._id);
             }
             else {
-              console.log("Email saved to" + req.user.username + "'s account.");
+              console.log('Email saved to ' + req.user.username + '\'s account.');
               mailer.sendConfirmationEmail(email, confirmation_code, req.user.username);
             }
           });
@@ -285,13 +284,15 @@ module.exports = (function () {
   app.post('/delete_account', function (req, res) {
     console.log('delete_account route fired.');
     User.remove({ _id: req.user.id }, function(err) {
-        if (!err) {
-                console.log('Account deleted!');
-                req.flash('error', 'Account deleted. Play again soon!');
-                res.redirect('/index');
+        if (_.isEmpty(err)) {
+          console.log('Account deleted!');
+          req.flash('error', 'Account deleted. Play again soon!');
+          res.redirect('/index');
         }
         else {
-                console.error('Error when attempting to delete account');
+          console.error('Error when attempting to delete account:', err);
+          req.flash('error', 'Error when attempting to delete account:' + err);
+          res.redirect()
         }
     });
   });
@@ -327,7 +328,7 @@ module.exports = (function () {
   //submit password recovery to user's e-mail address route.
   app.post('/password_recovery', function (req, res) {
     var username = req.body.username;
-    console.log("Post /password recovery route called for username: " + username);
+    console.log('Post /password recovery route called for username: ' + username);
     User.findOne({ username: username }, function(err, user) {
       console.log('findOne returns', user);
       if (err) {
@@ -371,13 +372,12 @@ module.exports = (function () {
 
   //resets password to whatever the user inputs.
   app.post ('/password_reset', function (req, res) {
-    console.log("req is" + req);
     var email = req.body.email
       , recovery_code = req.body.recovery_code
       , username = req.body.username
       , password = req.body.password
       , password_confirm = req.body.password_confirm;
-    console.log("calling password reset route. password is", password, "password_confirm is", password_confirm);
+    console.log('calling password reset route. password is', password, 'password_confirm is', password_confirm);
         if (password === password_confirm) {
           User.findOne( {username: username, recovery_code: recovery_code}, function(err, user) {
             if (err) {
@@ -414,13 +414,13 @@ module.exports = (function () {
   });
   //remove email from account association
   app.post('/remove_email', function (req, res) {
-    console.log("calling remove email route");
-    User.update({_id: req.user._id}, { $set: { email: "", email_confirmed: false } }, function(err) {
+    console.log('calling remove email route');
+    User.update({_id: req.user._id}, { $set: { email: '', email_confirmed: false } }, function(err) {
       if (err) {
         console.error('error when removing email from database.'); 
       }
       else {
-      console.log("Removed email from " + req.user.username +"'s account.");
+      console.log('Removed email from ' + req.user.username +'\'s account.');
       }
     } );    
     res.redirect('back');
@@ -447,7 +447,7 @@ module.exports = (function () {
                                    failureFlash: true }),
            function (req, res) {
     // Authentication successful. Redirect.
-    //console.log("POST /login called!");
+    //console.log('POST /login called!');
     res.redirect(req.body.next || base_page);
   });
 
@@ -510,7 +510,7 @@ module.exports = (function () {
       , password_confirm = req.body.new_password_confirm
       , target = req.body.next || base_page;
 
-    if (username.substring(0, 5) === 'guest') {
+    if (User.isGuest(username)) {
       req.flash('error', 'You cannot create a username called guest');
       res.redirect('/register?next=' + target);
       return;
@@ -524,7 +524,7 @@ module.exports = (function () {
     }
 
     if (auth.isAuthenticated(req)) {
-      if (req.user.username.substring(0, 5) === 'guest') {
+      if (User.isGuest(req.user.username)) {
         console.log('augmenting', req.user.username, 'with spec:',
                     { username: username, pt_password: pt_password });
         req.user.convertFromGuest(username, pt_password, function(err, user) {
@@ -572,7 +572,7 @@ module.exports = (function () {
   });
 
   app.get('/logout', function (req, res) {
-    //console.log("GET /logout called!");
+    //console.log('GET /logout called!');
     //End this user's session.
     req.logout();
     res.redirect(base_page);
@@ -580,14 +580,13 @@ module.exports = (function () {
 
   app.get('/lobby', function(req, res) {
     var users = Room.getRoom('lobby').getUsernames()
-      , room_state = { users: users }
-      // cache table_games in external variable; table games are static (for now)
-      , table_games = Table.getTableGames();
+      , table_games = Table.getTableGames()
+      , room_state = { users: users };
     //console.log('Got table_games:', table_games);
-    console.log('Table.getTableGames returns', table_games.length);
     res.render('lobby', {
-      room_state: JSON.stringify(room_state)
-    , table_games: table_games
+      table_games: table_games
+    , room_state: JSON.stringify(room_state)
+    , hide_navbar: true
     });
   });
 

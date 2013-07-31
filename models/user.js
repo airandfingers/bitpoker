@@ -3,7 +3,7 @@ module.exports = (function() {
     , Schema = mongoose.Schema // Mongoose Schema constructor
     , ObjectId = Schema.ObjectId // Mongoose ObjectId type
 
-      , crypto = require('crypto') // encryption utility library
+    , crypto = require('crypto') // encryption utility library
     , async = require('async') // flow control utility library
     , request = require('request') // HTTP/HTTPS request library
     , _ = require('underscore') // list utility library
@@ -38,18 +38,19 @@ module.exports = (function() {
     console.log('createUser called for', spec);
     var pt_password = spec.pt_password
       , shasum = crypto.createHash('sha1');
-    if (spec.username.substring(0, 5) !== 'guest') { 
-      
-      if (_.isString(pt_password)) {
-        shasum.update(pt_password);
-        shasum = shasum.digest('hex');
-        spec.password = shasum;
-        delete spec.pt_password;
-      }
-      else {
-        console.error('User.createUser called on user without pt_password!');
-        cb(null);
-      }
+    if (User.isGuest(spec.username)) {
+      console.error('createUser called with guest username!', spec);
+      return cb(null);
+    }
+    if (_.isString(pt_password)) {
+      shasum.update(pt_password);
+      shasum = shasum.digest('hex');
+      spec.password = shasum;
+      delete spec.pt_password;
+    }
+    else {
+      console.error('User.createUser called on user without pt_password!');
+      return cb(null);
     }
     console.log('creating user with', spec);
     var user = new User(spec);
@@ -106,6 +107,10 @@ module.exports = (function() {
     });
   };
 
+  UserSchema.statics.isGuest = function(username) {
+    return username.substring(0, 5) === 'guest';
+  };
+
   // instance methods - document.method()
   // example method
   UserSchema.methods.sayName = function() {
@@ -119,7 +124,7 @@ module.exports = (function() {
       , spec = { username: username };
     console.log('convertFromGuest called for', self.username);
     
-    if (self.username.substring(0, 5) !== 'guest') {
+    if (! User.isGuest(self.username)) {
       error = 'User.convertFromGuest called for non-guest user ' + self.username;
       console.error(error);
       return cb(error);
@@ -151,7 +156,7 @@ module.exports = (function() {
         return cb(error);
       }
       self.generateDepositAddress(function(generate_err) {
-        cb(generate_err, self);
+        self.save(cb);
       });
     });
   };
@@ -202,7 +207,7 @@ module.exports = (function() {
         else {
           var body = JSON.parse(response.body);
           user.deposit_address = body.input_address;
-          console.log('user.deposit_address is ' + user.deposit_address);
+          console.log('augmented user with deposit_address:' + user.deposit_address);
         }
         cb(error);
       });

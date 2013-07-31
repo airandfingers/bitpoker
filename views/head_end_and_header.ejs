@@ -10,16 +10,16 @@
                 <ul>
                     <%
                     var pages = [
-                        { name: 'home', href: '/' },                  
-                        { name: 'lobby', href: '/lobby' },
+                        { name: 'home', href: '/' },
                         { name: 'bitcoins', href: '/bitcoin_info' },
                         { name: 'report bugs', href: '/bug_report' },
                         { name: 'Leaders', href: '/leaderboard'}
                         /*
+                        { name: 'lobby', href: '/lobby' },
                         { name: 'about', href: '/site_info' },
                         { name: 'legal', href: '/legal_info' },
                         { name: 'promotions', href: '/promo' }
-                        */                    
+                        */
                     ],
                         i,
                         j,
@@ -57,45 +57,49 @@
                             <% } %>
                         </li>
                     <% } %>
-                        <!-- REGISTER dropdown Link -->
-                        <li class="right">
-                          <% if (locals.username) { %>
-                            <a href="/logout">LOGOUT</a>
-                          <% } else { %>
-                            <a href="#" id="register_trigger">REGISTER</a>
-                          <% } %>
-                        </li>
-                        <% if (! locals.username) { %>                    
-                        <div id="register" class="dropdown_form">
-                          <form action="/register" method="post">
-                              <div class="username">
-                                  <label>Username:</label>
-                                  <input type="text" name="username" placeholder="username" autofocus /><br/>
-                              </div>
-                              <div class="password">
-                                  <label>Password:</label>
-                                  <input type="password" name="new_password" placeholder="password" />
-                              </div>
-                              <div class="password">
-                                  <label>Confirm Password:</label>
-                                  <input type="password" name="new_password_confirm" placeholder="re-type password" />
-                              </div>
-                                  <input type="submit" value="Register" class="btn btn-inverse"/>
-                          </form>
-                        </div>
+                    <!-- SIGN UP dropdown Link -->
+                    <li class="right">
+                        <% if (locals.username) { %>
+                          <a href="/logout">LOGOUT</a>
                         <% } %>
+                    </li>
+                    <% 
+                    if (typeof locals.username !== 'string' ||
+                        locals.username.substring(0, 5) === 'guest') {
+                    %>
+                    <li class="right">
+                      <a href="#" id="register_trigger">SIGN UP</a>
+                    </li>
+                    <div id="register" class="dropdown_form">
+                        <form action="/register" method="post">
+                            <div class="username">
+                                <label>Username:</label>
+                                <input type="text" name="username" placeholder="username" autofocus /><br/>
+                            </div>
+                            <div class="password">
+                                <label>Password:</label>
+                                <input type="password" name="new_password" placeholder="password" />
+                            </div>
+                            <div class="password">
+                                <label>Confirm Password:</label>
+                                <input type="password" name="new_password_confirm" placeholder="re-type password" />
+                            </div>
+                            <input type="submit" value="Sign Up" class="btn btn-inverse"/>
+                        </form>
+                    </div>
+                    <% } %>
 
-                        <!--Login or Logout Link-->
-                        <li class="right">
-                            <% if (locals.username) { %>
-                              <a href="/account" title="My Account">
-                                  <%= locals.username.toUpperCase() %>
-                              </a>
-                            <% } else { %>
-                              <a href="#" id="login_trigger">LOGIN</a>
-                            <% } %>
-                        </li>
-                        <% if (! locals.username) { %>
+                    <!--Login or Logout Link-->
+                    <li class="right">
+                        <% if (locals.username) { %>
+                          <a href="/account" title="My Account">
+                              <%= locals.username.toUpperCase() %>
+                          </a>
+                        <% } else { %>
+                          <a href="#" id="login_trigger">LOGIN</a>
+                        <% } %>
+                    </li>
+                    <% if (! locals.username) { %>
                         <div id="login" class="dropdown_form">
                           <form action="/login" method="post">
                             <div class="username">
@@ -114,8 +118,8 @@
                           <form action="/guest_login" method="post">
                             <button class="btn btn-inverse">Play as Guest</button>
                           </form>
-                        </div>                          
-                            <% } %>
+                        </div>
+                    <% } %>
                 </ul>
             </nav>
           <% } %>
