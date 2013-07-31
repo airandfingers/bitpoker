@@ -1,30 +1,32 @@
 <% var title = 'Bitcoin Poker- Account Information'; %>
 <% include head %>
     <div id="container">
+      <% if (message) { %>
+        <p class="inverse"><%= message %></p>
+      <% } %>
       <div id="account_info" class="inverse">  
         <h1> Account Information</h1>
         <div>
-        username: <%= username %>
+            username: <%= username %>
         </div>
         <div>
-        registration date: <%= registration_date %>
+            registration date: <%= registration_date %>
         </div>
         <div>
-            <form action="/set_email" method="post">
-                email address: 
-                    <% if (email === undefined) { %>
-                        <input field="text" name="email" placeholder="jklsemicolon@asdf.com" />
-                        <button class="btn btn-inverse"> submit </button>
-                    <% } else { %>
-                        <%= email %>
-                   <% } %>
-           </form>
-        </div>
-        <div>
-            email confirmed: <%= email_confirmed %>
-            <form action="/remove_email" method="post">
-                <button class="btn btn-inverse"> Remove E-mail </button>
-            </form>
+            <% if (email === undefined) { %>
+                <form action="/set_email" method="post">
+                    email address:
+                    <input field="text" name="email" placeholder="jklsemicolon@asdf.com" />
+                    <button class="btn btn-inverse"> Submit </button>
+                </form>
+            <% } else { %>
+                email address: <%= email %>
+                <br />
+                email confirmed: <%= email_confirmed %>
+                <form action="/remove_email" method="post">
+                    <button class="btn btn-inverse"> Remove E-mail </button>
+                </form>
+            <% } %>
         </div>
         <div id="funbucks">
             fun bucks: <%= funbucks %>
@@ -41,8 +43,8 @@
             <p>Satoshi are each .00000001 Bitcoin, often abbreviated "sat".</p>
             Satoshi: <%= satoshi %>
             <br />
-            <a href="/deposit_bitcoins"> <button class="btn btn-inverse">deposit bitcoins</button></a>
-            <a href="/withdraw_bitcoins"><button class="btn btn-inverse">withdraw bitcoins</button></a>
+            <a href="/deposit_bitcoins"> <button class="btn btn-inverse">Deposit Bitcoins</button></a>
+            <a href="/withdraw_bitcoins"><button class="btn btn-inverse">Withdraw Bitcoins</button></a>
         </div>
 
         <!--delete account -->

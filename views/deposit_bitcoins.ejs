@@ -1,14 +1,14 @@
 <% var title = 'Bitcoin Poker- Deposit Page'; %>
 <% include head %>
     <div id="container" class="inverse">
-    	<h1> Deposit Bitcoins </h1>
-    	<p>
-	      <%if (username.substring(0, 5) !== 'guest') { %>
-	      	To deposit into your account, send Bitcoins to <%= deposit_address %>
-	      <% } else { %>
-	      	Sorry, but guest accounts can't deposit Bitcoins; please <a href="/guest_convert">register a full account</a>.
-	      <% } %>
-	    </p>
+        <h1> Deposit Bitcoins </h1>
+        <p>
+          <%if (username.substring(0, 5) !== 'guest') { %>
+            To deposit into your account, send Bitcoins to <%= deposit_address %>
+          <% } else { %>
+            Sorry, but guest accounts can't deposit Bitcoins; please <a href="/guest_convert">register a full account</a>.
+          <% } %>
+        </p>
     </div>
     <% include plugins %>
 <% include foot %>

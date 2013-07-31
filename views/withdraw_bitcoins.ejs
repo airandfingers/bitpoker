@@ -1,18 +1,18 @@
 <% var title = 'Bitcoin Poker- Withdrawal Page'; %>
 <% include head %>
-    <div>
-      <h1> Withdraw Bitcoins </h1>
-        <form action ="/withdraw_bitcoins" method="post">
-        <h5>Account Balance</h5>
-        bitcoins: <%= bitcoins %>
-        <br />        
-        Account to transfer to
-        <input type="text" name="withdraw_address" placeholder="06424c7e-c701-479e-93ea-0b3ede7e69c6" />
-        </br>
-        Amount to Withdraw
-        <input type="text" name="amount" placeholder="0" />
-        <br />
-        <button class="btn btn-danger">Give me my money!</button>    
+    <div id="container" class="inverse">
+        <h1> Withdraw Bitcoins </h1>
+        <form action ="/withdraw_bitcoins" method="post" class="form-inline">
+            Account balance (in BTC): <%= bitcoins %>
+            <br />        
+            <label for="withdraw_address">Address to transfer to: </label>
+            <input type="text" id="withdraw_address" name="withdraw_address" placeholder="1HmwtpPsAfAj9ynKh6ACaDmeztMLy2cBmT" />
+            <br />
+            <label for="amount">Amount to withdraw: </label>
+            <input type="text" id="amount" name="amount" placeholder="0" />
+            <br />
+            <button class="btn btn-danger">Give me my BTC!</button>
+        </form>
     </div>
     <% include plugins %>
 <% include foot %>

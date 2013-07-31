@@ -226,24 +226,22 @@ module.exports = (function () {
     });
   });
 
-  //this route handles the verify e-mail circumstance.
+  //this route handles e-mail verification links.
   app.get('/verify_email', function (req, res) {
     var email = req.query.email
       , confirmation_code = req.query.confirmation_code;
 
-    res.render('verify_email', {    
-      username: req.user.username,
-      registration_date: req.user.registration_date,
-      email: req.user.email,
-      funbucks: req.user.funbucks,
-      email_confirmed: req.user.email_confirmed,
-    });
-    console.log('HEY! We got to the verify e-mail route. good job son. req.query.email is ', req.query.email, ' and req.query.confirmation code is ', req.query.confirmation_code);
     //check user database for users with matching email and confirmation code, then update email_confirmed property to true.
-    User.findOneAndUpdate( {email: email, confirmation_code: confirmation_code}, {email_confirmed: true}, function(err) {
+    User.findOneAndUpdate( {email: email, confirmation_code: confirmation_code},
+                           {email_confirmed: true}, function(err, user) {
+      console.log('findOneAndUpdate returns', err, user);
       if (err) {
         console.error('Error during findOneAndUpdate:', err);
       }
+      else if (_.isEmpty(user)) {
+        req.flash('error', 'Sorry, there was something wrong with your email confirmation link.');
+      }
+      res.redirect('/account');
     });
   });
 
@@ -402,7 +400,7 @@ module.exports = (function () {
                     console.log('password reset successful' + ' !');
                     req.flash('error', 'Password reset is successful. Cheers, mate.');
                     res.redirect('/login');
-                  }              
+                  }
                 });
             }
           }); 
@@ -415,14 +413,14 @@ module.exports = (function () {
   //remove email from account association
   app.post('/remove_email', function (req, res) {
     console.log('calling remove email route');
-    User.update({_id: req.user._id}, { $set: { email: '', email_confirmed: false } }, function(err) {
+    User.update({_id: req.user._id}, { $unset: { email: undefined }, $set: { email_confirmed: false } }, function(err) {
       if (err) {
         console.error('error when removing email from database.'); 
       }
       else {
       console.log('Removed email from ' + req.user.username +'\'s account.');
       }
-    } );    
+    });
     res.redirect('back');
   });
 
