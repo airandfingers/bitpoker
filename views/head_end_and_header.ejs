@@ -93,7 +93,8 @@
                     <li class="right">
                         <% if (locals.username) { %>
                           <a href="/account" title="My Account">
-                              <%= locals.username.toUpperCase() %>
+                              <i class="icon-cog icon-white"></i>
+                              <%= locals.username.toUpperCase() %> 
                           </a>
                         <% } else { %>
                           <a href="#" id="login_trigger">LOGIN</a>

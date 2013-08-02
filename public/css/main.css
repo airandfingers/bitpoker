@@ -124,6 +124,10 @@ h2 {
     position: relative;
 }
 
+#bitcoin_info > h2 {
+    color: #111111 !important;
+}
+
 #button_groups {
     margin: 2em;
 }
