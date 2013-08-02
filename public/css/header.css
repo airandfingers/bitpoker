@@ -7,6 +7,7 @@
 header {
     font-family: DESTROY, sans-serif;
     position: fixed;
+    z-index: 1;
 }
 
 
@@ -24,7 +25,6 @@ header {
     padding: 0;
     margin: 0;
     height: 1.625em; /*26px/16px*/
-    z-index: 1;
 }
 
 .navbar ul {
@@ -88,7 +88,6 @@ h3 {
     font-size: .8em;
     padding: 1em;
     text-align: center;
-    z-index: 1;
 }
 
 #login form {

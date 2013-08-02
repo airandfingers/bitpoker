@@ -112,6 +112,7 @@ html {
 
 h1 {
     font-size: 1.5em; /* 24px/16 */
+    padding-top: 1em;
 }
 
 h2 {
@@ -132,16 +133,17 @@ h2 {
     font-size: 1.2em;
     height: 100%;
     width: 100%;
-    padding-top: 1em;
+
 }
 
 #container {
-    width: 100%;
     clear: both;
     background-color: rgba(0,0,0,.8);
     margin-top: 1.625em;
-    margin-bottom: -1.625em;
     min-height: 100%;
+    height: 100%;
+    width: 100%;
+
 }
 
 #container.lobby {
@@ -151,15 +153,6 @@ h2 {
 #container h1, #container h2 {
     color: #DDDDDD;
     font-family: DESTROY, "Helvetica Neue", Helvetica, sans-serif;
-}
-
-#container_index h1, #container_index h2 {
-    margin-top: 1em;
-    font-family: DESTROY, "Helvetica Neue", Helvetica, sans-serif;
-}
-
-#container_index button, #container_index form {
-    display: inline;
 }
 
 #chat_form {
