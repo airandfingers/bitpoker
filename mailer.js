@@ -12,7 +12,7 @@ module.exports = (function () {
 
   var mail_options = {
     from: 'Crypto Poker <cryptopoker@gmail.com>', //sender address
-    to: 'robertnakano@gmail.com', //list of receivers
+    to: 'bitcoinpoker@gmail.com', //list of receivers
     subject: 'E-mail Confirmation', // subject line
     text: 'This should only be sent when the mail route is called.',
   };
@@ -66,8 +66,28 @@ module.exports = (function () {
     });
   };
 
+  var sendBugReport = function(email_address, message) {
+    var bug_report_email = {
+        from: email_address || 'Crypto Poker <cryptopoker@gmail.com>'
+      , to: 'Crypto Poker <cryptopoker@gmail.com>, x+4986429595084@mail.asana.com'
+      , subject: 'Bug Report Feedback'
+      , text: message
+      , html: message
+    };
+    smtp_transport.sendMail(bug_report_email, function(error, response){
+      if(error){
+        console.log(error);
+      }
+      else{
+        console.log('Feedback sent from ', email_address , ' with message ', message);
+      }
+      smtp_transport.close();
+    });
+  };
+
   return {
     sendConfirmationEmail: sendConfirmationEmail,
-    sendPasswordRecovery: sendPasswordRecovery
+    sendPasswordRecovery: sendPasswordRecovery,
+    sendBugReport: sendBugReport
   };
 })();

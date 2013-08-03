@@ -410,6 +410,18 @@ module.exports = (function () {
           res.redirect('back');
         }
   });
+
+  //bug_report/feedback form route
+  app.post('/report_bug', function (req, res) {
+    var email = req.body.email
+    , message = req.body.message;
+    console.log('report bug route called');
+    mailer.sendBugReport(email, message);
+    req.flash('error', 'Bug Report submitted... I think.');
+    res.redirect('back');
+  });
+
+
   //remove email from account association
   app.post('/remove_email', function (req, res) {
     console.log('calling remove email route');

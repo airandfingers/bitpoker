@@ -3,8 +3,17 @@
     <h1>Report Bugs</h1>
     <p>
         To report a bug, please send an email to
-        <a href="mailto:cryptopoker@gmail.com"> cryptopoker@gmail.com</a>
+        <a href="mailto:cryptopoker@gmail.com"> cryptopoker@gmail.com</a> or use the form below.
     </p>
+    <div id="report_bug" class="dropdown_form">
+	    <form action="report_bug" method="post">
+	    <input type="text" name="email" placeholder="E-mail" autofocus />
+	    <br/>
+	    <textarea name="message" rows="10" placeholder="Report bugs and give feedback here." id="report_bug_textarea"></textarea>
+	    <br/>
+	    <input type="submit" value="submit" class="btn btn-inverse"/>
+	    </form>
+    </div>
   </div>
     <% include plugins %>
 <% include foot %>
