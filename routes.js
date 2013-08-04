@@ -105,6 +105,7 @@ module.exports = (function () {
   //home, index and '/' link to the same page
   var renderHome = function(req, res) {
     res.render('index', {
+      message: req.flash('error'),
       user: req.user
     });
   };
@@ -179,12 +180,6 @@ module.exports = (function () {
   app.get('/promo', function (req, res) {
     res.render('promo', {
       title: 'promo',
-    });
-  });
-
-  app.get('/bug_report', function (req, res) {
-    res.render('bug_report', {
-      title: 'Report Bugs',
     });
   });
 
@@ -388,7 +383,7 @@ module.exports = (function () {
               res.redirect('back');
             }
             else {
-                user.password = password;
+                user.password = User.encryptPassword(password);
                 user.recovery_code = null;
                 user.save(function(err, result) {
                   if (err) {
@@ -413,12 +408,17 @@ module.exports = (function () {
 
   //bug_report/feedback form route
   app.post('/report_bug', function (req, res) {
-    var email = req.body.email
+    var username = req.user && req.user.username || undefined
     , message = req.body.message;
     console.log('report bug route called');
-    mailer.sendBugReport(email, message);
-    req.flash('error', 'Bug Report submitted... I think.');
-    res.redirect('back');
+    mailer.sendBugReport(username, message, function(error) {
+      if (error) {
+        res.json({ success: false, error: error });
+      }
+      else {
+        res.json({ success: true });
+      }
+    });
   });
 
 

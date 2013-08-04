@@ -36,16 +36,13 @@ module.exports = (function() {
   // static methods - Model.method()
   UserSchema.statics.createUser = function(spec, cb) {
     console.log('createUser called for', spec);
-    var pt_password = spec.pt_password
-      , shasum = crypto.createHash('sha1');
+    var pt_password = spec.pt_password;
     if (User.isGuest(spec.username)) {
       console.error('createUser called with guest username!', spec);
       return cb(null);
     }
     if (_.isString(pt_password)) {
-      shasum.update(pt_password);
-      shasum = shasum.digest('hex');
-      spec.password = shasum;
+      spec.password = User.encryptPassword(pt_password);
       delete spec.pt_password;
     }
     else {
@@ -72,14 +69,11 @@ module.exports = (function() {
   };
 
   UserSchema.statics.authenticate = function(username, password, cb) {
-    var model = this
-      , shasum = crypto.createHash('sha1');
-    shasum.update(password);
-    shasum = shasum.digest('hex');
+    var model = this;
     // look for a matching username/password combination
     model.findOne({
       username: username,
-      password: shasum
+      password: User.encryptPassword(password)
     }, cb);
   };
 
@@ -120,7 +114,6 @@ module.exports = (function() {
   UserSchema.methods.convertFromGuest = function(username, pt_password, cb) {
     var self = this
       , error = null
-      , shasum = crypto.createHash('sha1')
       , spec = { username: username };
     console.log('convertFromGuest called for', self.username);
     
@@ -142,10 +135,8 @@ module.exports = (function() {
       return cb(error);
     }
 
-    // encrypt pt_password and save it as pt_password
-    shasum.update(pt_password);
-    shasum = shasum.digest('hex');
-    spec.password = shasum;
+    // encrypt pt_password and save it as password
+    spec.password = User.encryptPassword(pt_password);
     
     console.log('updating user with', spec);
     self.update(spec, function(err, result) {
@@ -224,6 +215,19 @@ module.exports = (function() {
         console.log('users are', users);
         cb(err, users);
       });   
+  };
+
+  UserSchema.statics.encryptPassword = function(pt_password) {
+    var shasum = crypto.createHash('sha1');
+    if (_.isString(pt_password)) {
+      shasum.update(pt_password);
+      shasum = shasum.digest('hex');
+    }
+    else {
+      console.log('User.encryptPassword called without pt_password!');
+      shasum = null;
+    }
+    return shasum;
   };
 
   /* the model - a fancy constructor compiled from the schema:

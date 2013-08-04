@@ -123,7 +123,62 @@
               });
           });
         </script>
-      <% } %> 
+
+        <!-- Hide/Show Bugs/Feedback functionality -->
+        <script>
+          var $report_bug = $('#report_bug');
+          $(document).ready(function() {
+            $report_bug.hide();
+            $('#report_bug_trigger').click(function() {
+              $report_bug.stop(true, true);
+              if (! $(this).hasClass('active')) {
+                // add active class
+                $(this)
+                  .addClass('active');
+                // hide report_bug form
+                $report_bug
+                  .css({
+                    left: $(this).position().left - $(this).width() - 20
+                  , top: $(this).position().top + $(this).height()
+                  })
+                  .show('slide', { direction: 'up' }, 500)
+                  .find('input:first').focus();
+              }
+              else {
+                // remove active class
+                $(this)
+                  .removeClass('active');
+                // hide report_bug form
+                $report_bug
+                  .hide('slide', { direction: 'up' }, 500);
+              }
+            });
+            $report_bug.find('form').submit(function(e) {
+              // form has been submitted; $(this) is the form
+              e.preventDefault();
+              console.log('report_bug form submitted!');
+              // TODO: add spinner image (replaces submit button?)
+              var $message = $(this).find('textarea')
+                , message = $message.val();
+              $.post('/report_bug', {
+                message: message
+              }, function(response) {
+                console.log('response from server:', response);
+                // TODO: remove spinner image
+                if (response.success) {
+                  // TODO: show "received" message
+                  // clear message
+                  $message.val('');
+                }
+                else {
+                  // TODO: show error message
+                  // don't clear message
+                }
+              });
+            });
+          });
+        </script>
+      <% } %>
 
         <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
         <script>

@@ -2,6 +2,9 @@
 <% include head %>
     <div id="container">
         <h1>Welcome to Bitcoin Poker</h1>
+        <% if (message) { %>
+          <p><%= message %></p>
+        <% } %>
         <div id="button_groups"> 
             <% if (typeof user === 'undefined') { %>
                 <h1>Choose one:</h1>

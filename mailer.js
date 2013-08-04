@@ -32,9 +32,10 @@ module.exports = (function () {
                 '">here</a> to confirm your email address for bitpoker.'
     };
     smtp_transport.sendMail(confirmation_email, function(error, response){
-      if(error){
+      if (error) {
         console.log(error);
-      }else{
+      }
+      else {
         console.log('Message sent: ' + response.message);
       }
       // if you don't want to use this transport object anymore, uncomment following line
@@ -53,35 +54,37 @@ module.exports = (function () {
         , subject: 'Bitpoker Password Recovery' // subject line
         , text: greeting + '\nClick here to reset your password:\n' + recovery_url
         , html: '<b>' + greeting + '</b><br />' +
-                'Click <a href="' + recovery_url +
-                '">here</a> to confirm your email address for bitpoker.'
+                'Click the following link to confirm your email address for bitpoker:<br />' +
+                '<a href="' + recovery_url + '">' + recovery_url + '</a>'
     };
     smtp_transport.sendMail(password_recovery_email, function(error, response){
-      if(error){
+      if (error) {
         console.log(error);
-      }else{
+      }else {
         console.log('Recovery message sent: ' + response.message);
       }
       smtp_transport.close();
     });
   };
 
-  var sendBugReport = function(email_address, message) {
+  var sendBugReport = function(username, message, cb) {
     var bug_report_email = {
-        from: email_address || 'Crypto Poker <cryptopoker@gmail.com>'
-      , to: 'Crypto Poker <cryptopoker@gmail.com>, x+4986429595084@mail.asana.com'
-      , subject: 'Bug Report Feedback'
+        from: 'Crypto Poker <cryptopoker@gmail.com>'
+      , to: 'x+4986429595084@mail.asana.com'
+      , subject: 'Bug/Feedback by ' + username
       , text: message
       , html: message
     };
+    console.log('Sending bug report email:', bug_report_email);
     smtp_transport.sendMail(bug_report_email, function(error, response){
-      if(error){
-        console.log(error);
-      }
-      else{
-        console.log('Feedback sent from ', email_address , ' with message ', message);
-      }
       smtp_transport.close();
+      if (error) {
+        console.error('Error while sending bug report message:', error);
+      }
+      else {
+        console.log('Feedback sent from', username , 'with message', message);
+      }
+      cb(error);
     });
   };
 

@@ -12,7 +12,6 @@
                     var pages = [
                         { name: 'home', href: '/' },
                         { name: 'bitcoins', href: '/bitcoin_info' },
-                        { name: 'report bugs', href: '/bug_report' },
                         { name: 'Leaders', href: '/leaderboard'}
                         /*
                         { name: 'lobby', href: '/lobby' },
@@ -57,6 +56,12 @@
                             <% } %>
                         </li>
                     <% } %>
+                    <li>
+                        <a href="#" id="report_bug_trigger">
+                            BUGS/FEEDBACK
+                        </a>
+                    </li>
+                    <% include bug_report %>
                     <!-- SIGN UP dropdown Link -->
                     <li class="right">
                         <% if (locals.username) { %>

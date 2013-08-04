@@ -78,7 +78,7 @@ h3 {
 }
 */
 
-#login, #register {
+#login, #register, #report_bug {
     background-color: rgba(0,0,0,.9);
     color: #CCCCCC;
     width: 200px;
@@ -94,10 +94,23 @@ h3 {
     margin-bottom: 1em;
 }
 
-#login a:visited { color: #2f96b4; }
+#login a:visited {
+    color: #2f96b4;
+}
 
 #login input, #register input {
     width: 150px;
+}
+
+#report_bug form {
+    text-align: left;
+}
+
+#report_bug_textarea {
+    margin-top: .5em;
+    margin-bottom: .5em;
+    min-width: 200px;
+    width: 100%;
 }
 
 .footer {
@@ -124,5 +137,3 @@ h3 {
 .footer li {
     color: white;
 }
-
-

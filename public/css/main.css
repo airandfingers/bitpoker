@@ -207,25 +207,6 @@ h2 {
     margin: .5em;
 }
 
-#report_bug {
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 1em;
-    min-width: 250px;
-    width: 40%;
-}
-
-#report_bug form{
-    text-align: left;
-}
-
-#report_bug_textarea {
-    margin-top: .5em;
-    margin-bottom: .5em;
-    min-width: 200px;
-    width: 100%;
-}
-
 /*datatables table list */
 #table_list {
     position: relative;    
