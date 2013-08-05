@@ -1240,7 +1240,7 @@ var currencyDisplayColor = 'white'
             var chatBoxWidth = seatWidth*1.4
             var initialChatBoxHeight = seatHeight/2.3
 
-            var absoluteabsoluteChatDistanceFromSeatY = seatHeight/5
+            var absoluteChatDistanceFromSeatY = seatHeight/4
              var chatBoxBorderColor = '#FFFFFF'
              var chatBoxFontSize = 10
 
@@ -1646,7 +1646,7 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
              _.each(_.range(this.seats.length), function(i) {
 
         var chatX =  self.images.seats[i].seat.position.x +self.images.seats[i].seat.size.x/2 - chatBoxWidth/2  
-        var chatY = self.images.seats[i].seat.position.y - absoluteabsoluteChatDistanceFromSeatY
+        var chatY = self.images.seats[i].seat.position.y - absoluteChatDistanceFromSeatY
    self.images.seats[i].chat = new self.images.Item(chatX, chatY, chatBoxWidth, initialChatBoxHeight, self.gameState.containerImageIndexes.chat)
    
    self.images.seats[i].chat.image = new createjs.Shape()
@@ -1666,7 +1666,7 @@ var x = self.images.seats[i].seat.position.x + self.images.seats[i].seat.size.x/
 var y = self.images.seats[i].chat.position.y
     self.images.seats[i].chat.image.snapToPixel = true
 self.images.seats[i].chat.image.graphics.setStrokeStyle(1,'round').beginStroke(chatBoxBorderColor).beginFill('#000000')
-.drawRoundRect(x, y /*- (numLines-1)*(chatBoxFontSize+1)*/, width, self.images.seats[i].chat.size.y+(numLines-1)*(chatBoxFontSize+1),  self.images.seats[i].chat.size.y*.20)
+.drawRoundRect(x, y - (numLines-1)*(chatBoxFontSize+1), width, self.images.seats[i].chat.size.y+(numLines-1)*(chatBoxFontSize+1),  self.images.seats[i].chat.size.y*.20)
 
 self.images.seats[i].chat.image.alpha = self.imageData.chatBoxAlpha
 }//end drawchat function
@@ -4875,7 +4875,7 @@ else{ //if message was not trimmed
 if(needElipses == true){    //add elipses .... to end of text if text was shortened
 
 self.images.seats[chatInfo.seat].chat.text.text=self.images.seats[chatInfo.seat].chat.text.text.substring(0,self.images.seats[chatInfo.seat].chat.text.text.length-4)
-        self.images.seats[chatInfo.seat].chat.text.text = self.images.seats[chatInfo.seat].chat.text.text + '..'
+        self.images.seats[chatInfo.seat].chat.text.text = self.images.seats[chatInfo.seat].chat.text.text + '...'
     }//if needElipses = true
 
 
@@ -4893,7 +4893,7 @@ self.images.seats[chatInfo.seat].chat.text.text=self.images.seats[chatInfo.seat]
     self.images.seats[chatInfo.seat].chat.image.drawChat(chatBoxWidth, numLines) // drawChat function resets alpha automatically
 self.images.seats[chatInfo.seat].chat.text.alpha = 1
 //set chat text to correct Y positoin
-self.images.seats[chatInfo.seat].chat.text.y = self.images.seats[chatInfo.seat].chat.position.y - (numLines-1)*(self.getTextWidthAndFontSize(self.images.seats[chatInfo.seat].chat)[1]+1)
+self.images.seats[chatInfo.seat].chat.text.y = self.images.seats[chatInfo.seat].chat.position.y - (numLines-1)*self.images.seats[chatInfo.seat].chat.text.getMeasuredLineHeight()
 //display chat image and text
      self.displayChildren(self.images.seats[chatInfo.seat].chat)
      console.log(self.images.seats[chatInfo.seat].chat.text.text)
