@@ -562,7 +562,12 @@ this.events.onCashierTextFieldFocus = function(event){
     this.events.exitTableClick = function(event){
        var  messageInfo = {}
        messageInfo.cancel = true
-       messageInfo.okayEvent = self.events.exit
+       messageInfo.okayEvent = function(e){
+       // self.events.exit()
+         socket.emit('stand')
+        window.location.href = '/lobby'
+        self.hideMessageBox()
+      }
         self.displayMessageBox("Are you sure you want to leave?",messageInfo)
 
     }
