@@ -35,7 +35,7 @@ window.onKeydown = onKeyDown
       bigBlindsPerMouseScroll: 0.5,
       timePerHorizontalSliderTick: 500,
       animate: true,
-      chatTextColor: '#FFFFFF',
+      chatTextColor: '#000000',
       playerChatMaxLines:3
 
   }
@@ -64,19 +64,20 @@ window.onKeydown = onKeyDown
             
            
             background:0,
-            holeCards:1,
-            chips:5,
-            communityCards:4,
-            cardAnimation:6,
-            button:2,
-            chat:7,
-             cashier:9,
-            initialMessageBox:11,
-            containersPerCashier:2,
-            containersPerMessageBox:3,
-            loadingBackground: 0,
-            loadingAnimation: 1
+            table:1,
+            holeCards:2,
+            chips:6,
+            communityCards:5,
+            cardAnimation:7,
+            button:3,
+            chat:8,
+             cashier:10,
+            initialMessageBox:12,
+            containersPerCashier:3,
 
+            loadingBackground: 1,
+            loadingAnimation: 2,
+            containersPerMessageBox:3
         }
 
         this.images = {}
@@ -99,13 +100,14 @@ window.onKeydown = onKeyDown
       //      community: 'img/card_back.jpg',
      //       fold: 'img/fold.jpg',
       //      sideButton :'img/side_button.jpg',
-            background: 'img/table_background_green.jpg',
+            background: 'img/gray_bg.jpg',
+            table: 'img/table.png',
      //       fourColorDeck: 'img/sheet4color.png',
             dealerButton: 'img/dealer_button_red.png',
             verticalSlider: 'img/raise_slider.png',
             horizontalSlider: 'img/small_slider_bg.png',
             cashierBackground: 'img/cashier_background.png',
-            cashierCloseX: 'img/cashier_closeWindowX.jpg',
+            cashierCloseX: 'img/cashier_close_window_x.jpg',
             cashierButton: 'img/cashier.png',
             cashierButtonOver: 'img/cashier_over.png',
             cashierButtonPress: 'img/cashier_press.png',
@@ -113,8 +115,8 @@ window.onKeydown = onKeyDown
             getChips: 'img/get_chips.png',
             viewLobby: 'img/view_lobby.png',
             exitTable: 'img/exit_table.png',
-            messageBoxBackground: 'img/messagebox.png',
-            messageBoxCloseX:'img/messageBox_closeWindowX.jpg',
+            messageBoxBackground: 'img/message_box.png',
+            messageBoxCloseX:'img/message_box_close_window_x.jpg',
             checkBox: 'img/check_box.png',
             checkBoxChecked:'img/check_box_clicked.png',
             dealHoleCardSound: 'sound/deal_hole_card.wav',
@@ -132,8 +134,8 @@ moveChipsSound: 'sound/move_chips.wav',
                 10: 'img/chips/10.png'
             }
             }
-            if(this.gameState.displaySize == 'mobile'){this.images.sources.cardImageFolder = 'img/fourColorDeck/resize/'}
-            else {this.images.sources.cardImageFolder = 'img/fourColorDeck/'}
+            if(this.gameState.displaySize == 'mobile'){this.images.sources.cardImageFolder = 'img/fourcolordeck/resize/'}
+            else {this.images.sources.cardImageFolder = 'img/fourcolordeck/'}
 
             this.images.background = {}
             this.images.pots = []
@@ -560,7 +562,12 @@ this.events.onCashierTextFieldFocus = function(event){
     this.events.exitTableClick = function(event){
        var  messageInfo = {}
        messageInfo.cancel = true
-       messageInfo.okayEvent = self.events.exit
+       messageInfo.okayEvent = function(e){
+       // self.events.exit()
+         socket.emit('stand')
+        window.location.href = '/lobby'
+        self.hideMessageBox()
+      }
         self.displayMessageBox("Are you sure you want to leave?",messageInfo)
 
     }
@@ -1188,6 +1195,8 @@ var currencyDisplayTopOffset = 3
 var currencyDisplaySizeAndFont = 'bold 16px Arial'
 var currencyDisplayColor = 'white'
 
+
+
             var communityY = 220
             var distanceBetweenCommunityCards = 2
 
@@ -1224,7 +1233,7 @@ var currencyDisplayColor = 'white'
             var htmlTableChatBoxWidth = 135
             var htmlTableChatBorderSize = $('#chat').css('border').substring(0,$('#chat').css('border').indexOf('p'))
             var htmlTableChatBoxHeight = 20
-            var htmlTableChatBoxReminderTextColor = 'rgb(165,165,165)'
+            var htmlTableChatBoxReminderTextColor = 'rgb(160,0,0) '
 
             var verticalBetSliderWidth = 6
             var verticalBetSliderHeight = 13            
@@ -1286,6 +1295,10 @@ var currencyDisplayColor = 'white'
             var getChipsHitAreaLowerRightOffset  = 41
 
             var openSeatOuterStrokeWidth = 2
+
+            var tableX = 0
+
+            var tableY = 15
 
             //dealerButton
            this.dealerButton = new this.Item(0,0,dealerButtonWidth, dealerButtonHeight,self.gameState.containerImageIndexes.chips)
@@ -1897,6 +1910,11 @@ var containersPerMessageBox = self.gameState.containerImageIndexes.containersPer
        
 }
 
+//table image
+
+this.table = new this.Item(tableX,tableY, canvasWidth,canvasHeight, self.gameState.containerImageIndexes.table)
+this.itemAsBitmap(this.table, this.sources.table)
+
 //======================CASHIER=======================================
 
  var cashierImageContainerIndex = self.gameState.containerImageIndexes.cashier
@@ -2170,7 +2188,7 @@ popup('mailto:CryptoPoker@gmail.com')
           var canvasWidth = document.getElementById('canvas').width
         this.images.background = new this.images.Item(0,0,canvasWidth,canvasHeight,this.gameState.containerImageIndexes.background)
         this.images.itemAsBitmap(this.images.background, this.images.sources.background)
-
+this.displayChildren(this.images.background)
 /*
  var matrix = new createjs.ColorMatrix().adjustHue(-100)
  this.images.background.image.filters = [
@@ -2189,7 +2207,7 @@ this.images.background.image.updateCache()
 console.log(this.images.background.image)
 console.log(this.images.background.image.isVisible())
 */
-this.displayChildren(this.images.background)
+
     }
 
     this.images.setDefaultEvents = function(){
@@ -3902,7 +3920,7 @@ self.restoreActiveContainers(   self.gameState.messageBox.activeContainers[self.
                 i=self.images.containers.length
            }
         }
-
+console.log(messageBoxImageContainerIndex)
 
 
         //check if this is the first(bottom) messagebox displayed
@@ -4426,14 +4444,15 @@ function tick(event){
 }
 
                  //display static items
+                 this.displayChildren(this.images.table)
          this.displayChildren(this.images.getChips)
          this.displayChildren(this.images.viewLobby)
          this.displayChildren(this.images.exitTable)
-
+console.log(this.images.table.image)
          this.images.currencyDisplay.text.text = '1 chip is equal to ' + table_state.currency_per_chip + ' ' + table_state.currency
 this.displayChildren(this.images.currencyDisplay)
 
-this.displayChildren(this.images.reportBug)
+//his.displayChildren(this.images.reportBug)
 
         //remove extra seats
         this.setNumberOfSeats(table_state.max_players)
@@ -4830,7 +4849,7 @@ messageToAdd = chatInfo.message.substring(self.images.seats[chatInfo.seat].chat.
      //loop to start excising end  String to single line
 
      while(getStringWidth(messageToAdd)>self.images.seats[chatInfo.seat].chat.text.lineWidth){
-      console.log('stringwidth = '+getStringWidth(messageToAdd))
+
 messageToAdd = messageToAdd.substring(0,messageToAdd.length-1) 
  wasTrimmed  = true
     }
