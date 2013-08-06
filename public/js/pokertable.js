@@ -564,8 +564,9 @@ this.events.onCashierTextFieldFocus = function(event){
        messageInfo.cancel = true
        messageInfo.okayEvent = function(e){
        // self.events.exit()
-         socket.emit('stand')
+
         window.location.href = '/lobby'
+         socket.emit('stand')
         self.hideMessageBox()
       }
         self.displayMessageBox("Are you sure you want to leave?",messageInfo)
@@ -4445,7 +4446,7 @@ function tick(event){
 
                  //display static items
                  this.displayChildren(this.images.table)
-         this.displayChildren(this.images.getChips)
+         
          this.displayChildren(this.images.viewLobby)
          this.displayChildren(this.images.exitTable)
 console.log(this.images.table.image)
@@ -4468,6 +4469,7 @@ this.displayChildren(this.images.currencyDisplay)
           //assign userSeatNumber if player is user
          if(table_state.seats[i].is_you == true){
          this.gameState.userSeatNumber = table_state.seats[i].seat 
+         this.displayChildren(this.images.getChips)
          self.updateUserOptionsBasedOnFlagsAndPreactions()
 }//table_state.seats[i].is_you == true
 
