@@ -158,6 +158,9 @@
               e.preventDefault();
               console.log('report_bug form submitted!');
               // TODO: add spinner image (replaces submit button?)
+              $('#bug_submit').replaceWith($('#loader'));
+              $('#loader').show();
+
               var $message = $(this).find('textarea')
                 , message = $message.val();
               $.post('/report_bug', {
@@ -167,11 +170,23 @@
                 // TODO: remove spinner image
                 if (response.success) {
                   // TODO: show "received" message
-                  // clear message
+                  $('#report_bug_textarea').remove();
+                  $('#loader').replaceWith('Feeback sent! Thank you for your submission. This window will self-destruct.');
+                  
+                  //Hide window
+                  // remove active class
+                  $('#report_bug_trigger')
+                    .removeClass('active');
+                  // hide report_bug form after delay
+                  $report_bug
+                    .delay(5000)
+                    .hide('slide', { direction: 'up' }, 500);                  // clear message
+
                   $message.val('');
                 }
                 else {
                   // TODO: show error message
+                  $('#loader').replaceWith('There was an error submitting feedback. Uh oh.' + $('bug_submit'));                  
                   // don't clear message
                 }
               });
