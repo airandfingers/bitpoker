@@ -5071,6 +5071,8 @@ socket.on('reset_table', function(players){
 }
 
 self.images.reportBug.text.text = 'click to report bugs via email to: CryptoPoker@gmail.com'
+        
+self.updateUserOptionsBasedOnFlagsAndPreactions()
          self.stage.update()
 
 
