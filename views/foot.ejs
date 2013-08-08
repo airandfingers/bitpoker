@@ -153,7 +153,10 @@
                   .hide('slide', { direction: 'up' }, 500);
               }
             });
+
+            <!-- ajax for form submission -->
             $report_bug.find('form').submit(function(e) {
+              var empty_form = $(this).html(); //$(this) is $report_bug
               // form has been submitted; $(this) is the form
               e.preventDefault();
               console.log('report_bug form submitted!');
@@ -170,8 +173,8 @@
                 // TODO: remove spinner image
                 if (response.success) {
                   // TODO: show "received" message
-                  $('#report_bug_textarea').remove();
-                  $('#loader').replaceWith('Feeback sent! Thank you for your submission. This window will self-destruct.');
+                  $('#loader').replaceWith($('#feedback_message'));
+                  $('#feedback_message').show();
                   
                   //Hide window
                   // remove active class
@@ -180,13 +183,13 @@
                   // hide report_bug form after delay
                   $report_bug
                     .delay(5000)
-                    .hide('slide', { direction: 'up' }, 500);                  // clear message
-
-                  $message.val('');
+                    .hide('slide', { direction: 'up' }, 500, function () {
+                      $(this).html(empty_form)
+                      });
                 }
                 else {
                   // TODO: show error message
-                  $('#loader').replaceWith('There was an error submitting feedback. Uh oh.' + $('bug_submit'));                  
+                  $('#loader').replaceWith('There was an error submitting feedback. Uh oh.');                  
                   // don't clear message
                 }
               });

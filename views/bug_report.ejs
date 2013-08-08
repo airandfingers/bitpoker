@@ -1,11 +1,16 @@
 <div id="report_bug" class="dropdown_form">
-    <form action="report_bug" method="post">
+    <form action="report_bug" method="post" id="bug_form">
         <textarea name="message" rows="10" placeholder="Report bugs and give feedback here." id="report_bug_textarea"></textarea>
         <br />
         <input type="submit" value="submit" id="bug_submit" class="btn btn-inverse" />
     </form>
+    
+    <div id="loader">
+    <img src="/img/ajax_loader2.gif"> </img>
+    </div>
+
 </div>
 
-<div id="loader">
-<img src="/img/ajax_loader2.gif"> </img>
-</div>
+    <div id="feedback_message">
+	    Feedback sent! Thank you for your submission. This window will self-destruct.
+	</div>
