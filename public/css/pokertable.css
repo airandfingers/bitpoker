@@ -23,6 +23,17 @@ body {
 #pokerCanvasDiv {
     position: absolute;
 }
+#canvas{
+position:absolute;
+  zIndex:0;
+  z-index: 0
+}
+#tableChatFull{
+  position:absolute;
+  display:none;
+  z-index: 1;
+  zIndex:1;
+}
 #cashier input[type = 'text']{
   background-image:url('/img/cashier_textbox_bg.jpg');
 	background-repeat:repeat;
