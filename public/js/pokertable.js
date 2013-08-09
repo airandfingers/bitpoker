@@ -190,6 +190,8 @@ moveChipsSound: 'sound/move_chips.wav',
             this.images.seats=[]
             for (var i = 0;i<maxSeats;i=i+1){
         this.images.seats[i] = {}
+        this.images.seats[i].nonRotatedSeatNumber = i
+        this.images.seats[i].rotatedSeatNumber = i
         this.images.seats[i].seat = {}
         this.images.seats[i].text = {}
         this.images.seats[i].bet={}
@@ -285,7 +287,8 @@ if(options && options.middleDividerStrokeWidth){var middleDividerStrokeWidth = o
    parent.image.snapToPixel = true
 
 //draw border
- parent.image.graphics.setStrokeStyle(outerStrokeWidth,'square').beginStroke(borderColor).beginFill(fillColor).drawRect(x, y, width, height)
+ parent.image.graphics.setStrokeStyle(outerStrokeWidth,'square').beginStroke(borderColor)
+ .beginFill(fillColor).drawRect(x, y, width, height)
 
 //draw filled area for countdown
 if(options && options.borderFillRatio && _.isNumber(options.borderFillRatio) && options.borderFillRatio > 0){
@@ -351,7 +354,8 @@ distanceToFill = 0
 
 }//end playerToAct fill
 
-    parent.image.graphics.setStrokeStyle(middleDividerStrokeWidth).beginStroke(middleDividerColor).moveTo(x+outerStrokeWidth/2,y+height/2).lineTo(x+width-outerStrokeWidth/2,y+height/2)
+    parent.image.graphics.setStrokeStyle(middleDividerStrokeWidth).beginStroke(middleDividerColor)
+  // .moveTo(x+outerStrokeWidth/2,y+height/2).lineTo(x+width-outerStrokeWidth/2,y+height/2)
             
           parent.image.borderColor = borderColor
           parent.image.fillColor = fillColor
@@ -2361,7 +2365,7 @@ console.log(this.images.background.image.isVisible())
     this.images.setDefaultMessages = function(){
         
         for (var i = 0; i < this.seats.length; i = i + 1){
-          this.seats[i].openSeat.messages = ['sit',i]
+          this.seats[i].openSeat.messages = ['sit',this.seats[i].nonRotatedSeatNumber]
         }
     }
     
@@ -2446,25 +2450,100 @@ $('#chat').css({
     }
 
 this.changeUserSeatView = function(seatNumber){
+
+  var  copyItemDisplayObjectLocationData = function(item){
+var itemCopyWithOnlyLocationData = {}
+if(item.image){
+itemCopyWithOnlyLocationData.image = {}
+  itemCopyWithOnlyLocationData.image.x = item.image.x
+  itemCopyWithOnlyLocationData.image.y = item.image.y
+}
+if(item.text){
+itemCopyWithOnlyLocationData.text={}
+  itemCopyWithOnlyLocationData.text.x = item.text.x
+  itemCopyWithOnlyLocationData.text.y = item.text.y
+}
+
+if(item instanceof self.images.Item){
+  itemCopyWithOnlyLocationData.position = {}
+  itemCopyWithOnlyLocationData.size = {}
+itemCopyWithOnlyLocationData.position.x = item.position.x
+itemCopyWithOnlyLocationData.position.y = item.position.y
+itemCopyWithOnlyLocationData.size.x = item.size.x
+itemCopyWithOnlyLocationData.size.y = item.size.y
+}
+
+return itemCopyWithOnlyLocationData
+
+}
+
+var setDisplayObjectLocationsInItemAEqualToOnesInItemB = function(itemA, itemB){
+if(itemA instanceof self.images.Item){
+if(itemA.image&&itemB.image){ itemA.image.x = itemB.image.x;itemA.image.y = itemB.image.y}
+
+if(itemA.text&&itemB.text){itemA.text.x = itemB.text.x; itemA.text.y = itemB.text.y}
+
+itemA.position.x = itemB.position.x
+itemA.position.y = itemB.position.y
+itemA.size.x = itemB.size.x
+itemA.size.y = itemB.size.y
+}
+}
+  console.log(this.images.seats)
 if(!_.isNumber(seatNumber)){var seatNumber = 0}
+var clockWiseRotationNumber = 0
+var temporaryArrayOfNonrotatedSeats = []
+for(var i = 0;i<this.images.seats.length;i++){temporaryArrayOfNonrotatedSeats.push({})}
+//determine where to seat the user (if seats have been previously rotated)
+var seatNumberToRotateToBasedOnUnrotatedPosition = 0
 
-var rotationNumber = (this.images.seats.length - self.gameState.userSeatNumber)%this.images.seats.length
-var correspondingPairArray = []
-var originalSeatArray = this.images.seats
-for(var i = 0;i<originalSeatArray.length;i++){
-correspondingPairArray.push({originalPosition:i,endPosition:(i+rotationNumber)%originalSeatArray.length})
-}
+if(!_.isNumber(self.gameState.userSeatNumber)){clockWiseRotationNumberBasedOnUnRotatedPosition = this.images.seats.length - this.images.seats[0].rotatedSeatNumber}
+else if(seatNumber == self.gameState.userSeatNumber){clockWiseRotationNumberBasedOnUnRotatedPosition=0}
+  else if(seatNumber>self.gameState.userSeatNumber){clockWiseRotationNumberBasedOnUnRotatedPosition = seatNumber-self.gameState.userSeatNumber}
+    else{clockWiseRotationNumberBasedOnUnRotatedPosition = this.images.seats.length - self.gameState.userSeatNumber + seatNumberToRotateToBasedOnUnrotatedPosition }
 
-/*
-for(var i = 0;i<tempArray.length;i++){
+if(clockWiseRotationNumberBasedOnUnRotatedPosition%this.images.seats.length == 0){return 'no rotation'}
+
+//iterate through seats to get image location data
+for(var i = 0;i<this.images.seats.length;i++){
+
+  _.each(this.images.seats[i], function(element,index,list) {
+ // for (var item in this.images.seats[i]) {
+
+    if(self.images.seats[i][index] instanceof self.images.Item){
+
+temporaryArrayOfNonrotatedSeats[self.images.seats[i].rotatedSeatNumber][index] = copyItemDisplayObjectLocationData(self.images.seats[i][index])
+
+  //end iteration through this.images.seats[i][item]
+}//check if this.images.seats[i][item] is really item
+
+  }, this)//end iteration through this.images.seats[i]
+}//end iteration through this.images.seats
 
 
-this.images.seats[i] = tempArray[i]
-}
-*/
+console.log(temporaryArrayOfNonrotatedSeats)
+//iterate through seats to swap image location data
+
+for(var i = 0;i<this.images.seats.length;i++){
+this.images.seats[i].rotatedSeatNumber = (i+clockWiseRotationNumberBasedOnUnRotatedPosition)%self.images.seats.length
+//for (var itemA in this.images.seats[i]) {
+  _.each(this.images.seats[i], function(element,index,list){
+    if(self.images.seats[i][index] instanceof self.images.Item){
+
+setDisplayObjectLocationsInItemAEqualToOnesInItemB(this.images.seats[i][index], temporaryArrayOfNonrotatedSeats[(i+clockWiseRotationNumberBasedOnUnRotatedPosition)%self.images.seats.length][index])
+  //end iteration through this.images.seats[i][item]
+}//check if this.images.seats[i][item] is really item
+
+  }, this)//end iteration through this.images.seats[i]
+
+}//end iteration through this.images.seats
+
+
 this.stage.update()
 
 }
+
+
 
 
     this.setNumberOfSeats = function (numSeats){
@@ -2599,9 +2678,13 @@ this.stage.update()
           //update seat messages
        
           for(var i =0; i<this.images.seats.length;i++){
-              this.images.seats[i].openSeat.messages = ['sit', i]
+            this.images.seats[i].nonRotatedSeatNumber = i
+            this.images.seats[i].rotatedSeatNumber = i
+            this.images.seats[i].rotatedSeatNumber = i
+         //   this.images.seats[i].openSeat.messages = ['sit', i]
+
           }
-             if(this.images.seats.length != numSeats){console.log(this.images.seats)}
+             if(this.images.seats.length != numSeats){console.log('adjusting number of seats failed')}
             
             //adjust gameState seats array
 
@@ -4563,8 +4646,7 @@ this.updateUserOptionsBasedOnFlagsAndPreactions = function(){
 if(!_.isNumber(self.gameState.userSeatNumber)){return 'cannot update display because there is no userSeatNumber'}
 
 //enable GetChips
-console.log(self.gameState.userSeatNumber)
-console.log(self.gameState.seats[self.gameState.userSeatNumber])
+
 var user = self.gameState.seats[self.gameState.userSeatNumber]
 var flags = self.gameState.seats[self.gameState.userSeatNumber].flags
 var preActionStreet = self.gameState.seats[self.gameState.userSeatNumber].preActions.street
@@ -4725,8 +4807,6 @@ if(table_state.currency_per_chip == 1 && table_state.currency.charAt(table_state
 
 this.displayChildren(this.images.currencyDisplay)
 
-//his.displayChildren(this.images.reportBug)
-
         //remove extra seats
         this.setNumberOfSeats(table_state.max_players)
 
@@ -4748,14 +4828,14 @@ this.displayChildren(this.images.currencyDisplay)
 }//table_state.seats[i].is_you == true
 
 else{ //if not user
-    this.displayChildren(this.images.getChipsDisabledShape)
+
 if(table_state.seats[i].sitting_out == true){
 self.playerSitsOut(table_state.seats[i].seat)
 }//check if non-user is sitting out
 }//perform if not user
 
 }
-
+if(!_.isNumber(this.gameState.userSeatNumber)){this.displayChildren(this.images.getChipsDisabledShape)}
         //display player's cards
          for(var i=0;i<table_state.players.length;i=i+1){
                if(!table_state.players[i].hand || table_state.players[i].hand.length == 0){this.displayHiddenCards(table_state.players[i].seat) }
@@ -4858,8 +4938,8 @@ self.gameState.seats[i].preActions.street = {}
 
 socket.on('hands_dealt', function(players, tableInfo){
 //show hand number
-         self.images.reportBug.text.text = 'click to report bugs via email to: CryptoPoker@gmail.com'+'hand# '+tableInfo.hand_num
-         self.stage.update()
+       
+           self.stage.update()
 
     //show dealer button
     self.images.dealerButton.image.x = self.images.seats[tableInfo.dealer].dealerButton.position.x
@@ -5218,10 +5298,10 @@ self.images.seats[chatInfo.seat].chat.text.y = self.images.seats[chatInfo.seat].
 //player sits in
        socket.on('player_sits_in', function(player){
            self.images.seats[player.seat].status.text.text = player.chips
-  
+
         if(player.seat == self.gameState.userSeatNumber){
           self.updateLocalDataBasedOnServerPlayerObject(player) 
-            
+            self.updateUserOptionsBasedOnFlagsAndPreactions()
 }
         self.stage.update()
 })
@@ -5256,21 +5336,21 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
 
 //player sits, checks if player is the user
        socket.on('player_sits', function(player, is_you){
-         self.playerSits(player.seat, player.username, player.chips)
+       
         if(is_you == true){
+                   
             self.gameState.userSeatNumber = player.seat
-            self.changeUserSeatView()
+   self.changeUserSeatView()
             socket.emit('get_add_chips_info')
             self.displaySeatedOptions()
       //      self.displayChildren(self.images.stand, false, ['stand'])
 
      //   self.displayChildren(self.images.stand)
 
-        //refresh open seats to disabled seats
         for (var i = 0;i<self.images.seats.length;i++){
             self.displayCorrectSeatMessage(i) }
         }
-
+  self.playerSits(player.seat, player.username, player.chips)
 
 
 })
@@ -5281,9 +5361,10 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
         if(is_you){
             self.gameState.userSeatNumber = false
             self.hideSeatedOptions()
-
+            self.changeUserSeatView()
 }
            self.playerStands(seatNumber)
+
 })
 
 //player stands, checks if player is the user
@@ -5355,8 +5436,7 @@ socket.on('reset_table', function(players){
 
 }
 
-self.images.reportBug.text.text = 'click to report bugs via email to: CryptoPoker@gmail.com'
-        
+
 self.updateUserOptionsBasedOnFlagsAndPreactions()
          self.stage.update()
 
