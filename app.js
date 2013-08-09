@@ -100,6 +100,7 @@ function start() {
   server.listen(EXPRESS_PORT);
 
   //this is printed after the server is up
+  console.log(server, server.address())
   console.log("server listening on port %d in %s mode", server.address().port, app.settings.env);
 }
 
