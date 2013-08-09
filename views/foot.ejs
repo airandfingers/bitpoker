@@ -138,7 +138,7 @@
                 // hide report_bug form
                 $report_bug
                   .css({
-                    left: $(this).position().left - $(this).width() - 20
+                    left: $(this).position().left - 20
                   , top: $(this).position().top + $(this).height()
                   })
                   .show('slide', { direction: 'up' }, 500)
@@ -153,11 +153,17 @@
                   .hide('slide', { direction: 'up' }, 500);
               }
             });
+
+            <!-- ajax for form submission -->
             $report_bug.find('form').submit(function(e) {
+              var empty_form = $(this).html(); //$(this) is $report_bug
               // form has been submitted; $(this) is the form
               e.preventDefault();
               console.log('report_bug form submitted!');
               // TODO: add spinner image (replaces submit button?)
+              $('#bug_submit').replaceWith($('#loader'));
+              $('#loader').show();
+
               var $message = $(this).find('textarea')
                 , message = $message.val();
               $.post('/report_bug', {
@@ -167,11 +173,23 @@
                 // TODO: remove spinner image
                 if (response.success) {
                   // TODO: show "received" message
-                  // clear message
-                  $message.val('');
+                  $('#loader').replaceWith($('#feedback_message'));
+                  $('#feedback_message').show();
+                  
+                  //Hide window
+                  // remove active class
+                  $('#report_bug_trigger')
+                    .removeClass('active');
+                  // hide report_bug form after delay
+                  $report_bug
+                    .delay(5000)
+                    .hide('slide', { direction: 'up' }, 500, function () {
+                      $(this).html(empty_form)
+                      });
                 }
                 else {
                   // TODO: show error message
+                  $('#loader').replaceWith('There was an error submitting feedback. Uh oh.');                  
                   // don't clear message
                 }
               });

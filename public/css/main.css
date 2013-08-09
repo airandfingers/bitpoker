@@ -132,6 +132,12 @@ h2 {
     margin: 2em;
 }
 
+#button_groups > form {
+    display: inline;
+    margin-left: .1em;
+    margin-right: .1em;
+}
+
 #account_info {
     background-color: rgba(0, 0, 0, .9);
     font-size: 1.2em;
