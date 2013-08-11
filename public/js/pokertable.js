@@ -36,10 +36,28 @@ window.onKeydown = onKeyDown
       timePerHorizontalSliderTick: 500,
       animate: true,
       chatTextColor: '#000000',
-      playerChatMaxLines:3
+      playerChatMaxLines:3,
+      tableChatFull:{
+
+        chatMessageFontSize: 11,
+        chatMessageFontColor: 'white',
+        windowColor: 'black',
+        windowAlpha: 0.4,
+        defaultItemsToHideFalseHidesItem:{
+                  hideDealerMessages:true,
+                  hideDealerMessagesOn: false,
+                  hidePlayerMessages:true,
+                  hidePlayerMessagesOn: false,
+                  hideObserverMessages:true,
+                  hideObserverMessagesOn: false
+
+        }
+
+      }
 
   }
         this.gameState = {}
+        this.gameState.tableChatFullLog = []
         this.gameState.betSize = new Number
         this.gameState.displaySize = 'normal'
         this.gameState.secondsToAct
@@ -87,7 +105,11 @@ window.onKeydown = onKeyDown
 tableChatFullBackground:0,
 tableChatFullButton:3,
 tableChatFullText:1,
-tableChatFullTotalContainers: 5
+tableChatFullTotalContainers: 5,
+
+//table chat text
+tableChatFullTextTotalContainers:2,
+tableChatFullTextText:0
 
         }
 
@@ -209,7 +231,7 @@ moveChipsSound: 'sound/move_chips.wav',
         }
                 
 //-----------START CONSTRUCTORS----------------
-this.images.Item = function (x,y,width,height, zOfImageEvenIfNoImageExists,messages){
+this.images.Item = function (x,y,width,height, zOfImageEvenIfNoImageExists,options){
      this.position = {}
 this.position.x = Math.floor(x)
 this.position.y = Math.floor(y)
@@ -217,7 +239,11 @@ this.position.z = zOfImageEvenIfNoImageExists
 this.size = {}
 this.size.x = width
 this.size.y = height
-if(messages){this.messages = messages}
+if(options){
+  if(options.messages){this.messages = messages}
+if(options.parentOfStage) {this.parentOfStage = options.parentOfStage}
+  if(options.itemAsParentOfStage === true){ this.parentOfStage = this}
+}//if options
 this.drawRoundedRectangle = function(fillColor){
 this.image.graphics.beginFill(fillColor).drawRoundRect(this.position.x, this.position.y, this.size.x, this.size.y,this.size.y*.1)
             }
@@ -587,6 +613,71 @@ self.hideTableChatFull()
 
 
 }
+
+this.events.tableChatFullChatMessageTextMouseDown = function(e){
+
+
+var initialRawX = e.rawX
+var initialRawY = e.rawY
+e.onMouseMove = function(event){
+
+var yMovement = event.rawY - initialRawY
+self.images.tableChatFull.chatMessageText.text.y = self.images.tableChatFull.chatMessageText.position.y + yMovement
+self.images.tableChatFull.chatMessageText.parentOfStage.stage.update()
+}//mouse move event
+
+e.onMouseUp = function(event){
+
+var yMovement = event.rawY - initialRawY
+self.images.tableChatFull.chatMessageText.text.y = self.images.tableChatFull.chatMessageText.position.y + yMovement
+self.images.tableChatFull.chatMessageText.parentOfStage.stage.update()
+}//mouse up event
+
+
+}
+
+
+this.events.hideDealerMessagesClicked = function(){
+console.log('hideDealerMessagesClicked')
+self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages = false
+self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn = true
+self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
+}
+
+
+this.events.hideDealerMessagesOnClicked = function(){
+console.log('hideDealerMessagesOnClicked')
+self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages = true
+self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn = false
+self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
+}
+
+this.events.hidePlayerMessagesClicked = function(){
+  console.log('hidePlayerMessagesClicked')
+self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages = false
+self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn = true
+self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
+
+}
+this.events.hidePlayerMessagesOnClicked = function(){
+   console.log('hidePlayerMessagesOnClicked')
+self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages = true
+self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn = false
+self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
+}
+this.events.hideObserverMessagesClicked = function(){
+   console.log('hideObserverMessagesClicked')
+self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages = false
+self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn = true
+self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
+}
+this.events.hideObserverMessagesOnClicked = function(){
+
+self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages = true
+self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn = false
+self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
+}
+
 
     this.events.exitTableClick = function(event){
       console.log('exittable clicked')
@@ -1187,16 +1278,16 @@ this.images.setDefaults = function(){
             //percentage of vertical card to show
             var shownCardY = 0.92
 
-            var sideButtonWidth = 100
-            var sideButtonHeight = 13
-            var sideButtonDistanceFromChat = 20
-            var sideButtonOffSetLeft = 2
-           var  sideButtonDistanceY = 3
-           var sideButtonCheckBoxWidth = sideButtonHeight
-           var sideButtonDistanceFromBoxToText = 5
-           var sideButtonDistanceFromEdgeToInteriorHitAreaY = 1
-           var sideButtonSizeAndFont = '10px arial'
-           var sideButtonTextColor = '#FFFFFF'
+            var checkBoxButtonWidth = 100
+            var checkBoxButtonHeight = 13
+            var checkBoxButtonDistanceFromChat = 20
+            var checkBoxButtonOffSetLeft = 2
+           var  checkBoxButtonDistanceY = 3
+           var checkBoxButtonCheckBoxWidth = checkBoxButtonHeight
+           var checkBoxButtonDistanceFromBoxToText = 5
+           var checkBoxButtonDistanceFromEdgeToInteriorHitAreaY = 1
+           var checkBoxButtonSizeAndFont = '10px arial'
+           var checkBoxButtonTextColor = '#FFFFFF'
 
             var actionButtonWidth = 80
             var actionButtonHeight = 25
@@ -1408,10 +1499,10 @@ $('#chat').css({
     })
 
            //--------standard pre-action buttons---------------------
-          this.foldToAnyBet = new  this.Item(sideButtonOffSetLeft,this.htmlTableChatBox.position.y-  sideButtonDistanceFromChat - 3*sideButtonHeight-2*sideButtonDistanceY,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button, ['set_flag','check',true])
+          this.foldToAnyBet = new  this.Item(checkBoxButtonOffSetLeft,this.htmlTableChatBox.position.y-  checkBoxButtonDistanceFromChat - 3*checkBoxButtonHeight-2*checkBoxButtonDistanceY,checkBoxButtonWidth,checkBoxButtonHeight,self.gameState.containerImageIndexes.button, ['set_flag','check',true])
          this.foldToAnyBet.otherMessages = ['set_flag','fold',true]
-          this.sitOutNextHand = new  this.Item(sideButtonOffSetLeft,this.htmlTableChatBox.position.y -  sideButtonDistanceFromChat- 2*sideButtonHeight - sideButtonDistanceY,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button, ['sit_out'])
-        this.sitOutNextBlind =  new this.Item(sideButtonOffSetLeft,this.htmlTableChatBox.position.y-  sideButtonDistanceFromChat- sideButtonHeight,sideButtonWidth,sideButtonHeight,self.gameState.containerImageIndexes.button, ['set_flag', 'post_blind', false])
+          this.sitOutNextHand = new  this.Item(checkBoxButtonOffSetLeft,this.htmlTableChatBox.position.y -  checkBoxButtonDistanceFromChat- 2*checkBoxButtonHeight - checkBoxButtonDistanceY,checkBoxButtonWidth,checkBoxButtonHeight,self.gameState.containerImageIndexes.button, ['sit_out'])
+        this.sitOutNextBlind =  new this.Item(checkBoxButtonOffSetLeft,this.htmlTableChatBox.position.y-  checkBoxButtonDistanceFromChat- checkBoxButtonHeight,checkBoxButtonWidth,checkBoxButtonHeight,self.gameState.containerImageIndexes.button, ['set_flag', 'post_blind', false])
                
                
                 //define on versions
@@ -1428,45 +1519,45 @@ this.itemAsBitmap(this.sitOutNextBlind, this.sources.checkBox)
 this.itemAsBitmap(this.sitOutNextHandOn, this.sources.checkBoxChecked)
 this.itemAsBitmap(this.sitOutNextBlindOn, this.sources.checkBoxChecked)
 //function for creating text from all fast
-    var addSideButtonText = function(parentOfImageObject, text){
-                parentOfImageObject.text = new createjs.Text(text, sideButtonSizeAndFont, sideButtonTextColor)
-parentOfImageObject.text.x=parentOfImageObject.position.x + sideButtonCheckBoxWidth + sideButtonDistanceFromBoxToText
+    var addCheckBoxButtonText = function(parentOfImageObject, text){
+                parentOfImageObject.text = new createjs.Text(text, checkBoxButtonSizeAndFont, checkBoxButtonTextColor)
+parentOfImageObject.text.x=parentOfImageObject.position.x + checkBoxButtonCheckBoxWidth + checkBoxButtonDistanceFromBoxToText
 parentOfImageObject.text.y=parentOfImageObject.position.y + 1
 parentOfImageObject.text.baseline = 'top'
 parentOfImageObject.text.textAlign = 'left'
-parentOfImageObject.textColor = sideButtonTextColor
+parentOfImageObject.textColor = checkBoxButtonTextColor
 }
 //off state
-      addSideButtonText( this.foldToAnyBet, 'Fold to any bet' )
-      addSideButtonText(this.sitOutNextHand, 'Sit out next hand')
-      addSideButtonText (  this.sitOutNextBlind,'Sit out next blind' )
+      addCheckBoxButtonText( this.foldToAnyBet, 'Fold to any bet' )
+      addCheckBoxButtonText(this.sitOutNextHand, 'Sit out next hand')
+      addCheckBoxButtonText (  this.sitOutNextBlind,'Sit out next blind' )
       
       //on state
-      addSideButtonText( this.foldToAnyBetOn, 'Fold to any bet' )
-      addSideButtonText(this.sitOutNextHandOn, 'Sit out next hand')
-      addSideButtonText (  this.sitOutNextBlindOn,'Sit out next blind' )
+      addCheckBoxButtonText( this.foldToAnyBetOn, 'Fold to any bet' )
+      addCheckBoxButtonText(this.sitOutNextHandOn, 'Sit out next hand')
+      addCheckBoxButtonText (  this.sitOutNextBlindOn,'Sit out next blind' )
 
       //hitAreas for buttons
       
-      var drawHitArea = function(parent){
+      var drawCheckBoxButtonHitSquare = function(item){
           //get width of text
-        var textWidth =   self.getTextWidthAndFontSize(parent)[0]
-        var totalWidth = sideButtonCheckBoxWidth + sideButtonDistanceFromBoxToText + textWidth
+        var textWidth =   self.getTextWidthAndFontSize(item)[0]
+        var totalWidth = checkBoxButtonCheckBoxWidth + checkBoxButtonDistanceFromBoxToText + textWidth
         //draw rectangular shape
         var hitSquare = new createjs.Shape()
         hitSquare.graphics.beginFill('#FFFFFF').beginStroke(0)
-        .drawRect(0, sideButtonDistanceFromEdgeToInteriorHitAreaY, totalWidth, parent.size.y - sideButtonDistanceFromEdgeToInteriorHitAreaY)
+        .drawRect(0, checkBoxButtonDistanceFromEdgeToInteriorHitAreaY, totalWidth, item.size.y - checkBoxButtonDistanceFromEdgeToInteriorHitAreaY)
         return hitSquare
       }
 
                     //hit areas
-      this.foldToAnyBet.image.hitArea =  drawHitArea(this.foldToAnyBet)
-        this.sitOutNextHand.image.hitArea = drawHitArea(this.sitOutNextHand)
-          this.sitOutNextBlind.image.hitArea  = drawHitArea(this.sitOutNextBlind)
+      this.foldToAnyBet.image.hitArea =  drawCheckBoxButtonHitSquare(this.foldToAnyBet)
+        this.sitOutNextHand.image.hitArea = drawCheckBoxButtonHitSquare(this.sitOutNextHand)
+          this.sitOutNextBlind.image.hitArea  = drawCheckBoxButtonHitSquare(this.sitOutNextBlind)
      
-                  this.foldToAnyBetOn.image.hitArea  = drawHitArea(this.foldToAnyBetOn)
-                  this.sitOutNextHandOn.image.hitArea = drawHitArea(this.sitOutNextHandOn)
-                    this.sitOutNextBlindOn.image.hitArea = drawHitArea(this.sitOutNextBlindOn)
+                  this.foldToAnyBetOn.image.hitArea  = drawCheckBoxButtonHitSquare(this.foldToAnyBetOn)
+                  this.sitOutNextHandOn.image.hitArea = drawCheckBoxButtonHitSquare(this.sitOutNextHandOn)
+                    this.sitOutNextBlindOn.image.hitArea = drawCheckBoxButtonHitSquare(this.sitOutNextBlindOn)
 
       //onclick
        this.foldToAnyBet.image.onclick =  self.events.onButtonClick
@@ -2241,10 +2332,22 @@ var tableChatFullStageY = tableChatFullTopOffsetFromHideChat + this.hideTableCha
 var tableChatFullStageWidth = this.fold.position.x-tableChatFullStageX - tableChatFullRightOffsetFromFoldButon
 var tableChatFullStageHeight = this.foldToAnyBet.position.y - tableChatFullBottomOffsetFromFoldToAnyBetButton - tableChatFullStageY
 this.tableChatFull.htmlStageElement = new this.Item(tableChatFullStageX, tableChatFullStageY, tableChatFullStageWidth, tableChatFullStageHeight,self.gameState.containerImageIndexes.tableChatFullBackground)
+console.log('tablechatfullhtml element')
+console.log(this.tableChatFull.htmlStageElement)
+
+   $('#tableChatFullCanvas').attr({
+      'width': this.tableChatFull.htmlStageElement.size.x+'px',
+'height': this.tableChatFull.htmlStageElement.size.y+'px'
+  })
+        $('#tableChatFullCanvas').css({
+               'left':this.tableChatFull.htmlStageElement.position.x+'px',
+    'top':this.tableChatFull.htmlStageElement.position.y +'px',
+  //  'z-index':1
+           })
 
 //define stage and containers
-        this.tableChatFull.canvas = document.getElementById('tableChatFull')
-        this.tableChatFull.stage = new createjs.Stage(this.tableChatFull.canvas)
+        var tableChatFullCanvas = document.getElementById('tableChatFullCanvas')
+        this.tableChatFull.stage = new createjs.Stage(tableChatFullCanvas)
 
         createjs.Touch.enable(this.tableChatFull.stage)
         this.tableChatFull.stage.mouseEnabled = true
@@ -2257,10 +2360,10 @@ this.tableChatFull.containers[i] = new createjs.Container()
 this.tableChatFull.stage.addChild(this.tableChatFull.containers[i])
 }
 
-var tableChatFullWindowBackgroundColor ='#000000'
+var tableChatFullWindowBackgroundColor = self.userPreferences.tableChatFull.windowColor
 var tableChatFullWindowBorderColor = '#000000'
 var tableChatFullWindowBorderWidth = 1
-var tableChatFullWindowAlpha = 0.4
+var tableChatFullWindowAlpha = self.userPreferences.tableChatFull.windowAlpha
 
   this.tableChatFull.window = new this.Item(0, 0, tableChatFullStageWidth, tableChatFullStageHeight,self.gameState.containerImageIndexes.tableChatFullBackground)
   this.tableChatFull.window.image = new createjs.Shape()
@@ -2269,19 +2372,164 @@ this.tableChatFull.window.image.graphics.beginFill(tableChatFullWindowBackground
 .drawRoundRect(this.tableChatFull.window.position.x, this.tableChatFull.window.position.y, this.tableChatFull.window.size.x, this.tableChatFull.window.size.y, this.tableChatFull.window.size.x*.1)
 this.tableChatFull.window.image.alpha = tableChatFullWindowAlpha
 
-//this.tableChatFull.text = new this.Item(tableChatFullX, tableChatFullY, tableChatFullWidth, tableChatFullHeight,self.gameState.containerImageIndexes.tableChatFullText)
+var hideDealerMessagesOffsetLeft =  (this.tableChatFull.htmlStageElement.size.x - 162)/2 //checkBoxButtonOffSetLeft
+var hideDealerMessagesOffsetRight =  hideDealerMessagesOffsetLeft//checkBoxButtonOffSetLeft
+var hideDealerMessagesOfsetTop =  checkBoxButtonDistanceY
+
+this.tableChatFull.hideDealerMessages = new this.Item(hideDealerMessagesOffsetLeft, hideDealerMessagesOfsetTop, this.tableChatFull.window.size.x - checkBoxButtonOffSetLeft*2, checkBoxButtonHeight,self.gameState.containerImageIndexes.tableChatFullText,{parentOfStage:this.tableChatFull})
+this.itemAsBitmap(this.tableChatFull.hideDealerMessages, this.sources.checkBox)
+addCheckBoxButtonText(this.tableChatFull.hideDealerMessages, 'Hide dealer messages')
+this.tableChatFull.hideDealerMessages.image.hitArea = drawCheckBoxButtonHitSquare(this.tableChatFull.hideDealerMessages)
+this.tableChatFull.hideDealerMessages.image.onClick = self.events.hideDealerMessagesClicked
+
+this.tableChatFull.hideDealerMessagesOn = new this.Item(hideDealerMessagesOffsetLeft, this.tableChatFull.hideDealerMessages.position.y, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,self.gameState.containerImageIndexes.tableChatFullText,{parentOfStage:this.tableChatFull})
+this.itemAsBitmap(this.tableChatFull.hideDealerMessagesOn, this.sources.checkBoxChecked)
+addCheckBoxButtonText(this.tableChatFull.hideDealerMessagesOn, 'Hide dealer messages')
+this.tableChatFull.hideDealerMessagesOn.image.hitArea = drawCheckBoxButtonHitSquare(this.tableChatFull.hideDealerMessagesOn)
+this.tableChatFull.hideDealerMessagesOn.image.onClick = self.events.hideDealerMessagesOnClicked
+
+this.tableChatFull.hidePlayerMessages = new this.Item(hideDealerMessagesOffsetLeft, hideDealerMessagesOfsetTop*2+checkBoxButtonHeight, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,self.gameState.containerImageIndexes.tableChatFullText,{parentOfStage:this.tableChatFull})
+this.itemAsBitmap(this.tableChatFull.hidePlayerMessages, this.sources.checkBox)
+addCheckBoxButtonText(this.tableChatFull.hidePlayerMessages, 'Hide player messages')
+this.tableChatFull.hidePlayerMessages.image.hitArea = drawCheckBoxButtonHitSquare(this.tableChatFull.hideDealerMessages)
+this.tableChatFull.hidePlayerMessages.image.onClick = self.events.hidePlayerMessagesClicked
+
+this.tableChatFull.hidePlayerMessagesOn = new this.Item(hideDealerMessagesOffsetLeft, this.tableChatFull.hidePlayerMessages.position.y, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,self.gameState.containerImageIndexes.tableChatFullText,{parentOfStage:this.tableChatFull})
+this.itemAsBitmap(this.tableChatFull.hidePlayerMessagesOn, this.sources.checkBoxChecked)
+addCheckBoxButtonText(this.tableChatFull.hidePlayerMessagesOn, 'Hide player messages')
+this.tableChatFull.hidePlayerMessagesOn.image.hitArea = drawCheckBoxButtonHitSquare(this.tableChatFull.hidePlayerMessagesOn)
+this.tableChatFull.hidePlayerMessagesOn.image.onClick = self.events.hidePlayerMessagesOnClicked
+
+this.tableChatFull.hideObserverMessages = new this.Item(hideDealerMessagesOffsetLeft, checkBoxButtonDistanceY*3+checkBoxButtonHeight*2, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,self.gameState.containerImageIndexes.tableChatFullText,{parentOfStage:this.tableChatFull})
+this.itemAsBitmap(this.tableChatFull.hideObserverMessages, this.sources.checkBox)
+addCheckBoxButtonText(this.tableChatFull.hideObserverMessages, 'Hide observer messages')
+this.tableChatFull.hideObserverMessages.image.hitArea = drawCheckBoxButtonHitSquare(this.tableChatFull.hideObserverMessages)
+this.tableChatFull.hideObserverMessages.image.onClick = self.events.hideObserverMessagesClicked
+
+this.tableChatFull.hideObserverMessagesOn = new this.Item(hideDealerMessagesOffsetLeft, this.tableChatFull.hideObserverMessages.position.y, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,self.gameState.containerImageIndexes.tableChatFullText,{parentOfStage:this.tableChatFull})
+this.itemAsBitmap(this.tableChatFull.hideObserverMessagesOn, this.sources.checkBoxChecked)
+addCheckBoxButtonText(this.tableChatFull.hideObserverMessagesOn, 'Hide observer messages')
+this.tableChatFull.hideObserverMessagesOn.image.hitArea = drawCheckBoxButtonHitSquare(this.tableChatFull.hideObserverMessagesOn)
+this.tableChatFull.hideObserverMessagesOn.image.onClick = self.events.hideObserverMessagesOnClicked
+
+
+//chat message text
+
+var htmlChatStageElementTextOffsetLeft = checkBoxButtonOffSetLeft - 1
+var htmlChatStageElementTextOffsetRight = checkBoxButtonOffSetLeft - 1
+var htmlChatStageElementTextDistanceFromBottomCheckBox = checkBoxButtonDistanceY-1
+var htmlChatStageElementTextOffsetBottom = checkBoxButtonDistanceY
+var htmlChatStageElementX = this.tableChatFull.htmlStageElement.position.x + htmlChatStageElementTextOffsetLeft
+var htmlChatStageElementY = this.tableChatFull.htmlStageElement.position.y + this.tableChatFull.hideObserverMessages.position.y+this.tableChatFull.hideObserverMessages.size.y + htmlChatStageElementTextDistanceFromBottomCheckBox
+var htmlChatStageElementWidth = this.tableChatFull.htmlStageElement.size.x -htmlChatStageElementTextOffsetLeft-htmlChatStageElementTextOffsetRight
+var htmlChatStageElementHeight = this.tableChatFull.htmlStageElement.size.y - htmlChatStageElementTextOffsetBottom -(htmlChatStageElementY-this.tableChatFull.hideObserverMessages.position.y) 
+
+
+
+this.tableChatFull.htmlChatStageElement = new this.Item(htmlChatStageElementX, htmlChatStageElementY, htmlChatStageElementWidth ,htmlChatStageElementHeight, self.gameState.containerImageIndexes.tableChatFullBackground)
+console.log(this.tableChatFull.htmlChatStageElement)
+
+   $('#tableChatFullTextDiv').attr({
+      'width': this.tableChatFull.htmlChatStageElement.size.x+'px',
+'height': this.tableChatFull.htmlChatStageElement.size.y+'px'
+  })
+        $('#tableChatFullTextDiv').css({
+               'left':this.tableChatFull.htmlChatStageElement.position.x+'px',
+    'top':this.tableChatFull.htmlChatStageElement.position.y +'px',
+           })
+
+           $('#tableChatFullTextCanvas').attr({
+      'width': this.tableChatFull.htmlChatStageElement.size.x+'px',
+'height': this.tableChatFull.htmlChatStageElement.size.y+'px'
+  })
+
+
+
+var chatMessageOffsetLeft = 4
+var chatMessageOffsetRight = chatMessageOffsetLeft
+var chatMessageOffsetTop = 7
+var chatMessageOffsetBottom =  chatMessageOffsetLeft
+
+
+
+this.tableChatFull.chatMessageText = new this.Item(chatMessageOffsetLeft, chatMessageOffsetTop, htmlChatStageElementWidth -  chatMessageOffsetLeft - chatMessageOffsetRight,htmlChatStageElementHeight  - chatMessageOffsetTop - chatMessageOffsetBottom, self.gameState.containerImageIndexes.tableChatFullTextText ,{itemAsParentOfStage:true})
+
+var chatMessageFontSize = self.userPreferences.tableChatFull.chatMessageFontSize
+var chatMessageFont = 'arial'
+var chatMessageFontColor = self.userPreferences.tableChatFull.chatMessageFontColor
+
+//create create js text display object
+this.tableChatFull.chatMessageText.text = new createjs.DOMElement(document.getElementById('tableChatFullText'))
+this.tableChatFull.chatMessageText.text.x=this.tableChatFull.chatMessageText.position.x
+this.tableChatFull.chatMessageText.text.y=this.tableChatFull.chatMessageText.position.y
+
+
+
+   $('#tableChatFullText').attr({
+
+
+
+  })
+   
+        $('#tableChatFullText').css({
+               'width': this.tableChatFull.chatMessageText.size.x+'px',
+'height': this.tableChatFull.chatMessageText.size.y+'px',
+          'font': toString(chatMessageFontSize) + ' '+chatMessageFont,
+          'color': chatMessageFontColor ,
+          'word-wrap': 'break-word',
+'word-break': 'break-all',
+'text-overflow': 'clip'
+           //    'left':this.tableChatFull.htmlChatStageElement.position.x+'px',
+ //  'top':this.tableChatFull.htmlChatStageElement.position.y +'px',
+  //  'z-index':1
+           })
+console.log(this.tableChatFull.chatMessageText.text)
+
+/*
+this.tableChatFull.chatMessageText.text = new createjs.Text('', toString(chatMessageFontSize) + ' '+chatMessageFont, chatMessageFontColor)
+this.tableChatFull.chatMessageText.text.x=this.tableChatFull.chatMessageText.position.x
+this.tableChatFull.chatMessageText.text.y=this.tableChatFull.chatMessageText.position.y
+this.tableChatFull.chatMessageText.text.baseline = 'top'
+this.tableChatFull.chatMessageText.text.textAlign = 'left'
+this.tableChatFull.chatMessageText.text.lineWidth = this.tableChatFull.chatMessageText.size.x*.9
+this.tableChatFull.chatMessageText.text.maxWidth = this.tableChatFull.chatMessageText.size.x*.9
+*/
+
+
+
+ var chatMessageTextCanvas = document.getElementById('tableChatFullTextCanvas')
+this.tableChatFull.chatMessageText.stage = new createjs.Stage(chatMessageTextCanvas)
+
+    createjs.Touch.enable(this.tableChatFull.chatMessageText.stage)
+        this.tableChatFull.chatMessageText.stage.mouseEnabled = true
+        this.tableChatFull.chatMessageText.stage.mouseMoveOutside =true
+        this.tableChatFull.chatMessageText.stage.enableMouseOver()
+
+this.tableChatFull.chatMessageText.containers = []
+        for(var i = 0;i<self.gameState.containerImageIndexes.tableChatFullTextTotalContainers;i++){
+this.tableChatFull.chatMessageText.containers[i] = new createjs.Container()
+this.tableChatFull.chatMessageText.stage.addChild(this.tableChatFull.chatMessageText.containers[i])
+}
+
+//hit area or tableChatFull.chatMessageText
+var tableChatFullHitArea = new createjs.Shape()
+tableChatFullHitArea.graphics.beginStroke('#FFFFFF').beginFill('#FFFFFF')
+.drawRect(0, 0, this.tableChatFull.chatMessageText.size.x, this.tableChatFull.chatMessageText.size.y)
+this.tableChatFull.chatMessageText.text.hitArea = tableChatFullHitArea
+this.tableChatFull.chatMessageText.text.htmlElement.onMouseDown = self.events.tableChatFullChatMessageTextMouseDown
+
+/*
+this.tableChatFull.chatMessageText.image = tableChatFullHitArea
+this.tableChatFull.chatMessageText.image.x = 25
+this.tableChatFull.chatMessageText.image.y = 25
+self.displayChildren(this.tableChatFull.chatMessageText)
+*/
+
+console.log(this.tableChatFull.chatMessageText)
 //this.tableChatFull.hide = new this.Item(tableChatFullX, tableChatFullY, tableChatFullWidth, tableChatFullHeight,self.gameState.containerImageIndexes.tableChatFullButton)
        
         //postion canvas element textbox
-    $('#tableChatFull').attr({
-      'width': this.tableChatFull.htmlStageElement.size.x+'px',
-'height': this.tableChatFull.htmlStageElement.size.y+'px'
-  })
-        $('#tableChatFull').css({
-               'left':this.tableChatFull.htmlStageElement.position.x+'px',
-    'top':this.tableChatFull.htmlStageElement.position.y +'px',
-  //  'z-index':1
-           })
+ 
 
 
 
@@ -2904,9 +3152,10 @@ this.images.pots[potNumber].potSize.text.text = potSize
     }
 
     this.addChildToContainer = function (child, containerIndex, options){
-        if(options && options.parentOfStage){var parentOfStage = options.parentOfStage}
-          else{var parentOfStage = this.images}
-        parentOfStage.containers[containerIndex].addChild(child)
+        if(options && options.parentOfStage){var parentOfContainerArray= options.parentOfStage}
+
+          else{var parentOfContainerArray = this.images}
+        parentOfContainerArray.containers[containerIndex].addChild(child)
 
     }
 
@@ -3308,17 +3557,28 @@ this.updateBetSize = function(betSize){
  
     //parameter is parent of the actual Image object
     this.displayImage = function (parentOfImageObject, options){
+        if(options){
+          if(!options.parentOfStage){
+if(parentOfImageObject.parentOfStage){options.parentOfStage = parentOfImageObject.parentOfStage}
+          }
+        }
+        else{
+     var options = {}     
+if(parentOfImageObject.parentOfStage){
+  options.parentOfStage = parentOfImageObject.parentOfStage}
+        }
+
         if(parentOfImageObject.image){
 this.addChildToContainer(parentOfImageObject.image, parentOfImageObject.position.z, options)
         
         if(options){
        if(options.update == false){}
           else{
-            var updated = true
 
 if(options.parentOfStage){options.parentOfStage.stage.update()}
+  else if(parentOfImageObject.parentOfStage){parentOfImageObject.parentOfStage.stage.update()}
   else{self.stage.update()}
-
+            var updated = true
 }
  }//if options
  
@@ -3327,13 +3587,27 @@ if(options.parentOfStage){options.parentOfStage.stage.update()}
     }
     
     this.displayText = function (parentOfTextObject, options){
+  if(options){
+          if(!options.parentOfStage){
+if(parentOfTextObject.parentOfStage){options.parentOfStage = parentOfTextObject.parentOfStage}
+          }
+        }
+        else{
+     var options = {}     
+if(parentOfTextObject.parentOfStage){
+  options.parentOfStage = parentOfTextObject.parentOfStage}
+        }
+
+
         if(parentOfTextObject.text){
             this.addChildToContainer(parentOfTextObject.text, parentOfTextObject.position.z+1, options)
-                             if(options){
+                            
+                   if(options){
        if(options.update == false){}
           else{
             var updated = true
 if(options.parentOfStage){options.parentOfStage.stage.update()}
+    else if(parentOfTextObject.parentOfStage){parentOfTextObject.parentOfStage.stage.update()}
   else{self.stage.update()}
 
 }
@@ -3399,6 +3673,10 @@ if(options && options.parentOfStage){
   var parentOfStage = options.parentOfStage
 var parentOfContainerArray = options.parentOfStage
 }
+  else if(parent.parentOfStage){
+var parentOfStage = parent.parentOfStage
+var parentOfContainerArray = parent.parentOfStage
+}
   else{
     var parentOfStage = this
 var parentOfContainerArray = this.images
@@ -3411,6 +3689,7 @@ var parentOfContainerArray = this.images
           else{
             var updated = true
 if(options.parentOfStage){options.parentOfStage.stage.update()}
+    else if(parentOfImageObject.parentOfStage){parentOfImageObject.parentOfStage.stage.update()}
   else{self.stage.update()}
 
 }
@@ -3434,6 +3713,10 @@ if(options && options.parentOfStage){
   var parentOfStage = options.parentOfStage
 var parentOfContainerArray = options.parentOfStage
 }
+  else if(parent.parentOfStage){
+var parentOfStage = parent.parentOfStage
+var parentOfContainerArray = parent.parentOfStage
+}
   else{
     var parentOfStage = this
 var parentOfContainerArray = this.images
@@ -3447,6 +3730,7 @@ var parentOfContainerArray = this.images
           else{
             var updated = true
 if(options.parentOfStage){options.parentOfStage.stage.update()}
+    else if(parentOfImageObject.parentOfStage){parentOfImageObject.parentOfStage.stage.update()}
   else{self.stage.update()}
 
 }
@@ -3777,7 +4061,11 @@ self.events.wheelScroll(wheelScrolls)
         })
 
     }
+this.playerChats = function(chatInfo){
 
+this.gameState.tableChatFullLog.push(chatInfo)
+//this.images.tableChatFull.chatMessageText
+}
 
     this.displayCorrectSeatMessage = function(seatNumber){
 
@@ -4166,24 +4454,70 @@ var interval = 1000
 }, interval)
 
 }
+this.updateTableChatFullDisplayDoesNotUpdateStageByDefault = function(displayOrHideChildrenOptions){
+var options = {}
+if(displayOrHideChildrenOptions){
+  if(displayOrHideChildrenOptions.parentOfStage){options.parentOfStage = displayOrHideChildrenOptions.parentOfStage}
+  else{options.parentOfStage = self.images.tableChatFull}
+    if(_.isNull(displayOrHideChildrenOptions.update) || _.isUndefined(displayOrHideChildrenOptions.update)){  options.update = false   }
+      else{options.update = displayOrHideChildrenOptions.update}
+}
+else{options.update = false;options.parentOfStage = self.images.tableChatFull}
+
+//hide items that should be hidden by default
+_.each(self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem,function(value, index, list){
+
+if(self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem[index] === false){
+  self.hideChildren(self.images.tableChatFull[index], options)
+  console.log('hiding' + index)
+}
+else{self.displayChildren(self.images.tableChatFull[index], options)}
+
+})//end loop through self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem
+
+}
 
 this.displayTableChatFull = function(){
 console.log('calling displayTableChatFull')
-this.displayChildren(this.images.hideTableChatFull)
-this.hideChildren(this.images.showTableChatFull)
-this.displayChildren(this.images.tableChatFull, {parentOfStage: this.images.tableChatFull})
-$('#tableChatFull').css('display','inline')
-console.log(this.images.tableChatFull)
-console.log(this.images.tableChatFull.stage.contains(this.images.tableChatFull.window.image))
-console.log(this.images.tableChatFull.window.image.isVisible())
+this.displayChildren(this.images.hideTableChatFull,{update:false})
+this.hideChildren(this.images.showTableChatFull,{update:false})
+this.displayChildren(this.images.tableChatFull, {parentOfStage: this.images.tableChatFull, update:false})
+this.displayChildren(this.images.tableChatFull.chatMessageText,{update:false})
+console.log('getting ready to update stages')
+
+
+this.updateTableChatFullDisplayDoesNotUpdateStageByDefault({parentOfStage:this.images.tableChatFull})
+
+this.stage.update()
+console.log(this.images.tableChatFull.chatMessageText)
+this.images.tableChatFull.stage.update()
+
+this.images.tableChatFull.chatMessageText.parentOfStage.stage.update()
+
+$('#tableChatFullCanvas').css('display','inline')
+$('#tableChatFullTextCanvas').css('display','inline')
+$('#tableChatFullText').css('display','inline')
+//console.log(this.images.tableChatFull)
+//console.log(this.images.tableChatFull.stage.contains(this.images.tableChatFull.window.image))
+//console.log(this.images.tableChatFull.window.image.isVisible())
 }
 
 this.hideTableChatFull = function(){
 console.log('calling hideTableChatFull')
-  this.displayChildren(this.images.showTableChatFull)
-this.hideChildren(this.images.hideTableChatFull)
-this.hideChildren(this.images.tableChatFull, {parentOfStage: this.images.tableChatFull})
-$('#tableChatFull').css('display','none')
+  this.displayChildren(this.images.showTableChatFull,{update:false})
+this.hideChildren(this.images.hideTableChatFull,{update:false})
+this.hideChildren(this.images.tableChatFull, {parentOfStage: this.images.tableChatFull , update:false})
+this.hideChildren(this.images.tableChatFull.chatMessageText,{update:false})
+
+
+this.stage.update()
+this.images.tableChatFull.stage.update()
+
+this.images.tableChatFull.chatMessageText.parentOfStage.stage.update()
+$('#tableChatFullCanvas').css('display','none')
+
+$('#tableChatFullTextCanvas').css('display','none')
+$('#tableChatFullText').css('display','none')
 }
 
     //make sure to set buttonText as FALSE if you want to display the default text
@@ -4866,9 +5200,11 @@ if(!_.isNumber(this.gameState.userSeatNumber)){this.displayChildren(this.images.
      self.gameState.minIncrement = table_state.min_increment
      self.gameState.cashier.currency = table_state.currency
      self.gameState.cashier.currency_per_chip =  table_state.currency_per_chip
+for(var i = 0;i<35;i++){
+//this.images.tableChatFull.chatMessageText.text.text  = this.images.tableChatFull.chatMessageText.text.text + 'hello kitty '
+$('#tableChatFullText').text($('#tableChatFullText').text()+'hello kitty -')
 
-
-
+}
     }
     
   //---------------------SOCKET CODE------------------------
@@ -5176,6 +5512,8 @@ if( self.gameState.seats[player.seat].toAct == true){self.startCountdown(player.
 
 //player to act (not the user)
  socket.on('user_chats', function(chatInfo){
+
+self.playerChats (chatInfo)
 self.images.seats[chatInfo.seat].chat.text.text = ''
 //trim front and trailing whitespace from chat message
 chatInfo.message = chatInfo.message.replace(/^\s+|\s+$/g,'')
