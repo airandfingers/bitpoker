@@ -121,7 +121,7 @@ module.exports = (function () {
           , player.username
           , player.hand[0]
           , player.hand[1]
-          ));
+          ), false);
         }
         else {
           console.error('player in players without hand after dealing!', player);
@@ -334,9 +334,11 @@ module.exports = (function () {
     });
   };
 
-  HandHistorySchema.methods.appendToHistoryString = function(line_to_append) {
+  HandHistorySchema.methods.appendToHistoryString = function(line_to_append, broadcast) {
     this.history_string += line_to_append + '\n';
-    this.broadcast('game_event', line_to_append, new Date());
+    if (broadcast !== false) {
+      this.broadcast('game_event', line_to_append, new Date());
+    }
   };
 
   HandHistorySchema.pre('save', function(next) {
