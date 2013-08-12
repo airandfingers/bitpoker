@@ -13,6 +13,10 @@ var socket = io.connect(window.location.origin, {
     '<p id="new_message">' +
       '<strong><%= sender %> : </strong>' +
       '<span><%= message %></span>' +
+    '</p>'
+  , game_event_template = 
+    '<p id="new_message">' +
+      '<strong><span><%= message %></span></strong>' +
     '</p>';
 
 var emit = socket.emit;
@@ -32,6 +36,17 @@ socket.on('user_chats', function(data) {
   var sender = data.sender
     , message = data.message
     , $message = $(_.template(chat_message_template, { sender: sender, message: message.message }));
+  $('#chat_messages')
+    .append($message)
+    .scrollTop($('#chat_messages').height());
+  $('#new_message')
+    .effect('highlight', {color: '#b3d4fc'}, 4000)
+    .removeAttr('id');
+});
+
+socket.on('game_event', function(message, timestamp) {
+  console.log('game_event message received: ', message, timestamp);
+  var $message = $(_.template(game_event_template, { message: message.message }));
   $('#chat_messages')
     .append($message)
     .scrollTop($('#chat_messages').height());

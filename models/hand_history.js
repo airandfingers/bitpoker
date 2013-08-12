@@ -27,6 +27,8 @@ module.exports = (function () {
 
     // the hand history string, compatible with pokerhand.org
   , history_string     : { type: String, default: '' }
+    // the function this hand history can call to broadcast to all players in the room
+  , broadcast          : Schema.Types.Mixed
 
     // time at which hands were dealt
   , started_at         : Date
@@ -334,6 +336,7 @@ module.exports = (function () {
 
   HandHistorySchema.methods.appendToHistoryString = function(line_to_append) {
     this.history_string += line_to_append + '\n';
+    this.broadcast('game_event', line_to_append, new Date());
   };
 
   HandHistorySchema.pre('save', function(next) {

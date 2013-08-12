@@ -190,6 +190,7 @@ module.exports = (function () {
             hand: self
           , table_name: self.table_name
           , hand_num: hand_num
+          , broadcast: self.broadcast
           });
           // start the game
           self.nextStage();
