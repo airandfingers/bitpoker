@@ -28,12 +28,34 @@ position:absolute;
   zIndex:0;
   z-index: 0
 }
-#tableChatFull{
+#tableChatFullCanvas{
   position:absolute;
   display:none;
   z-index: 1;
   zIndex:1;
 }
+#tableChatFullTextCanvas{
+  position:absolute;
+  display:none;
+  z-index: 3;
+  zIndex:2;
+}
+#tableChatFullText{
+  position:absolute;
+  display:none;
+  z-index: 3;
+  zIndex:2;
+  word-wrap: break-word;
+word-break: break-all;
+text-overflow: clip;
+}
+#tableChatFullTextDiv{
+  position:absolute;
+  display:inline;
+  z-index: 3;
+  zIndex:2;
+}
+
 #cashier input[type = 'text']{
   background-image:url('/img/cashier_textbox_bg.jpg');
 	background-repeat:repeat;
