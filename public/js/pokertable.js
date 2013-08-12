@@ -272,7 +272,9 @@ this.positionImage=function(){
 
             this.images.cardAsBitmap = function(item,cardText){
                  var cardImage = new Image()
-         var imageSource = this.sources.cardImageFolder+cardText+'.png'
+                 if(_.isString(cardText)){
+         var imageSource = this.sources.cardImageFolder+cardText+'.png'}
+         else{var imageSource = this.sources.cardImageFolder+hiddenCardFileName+'.png'}
 
   //    parentOfImageObject.image = new createjs.Bitmap(cardImage)
   //    parentOfImageObject.image.x = parentOfImageObject.position.x
@@ -3052,7 +3054,7 @@ this.images.pots[potNumber].potSize.text.text = potSize
             for(var i = 0;i<this.images.seats[seatNumber].chips.length;i++){
                 this.hideChildren(this.images.seats[seatNumber].chips[i])            
             }
-            this.images.seats[seatNumber].chips = []
+            this.images.seats[seatNumber].chips.length = 0
     }
 
    //this.images.seats[i] is parent for players bets, this.images.pots[i] is parent for pots
@@ -3440,7 +3442,7 @@ var dealHoleCardSound =  createjs.Sound.createInstance(self.images.sources.dealH
           self.images.itemAsBitmap(animatedCards0[cardsDealt], self.images.seats[playerArray[playerArrayNumber]].hiddenCard0.bitmapSource)
            self.animateImage(initialX,initialY,animationTime, lastTick+1,  animatedCards0[cardsDealt], self.images.seats[playerArray[playerArrayNumber]].hiddenCard0.position.x,self.images.seats[playerArray[playerArrayNumber]].hiddenCard0.position.y, function(){
                callback(null, callBackNumber)
-               self.hideChildren(animatedCards0[cardsDealt])
+               
                })
           }
 
@@ -3450,7 +3452,7 @@ var dealHoleCardSound =  createjs.Sound.createInstance(self.images.sources.dealH
                self.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCards1[cardsDealt], self.images.seats[playerArray[playerArrayNumber]].hiddenCard1.position.x,self.images.seats[playerArray[playerArrayNumber]].hiddenCard1.position.y, function(){
                    callback(null, callBackNumber)
                    
-                 self.hideChildren(animatedCards1[cardsDealt])
+                 
                    })
               
  }
@@ -3460,18 +3462,30 @@ var dealHoleCardSound =  createjs.Sound.createInstance(self.images.sources.dealH
  callBackNumber ++
         asyncArray.push( function(callback){
 
-                       if(_.isNumber(self.gameState.userSeatNumber) && playerArray[playerArrayNumber] == self.gameState.userSeatNumber){  
+                       if(_.isNumber(self.gameState.userSeatNumber) && playerArray[playerArrayNumber] == self.gameState.userSeatNumber && holeCardArray){  
                        
                        if(cardsDealt==playerArrayNumber){
-                       self.displayShownCard(holeCardArray[0], self.images.seats[playerArray[playerArrayNumber]].shownCard0)  }
+                        self.hideChildren(animatedCards0[cardsDealt]) //hide temporarily animated image
+                       self.displayShownCard(holeCardArray[0], self.images.seats[playerArray[playerArrayNumber]].shownCard0)  
+                     }
                        else if (cardsDealt>playerArrayNumber){
+                        self.hideChildren(animatedCards1[cardsDealt]) //hide temporarily animated image
                            self.displayShownCard(holeCardArray[1], self.images.seats[playerArray[playerArrayNumber]].shownCard1)  
                        }
-                       }
+          
+                       }//if player being dealt to is user AND holecardarrayexists
                     else{ 
-                    if(cardsDealt==playerArrayNumber){ self.displayChildren(self.images.seats[playerArray[playerArrayNumber]].hiddenCard0)}
-                       else if (cardsDealt>playerArrayNumber){self.displayChildren(self.images.seats[playerArray[playerArrayNumber]].hiddenCard1)}
-}
+                    if(cardsDealt==playerArrayNumber){ 
+                      self.hideChildren(animatedCards0[cardsDealt]) //hide temporarily animated image
+
+                      self.displayChildren(self.images.seats[playerArray[playerArrayNumber]].hiddenCard0)
+                    }
+                       else if (cardsDealt>playerArrayNumber){
+  self.hideChildren(animatedCards1[cardsDealt]) //hide temporarily animated image
+  
+                        self.displayChildren(self.images.seats[playerArray[playerArrayNumber]].hiddenCard1)
+                      }
+}//if not dealing face up card to user
 callback(null, callBackNumber)
                    })
                    //push both functions into the async array
@@ -4659,13 +4673,13 @@ console.log(messageBoxImageContainerIndex)
 
          //-------------------set defaults---------------------------
          //set default font sizes and colors
-       if(_.isNull(messageInfo.title)||_.isUndefined(messageInfo.title)||!(_.isString(messageInfo.title)||!_.isNumber(messageInfo.title))){messageInfo.title = 'Undefined Error'}
+       if(_.isNull(messageInfo.title)||_.isUndefined(messageInfo.title)||!(_.isString(messageInfo.title)||!_.isNumber(messageInfo.title))){messageInfo.title = ''}
        if(_.isNull(messageInfo.titleSizeAndFont)||_.isUndefined(messageInfo.titleSizeAndFont)){messageInfo.titleSizeAndFont = '18px Arial'}
        if(_.isNull(messageInfo.titleColor)||_.isUndefined(messageInfo.titleColor)){ messageInfo.titleColor = '#000000'}
        if(_.isNull(messageInfo.sizeAndFont)||_.isUndefined(messageInfo.sizeAndFont)){messageInfo.messageSizeAndFont = '13px Arial'}
     if(_.isNull(messageInfo.messageColor)||_.isUndefined(messageInfo.messageColor)){ messageInfo.messageColor = '#000000'}
     if(_.isNull(messageInfo.buttonSizeAndFont)||_.isUndefined(messageInfo.buttonSizeAndFont)){messageInfo.buttonSizeAndFont = '13px Arial'}
-     if(_.isNull(messageInfo.buttonTextColor)||_.isUndefined(messageInfo.buttonTextColor)){ messageInfo.buttonTextColor = '#000000'}
+     if(_.isNull(messageInfo.buttonTextColor)||_.isUndefined(messageInfo.buttonTextColor)){ messageInfo.buttonTextColor = '#FFFFFF'}
     if(_.isNull(messageInfo.buttonBackgroundColor)||_.isUndefined(messageInfo.buttonBackgroundColor)){ messageInfo.buttonBackgroundColor = '#0000FF'}
     if(_.isNull(messageInfo.okayText)||_.isUndefined(messageInfo.okayText)){ messageInfo.okayText = 'OK'}
     if(_.isNull(messageInfo.cancelText)||_.isUndefined(messageInfo.cancelText)){ messageInfo.cancelText = 'Cancel'}
@@ -4922,7 +4936,7 @@ var chipMoveSound = createjs.Sound.createInstance(this.images.sources.moveChipsS
         //push animateImages into an array
         _.each(_.range(self.images.seats.length), function(seatNumber) {
 
-            if(self.images.seats[seatNumber].chips && Array.isArray( self.images.seats[seatNumber].chips) && self.images.seats[seatNumber].chips[0]  && self.images.seats[seatNumber].chips[0].image && self.stage.contains(self.images.seats[seatNumber].chips[0].image) )
+            if(self.images.seats[seatNumber].chips && Array.isArray( self.images.seats[seatNumber].chips) && self.images.seats[seatNumber].chips.length>=1  && self.images.seats[seatNumber].chips[0].image && self.stage.contains(self.images.seats[seatNumber].chips[0].image) )
             {
                 
                 var animationDistanceX = self.images.pots[0].firstChip.position.x -  self.images.seats[seatNumber].firstChip.position.x
@@ -5285,7 +5299,7 @@ socket.on('hands_dealt', function(players, tableInfo){
     self.dealHoleCards(tableInfo.small_blind_seat,playerArray, self.gameState.holeCards)
     self.displayInHandOptions()
     }
-    else{self.dealHoleCards(playerArray[0],playerArray)}
+    else{self.dealHoleCards(tableInfo.small_blind_seat,playerArray)}
     self.gameState.holeCards = null
 })
 
@@ -5504,6 +5518,44 @@ if( self.gameState.seats[player.seat].toAct == true){self.startCountdown(player.
     .call(delayedCountDown)
      }
 })
+
+//hands turned face up
+ socket.on('hands_shown', function(players){
+
+
+           for(var i =0;i<players.length;i++){
+         self.hideHoleCards(players[i].seat)
+        self.displayHoleCards(players[i].hand, players[i].seat)
+        }
+        
+
+})
+
+//dealer message
+ socket.on('game event', function(seatNumber, time){
+
+self.gameState.seats[seatNumber].timeToAct = time
+
+})
+
+//player to act (not the user)
+ socket.on('player_to_act', function(player, timeout){
+    var timeToCountDown = 3000
+
+//if user = player, do not initiate to act function, as act_prompt will be sent instead
+    if(player.seat != self.gameState.userSeatNumber){self.playerToAct(player.seat, timeout)}
+
+var delayedCountDown = function(){
+if( self.gameState.seats[player.seat].toAct == true){self.startCountdown(player.seat, Math.round(timeToCountDown/1000))}
+}
+     //do a countdown when time is low for non-user players
+     if(player.seat != self.gameState.userSeatNumber){
+     createjs.Tween.get(self.images.seats[player.seat].countdown, {override:true, loop:false})
+     .wait(timeout-timeToCountDown)
+    .call(delayedCountDown)
+     }
+})
+
 
 //player to act (not the user)
  socket.on('user_chats', function(chatInfo){
@@ -5764,8 +5816,7 @@ socket.on('reset_table', function(players){
    self.hideChildren(self.images.seats[i].hiddenCard1)
    self.hideChildren(self.images.seats[i].shownCard0)
    self.hideChildren(self.images.seats[i].shownCard1)
-   self.images.seats[i].hiddenCard0.image = null
-   self.images.seats[i].hiddenCard1.image = null
+
 
 }
 
