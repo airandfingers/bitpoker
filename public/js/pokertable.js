@@ -37,6 +37,8 @@ window.onKeydown = onKeyDown
       animate: true,
       chatTextColor: '#000000',
       playerChatMaxLines:3,
+      changeUserSeatView:['bottom','middle'],
+
       tableChatFull:{
 
         chatMessageFontSize: 11,
@@ -1501,17 +1503,16 @@ $('#chat').css({
     })
 
            //--------standard pre-action buttons---------------------
-          this.foldToAnyBet = new  this.Item(checkBoxButtonOffSetLeft,this.htmlTableChatBox.position.y-  checkBoxButtonDistanceFromChat - 3*checkBoxButtonHeight-2*checkBoxButtonDistanceY,checkBoxButtonWidth,checkBoxButtonHeight,self.gameState.containerImageIndexes.button, ['set_flag','check',true])
-         this.foldToAnyBet.otherMessages = ['set_flag','fold',true]
-          this.sitOutNextHand = new  this.Item(checkBoxButtonOffSetLeft,this.htmlTableChatBox.position.y -  checkBoxButtonDistanceFromChat- 2*checkBoxButtonHeight - checkBoxButtonDistanceY,checkBoxButtonWidth,checkBoxButtonHeight,self.gameState.containerImageIndexes.button, ['sit_out'])
-        this.sitOutNextBlind =  new this.Item(checkBoxButtonOffSetLeft,this.htmlTableChatBox.position.y-  checkBoxButtonDistanceFromChat- checkBoxButtonHeight,checkBoxButtonWidth,checkBoxButtonHeight,self.gameState.containerImageIndexes.button, ['set_flag', 'post_blind', false])
+          this.foldToAnyBet = new  this.Item(checkBoxButtonOffSetLeft,this.htmlTableChatBox.position.y-  checkBoxButtonDistanceFromChat - 3*checkBoxButtonHeight-2*checkBoxButtonDistanceY,checkBoxButtonWidth,checkBoxButtonHeight,self.gameState.containerImageIndexes.button, {messages:['set_flag','check',true], otherMessages:['set_flag','fold',true]})
+          this.sitOutNextHand = new  this.Item(checkBoxButtonOffSetLeft,this.htmlTableChatBox.position.y -  checkBoxButtonDistanceFromChat- 2*checkBoxButtonHeight - checkBoxButtonDistanceY,checkBoxButtonWidth,checkBoxButtonHeight,self.gameState.containerImageIndexes.button, {messages:['sit_out']})
+        this.sitOutNextBlind =  new this.Item(checkBoxButtonOffSetLeft,this.htmlTableChatBox.position.y-  checkBoxButtonDistanceFromChat- checkBoxButtonHeight,checkBoxButtonWidth,checkBoxButtonHeight,self.gameState.containerImageIndexes.button, {messages:['set_flag', 'post_blind', false]})
                
                
                 //define on versions
-                  this.foldToAnyBetOn =  new this.Item(this.foldToAnyBet.position.x,this.foldToAnyBet.position.y, this.foldToAnyBet.size.x,this.foldToAnyBet.size.y,self.gameState.containerImageIndexes.button, ['set_flag','fold',false])
-                   this.foldToAnyBetOn.otherMessages = ['set_flag','check',false]
-          this.sitOutNextHandOn = new  this.Item(this.sitOutNextHand.position.x,this.sitOutNextHand.position.y, this.sitOutNextHand.size.x,this.sitOutNextHand.size.y,self.gameState.containerImageIndexes.button, ['sit_in'])
-        this.sitOutNextBlindOn = new  this.Item(this.sitOutNextBlind.position.x,this.sitOutNextBlind.position.y, this.sitOutNextBlind.size.x,this.sitOutNextBlind.size.y,self.gameState.containerImageIndexes.button, ['set_flag', 'post_blind', true])
+                  this.foldToAnyBetOn =  new this.Item(this.foldToAnyBet.position.x,this.foldToAnyBet.position.y, this.foldToAnyBet.size.x,this.foldToAnyBet.size.y,self.gameState.containerImageIndexes.button, {messages:['set_flag','fold',false], otherMessages :['set_flag','check',false]})
+                   
+          this.sitOutNextHandOn = new  this.Item(this.sitOutNextHand.position.x,this.sitOutNextHand.position.y, this.sitOutNextHand.size.x,this.sitOutNextHand.size.y,self.gameState.containerImageIndexes.button,{messages: ['sit_in']})
+        this.sitOutNextBlindOn = new  this.Item(this.sitOutNextBlind.position.x,this.sitOutNextBlind.position.y, this.sitOutNextBlind.size.x,this.sitOutNextBlind.size.y,self.gameState.containerImageIndexes.button, {messages:['set_flag', 'post_blind', true]})
         
         this.itemAsBitmap(this.foldToAnyBet, this.sources.checkBox)
 this.itemAsBitmap(this.sitOutNextHand, this.sources.checkBox)
@@ -1822,11 +1823,11 @@ self.images.seats[i].chat.text.x=self.images.seats[i].chat.position.x +  self.im
  })
 
          //---------------action buttons------------------
-      this.fold = new this.Item(actionButtonLeftX,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','fold'])
-      this.call = new this.Item(actionButtonLeftX+actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','call'])
-      this.check = new this.Item(actionButtonLeftX+actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','check'])
-      this.raise = new this.Item(this.check.position.x +actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','raise'])
-      this.bet = new this.Item(this.check.position.x +actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['act','bet'])
+      this.fold = new this.Item(actionButtonLeftX,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, {messages:['act','fold']})
+      this.call = new this.Item(actionButtonLeftX+actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, {messages:['act','call']})
+      this.check = new this.Item(actionButtonLeftX+actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, {messages:['act','check']})
+      this.raise = new this.Item(this.check.position.x +actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button,{messages:['act','raise']})
+      this.bet = new this.Item(this.check.position.x +actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button,{messages: ['act','bet']})
 
         this.itemAsRectangle(this.fold,  'red')
         this.addItemText(this.fold, 'fold','12px Arial','#000000')
@@ -1904,7 +1905,7 @@ $('#betSize').css({
 
 
         //--------------upper left side button---------------------
-        this.stand = new this.Item(0,0,actionButtonWidth,actionButtonHeight/2,self.gameState.containerImageIndexes.button, ['stand'])
+        this.stand = new this.Item(0,0,actionButtonWidth,actionButtonHeight/2,self.gameState.containerImageIndexes.button,{ messages:['stand']})
          this.itemAsRectangle(this.stand, 'black')
  this.addItemText(this.stand,'stand up','10px Arial','white')
  this.stand.image.onClick = self.events.onButtonClick
@@ -2691,7 +2692,8 @@ $('#chat').css({
     }
 
 this.changeUserSeatView = function(seatNumber){
-
+if(self.userPreferences.changeUserSeatView == ['bottom','middle']){}
+  else{return 'change view when seated setting is off'}
   var  copyItemDisplayObjectLocationData = function(item){
 var itemCopyWithOnlyLocationData = {}
 if(item.image){
