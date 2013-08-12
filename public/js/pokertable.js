@@ -240,7 +240,8 @@ this.size = {}
 this.size.x = width
 this.size.y = height
 if(options){
-  if(options.messages){this.messages = messages}
+  if(options.messages){this.messages = options.messages}
+    if(options.otherMessages){this.otherMessages = options.otherMessages}
 if(options.parentOfStage) {this.parentOfStage = options.parentOfStage}
   if(options.itemAsParentOfStage === true){ this.parentOfStage = this}
 }//if options
@@ -616,6 +617,7 @@ self.hideTableChatFull()
 
 this.events.tableChatFullChatMessageTextMouseDown = function(e){
 
+console.log('tablechatfull text clicked')
 
 var initialRawX = e.rawX
 var initialRawY = e.rawY
@@ -1528,12 +1530,12 @@ parentOfImageObject.text.textAlign = 'left'
 parentOfImageObject.textColor = checkBoxButtonTextColor
 }
 //off state
-      addCheckBoxButtonText( this.foldToAnyBet, 'Fold to any bet' )
+      addCheckBoxButtonText( this.foldToAnyBet, 'Auto check/fold' )
       addCheckBoxButtonText(this.sitOutNextHand, 'Sit out next hand')
       addCheckBoxButtonText (  this.sitOutNextBlind,'Sit out next blind' )
       
       //on state
-      addCheckBoxButtonText( this.foldToAnyBetOn, 'Fold to any bet' )
+      addCheckBoxButtonText( this.foldToAnyBetOn, 'Auto check/fold' )
       addCheckBoxButtonText(this.sitOutNextHandOn, 'Sit out next hand')
       addCheckBoxButtonText (  this.sitOutNextBlindOn,'Sit out next blind' )
 
@@ -1954,7 +1956,7 @@ this.viewLobby.image.hitArea = viewLobbyHit
 this.viewLobby.image.onClick = self.events.viewLobbyClick
 
 //-------------------------upper left Get Chips-------
- this.getChips = new this.Item(0, 0, getChipsWidth, getChipsHeight, self.gameState.containerImageIndexes.button, ['get_add_chips_info'])
+ this.getChips = new this.Item(0, 0, getChipsWidth, getChipsHeight, self.gameState.containerImageIndexes.button, {messages:['get_add_chips_info']})
  this.itemAsBitmap(this.getChips, this.sources.getChips)
 
 
@@ -1996,8 +1998,8 @@ this.getChipsDisabledShape.image.alpha = .43
 this.exitTable.image.onClick = self.events.exitTableClick
 
         //----------------not in hand action buttons------------------
-        this.sitIn = new this.Item(actionButtonLeftX,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['sit_in'])
-        this.rebuy = new this.Item(actionButtonLeftX,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, ['get_add_chips_info'])
+        this.sitIn = new this.Item(actionButtonLeftX,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, {messages:['sit_in']})
+        this.rebuy = new this.Item(actionButtonLeftX,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.containerImageIndexes.button, {messages:['get_add_chips_info']})
 
          this.itemAsRectangle(this.sitIn,'black')
 this.addItemText(this.sitIn,'Deal Me In','10px Arial','white')
@@ -2267,12 +2269,12 @@ this.cashier[cashierItems[i].name].text.maxWidth = this.cashier[cashierItems[i].
 
       this.cashier.addChips =  new this.Item (cashierWindowX + 10,cashierWindowY+cashierWindowHeight-40, 50,25,cashierImageContainerIndex) 
         this.itemAsRectangle( this.cashier.addChips, '#0000FF')
-        this.addItemText( this.cashier.addChips, 'add chips', '13px arial', '#000000')
+        this.addItemText( this.cashier.addChips, 'add chips', '13px arial', '#FFFFFF')
         this.cashier.addChips.image.onClick = self.events.onAddChipsClick
 
         this.cashier.cancel =  new this.Item (cashierWindowX + 100,cashierWindowY+cashierWindowHeight-40, 50,25,cashierImageContainerIndex) 
         this.itemAsRectangle( this.cashier.cancel, '#0000FF')
-        this.addItemText( this.cashier.cancel, 'cancel', '13px arial', '#000000')
+        this.addItemText( this.cashier.cancel, 'cancel', '13px arial', '#FFFFFF')
         this.cashier.cancel.image.onClick = self.hideCashier
 
          this.cashier.closeWindow =  new this.Item (closeWindowX,closeWindowY, closeWindowWidth,closeWindowHeight,cashierImageContainerIndex) 
@@ -2464,12 +2466,7 @@ this.tableChatFull.chatMessageText.text.x=this.tableChatFull.chatMessageText.pos
 this.tableChatFull.chatMessageText.text.y=this.tableChatFull.chatMessageText.position.y
 
 
-
-   $('#tableChatFullText').attr({
-
-
-
-  })
+ //  $('#tableChatFullText').attr({  })
    
         $('#tableChatFullText').css({
                'width': this.tableChatFull.chatMessageText.size.x+'px',
@@ -2495,9 +2492,19 @@ this.tableChatFull.chatMessageText.text.lineWidth = this.tableChatFull.chatMessa
 this.tableChatFull.chatMessageText.text.maxWidth = this.tableChatFull.chatMessageText.size.x*.9
 */
 
+//hit area or tableChatFull.chatMessageText
+/*
+var tableChatFullHitArea = new createjs.Shape()
+tableChatFullHitArea.graphics.beginStroke('#FFFFFF').beginFill('#FFFFFF')
+.drawRect(0, 0, this.tableChatFull.chatMessageText.size.x, this.tableChatFull.chatMessageText.size.y)
+this.tableChatFull.chatMessageText.text.hitArea = tableChatFullHitArea
+*/
+this.tableChatFull.chatMessageText.text.htmlElement.onMouseDown = self.events.tableChatFullChatMessageTextMouseDown
+
+//$('#tableChatFullText').mousedown(function(event){self.events.tableChatFullChatMessageTextMouseDown(event)})​
 
 
- var chatMessageTextCanvas = document.getElementById('tableChatFullTextCanvas')
+var  chatMessageTextCanvas = document.getElementById('tableChatFullTextCanvas')
 this.tableChatFull.chatMessageText.stage = new createjs.Stage(chatMessageTextCanvas)
 
     createjs.Touch.enable(this.tableChatFull.chatMessageText.stage)
@@ -2510,20 +2517,6 @@ this.tableChatFull.chatMessageText.containers = []
 this.tableChatFull.chatMessageText.containers[i] = new createjs.Container()
 this.tableChatFull.chatMessageText.stage.addChild(this.tableChatFull.chatMessageText.containers[i])
 }
-
-//hit area or tableChatFull.chatMessageText
-var tableChatFullHitArea = new createjs.Shape()
-tableChatFullHitArea.graphics.beginStroke('#FFFFFF').beginFill('#FFFFFF')
-.drawRect(0, 0, this.tableChatFull.chatMessageText.size.x, this.tableChatFull.chatMessageText.size.y)
-this.tableChatFull.chatMessageText.text.hitArea = tableChatFullHitArea
-this.tableChatFull.chatMessageText.text.htmlElement.onMouseDown = self.events.tableChatFullChatMessageTextMouseDown
-
-/*
-this.tableChatFull.chatMessageText.image = tableChatFullHitArea
-this.tableChatFull.chatMessageText.image.x = 25
-this.tableChatFull.chatMessageText.image.y = 25
-self.displayChildren(this.tableChatFull.chatMessageText)
-*/
 
 console.log(this.tableChatFull.chatMessageText)
 //this.tableChatFull.hide = new this.Item(tableChatFullX, tableChatFullY, tableChatFullWidth, tableChatFullHeight,self.gameState.containerImageIndexes.tableChatFullButton)
@@ -4496,7 +4489,7 @@ this.images.tableChatFull.chatMessageText.parentOfStage.stage.update()
 
 $('#tableChatFullCanvas').css('display','inline')
 $('#tableChatFullTextCanvas').css('display','inline')
-$('#tableChatFullText').css('display','inline')
+$('#tableChatFullText').css('display','inline ')
 //console.log(this.images.tableChatFull)
 //console.log(this.images.tableChatFull.stage.contains(this.images.tableChatFull.window.image))
 //console.log(this.images.tableChatFull.window.image.isVisible())

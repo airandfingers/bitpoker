@@ -1,13 +1,12 @@
 *{
     position: absolute;
-            position:absolute;
         margin-left:0px;
         margin-top: 0px;
        margin-bottom:0px;
            margin-right:0px;
            padding:0px;
            text-align:left;
-white-space: nowrap;
+/*white-space: nowrap;*/
 
 }
 
@@ -48,6 +47,10 @@ position:absolute;
   word-wrap: break-word;
 word-break: break-all;
 text-overflow: clip;
+white-space: :normal;
+
+overflow-y:hidden;
+
 }
 #tableChatFullTextDiv{
   position:absolute;
