@@ -150,9 +150,8 @@ h2 {
     clear: both;
     background-color: rgba(0,0,0,.8);
     margin-top: 1.625em;
-    min-height: 100%;
     width: 100%;
-
+    min-height: 100%
 }
 
 #container.account {
