@@ -9,41 +9,44 @@ module.exports = (function() {
 
   , db = require('./db');
 
-//Create Message Mongoose model:
-//Define MessageSchema (game_id, type, message, timestamp?)
-var MessageSchema = new Schema ({
-  game_id
-  , type
-  , message
+  //Create Message Mongoose model:
+  //Define MessageSchema (hand_num, type, message, timestamp?)
+  var MessageSchema = new Schema({
+    hand_num: Number
+  , type: String
+  , message: String
   , timestamp : { type: Date, default: Date.now }  
-});
+  });
 
-//Write Message.createMessage(spec) static function
-MessageSchema.statics.createMessage = function(spec, cb) {
+  //Write Message.createMessage(spec) static function
+  MessageSchema.statics.createMessage = function(spec) {
+    /* our "constructor" function.*/
+    console.log('Message.createMessage called!', spec);
+    var message = new Message(spec);
+    return message;
+  };
 
-};
+  //Write Message.getMessagesByHandNum static function(hand_num)
+  MessageSchema.statics.getMessagesByHandNum = function(hand_num, cb) {
+    //similar to getLeaders
+    Message.find({ hand_num: hand_num })
+      .sort('timestamp')
+      .select('message')
+      .exec(function (err, messages) {
+        if (err) return cb(err);
+        messages = _.pluck(messages, 'message');
+        console.log('messages are', messages);
+        cb(err, messages);
+      });
+  };
 
-//Write Message.getMessagesByGameId static function(game_id)
-MessageSchema.statics.getMessagesByGameId = function(game_id, cb) {
+  //Write Message.deleteMessagesWithHandNum static function(hand_num)?
+  MessageSchema.statics.deleteMessagesWithHandNum = function (hand_num, cb) {
+    Message.remove({ hand_num: hand_num }, cb);
+  };
 
-};
+  var Message = mongoose.model('Message', MessageSchema);
 
-//Write Message.deleteMessagesWithGameId static function(game_id)?
-MessageSchema.statics.deleteMessagesWithGameId = function (game_id, cb) {
-
-};
-
-//Write Room.broadcastAndSave(game_id) static function:
-//Shift and store first argument (game_id)
-//Call Room.broadcast with remaining arguments
-//Call Message.createMessage
-//Call message.save
-
-//Table.getTableState:
-//Call Message.getMessagesByGameId to retrieve messages for current game
-//Add messages field to table_state object
-
-//HandHistory:
-//HandHistory.appendToHistoryString: call broadcastAndSave instead of broadcast
+  return Message;
 
 })();
