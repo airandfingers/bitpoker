@@ -89,8 +89,10 @@ mouseDown:false
         var buttons=holeCards+1
         var middleTableItemsAndAnimations=buttons+1
         var playerBubbleChat = middleTableItemsAndAnimations+1
-        var tableChatFull=playerBubbleChat+1
-        var chatBox=tableChatFull+1
+        var chatBox=playerBubbleChat+1
+
+        var tableChatFull=chatBox+1
+        
         var cashier=chatBox+1
         var messageBox=cashier+1
         var loadingContainers=messageBox+1
@@ -700,21 +702,22 @@ otherScrollBarHandle.css('top',lowestScrollBarHandleY)
 
 
   //if movement is not specified, reposition message text at very bottom
-  if(!movementObject){console.log('setting paragraph to bottom'); 
+  if(!movementObject || !_.isNumber(movementObject.magnitude)){
+    
  //$('#tableChatFullTextDiv').scrollTop(scroll[0].getContentSize().h)
 
-/*
-$("#tableChatFullText").css('display','none')
-$("#tableChatFullText").css('display','inline')
-$(scroll[0].rail[0]).css('display','none')
-$(scroll[0].rail[0]).css('display','inline')
-*/
-//scroll[0].resize()
-console.log(scroll[0].getScrollTop())
+//console.log(scroll[0].getScrollTop())
 
 //$("#tableChatFullTextDiv").scrollTop(scroll[0].getScrollTop()*2)
+
+
+if(scroll[0].getContentSize().h != $('#tableChatFullTextDiv').height()){
  $('#tableChatFullTextDiv').scrollTop(scroll[0].getContentSize().h)
 scroll[0].resize()
+}
+
+
+
 /*
 $('#tableChatFullTextDiv').trigger("mousewheel",  {intDelta:0, deltaX:1, deltaY:0}) 
 $('#tableChatFullTextDiv').trigger("DOMMouseScroll", [0]) 
@@ -728,10 +731,13 @@ $('#tableChatFullTextDiv').trigger("DOMMouseScroll", [0])
   else{
 if(!movementObject.positionUnit){movementObject.positionUnit = 'pixels'}
   if(!movementObject.relativity){movementObject.relativity = 'absolute'}
-if(!movementObject.movementAmount){movementObject.movementAmount = 0}
+if(!movementObject.magnitude){movementObject.magnitude = 0}
 
- 
 if(movementObject.positionUnit == 'pixels'){}
+
+if (movementObject.resize === true){
+scroll[0].resize()
+}
 
 }//if movementObject exists
 }
@@ -789,7 +795,7 @@ self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMe
 
 
 //change what text should be displayed
-self.gameState.tableChatFull.shouldDisplayDealerMessages = false
+self.gameState.tableChatFull.currentlyDisplayingDealerMessages = false
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
@@ -802,7 +808,7 @@ self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMe
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn = false
 
 //change what text should be displayed
-self.gameState.tableChatFull.shouldDisplayDealerMessages = true
+self.gameState.tableChatFull.currentlyDisplayingDealerMessages = true
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true}) 
 }
@@ -814,7 +820,7 @@ self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMe
 
 
 //change what text should be displayed
-self.gameState.tableChatFull.shouldDisplayPlayerMessages = false
+self.gameState.tableChatFull.currentlyDisplayingPlayerMessages = false
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 
@@ -826,7 +832,7 @@ self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMe
 
 
 //change what text should be displayed
-self.gameState.tableChatFull.shouldDisplayPlayerMessages = true
+self.gameState.tableChatFull.currentlyDisplayingPlayerMessages = true
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
@@ -837,7 +843,7 @@ self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserver
 
 
 //change what text should be displayed
-self.gameState.tableChatFull.shouldDisplayObserverMessages = false
+self.gameState.tableChatFull.currentlyDisplayingObserverMessages = false
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
@@ -847,7 +853,7 @@ self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserver
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn = false
 
 //change what text should be displayed
-self.gameState.tableChatFull.shouldDisplayObserverMessages = true
+self.gameState.tableChatFull.currentlyDisplayingObserverMessages = true
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
@@ -2566,11 +2572,11 @@ this.tableChatFull.window.image.graphics.beginFill(tableChatFullWindowBackground
 .drawRoundRect(this.tableChatFull.window.position.x, this.tableChatFull.window.position.y, this.tableChatFull.window.size.x, this.tableChatFull.window.size.y, tableChatFullRoundedRectCornerSizeRatioOfHeight*this.tableChatFull.window.size.y)
 this.tableChatFull.window.image.alpha = tableChatFullWindowAlpha
 
-var hideDealerMessagesOffsetLeft =  (this.tableChatFull.htmlStageElement.size.x - 162)/2 //checkBoxButtonOffSetLeft
+var hideDealerMessagesOffsetLeft =  (this.tableChatFull.htmlStageElement.size.x*.2)/2 //checkBoxButtonOffSetLeft
 var hideDealerMessagesOffsetRight =  hideDealerMessagesOffsetLeft//checkBoxButtonOffSetLeft
-var hideDealerMessagesOfsetTop =  checkBoxButtonDistanceY
+var hideDealerMessagesOffsetTop =  checkBoxButtonDistanceY
 
-this.tableChatFull.hideDealerMessages = new this.Item(hideDealerMessagesOffsetLeft, hideDealerMessagesOfsetTop, this.tableChatFull.window.size.x - checkBoxButtonOffSetLeft*2, checkBoxButtonHeight,self.gameState.zPositionData.tableChatFullText)
+this.tableChatFull.hideDealerMessages = new this.Item(hideDealerMessagesOffsetLeft, hideDealerMessagesOffsetTop, this.tableChatFull.window.size.x - checkBoxButtonOffSetLeft*2, checkBoxButtonHeight,self.gameState.zPositionData.tableChatFullText)
 this.itemAsBitmap(this.tableChatFull.hideDealerMessages, this.sources.checkBox)
 addCheckBoxButtonText(this.tableChatFull.hideDealerMessages, 'Hide dealer messages')
 this.tableChatFull.hideDealerMessages.image.hitArea = drawCheckBoxButtonHitSquare(this.tableChatFull.hideDealerMessages)
@@ -2582,7 +2588,7 @@ addCheckBoxButtonText(this.tableChatFull.hideDealerMessagesOn, 'Hide dealer mess
 this.tableChatFull.hideDealerMessagesOn.image.hitArea = drawCheckBoxButtonHitSquare(this.tableChatFull.hideDealerMessagesOn)
 this.tableChatFull.hideDealerMessagesOn.image.onClick = self.events.hideDealerMessagesOnClicked
 
-this.tableChatFull.hidePlayerMessages = new this.Item(hideDealerMessagesOffsetLeft, hideDealerMessagesOfsetTop*2+checkBoxButtonHeight, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,self.gameState.zPositionData.tableChatFullText)
+this.tableChatFull.hidePlayerMessages = new this.Item(hideDealerMessagesOffsetLeft, hideDealerMessagesOffsetTop*2+checkBoxButtonHeight, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,self.gameState.zPositionData.tableChatFullText)
 this.itemAsBitmap(this.tableChatFull.hidePlayerMessages, this.sources.checkBox)
 addCheckBoxButtonText(this.tableChatFull.hidePlayerMessages, 'Hide player messages')
 this.tableChatFull.hidePlayerMessages.image.hitArea = drawCheckBoxButtonHitSquare(this.tableChatFull.hideDealerMessages)
@@ -4001,10 +4007,11 @@ this.addChildToContainer(parentOfImageObject.image, container, options)
 var stageChanged = true
         } //if easeljs object
         
-       if(options.update !== false && stageChanged === true){
-     this.updateStage(options.stageNumber)  
+            }//if image exists
+
+              if((options.update !== false && stageChanged === true)||(options&&options.update===true)){
+        this.updateStage(options.stageNumber)     
 }
-            }//if .text exists
     }
     
     this.displayText = function (parentOfTextObject, options){
@@ -4030,11 +4037,12 @@ var container = parentOfTextObject.position.z.container
 this.addChildToContainer(parentOfTextObject.text, container+1, options)
 var stageChanged = true
         } //if easeljs object
-       if(options.update !== false && stageChanged === true){
-        this.updateStage(options.stageNumber)
-        
-}
+     
 }//if .text exists
+
+  if((options.update !== false && stageChanged === true)||(options&&options.update===true)){
+        this.updateStage(options.stageNumber)     
+}
     }
 
     this.displayChildren = function(parentOrGrandparent, options){
@@ -4044,7 +4052,7 @@ var stageChanged = true
         if(parentOrGrandparent instanceof this.images.Item){
             this.displayImage(parentOrGrandparent, options)
          this.displayText(parentOrGrandparent, options)
-        }
+        }//if parameter is an Item
 
 
 
@@ -4057,7 +4065,7 @@ var stageChanged = true
 
             }
 
-        }
+        }//if parameter is array
 
                 //input is grandparent object
         else if (_.isObject(parentOrGrandparent)){
@@ -4069,7 +4077,7 @@ var stageChanged = true
         }
             }
 
-        }
+        }//if parameter is non-Item object
 
 }
 
@@ -4106,12 +4114,10 @@ var container = parentOfTextObject.position.z.container
 var stageChanged = true
           }
         
-       if(!options || options.update !== false && stageChanged == true){
-this.updateStage(stageNumber)
-}
-
-
         }//if text object
+                      if((options.update !== false && stageChanged === true)||(options&&options.update===true)){
+        this.updateStage(options.stageNumber)     
+}
         }
 
  
@@ -4143,11 +4149,11 @@ var container = parentOfImageObject.position.z.container
 var stageChanged = true
       }
 
-
-       if(!options || options.update !== false && stageChanged === true){
-this.updateStage(stageNumber)
-}
           }//if image object
+
+                        if((options.update !== false && stageChanged === true)||(options&&options.update===true)){
+        this.updateStage(options.stageNumber)     
+}
         }
 
  this.playerSitsOut =function(seatNumber){
@@ -4408,7 +4414,7 @@ if(i == players.length-1){next(null, errorNumber)}
 
 this.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText = function(){
 
-console.log('tableChatFullMessageTextChanged called' )
+console.log('checking if messageText is at bottom' )
 var scroll = $('#tableChatFullTextDiv').getNiceScroll()//grab niceScroll instance on the scroll div
 
 //calculate total height of text
@@ -4419,7 +4425,7 @@ console.log('height of paragraph element ' + $('#tableChatFullText').height())
 */
 
 var isAtBottom = ( scroll[0].getContentSize().h - scroll[0].getScrollTop() ===  $('#tableChatFullText').height())
-
+console.log('var isAtBottom = ' + isAtBottom)
 return isAtBottom
 
 }
@@ -4457,12 +4463,18 @@ if(self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDeale
     if(self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn === false){ shouldDisplayObserverMessages = true}
   else{ shouldDisplayObserverMessages = false}
 
+
+console.log(shouldDisplayDealerMessages +''+ shouldDisplayPlayerMessages +''+ shouldDisplayObserverMessages)
+
+console.log(isDisplayingDealerMessages+''+isDisplayingPlayerMessages+''+isDisplayingObserverMessages)
+
 var needToUpdate = (isDisplayingDealerMessages !==  shouldDisplayDealerMessages) || (isDisplayingPlayerMessages !== shouldDisplayPlayerMessages) || (isDisplayingObserverMessages !== shouldDisplayObserverMessages)
+
+var scrollDownAtEnd = this.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText()
+console.log('needToUpdate = '+needToUpdate)
 //update existing display
 if(needToUpdate === true){
 
-  //if updating, we guarantee to scroll down at end
-var scrollDownAtEnd = true
 //get the top line of text to preserve position
 
 ////*****************************DONT KNOW HOW TO DO THIS YET< WILL JUST SCROLL TO BOTTOM INSTEAD FOR NOW
@@ -4491,13 +4503,6 @@ $('#tableChatFullText').html(self.gameState.tableChatFull.fullTextString)//add
 
 }//if needToUpdate  === true, this means a type of message needs to be shown or hidden
 
-//check if we should scroll down at end
-else{
-  var scrollDownAtEnd = this.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText()
-}
-
-//if updated scrol text to the bottom
-this.moveTableChatFullMessageText()
 
 if(chatInfo && chatInfo.chatSourceType && chatInfo.message){
 this.gameState.tableChatFull.log.push([chatInfo.chatSourceType, chatInfo.message])
@@ -4510,7 +4515,8 @@ this.appendTableChatFullMessageText(chatInfo.message, {moveTable:false})
 
 }//if we want to append a message at the end
 
-if(scrollDownAtEnd === true){this.moveTableChatFullMessageText()}
+if(scrollDownAtEnd === true){this.moveTableChatFullMessageText({resize:true})}
+  else{this.moveTableChatFullMessageText({magnitude:0, resize:true})}
 
 }
 
@@ -4989,19 +4995,19 @@ this.displayTableChatFull = function(){
 //update what is showing and what isnt from current preferences
 
 if(this.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages === false){
-  this.gameState.tableChatFull.shouldDisplayDealerMessages = false
+  this.gameState.tableChatFull.currentlyDisplayingDealerMessages = false
 }
-else{this.gameState.tableChatFull.shouldDisplayDealerMessages = true}
+else{this.gameState.tableChatFull.currentlyDisplayingDealerMessages = true}
 
   if(this.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages === false){
-  this.gameState.tableChatFull.shouldDisplayPlayerMessages = false
+  this.gameState.tableChatFull.currentlyDisplayingPlayerMessages = false
 }
-else{this.gameState.tableChatFull.shouldDisplayPlayerMessages = true}
+else{this.gameState.tableChatFull.currentlyDisplayingPlayerMessages = true}
 
   if(this.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages === false){
-  this.gameState.tableChatFull.shouldDisplayObserverMessages = false
+  this.gameState.tableChatFull.scurrentlyDisplayingObserverMessages = false
 }
-else{this.gameState.tableChatFull.shouldDisplayObserverMessages = true}
+else{this.gameState.tableChatFull.currentlyDisplayingObserverMessages = true}
 
 this.displayChildren(this.images.hideTableChatFull,{update:false})
 this.hideChildren(this.images.showTableChatFull,{update:false})
@@ -5013,9 +5019,9 @@ console.log('getting ready to update stages')
 this.updateTableChatFullDisplayDoesNotUpdateStageByDefault()
 
 //console.log(this.images.tableChatFull)
-
-this.updateStage(this.images.showTableChatFull.position.z.stage)
+this.updateStage(this.images.hideTableChatFull.position.z.stage)
 this.updateStage(this.images.tableChatFull.htmlStageElement.position.z.stage)
+
 var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.images.tableChatFull.htmlStageElement.position.z.stage].stage.canvas
 
 $(tableChatFullCanvas).css('display','inline')
@@ -5650,6 +5656,7 @@ if(stagesToUpdate.length == 0){console.log('no stages found to update'+ stageNum
 
 this.arrayOfParentsOfStageAndOfContainerArray[stageNumberLeaveBlankForAll].stage.clear()
 for(var i = 0;i<stagesToUpdate.length;i++){
+  console.log('updating stage number '+stagesToUpdate[i])
   this.arrayOfParentsOfStageAndOfContainerArray[stagesToUpdate[i]].stage.update()
 }
 
