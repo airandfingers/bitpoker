@@ -10,6 +10,7 @@ module.exports = (function () {
     , db = require('./db') // make sure db is connected
 
     , Room = require('./room')
+    , Message = require('./message')
     
     , NoLimitGame = require('./no_limit_game')
     , HoldEmHand = require('./hold_em_hand')
@@ -135,6 +136,7 @@ module.exports = (function () {
         , game: self.game
         , seats: self.seats
         , broadcast: function() { self.room.broadcast.apply(self.room, arguments); }
+        , broadcastAndSave: function() { self.room.broadcastAndSave.apply(self.room, arguments); }
         , dealer: self.dealer
         , initial_pot: self.initial_pot || 0
     });
@@ -149,6 +151,11 @@ module.exports = (function () {
         self.room.broadcast('reset_table');
         self.newHand();
       }, 1000);
+      console.log('hand.hand_num is', hand.hand_num);
+      Message.deleteMessagesWithHandNum(hand.hand_num, function (err, messages) {
+        if (err) { console.error('error during deleteMessagesWithHandNum:', err); }
+        //console.log('running Message.deleteMessagesWithHandNum', hand.hand_num);
+      });
     });
     return hand;
   };
@@ -163,6 +170,10 @@ module.exports = (function () {
       , user = socket.user
       , username = user.username
       , player = self.players[username];
+    if (! _.isFunction(user.checkBalance)) {
+      console.error('Unauthenticated user somehow joined table room!', self.name);
+      return;
+    }
     if (! (player instanceof Player)) {
       // create a new player
       player = Player.createPlayer({
@@ -273,6 +284,7 @@ module.exports = (function () {
       , username = user.username
       , table_state = self.getCurrentHand().serialize(username, hand_include)
       , player = self.players[username];
+    //console.log('user is', user, ', checkBalance is', user.checkBalance);
     table_state.table_name = self.name;
     if (player instanceof Player) {
       table_state.num_chips = player.num_chips;
@@ -280,16 +292,25 @@ module.exports = (function () {
     else {
       console.error('No player currently exists for username', username);
     }
-    user.checkBalance('funbucks', function(err, funbucks) {
-      if (err) {
-        console.error('Error while looking up number of funbucks:', err);
-        cb(err);
+    //Call Message.getMessagesByHandNum to retrieve messages for current game
+    Message.getMessagesByHandNum(self.getCurrentHand().hand_num, function (fetch_err, messages){
+      if (fetch_err) {
+          console.error('Error while running getMessagesByHandNum', fetch_err);
+          return cb(fetch_err);
       }
-      else {
+      //Add messages field to table_state object
+      table_state.messages = messages;
+
+      user.checkBalance('funbucks', function(check_err, funbucks) {
+        if (check_err) {
+          console.error('Error while looking up number of funbucks:', check_err);
+          return cb(check_err);
+        }
         table_state.balance = funbucks;
         if (_.isFunction(cb)) cb(null, table_state);
-      }
+      });
     });
+
   };
 
   static_properties.player_events['message:get_add_chips_info'] = 'sendAddChipsInfo';

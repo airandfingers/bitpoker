@@ -29,6 +29,7 @@ module.exports = (function () {
   , history_string     : { type: String, default: '' }
     // the function this hand history can call to broadcast to all players in the room
   , broadcast          : Schema.Types.Mixed
+  , broadcastAndSave   : Schema.Types.Mixed
 
     // time at which hands were dealt
   , started_at         : Date
@@ -333,11 +334,12 @@ module.exports = (function () {
       console.log('Returned from hand_history.save:', err, result);
     });
   };
-
+//HandHistory:
+//HandHistory.appendToHistoryString: call broadcastAndSave instead of broadcast
   HandHistorySchema.methods.appendToHistoryString = function(line_to_append, broadcast) {
     this.history_string += line_to_append + '\n';
     if (broadcast !== false) {
-      this.broadcast('game_event', line_to_append, new Date());
+      this.broadcastAndSave(this.hand_num, 'game_event', line_to_append, new Date());
     }
   };
 

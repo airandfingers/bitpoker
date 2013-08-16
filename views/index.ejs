@@ -1,19 +1,19 @@
 <% var title = 'Bitcoin Poker- Welcome!'; %>
-<% include head %>
+<% include head_start %>
+    <link rel="stylesheet" href="/css/bootstrap-switch.css" />
+<% include head_end_and_header %>
     <div id="container">
         
+        <div class="row-fluid">
+            <!-- display list of tables -->
+            <div id="table_list_container" class="span10 offset1">
+                <% include table_list %>
+            </div>
+        </div>
+
         <% if (typeof user === 'undefined') { %>
             <h1>Welcome to Bitcoin Poker</h1>
-        <% } 
-        else { %>
-            <h1></h1>
-        <% } %>
-
-        <% if (message) { %>
-          <p><%= message %></p>
-        <% } %>
-        <div id="button_groups"> 
-            <% if (typeof user === 'undefined') { %>
+            <div id="button_groups"> 
                 <h1>Choose one:</h1>
                 <form action="/lobby" method="get">
                     <button id="go_all_in" class="btn btn-custom btn-large" title="Lobby">Lobby</button>
@@ -24,11 +24,41 @@
                 <form action="/guest_login" method="post">
                     <button class="btn btn-inverse btn-large">Play as Guest</button>
                 </form>
-            <% } %>
-        </div>
-        <iframe src="/lobby" width="690" height="480">
-            <p>Your browser does not support iframes.</p>
-        </iframe>
-    </div> <!-- container index -->
+            </div>
+        <% } 
+
+        else { %>
+            <h1></h1>
+            
+            <!--
+            <% include users %>
+            <div class="chat_container row-fluid">
+                <div id="chat_lobby" class="row-fluid">
+                    <% include chat %>
+                </div>
+            </div>
+            -->
+            <!-- include values to expose to scripts -->
+            <!--
+            <input type="hidden" id="server_values" data-room_state="<%= room_state %>" />
+            -->
+
+            <div id="iframe_container">
+            </div>
+            
+        <% } %>
+
+        <% if (message) { %>
+          <p><%= message %></p>
+        <% } %>
+    </div> <!-- container -->
+
     <% include plugins %>
+
+    <!-- DataTable -->
+    <script src="/js/vendor/jquery.dataTables.min.js"></script>
+    <script src="/js/table_list.js"></script>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <!--<script src="/js/chat.js"></script>-->
 <% include foot %>

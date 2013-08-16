@@ -12,6 +12,12 @@ html {
 body {
     background: url('../../img/file000348075748.jpg') no-repeat top center fixed;
     background-size: cover;
-    height: 100%;
-    min-height: 100%;
+    height: -moz-calc(100% - 26px);
+    height: -webkit-calc(100% - 26px);
+    height: -o-calc(100% - 26px);
+    height: calc(100% - 26px);    
+    min-height: -moz-calc(100% - 26px);
+    min-height: -webkit-calc(100% - 26px);
+    min-height: -o-calc(100% - 26px);
+    min-height: calc(100% - 26px);
   }

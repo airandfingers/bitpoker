@@ -57,6 +57,7 @@ module.exports = (function () {
   , stage_name      : { type: String, default: 'initializing' }
     // the function this hand can call to broadcast to all players in the room
   , broadcast       : Schema.Types.Mixed
+  , broadcastAndSave: Schema.Types.Mixed
   
     // the seat number of the dealer (calculated and used to calculate order-adjusted players)
   , dealer          : Number
@@ -191,6 +192,7 @@ module.exports = (function () {
           , table_name: self.table_name
           , hand_num: hand_num
           , broadcast: self.broadcast
+          , broadcastAndSave: self.broadcastAndSave
           });
           // start the game
           self.nextStage();
@@ -340,7 +342,7 @@ module.exports = (function () {
                       'Has player acted yet? ' + player.hasActedIn(self.stage_num),
                       'current_bet: ' + player.current_bet + ' vs. high_bet: ' + self.high_bet);
         high_stack = self.calculateHighestStack(player); // how high other players can/have called to
-        if (self.players.length >= game.MIN_PLAYERS && player.current_bet > high_stack) {
+        if (player.current_bet > high_stack) {
           // adjust player's current bet to be the high bet
           refund = player.current_bet - high_stack;
           player.getBet(refund);
