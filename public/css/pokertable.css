@@ -1,20 +1,46 @@
-*{
+#pokerTableWrapper *{
     position: absolute;
+    line-height:1;
         margin-left:0px;
         margin-top: 0px;
        margin-bottom:0px;
            margin-right:0px;
            padding:0px;
            text-align:left;
-/*white-space: nowrap;*/
+           border-width:0px;
+          margin:0px 0px 0px 0px;
+}
+.niceScroll-rails{
+  /*
+            -webkit-touch-callout: none;
+-webkit-user-select: none;
+-khtml-user-select: none;
+-moz-user-select: none;
+-ms-user-select: none;
+user-select: none;
+*/
 
 }
+.canvasClass{
+       position: absolute;
+    line-height:1;
+        margin-left:0px;
+        margin-top: 0px;
+       margin-bottom:0px;
+           margin-right:0px;
+           padding:0px;
+           text-align:left;
+           border-width:0px;
+          margin:0px 0px 0px 0px;
+          display:inline;
+          -webkit-touch-callout: none;
+-webkit-user-select: none;
+-khtml-user-select: none;
+-moz-user-select: none;
+-ms-user-select: none;
+user-select: none;
 
-body {
-    padding-left: 0;
-    padding-right: 0;
 }
-
 #cashier{
     display:none;
 }
@@ -25,7 +51,7 @@ body {
 #canvas{
 position:absolute;
   zIndex:0;
-  z-index: 0
+  z-index: 0;
 }
 #tableChatFullCanvas{
   position:absolute;
@@ -36,27 +62,28 @@ position:absolute;
 #tableChatFullTextCanvas{
   position:absolute;
   display:none;
-  z-index: 3;
+  z-index: 2;
   zIndex:2;
 }
 #tableChatFullText{
   position:absolute;
   display:none;
   z-index: 3;
-  zIndex:2;
   word-wrap: break-word;
 word-break: break-all;
-text-overflow: clip;
 white-space: :normal;
-
-overflow-y:hidden;
-
+text-align: :left;
+vertical-align: baseline;
+line-height:-1;
 }
+
 #tableChatFullTextDiv{
   position:absolute;
   display:inline;
   z-index: 3;
   zIndex:2;
+  overflow:auto;
+  background-color:transparent;
 }
 
 #cashier input[type = 'text']{
@@ -98,4 +125,8 @@ overflow-y:hidden;
     color: #FFFFFF;
     border: 1px solid #FFFFFF;
     border-radius: 0px;
+}
+
+#maxText{
+
 }
