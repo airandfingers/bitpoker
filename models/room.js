@@ -26,7 +26,7 @@ module.exports = (function () {
   var static_properties = {
   // static properties (attached below) - Model.property_name
     // list of rooms to be created in Room.setup
-    ROOMS: ['lobby']
+    ROOMS: ['']
     // existing rooms, { room_id: room_document }
   , rooms: {}
     // the messages a Table should react to, on each player's socket
@@ -166,6 +166,12 @@ module.exports = (function () {
   // listen for incoming socket connections
   io.sockets.on('connection', function(socket) {
     //console.log('A socket with sessionID ' + socket.handshake.sessionID + ' connected!');
+    var room_id = socket.handshake.room_id //socket.handshake = data object from authorization handler
+      , room = Room.getRoom(room_id);
+    if (room === undefined) {
+      console.error('no room with room_id', room_id);
+      return;
+    }
 
     // override emit method to log, then emit
     var emit = socket.emit;
@@ -198,12 +204,6 @@ module.exports = (function () {
       });
     }
 
-    var room_id = socket.handshake.room_id //socket.handshake = data object from authorization handler
-      , room = Room.getRoom(room_id);
-    if (room === undefined) {
-      console.error('no room with room_id', room_id);
-      room = Room.getRoom('table_1');
-    }
     room.join(socket);
     socket.on('disconnect', function() {
       room.leave(socket);
@@ -212,4 +212,3 @@ module.exports = (function () {
 
   return Room;
 })();
-

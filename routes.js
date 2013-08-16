@@ -104,9 +104,16 @@ module.exports = (function () {
 
   //home, index and '/' link to the same page
   var renderHome = function(req, res) {
+    var users = Room.getRoom('').getUsernames()
+      , table_games = Table.getTableGames()
+      , room_state = { users: users };
+    //console.log('Got table_games:', table_games);
+
     res.render('index', {
-      message: req.flash('error'),
-      user: req.user
+      table_games: table_games
+    , room_state: JSON.stringify(room_state)
+    , message: req.flash('error')
+    , user: req.user
     });
   };
   app.get('/', renderHome);
