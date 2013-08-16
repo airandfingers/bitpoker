@@ -290,7 +290,7 @@ this.position.z.container = zIndexOrStageAndContainerObject - i
 }//iteration through stages
 
 
-  }
+  }//outer for loop 1 container at a time increase
 }//if zIndexOrStageAndContainerObject is a number
 
 this.size = {}
@@ -299,8 +299,7 @@ this.size.y = height
 if(options){
   if(options.messages){this.messages = options.messages}
     if(options.otherMessages){this.otherMessages = options.otherMessages}
-if(options.parentOfStage) {this.parentOfStage = options.parentOfStage}
-  if(options.itemAsParentOfStage === true){ this.parentOfStage = this}
+
 }//if options
 this.drawRoundedRectangle = function(fillColor){
 this.image.graphics.beginFill(fillColor).drawRoundRect(this.position.x, this.position.y, this.size.x, this.size.y,this.size.y*.1)
@@ -1835,8 +1834,9 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
 
        //----------------------dealer button----Player's bets----------------------------------
 
+var seatLocationMarginOfError = 1.1
     //check if seat is on top
-    if(this.seats[i].seat.position.y == firstRowY){
+    if(this.seats[i].seat.position.y < firstRowY + seatLocationMarginOfError && this.seats[i].seat.position.y > firstRowY - seatLocationMarginOfError){
         
         var dealerButtonX = this.seats[i].seat.position.x+topRowSeatDealerButtonX
         var dealerButtonY = this.seats[i].seat.position.y+topRowSeatDealerButtonY
@@ -1844,6 +1844,7 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
         this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,self.gameState.zPositionData.chips)
 
         this.seats[i].firstChip = new this.Item(this.seats[i].seat.position.x+topChipOffsetX,this.seats[i].seat.position.y+topChipOffsetY,chipDiameter,chipDiameter,self.gameState.zPositionData.chips)
+
          this.seats[i].secondColumnChip = new this.Item( this.seats[i].firstChip.position.x-chipDiameter-self.imageData.distanceBetweenChipColumns,this.seats[i].firstChip.position.y,chipDiameter,chipDiameter,self.gameState.zPositionData.chips)
 
         
@@ -1856,7 +1857,7 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
         //bet size
         this.seats[i].bet = new this.Item(betX,betY,betTextWidth,betTextHeight,self.gameState.zPositionData.chips)
     }
-    else if(this.seats[i].seat.position.x == firstColumnX){
+    else if(this.seats[i].seat.position.x < firstColumnX + seatLocationMarginOfError && this.seats[i].seat.position.x > firstColumnX - seatLocationMarginOfError){
         
         var dealerButtonX = this.seats[i].seat.position.x+leftColumnSeatDealerButtonX
         var dealerButtonY = this.seats[i].seat.position.y+leftColumnSeatDealerButtonY
@@ -1877,7 +1878,7 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
         this.seats[i].bet = new this.Item(betX,betY,betTextWidth,betTextHeight,self.gameState.zPositionData.chips)
     }
 
-    else if(this.seats[i].seat.position.y == fourthRowY){
+    else if(this.seats[i].seat.position.y < fourthRowY + seatLocationMarginOfError && this.seats[i].seat.position.y > fourthRowY - seatLocationMarginOfError){
        
         this.seats[i].firstChip = new this.Item(this.seats[i].seat.position.x+bottomChipOffsetX,this.seats[i].seat.position.y+bottomChipOffsetY,chipDiameter,chipDiameter,self.gameState.zPositionData.chips)
         this.seats[i].secondColumnChip = new this.Item( this.seats[i].firstChip.position.x+chipDiameter+self.imageData.distanceBetweenChipColumns,this.seats[i].firstChip.position.y,chipDiameter,chipDiameter,self.gameState.zPositionData.chips)
@@ -1900,7 +1901,7 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
 
    
     }
-        else if(this.seats[i].seat.position.x == fifthColumnX){
+        else if(this.seats[i].seat.position.x < fifthColumnX + seatLocationMarginOfError && this.seats[i].seat.position.x > fifthColumnX - seatLocationMarginOfError){
         
         var dealerButtonX = this.seats[i].seat.position.x+rightColumnSeatDealerButtonX
         var dealerButtonY = this.seats[i].seat.position.y+rightColumnSeatDealerButtonY
@@ -2822,10 +2823,11 @@ this.gameState.stageData[this.gameState.zPositionData.loadingBackground.stage] =
 
 //iterate through data to create stages
   var canvasNumber = 0
+  console.log(stageData)
+
 _.each(_.range (stageData.length), function(stageNumber){
 
   console.log('initializing stage'+stageNumber)
-console.log(stageData)
 
 //incremenet canvas number if new canvas
   if(stageData[stageNumber].newCanvas === true){canvasNumber++}
@@ -2857,6 +2859,8 @@ var canvas = document.getElementById(canvasID)
         self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage = new createjs.Stage(canvas)
         //stage clearing is manually enabled in this.updateStage()
   self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.autoClear=false
+  self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.snapToPixel = false
+ self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.snapToPixelEnabled = false
 //set stage options
 var stageOptions = stageData[stageNumber].stageOptions
 if(stageOptions){
@@ -5081,12 +5085,9 @@ var messageBoxStageNumber = this.images.messageBox[self.gameState.messageBox.mes
 
 
 
-
+console.log(self.gameState.messageBox.messageBoxImageContainerIndex)
         
-        if(self.gameState.messageBox.messageBoxImageContainerIndex == self.gameState.zPositionData.initialMessageBox.container){     
-            
-//hide messageBoxCanvas
-$(self.arrayOfParentsOfStageAndOfContainerArray[ messageBoxStageNumber].stage.canvas).css('display','none')
+        if(self.gameState.messageBox.messageBoxImageContainerIndex === self.gameState.zPositionData.initialMessageBox.container){     
 
         if(self.gameState.cashier.display === true){
             $('#cashier').css('display','inline')
@@ -5096,8 +5097,12 @@ $(self.arrayOfParentsOfStageAndOfContainerArray[ messageBoxStageNumber].stage.ca
       else  if(self.gameState.tableChatBox.display == true){ self.enableTableChatBox()}
 
         }
-      self.hideChildren(self.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex])
 
+      self.hideChildren(self.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex])
+if(self.gameState.messageBox.messageBoxImageContainerIndex === self.gameState.zPositionData.initialMessageBox.container){     
+            
+//hide messageBoxCanvas
+$(self.arrayOfParentsOfStageAndOfContainerArray[ messageBoxStageNumber].stage.canvas).css('display','none')}
 self.restoreActiveStages(   self.gameState.messageBox.activeStages[self.gameState.messageBox.messageBoxImageContainerIndex])
         self.gameState.messageBox.messageBoxImageContainerIndex = self.gameState.messageBox.messageBoxImageContainerIndex - self.gameState.zPositionData.containersPerMessageBox
     }
@@ -5306,7 +5311,7 @@ if(messageInfo.closeWindowMessages){
     else{self.images.messageBox[messageBoxImageContainerIndex].cancel = null}
         //disable mouse events for all containers under the messageBox
         for(var i = 0; i<messageBoxImageContainerIndex;i++){
-            self.images.containers[i].mouseEnabled = false
+            self.arrayOfParentsOfStageAndOfContainerArray[messageBoxStageNumber].containers[i].mouseEnabled = false
         }
 
                 self.displayChildren(self.images.messageBox[messageBoxImageContainerIndex])
@@ -5415,7 +5420,7 @@ $(this.arrayOfParentsOfStageAndOfContainerArray[ this.images.cashier.window.posi
 }
 
 
-this.storeActiveStages=function(){
+this.storeActiveStages = function(){
   
    var activeStages = []
     for (var i = 0; i<this.arrayOfParentsOfStageAndOfContainerArray.length;i++){
@@ -5629,12 +5634,13 @@ for(var i  = 0;i<this.arrayOfParentsOfStageAndOfContainerArray.length;i++){
 }
 if(stagesToUpdate.length == 0){console.log('no stages found to update'+ stageNumberLeaveBlankForAll)}
 
-console.log('clearing the canvasof stage number '+stageNumberLeaveBlankForAll+'with a canvasid of '+canvasID)
+console.log('clearing the canvasof stage number '+stagesToUpdate[0]+', with a canvas id of: '+this.arrayOfParentsOfStageAndOfContainerArray[stagesToUpdate[0]].stage.canvas.id)
+this.arrayOfParentsOfStageAndOfContainerArray[stagesToUpdate[0]].stage.clear()
 
-
-this.arrayOfParentsOfStageAndOfContainerArray[stageNumberLeaveBlankForAll].stage.clear()
 for(var i = 0;i<stagesToUpdate.length;i++){
-  console.log('updating stage number '+stagesToUpdate[i])
+//  console.log('updating stage number '+stagesToUpdate[i])
+  console.log('drawing to stage: ' + stagesToUpdate[i]+', whose canvas id is: ' +this.arrayOfParentsOfStageAndOfContainerArray[stagesToUpdate[i]].stage.canvas.id)
+
   this.arrayOfParentsOfStageAndOfContainerArray[stagesToUpdate[i]].stage.update()
 }
 
@@ -5696,6 +5702,7 @@ function tick(event){
 
        // check if all seats are loaded
        if(checkSeatsLoaded() ==true){
+      //  createjs.Ticker.setPaused(true)
                       createjs.Ticker.removeEventListener("tick", tick)
                       //remove all loadingContainers from the stage and remove all children from them
                var parentOfLoadingStage =       self.arrayOfParentsOfStageAndOfContainerArray[self.gameState.zPositionData.loadingBackground.stage]
@@ -5703,6 +5710,7 @@ function tick(event){
                parentOfLoadingStage.stage.update()
                $('#'+parentOfLoadingStage.canvasID).css('display','none')
        }
+       console.log('increasing tick')
        numTicks ++
 }//end tick function
 
