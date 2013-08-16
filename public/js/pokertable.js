@@ -93,7 +93,7 @@ mouseDown:false
 
         var tableChatFull=chatBox+1
         
-        var cashier=chatBox+1
+        var cashier=tableChatFull+1
         var messageBox=cashier+1
         var loadingContainers=messageBox+1
 
@@ -5346,9 +5346,7 @@ $(this.arrayOfParentsOfStageAndOfContainerArray[ messageBoxStageNumber].stage.ca
     this.displayCashier = function(info)
     {
       
-
       var cashierImageContainerIndex = this.images.cashier.window.position.z.container
-
 
       //disable tableChatBox
 
@@ -5429,6 +5427,8 @@ var cashierStageNumber = this.images.cashier.window.position.z.stage
         for(var i = 0; i<cashierStageNumber;i++){
             this.arrayOfParentsOfStageAndOfContainerArray[i].mouseEnabled = false
         }
+
+        console.log(this.images.cashier)
                 this.displayChildren(this.images.cashier)
 
 //display cashierCanvas
