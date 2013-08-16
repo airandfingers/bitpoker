@@ -342,7 +342,7 @@ module.exports = (function () {
                       'Has player acted yet? ' + player.hasActedIn(self.stage_num),
                       'current_bet: ' + player.current_bet + ' vs. high_bet: ' + self.high_bet);
         high_stack = self.calculateHighestStack(player); // how high other players can/have called to
-        if (self.players.length >= game.MIN_PLAYERS && player.current_bet > high_stack) {
+        if (player.current_bet > high_stack) {
           // adjust player's current bet to be the high bet
           refund = player.current_bet - high_stack;
           player.getBet(refund);
