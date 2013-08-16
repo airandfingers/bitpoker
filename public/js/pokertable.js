@@ -55,6 +55,10 @@ self  = this
         this.gameState = {}
         this.gameState.tableChatFull = {
           log:[],
+          lastDisplayedLogIDNumber:null,
+          currentlyDisplayingDealerMessages:null,
+          currentlyDisplayingPlayerMessages:null,
+          currentlyDisplayingObserverMessages:null,
 scrollToBasedOnHiddenPixelsAtTopOfChatMessageText:99999999,
 mouseDown:false
         }
@@ -779,23 +783,39 @@ self.images.tableChatFull.chatMessageText.parentOfStage.stage.update()
 
 this.events.hideDealerMessagesClicked = function(){
 console.log('hideDealerMessagesClicked')
+//change user preferences
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages = false
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn = true
+
+
+//change what text should be displayed
+self.gameState.tableChatFull.shouldDisplayDealerMessages = false
+
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
 
 
 this.events.hideDealerMessagesOnClicked = function(){
 console.log('hideDealerMessagesOnClicked')
+//change user preferences
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages = true
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn = false
-self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
+
+//change what text should be displayed
+self.gameState.tableChatFull.shouldDisplayDealerMessages = true
+
+self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true}) 
 }
 
 this.events.hidePlayerMessagesClicked = function(){
   console.log('hidePlayerMessagesClicked')
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages = false
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn = true
+
+
+//change what text should be displayed
+self.gameState.tableChatFull.shouldDisplayPlayerMessages = false
+
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 
 }
@@ -803,18 +823,32 @@ this.events.hidePlayerMessagesOnClicked = function(){
    console.log('hidePlayerMessagesOnClicked')
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages = true
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn = false
+
+
+//change what text should be displayed
+self.gameState.tableChatFull.shouldDisplayPlayerMessages = true
+
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
 this.events.hideObserverMessagesClicked = function(){
    console.log('hideObserverMessagesClicked')
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages = false
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn = true
+
+
+//change what text should be displayed
+self.gameState.tableChatFull.shouldDisplayObserverMessages = false
+
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
 this.events.hideObserverMessagesOnClicked = function(){
 
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages = true
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn = false
+
+//change what text should be displayed
+self.gameState.tableChatFull.shouldDisplayObserverMessages = true
+
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
 
@@ -2651,7 +2685,7 @@ enablescrollonselection:false,
 //enablemousewheel:false,
 hwacceleration:false,
 bouncescroll:false,
-cursoropacitymax:self.userPreferences.tableChatFullWindowAlpha, 
+cursoropacitymax:self.userPreferences.tableChatFull.windowAlpha, 
 autohidemode:false,
 
 touchbehavior :true,
@@ -4390,30 +4424,94 @@ return isAtBottom
 
 }
 
-this.appendTableChatFullMessageText = function(textString){
 
-var isAtBottom = this.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText() 
+
+this.appendTableChatFullMessageText = function(textString, options){
+
+ isAtBottom = this.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText() 
 
 $('#tableChatFullText').append('<br>'+ textString)
 
-if(isAtBottom == true && self.gameState.tableChatFull.mouseDown != true){ self.moveTableChatFullMessageText()}
-
+if(isAtBottom == true && self.gameState.tableChatFull.mouseDown != true && options && options.moveTable !== false){ self.moveTableChatFullMessageText()}
+else if(options && options.moveTable == true){self.moveTableChatFullMessageText()}
 }
 
-this.updateTableChatFullMessageTextFromCurrentData = function(){
+this.updateTableChatFullMessageTextFromCurrentOrAdditionalData = function(chatInfo, options){
 
-self.gameState.tableChatFull.fullTextString = ''
+if(this.gameState.tableChatFull.currentlyShowingObserverMessages == this.userPreferences.tableChatFull.hideObserverMessages)
 
+//current preferences
+var isDisplayingDealerMessages = this.gameState.tableChatFull.currentlyDisplayingDealerMessages
+var isDisplayingPlayerMessages =  this.gameState.tableChatFull.currentlyDisplayingPlayerMessages
+var isDisplayingObserverMessages = this.gameState.tableChatFull.currentlyDisplayingObserverMessages
+
+  //target preferences
+var shouldDisplayDealerMessages
+ var shouldDisplayPlayerMessages
+var shouldDisplayObserverMessages
+
+if(self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn === false){ shouldDisplayDealerMessages = true}
+  else{ shouldDisplayDealerMessages = false}
+    if(self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn === false){ shouldDisplayPlayerMessages = true}
+  else{ shouldDisplayPlayerMessages = false}
+    if(self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn === false){ shouldDisplayObserverMessages = true}
+  else{ shouldDisplayObserverMessages = false}
+
+var needToUpdate = (isDisplayingDealerMessages !==  shouldDisplayDealerMessages) || (isDisplayingPlayerMessages !== shouldDisplayPlayerMessages) || (isDisplayingObserverMessages !== shouldDisplayObserverMessages)
+//update existing display
+if(needToUpdate === true){
+
+  //if updating, we guarantee to scroll down at end
+var scrollDownAtEnd = true
+//get the top line of text to preserve position
+
+////*****************************DONT KNOW HOW TO DO THIS YET< WILL JUST SCROLL TO BOTTOM INSTEAD FOR NOW
+
+self.gameState.tableChatFull.fullTextString = ''  //reset textstring
+
+//format of log is ['dealer',messageString, timeStampString]
 for(var i = 0;i<self.gameState.tableChatFull.log.length;i++){
-if(i>0){self.gameState.tableChatFull.fullTextString = self.gameState.tableChatFull.fullTextString + '<br>'}
 
+
+//skip appending messages if its of a type we dont want to display
+if(shouldDisplayDealerMessages === false && self.gameState.tableChatFull.log[i][0] === 'dealer'){}
+else if(shouldDisplayObserverMessages === false && self.gameState.tableChatFull.log[i][0] === 'observer'){}
+  else if(shouldDisplayPlayerMessages === false){}
+    else{ //we WANT to display the message
+
+//add a line break if this is not the first line in the string
+if(self.gameState.tableChatFull.fullTextString.length>0){self.gameState.tableChatFull.fullTextString = self.gameState.tableChatFull.fullTextString + '<br>'}
+//add tablechatfull.log[i] to string
 self.gameState.tableChatFull.fullTextString = self.gameState.tableChatFull.fullTextString + self.gameState.tableChatFull.log[i][1]
 
-}
-var isAtBottom = this.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText()
+}//if we want to display this index of tableChatFull.log
+}//iterate through tableChatFull.log
+
 $('#tableChatFullText').html(self.gameState.tableChatFull.fullTextString)//add
-if(isAtBottom == true && self.gameState.tableChatFull.mouseDown != true){this.moveTableChatFullMessageText()}
-this.events.tableChatFullMessageTextChanged()
+
+}//if needToUpdate  === true, this means a type of message needs to be shown or hidden
+
+//check if we should scroll down at end
+else{
+  var scrollDownAtEnd = this.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText()
+}
+
+//if updated scrol text to the bottom
+this.moveTableChatFullMessageText()
+
+if(chatInfo && chatInfo.chatSourceType && chatInfo.message){
+this.gameState.tableChatFull.log.push([chatInfo.chatSourceType, chatInfo.message])
+//if timeStampString add it to the array
+if(chatInfo.timeStampString){
+  this.gameState.tableChatFull.log[this.gameState.tableChatFull.log.length-1].push(chatInfo.timeStampString)
+}
+
+this.appendTableChatFullMessageText(chatInfo.message, {moveTable:false})
+
+}//if we want to append a message at the end
+
+if(scrollDownAtEnd === true){this.moveTableChatFullMessageText()}
+
 }
 
     this.displayopenSeats = function(openSeats){
@@ -4883,10 +4981,28 @@ else{self.displayChildren(self.images.tableChatFull[index], displayOrHideChildre
 
 })//end loop through self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem
 
+//update text
+this.updateTableChatFullMessageTextFromCurrentOrAdditionalData()
 }
 
 this.displayTableChatFull = function(){
-console.log('calling displayTableChatFull')
+//update what is showing and what isnt from current preferences
+
+if(this.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages === false){
+  this.gameState.tableChatFull.shouldDisplayDealerMessages = false
+}
+else{this.gameState.tableChatFull.shouldDisplayDealerMessages = true}
+
+  if(this.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages === false){
+  this.gameState.tableChatFull.shouldDisplayPlayerMessages = false
+}
+else{this.gameState.tableChatFull.shouldDisplayPlayerMessages = true}
+
+  if(this.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages === false){
+  this.gameState.tableChatFull.shouldDisplayObserverMessages = false
+}
+else{this.gameState.tableChatFull.shouldDisplayObserverMessages = true}
+
 this.displayChildren(this.images.hideTableChatFull,{update:false})
 this.hideChildren(this.images.showTableChatFull,{update:false})
 this.displayChildren(this.images.tableChatFull, { update:false})
@@ -6014,9 +6130,14 @@ if( self.gameState.seats[player.seat].toAct == true){self.startCountdown(player.
 
 //dealer message
  socket.on('game_event', function(messageString, timeStampString){
-self.gameState.tableChatFull.log.push(['dealer',messageString, timeStampString])
-self.appendTableChatFullMessageText(self.gameState.tableChatFull.log[self.gameState.tableChatFull.log.length-1][1])
-self.updateStage(self.images.tableChatFull.chatMessageText.position.z.stage)
+
+//update tableChatFull popup
+var chatObjectForInternalFunctionUse = {}
+chatObjectForInternalFunctionUse.chatSourceType = 'dealer'
+chatObjectForInternalFunctionUse.message = messageString
+chatObjectForInternalFunctionUse.timeStampString = timeStampString
+self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInternalFunctionUse)
+
 })
 
 //player to act (not the user)
@@ -6048,9 +6169,13 @@ chatInfo.message = chatInfo.message.replace(/^\s+|\s+$/g,'')
      //perform animation only if string is longer than 0 and is not purely spaces
   if (/\S/.test(chatInfo.message)){
 
-self.gameState.tableChatFull.log.push(['player',chatInfo.sender+': '+chatInfo.message])
-self.appendTableChatFullMessageText(self.gameState.tableChatFull.log[self.gameState.tableChatFull.log.length-1][1])
-self.updateStage(self.images.tableChatFull.chatMessageText.position.z.stage)
+//update tableChatFull popup
+var chatObjectForInternalFunctionUse = {}
+chatObjectForInternalFunctionUse.chatSourceType = 'player'
+chatObjectForInternalFunctionUse.message = chatInfo.sender+': '+chatInfo.message
+
+self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInternalFunctionUse)
+
 
 
   //define function to get width of string
