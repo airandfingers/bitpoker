@@ -793,10 +793,6 @@ console.log('hideDealerMessagesClicked')
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages = false
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn = true
 
-
-//change what text should be displayed
-self.gameState.tableChatFull.currentlyDisplayingDealerMessages = false
-
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
 
@@ -807,9 +803,6 @@ console.log('hideDealerMessagesOnClicked')
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages = true
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn = false
 
-//change what text should be displayed
-self.gameState.tableChatFull.currentlyDisplayingDealerMessages = true
-
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true}) 
 }
 
@@ -817,10 +810,6 @@ this.events.hidePlayerMessagesClicked = function(){
   console.log('hidePlayerMessagesClicked')
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages = false
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn = true
-
-
-//change what text should be displayed
-self.gameState.tableChatFull.currentlyDisplayingPlayerMessages = false
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 
@@ -830,10 +819,6 @@ this.events.hidePlayerMessagesOnClicked = function(){
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages = true
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn = false
 
-
-//change what text should be displayed
-self.gameState.tableChatFull.currentlyDisplayingPlayerMessages = true
-
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
 this.events.hideObserverMessagesClicked = function(){
@@ -841,19 +826,12 @@ this.events.hideObserverMessagesClicked = function(){
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages = false
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn = true
 
-
-//change what text should be displayed
-self.gameState.tableChatFull.currentlyDisplayingObserverMessages = false
-
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
 this.events.hideObserverMessagesOnClicked = function(){
 
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages = true
 self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn = false
-
-//change what text should be displayed
-self.gameState.tableChatFull.currentlyDisplayingObserverMessages = true
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
@@ -4463,7 +4441,7 @@ var needToUpdate = (isDisplayingDealerMessages !==  shouldDisplayDealerMessages)
 var scrollDownAtEnd = this.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText()
 console.log('needToUpdate = '+needToUpdate)
 //update existing display
-if(needToUpdate === true){
+if(needToUpdate === true || (options && options.update === true)){
 
 //get the top line of text to preserve position
 
@@ -4471,18 +4449,21 @@ if(needToUpdate === true){
 
 self.gameState.tableChatFull.fullTextString = ''  //reset textstring
 
+var displayCurrentLog 
+
 //format of log is ['dealer',messageString, timeStampString]
 for(var i = 0;i<self.gameState.tableChatFull.log.length;i++){
 
-
 //skip appending messages if its of a type we dont want to display
-if(shouldDisplayDealerMessages === false && self.gameState.tableChatFull.log[i][0] === 'dealer'){}
-else if(shouldDisplayObserverMessages === false && self.gameState.tableChatFull.log[i][0] === 'observer'){}
-  else if(shouldDisplayPlayerMessages === false){}
-    else{ //we WANT to display the message
+if(self.gameState.tableChatFull.log[i][0] === 'dealer'){displayCurrentLog = shouldDisplayDealerMessages }
+else if(self.gameState.tableChatFull.log[i][0] === 'observer'){displayCurrentLog = shouldDisplayObserverMessages}
+  else {displayCurrentLog = shouldDisplayPlayerMessages}
+   
+   if(displayCurrentLog === true) {//we WANT to display the message
 
 //add a line break if this is not the first line in the string
 if(self.gameState.tableChatFull.fullTextString.length>0){self.gameState.tableChatFull.fullTextString = self.gameState.tableChatFull.fullTextString + '<br>'}
+
 //add tablechatfull.log[i] to string
 self.gameState.tableChatFull.fullTextString = self.gameState.tableChatFull.fullTextString + self.gameState.tableChatFull.log[i][1]
 
@@ -4490,6 +4471,10 @@ self.gameState.tableChatFull.fullTextString = self.gameState.tableChatFull.fullT
 }//iterate through tableChatFull.log
 
 $('#tableChatFullText').html(self.gameState.tableChatFull.fullTextString)//add
+
+this.gameState.tableChatFull.currentlyDisplayingDealerMessages = shouldDisplayDealerMessages
+this.gameState.tableChatFull.currentlyDisplayingPlayerMessages = shouldDisplayPlayerMessages
+this.gameState.tableChatFull.currentlyDisplayingObserverMessages = shouldDisplayObserverMessages
 
 }//if needToUpdate  === true, this means a type of message needs to be shown or hidden
 
@@ -5644,6 +5629,9 @@ for(var i  = 0;i<this.arrayOfParentsOfStageAndOfContainerArray.length;i++){
 }
 if(stagesToUpdate.length == 0){console.log('no stages found to update'+ stageNumberLeaveBlankForAll)}
 
+console.log('clearing the canvasof stage number '+stageNumberLeaveBlankForAll+'with a canvasid of '+canvasID)
+
+
 this.arrayOfParentsOfStageAndOfContainerArray[stageNumberLeaveBlankForAll].stage.clear()
 for(var i = 0;i<stagesToUpdate.length;i++){
   console.log('updating stage number '+stagesToUpdate[i])
@@ -5795,6 +5783,14 @@ if(!_.isNumber(this.gameState.userSeatNumber)){this.displayChildren(this.images.
      self.gameState.minIncrement = table_state.min_increment
      self.gameState.cashier.currency = table_state.currency
      self.gameState.cashier.currency_per_chip =  table_state.currency_per_chip
+
+//update message log for table chat popup
+
+for(var i = 0;i<table_state.messages.length;i++){
+
+this.gameState.tableChatFull.log.push(['dealer', table_state.messages[i]])
+this.updateTableChatFullMessageTextFromCurrentOrAdditionalData(null, {update:true})
+}
 
 
 for(var i = 0;i<=8;i++){
@@ -6169,7 +6165,7 @@ chatInfo.message = chatInfo.message.replace(/^\s+|\s+$/g,'')
 //update tableChatFull popup
 var chatObjectForInternalFunctionUse = {}
 chatObjectForInternalFunctionUse.chatSourceType = 'player'
-chatObjectForInternalFunctionUse.message = chatInfo.sender+': '+chatInfo.message
+chatObjectForInternalFunctionUse.message = chatInfo.sender+' says: '+chatInfo.message
 
 self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInternalFunctionUse)
 
