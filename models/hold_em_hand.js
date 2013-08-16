@@ -57,6 +57,7 @@ module.exports = (function () {
   , stage_name      : { type: String, default: 'initializing' }
     // the function this hand can call to broadcast to all players in the room
   , broadcast       : Schema.Types.Mixed
+  , broadcastAndSave: Schema.Types.Mixed
   
     // the seat number of the dealer (calculated and used to calculate order-adjusted players)
   , dealer          : Number
@@ -191,6 +192,7 @@ module.exports = (function () {
           , table_name: self.table_name
           , hand_num: hand_num
           , broadcast: self.broadcast
+          , broadcastAndSave: self.broadcastAndSave
           });
           // start the game
           self.nextStage();

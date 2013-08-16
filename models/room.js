@@ -11,6 +11,8 @@ module.exports = (function () {
 
     , User = require('./user')
 
+    , Message = require('./message')
+
     /* the schema - defines the "shape" of the documents:
      *   gets compiled into one or more models */
     , RoomSchema = new Schema({
@@ -129,6 +131,20 @@ module.exports = (function () {
     this.broadcast('user_chats', chat_obj);
   };
 
+  RoomSchema.methods.broadcastAndSave = function (hand_num) {
+    //Shift and store first argument (hand_num)
+    arguments = _.toArray(arguments);
+    var _hand_num = arguments.shift();
+    //Call Room.broadcast with remaining arguments
+    this.broadcast.apply(this, arguments);
+    //Call Message.createMessage & Message.save
+    Message.createMessage({
+      hand_num: _hand_num
+    , type: arguments[0]
+    , message: arguments[1]   
+    }).save();
+  };
+
   RoomSchema.methods.getUsernames = function() {
     var sockets = _.compact(io.sockets.clients(this.room_id))
       , users = _.compact(_.pluck(sockets, 'user'))
@@ -196,3 +212,4 @@ module.exports = (function () {
 
   return Room;
 })();
+
