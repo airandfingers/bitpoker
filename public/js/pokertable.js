@@ -129,16 +129,16 @@ mouseMoveOutside:true
             this.gameState.zPositionData.cardAnimation={stage:middleTableItemsAndAnimations,container:2}
             
             this.gameState.zPositionData.chat={stage:chatBox,container:0, numContainers:1,stageOptions:this.gameState.zPositionData.background.stageOptions}
-             this.gameState.zPositionData.cashier={stage:cashier,container:0, numContainers:2, newCanvas:true,stageOptions:this.gameState.zPositionData.button.stageOptions}
+             this.gameState.zPositionData.cashier={stage:cashier,container:0, canvasHidden:true,numContainers:2, newCanvas:true,stageOptions:this.gameState.zPositionData.button.stageOptions}
             
-            this.gameState.zPositionData.initialMessageBox={stage:messageBox,container:0, numContainers:32, newCanvas:true ,stageOptions:this.gameState.zPositionData.button.stageOptions}
+            this.gameState.zPositionData.initialMessageBox={stage:messageBox,container:0, canvasHidden:true, numContainers:32, newCanvas:true ,stageOptions:this.gameState.zPositionData.button.stageOptions}
             this.gameState.zPositionData.finalMessageBox={stage:messageBox,container:29}
           
 
             this.gameState.zPositionData.loadingBackground= {stage:loadingContainers,container:0, newCanvas:true,stageOptions:this.gameState.zPositionData.background.stageOptions}
             this.gameState.zPositionData.loadingAnimation={stage:loadingContainers,container:1}
             
-            this.gameState.zPositionData.tableChatFull={stage:tableChatFull,container:0, newCanvas:true ,numContainers:4, stageOptions:this.gameState.zPositionData.button.stageOptions}
+            this.gameState.zPositionData.tableChatFull={stage:tableChatFull,container:0,canvasHidden:true, newCanvas:true ,numContainers:4, stageOptions:this.gameState.zPositionData.button.stageOptions}
     
 this.gameState.zPositionData.tableChatFullButton={stage:tableChatFull,container:3}
 this.gameState.zPositionData.tableChatFullText={stage:tableChatFull,container:1}
@@ -2553,7 +2553,7 @@ var tableChatFullStageCanvas =  self.arrayOfParentsOfStageAndOfContainerArray[ t
 'height': this.tableChatFull.htmlStageElement.size.y+'px'
   })
         $(tableChatFullStageCanvas).css({
-
+'display':'none',
                'left':this.tableChatFull.htmlStageElement.position.x+'px',
     'top':this.tableChatFull.htmlStageElement.position.y +'px',
   //  'z-index':1
@@ -2770,20 +2770,6 @@ this.tableChatFull.chatMessageText.text.hitArea = tableChatFullHitArea
 //$('#tableChatFullText').mousedown(function(event){self.events.tableChatFullChatMessageTextMouseDown(event)})​
 
 
-var  chatMessageTextCanvas = document.getElementById('tableChatFullTextCanvas')
-this.tableChatFull.chatMessageText.stage = new createjs.Stage(chatMessageTextCanvas)
-
-    createjs.Touch.enable(this.tableChatFull.chatMessageText.stage)
-        this.tableChatFull.chatMessageText.stage.mouseEnabled = true
-        this.tableChatFull.chatMessageText.stage.mouseMoveOutside =true
-        this.tableChatFull.chatMessageText.stage.enableMouseOver()
-
-this.tableChatFull.chatMessageText.containers = []
-        for(var i = 0;i<self.gameState.zPositionData.tableChatFullTextTotalContainers;i++){
-this.tableChatFull.chatMessageText.containers[i] = new createjs.Container()
-this.tableChatFull.chatMessageText.stage.addChild(this.tableChatFull.chatMessageText.containers[i])
-}
-
 console.log(this.tableChatFull.chatMessageText)
 //this.tableChatFull.hide = new this.Item(tableChatFullX, tableChatFullY, tableChatFullWidth, tableChatFullHeight,self.gameState.zPositionData.tableChatFullButton)
        
@@ -2913,8 +2899,12 @@ if(stageOptions){
         self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.enableDOMEvents(stageOptions.enableDOMEvents)
       }
 
+
 }//if stageOptions
 
+if(stageData[stageNumber].canvasHidden === true){
+$(canvas).css('display','none')
+}
 
 //create containers and add them to stage
 if(stageData[stageNumber].numContainers){var numContainers = stageData[stageNumber].numContainers}
