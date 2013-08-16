@@ -1,16 +1,3 @@
-        <!-- Function to open a popup window http://www.htmlcodetutorial.com/linking/linking_famsupp_72.html -->
-        <script>
-          function popup(mylink, windowname) {
-            if (! window.focus) return true;
-            var href;
-            if (typeof(mylink) === 'string')
-               href = mylink;
-            else
-               href = mylink.href;
-            window.open(href, windowname, 'width=700,height=486 ,left=200,top=200,location=0,toolbar=no,menubar=no,titlebar=no,directories=no,scrollbars=yes');
-            return false;
-          }
-        </script>
       <% if (! locals.hide_navbar) { %>
         <!-- Navbar script (for dropdown animation) -->
         <script>
