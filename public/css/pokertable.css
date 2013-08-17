@@ -84,6 +84,20 @@ line-height:-1;
   zIndex:2;
   overflow:auto;
   background-color:transparent;
+            -webkit-touch-callout: none;
+-webkit-user-select: none;
+-khtml-user-select: none;
+-moz-user-select: none;
+-ms-user-select: none;
+user-select: none;
+}
+#tableChatFullText{
+            -webkit-touch-callout: none;
+-webkit-user-select: none;
+-khtml-user-select: none;
+-moz-user-select: none;
+-ms-user-select: none;
+user-select: none;
 }
 
 #cashier input[type = 'text']{
@@ -108,6 +122,15 @@ line-height:-1;
     color: #FFFFFF;
     border: 1px solid #747862;
     border-radius: 0px;
+
+}
+#chatForm{
+              -webkit-touch-callout: none;
+-webkit-user-select: none;
+-khtml-user-select: none;
+-moz-user-select: none;
+-ms-user-select: none;
+user-select: none;
 }
 #chat{
        position: absolute;

@@ -5641,12 +5641,12 @@ for(var i  = 0;i<this.arrayOfParentsOfStageAndOfContainerArray.length;i++){
 }
 if(stagesToUpdate.length == 0){console.log('no stages found to update'+ stageNumberLeaveBlankForAll)}
 
-console.log('clearing the canvasof stage number '+stagesToUpdate[0]+', with a canvas id of: '+this.arrayOfParentsOfStageAndOfContainerArray[stagesToUpdate[0]].stage.canvas.id)
+//console.log('clearing the canvasof stage number '+stagesToUpdate[0]+', with a canvas id of: '+this.arrayOfParentsOfStageAndOfContainerArray[stagesToUpdate[0]].stage.canvas.id)
 this.arrayOfParentsOfStageAndOfContainerArray[stagesToUpdate[0]].stage.clear()
 
 for(var i = 0;i<stagesToUpdate.length;i++){
 //  console.log('updating stage number '+stagesToUpdate[i])
-  console.log('drawing to stage: ' + stagesToUpdate[i]+', whose canvas id is: ' +this.arrayOfParentsOfStageAndOfContainerArray[stagesToUpdate[i]].stage.canvas.id)
+ // console.log('drawing to stage: ' + stagesToUpdate[i]+', whose canvas id is: ' +this.arrayOfParentsOfStageAndOfContainerArray[stagesToUpdate[i]].stage.canvas.id)
 
   this.arrayOfParentsOfStageAndOfContainerArray[stagesToUpdate[i]].stage.update()
 }
@@ -5655,7 +5655,13 @@ for(var i = 0;i<stagesToUpdate.length;i++){
 
   else{
 console.log('updating all stages')
+var currentCanvasID = null
 for(var i  = 0;i<this.arrayOfParentsOfStageAndOfContainerArray.length;i++){
+  //check if new canvas, if it is clear it
+ if( this.arrayOfParentsOfStageAndOfContainerArray[i].stage.canvas.id !== currentCanvasID){
+  currentCanvasID = this.arrayOfParentsOfStageAndOfContainerArray[i].stage.canvas.id
+  this.arrayOfParentsOfStageAndOfContainerArray[i].stage.clear()
+}
   this.arrayOfParentsOfStageAndOfContainerArray[i].stage.update()
 }
 }//if no stage number specified
