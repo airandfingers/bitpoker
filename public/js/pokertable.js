@@ -750,7 +750,7 @@ console.log('tablechatfull text clicked')
 
 var initialRawX = e.rawX
 var initialRawY = e.rawY
-
+/*
 e.onMouseMove = function(event){
 
 var yMovement = event.rawY - initialRawY
@@ -765,7 +765,7 @@ self.images.tableChatFull.chatMessageText.text.y = self.images.tableChatFull.cha
 self.images.tableChatFull.chatMessageText.parentOfStage.stage.update()
 self.gameState.tableChatFull.mouseDown = false
 }//mouse up event
-
+*/
 /*
 e.onMouseMove = function(event){
 
@@ -4088,7 +4088,7 @@ var stageChanged = true
         
         }//if text object
                       if((options.update !== false && stageChanged === true)||(options&&options.update===true)){
-        this.updateStage(options.stageNumber)     
+        this.updateStage(stageNumber)     
 }
         }
 
@@ -4124,7 +4124,7 @@ var stageChanged = true
           }//if image object
 
                         if((options.update !== false && stageChanged === true)||(options&&options.update===true)){
-        this.updateStage(options.stageNumber)     
+        this.updateStage(stageNumber)     
 }
         }
 
@@ -5098,14 +5098,21 @@ console.log(self.gameState.messageBox.messageBoxImageContainerIndex)
 
         }
 
+console.log(self.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex])
       self.hideChildren(self.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex])
+
+      //if  bottom message box
 if(self.gameState.messageBox.messageBoxImageContainerIndex === self.gameState.zPositionData.initialMessageBox.container){     
-            
+      
+//restore previous onclick events
+self.restoreActiveStages(   self.gameState.messageBox.activeStages[self.gameState.messageBox.messageBoxImageContainerIndex])
+
 //hide messageBoxCanvas
 $(self.arrayOfParentsOfStageAndOfContainerArray[ messageBoxStageNumber].stage.canvas).css('display','none')}
-self.restoreActiveStages(   self.gameState.messageBox.activeStages[self.gameState.messageBox.messageBoxImageContainerIndex])
+
+//store new active message box container variable
         self.gameState.messageBox.messageBoxImageContainerIndex = self.gameState.messageBox.messageBoxImageContainerIndex - self.gameState.zPositionData.containersPerMessageBox
-    }
+    }//if bottom message box
 
 
     this.displayMessageBox = function(messageString, messageInfo){
@@ -5647,7 +5654,7 @@ for(var i = 0;i<stagesToUpdate.length;i++){
   }//if a stage number is specified
 
   else{
-
+console.log('updating all stages')
 for(var i  = 0;i<this.arrayOfParentsOfStageAndOfContainerArray.length;i++){
   this.arrayOfParentsOfStageAndOfContainerArray[i].stage.update()
 }
@@ -5707,7 +5714,8 @@ function tick(event){
                       //remove all loadingContainers from the stage and remove all children from them
                var parentOfLoadingStage =       self.arrayOfParentsOfStageAndOfContainerArray[self.gameState.zPositionData.loadingBackground.stage]
                parentOfLoadingStage.stage.removeAllChildren()
-               parentOfLoadingStage.stage.update()
+               self.updateStage(self.gameState.zPositionData.loadingBackground.stage)
+              // parentOfLoadingStage.stage.update()
                $('#'+parentOfLoadingStage.canvasID).css('display','none')
        }
        console.log('increasing tick')
