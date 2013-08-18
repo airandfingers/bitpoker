@@ -223,7 +223,7 @@ moveChipsSound: 'sound/move_chips.wav',
             this.images.check = {text:{},messages:[]}
             this.images.betSlider ={}
             this.images.cashier  = {}
-            this.images.messageBox=[]
+            this.images.messageBox= []
 
             for(var i = 0;i<=this.gameState.zPositionData.finalMessageBox;i++){
               this.images.messageBox.push({})
@@ -835,6 +835,35 @@ self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserver
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
 
+
+this.events.confirmSeatRotation = function(){
+
+if(self.userPreferences.alwaysRotate === true){return 'user prefers to always rotate seats'}
+   if(self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber  !== self.gameState.userSeatNumber){ // if user is seated at normal seat there is no need for popup
+      
+console.log('changing userseat view')
+      
+            var messageInfo = {}    
+              messageInfo.title = 'Seat Viewpoint Changed'
+            messageInfo.okayText = 'OK, this is fine'
+            messageInfo.cancelText = 'Change view'
+            messageInfo.cancel = true
+ messageInfo.okayEvent = self.hideMessageBox
+ messageInfo.cancelEvent = function (){
+  console.log('cancel event called')
+
+  if(self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber  !== self.gameState.userSeatNumber){
+    self.changeUserSeatView(self.gameState.userSeatNumber )}
+    else{self.changeUserSeatView(0)}
+
+
+//self.hideMessageBox()
+}
+ var messageString = 'Your table viewpoint has been changed so that you appear at the bottom middle.  Your position relative to other players remains the same. Click '+messageInfo.cancelText+ ' to change your view back.'  
+     self.displayMessageBox(messageString, messageInfo)
+
+         }//message box popup
+}
 
     this.events.exitTableClick = function(event){
       console.log('exittable clicked')
@@ -2189,7 +2218,7 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
 
 */
 
-//=====================MESSAGE BOX=======================================
+//=====================MESSAGE BOX=======MESSAGEBOX================================
 
 var containersPerMessageBox = self.gameState.zPositionData.containersPerMessageBox
 var messageBoxStageNumber = self.gameState.zPositionData.initialMessageBox.stage
@@ -3017,13 +3046,22 @@ $('#chat').css({
 })
     }
 
+  //define function to get width of string
+     this.getStringWidth = function(string, font){
+     var context = self.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.getContext('2d')
+     context.font = font
+     var textData = context.measureText(string)
+     return textData.width
+     }
+
     this.disableTableChatBox = function(){ $('#chat').attr("readonly", true)   }
 
     this.enableTableChatBox = function(){$('#chat').attr("readonly", false) }
 
     this.hideTableChatBox = function(){ $('#chat').attr("display", none) }
 
-this.changeUserSeatView = function(seatNumber){
+this.changeUserSeatView = function(seatNumberToRotateTo){
+  console.log('changing userseat view to seatNumberToRotateTo '+seatNumberToRotateTo)
 /*if(self.userPreferences.changeUserSeatView == ['bottom','middle']){}
   else{return 'change view when seated setting is off'}*/
   var  copyItemDisplayObjectLocationData = function(item){
@@ -3065,19 +3103,19 @@ itemA.size.y = itemB.size.y
 }
 }
   console.log(this.images.seats)
-if(!_.isNumber(seatNumber)){var seatNumber = 0}
+if(!_.isNumber(seatNumberToRotateTo)){var seatNumberToRotateTo = 0}
 var clockWiseRotationNumber = 0
 var temporaryArrayOfNonrotatedSeats = []
+//make remporary array equal to seats.length
 for(var i = 0;i<this.images.seats.length;i++){temporaryArrayOfNonrotatedSeats.push({})}
 //determine where to seat the user (if seats have been previously rotated)
-var seatNumberToRotateToBasedOnUnrotatedPosition = 0
-
 if(!_.isNumber(self.gameState.userSeatNumber)){clockWiseRotationNumberBasedOnUnRotatedPosition = this.images.seats.length - this.images.seats[0].rotatedSeatNumber}
-else if(seatNumber == self.gameState.userSeatNumber){clockWiseRotationNumberBasedOnUnRotatedPosition=0}
-  else if(seatNumber>self.gameState.userSeatNumber){clockWiseRotationNumberBasedOnUnRotatedPosition = seatNumber-self.gameState.userSeatNumber}
-    else{clockWiseRotationNumberBasedOnUnRotatedPosition = this.images.seats.length - self.gameState.userSeatNumber + seatNumberToRotateToBasedOnUnrotatedPosition }
+  else if(seatNumberToRotateTo>=self.gameState.userSeatNumber){clockWiseRotationNumberBasedOnUnRotatedPosition = seatNumberToRotateTo-self.gameState.userSeatNumber}
+    else{clockWiseRotationNumberBasedOnUnRotatedPosition = this.images.seats.length - self.gameState.userSeatNumber + seatNumberToRotateTo }
 
-if(clockWiseRotationNumberBasedOnUnRotatedPosition%this.images.seats.length == 0){return 'no rotation'}
+if(clockWiseRotationNumberBasedOnUnRotatedPosition === this.images.seats[0].rotatedSeatNumber){
+console.log('no rotation')
+  return 'no rotation'}
 
 //iterate through seats to get image location data
 for(var i = 0;i<this.images.seats.length;i++){
@@ -3089,7 +3127,6 @@ for(var i = 0;i<this.images.seats.length;i++){
 
 temporaryArrayOfNonrotatedSeats[self.images.seats[i].rotatedSeatNumber][index] = copyItemDisplayObjectLocationData(self.images.seats[i][index])
 
-  //end iteration through this.images.seats[i][item]
 }//check if this.images.seats[i][item] is really item
 
   }, this)//end iteration through this.images.seats[i]
@@ -5081,7 +5118,7 @@ $(self.arrayOfParentsOfStageAndOfContainerArray[self.images.cashier.window.posit
 
     this.hideMessageBox = function(){
 
-var messageBoxStageNumber = this.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex].window.position.z.stage
+var messageBoxStageNumber = self.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex].window.position.z.stage
 
 
 
@@ -5130,6 +5167,7 @@ var incrementOfContainersPerMessageBox = this.gameState.zPositionData.containers
 console.log(messageBoxImageContainerIndex)
 
 
+/*
         //check if this is the first(bottom) messagebox displayed
         if(messageBoxImageContainerIndex == this.gameState.zPositionData.initialMessageBox){
        //hide html cashier(if visible)
@@ -5147,7 +5185,7 @@ console.log(messageBoxImageContainerIndex)
        this.disableTableChatBox()
        }
        }
-
+*/
 
        //set current messageBox as top messageBoxImagContainerIndex
         self.gameState.messageBox.messageBoxImageContainerIndex = messageBoxImageContainerIndex
@@ -5180,14 +5218,17 @@ console.log(messageBoxImageContainerIndex)
         var innerMessageBoxHeight = messageBoxWindowHeight-outerBottomHeight-outerTopHeight
 
         var textHeight = 30
-        var textLeftOffset = 10
+        var textLeftOffset = 7
         var textTopOffset = 10
         var textX = innerMessageBoxX + textLeftOffset
 
-        var buttonWidth = 50
+//button width is defined in default
+        var defaultMinimumButtonWidth = 50
+        
         var buttonHeight = 22
+        var defaultRatioOfTextWidthToButtonWidth = 0.9 //this is default, this may change
 
-        var distanceBetweenButtons = 30
+        var defaultDistanceBetweenButtons = 30
         var buttonButtomOffset = 15 //distance from end of gray area to bottom of button
         var buttonY = messageBoxWindowY + messageBoxWindowHeight - outerBottomHeight - buttonButtomOffset - buttonHeight
 
@@ -5196,6 +5237,7 @@ var textContainer = 1
 var buttonContainer = 2
 
          //-------------------set defaults---------------------------
+         if(_.isNull(messageInfo)||_.isUndefined(messageInfo)){messageInfo = {}}
          //set default font sizes and colors
        if(_.isNull(messageInfo.title)||_.isUndefined(messageInfo.title)||!(_.isString(messageInfo.title)||!_.isNumber(messageInfo.title))){messageInfo.title = ''}
        if(_.isNull(messageInfo.titleSizeAndFont)||_.isUndefined(messageInfo.titleSizeAndFont)){messageInfo.titleSizeAndFont = '18px Arial'}
@@ -5208,15 +5250,41 @@ var buttonContainer = 2
     if(_.isNull(messageInfo.okayText)||_.isUndefined(messageInfo.okayText)){ messageInfo.okayText = 'OK'}
     if(_.isNull(messageInfo.cancelText)||_.isUndefined(messageInfo.cancelText)){ messageInfo.cancelText = 'Cancel'}
 
+      //set default button size
+    if(!_.isNumber(messageInfo.ratioOfTextWidthToButtonWidth)){messageInfo.ratioOfTextWidthToButtonWidth = defaultRatioOfTextWidthToButtonWidth }    
+if(!_.isNumber(messageInfo.minimumButtonWidth)){messageInfo.minimumButtonWidth = defaultMinimumButtonWidth }    
 
+if(_.isNull(messageInfo.sameSizeButtons)||_.isUndefined(messageInfo.sameSizeButtons)){ messageInfo.sameSizeButtons = true}
+
+
+    if(!_.isNumber(messageInfo.okayWidth)){
+      //divide text width by ratio to get button width
+      console.log('calculating width of okay /cancel buttons')
+      console.log(messageInfo.okayText)
+      
+      messageInfo.okayWidth = this.getStringWidth(messageInfo.okayText, messageInfo.buttonSizeAndFont)/messageInfo.ratioOfTextWidthToButtonWidth}
+if(messageInfo.okayWidth<messageInfo.minimumButtonWidth){messageInfo.okayWidth = messageInfo.minimumButtonWidth}
+      if(!_.isNumber(messageInfo.cancelWidth)){
+      //divide text width by ratio to get button width
+      messageInfo.cancelWidth = this.getStringWidth(messageInfo.cancelText, messageInfo.buttonSizeAndFont)/messageInfo.ratioOfTextWidthToButtonWidth}
+if(messageInfo.cancelWidth<messageInfo.minimumButtonWidth){messageInfo.cancelWidth = messageInfo.minimumButtonWidth}
+ 
+//if same size buttons are true, then we want to use the biggest button size
+if(messageInfo.sameSizeButtons === true){
+
+  if( messageInfo.cancelWidth<messageInfo.okayWidth){ messageInfo.cancelWidth =  messageInfo.okayWidth}
+    else{ messageInfo.okayWidth =  messageInfo.cancelWidth}
+}
+//define distance between buttons
+  if(!_.isNumber(messageInfo.distanceBetweenButtons)){messageInfo.distanceBetweenButtons = defaultDistanceBetweenButtons }    
 
        //set button locations
-    if(messageInfo.cancel != true){
-        var okayX = stageWidth/2 - buttonWidth/2
+    if(messageInfo.cancel !== true){
+        var okayX = stageWidth/2 - messageInfo.okayWidth/2
         }
         else{
-     var okayX =    stageWidth/2 - distanceBetweenButtons/2 - buttonWidth    
-     var cancelX =  stageWidth/2 + distanceBetweenButtons/2 
+     var okayX =    stageWidth/2 - messageInfo.distanceBetweenButtons/2 - messageInfo.okayWidth    
+     var cancelX =  stageWidth/2 + messageInfo.distanceBetweenButtons/2 
         }
   
         //background bitmap and closeX image are in the this.setDefaults() function
@@ -5266,7 +5334,7 @@ if(messageInfo.closeWindowMessages){
  self.images.messageBox[messageBoxImageContainerIndex].message.text.maxWidth = null
 
    //OK button
-        self.images.messageBox[messageBoxImageContainerIndex].okay =  new self.images.Item (okayX,buttonY, buttonWidth,buttonHeight,{stage:messageBoxStageNumber, container: messageBoxImageContainerIndex+buttonContainer}) 
+        self.images.messageBox[messageBoxImageContainerIndex].okay =  new self.images.Item (okayX,buttonY, messageInfo.okayWidth,buttonHeight,{stage:messageBoxStageNumber, container: messageBoxImageContainerIndex+buttonContainer}) 
         self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].okay, messageInfo.buttonBackgroundColor )
         self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].okay, messageInfo.okayText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
             //asign messages if okaymessages exists
@@ -5292,7 +5360,7 @@ if(messageInfo.closeWindowMessages){
       }
 //cancel button
         if(messageInfo.cancel && messageInfo.cancel == true){
-        self.images.messageBox[messageBoxImageContainerIndex].cancel =  new self.images.Item (cancelX,buttonY, buttonWidth,buttonHeight,{stage:messageBoxStageNumber, container: messageBoxImageContainerIndex+buttonContainer}) 
+        self.images.messageBox[messageBoxImageContainerIndex].cancel =  new self.images.Item (cancelX,buttonY, messageInfo.cancelWidth,buttonHeight,{stage:messageBoxStageNumber, container: messageBoxImageContainerIndex+buttonContainer}) 
         self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].cancel, messageInfo.buttonBackgroundColor )
         self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].cancel, messageInfo.cancelText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
         //add message to cancel if available
@@ -5762,6 +5830,7 @@ this.displayChildren(this.images.currencyDisplay)
          if(table_state.seats[i].is_you == true){
          this.gameState.userSeatNumber = table_state.seats[i].seat 
          self.changeUserSeatView()
+         self.events.confirmSeatRotation()
          console.log('calling display seated options')
   this.displaySeatedOptions()
 }//table_state.seats[i].is_you == true
@@ -6191,16 +6260,6 @@ chatObjectForInternalFunctionUse.message = chatInfo.sender+' says: '+chatInfo.me
 
 self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInternalFunctionUse)
 
-
-
-  //define function to get width of string
-     var getStringWidth = function(string){
-     var context = self.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.getContext('2d')
-     context.font = self.images.seats[chatInfo.seat].chat.text.font
-     var textData = context.measureText(string)
-     return textData.width
-     }
-
   //remove previous tweens that may be running:
   createjs.Tween.removeTweens(self.images.seats[chatInfo.seat].chat.image)
 //  createjs.Tween.removeTweens(self.images.seats[chatInfo.seat].chat.text)
@@ -6216,6 +6275,7 @@ var needElipses = false
 var largestTextWidth = 0
 var wasTrimmed = false
 var numAddedSpaces = 0
+var chatFont = self.images.seats[chatInfo.seat].chat.text.font
 while(finished == false){
 
      wasTrimmed  = false //reset wasTrimmed variable
@@ -6223,7 +6283,7 @@ while(finished == false){
 messageToAdd = chatInfo.message.substring(self.images.seats[chatInfo.seat].chat.text.text.length-numAddedSpaces,chatInfo.message.length)
      //loop to start excising end  String to single line
 
-     while(getStringWidth(messageToAdd)>self.images.seats[chatInfo.seat].chat.text.lineWidth){
+     while(self.getStringWidth(messageToAdd, chatFont)>self.images.seats[chatInfo.seat].chat.text.lineWidth){
 
 messageToAdd = messageToAdd.substring(0,messageToAdd.length-1) 
  wasTrimmed  = true
@@ -6278,7 +6338,7 @@ self.images.seats[chatInfo.seat].chat.text.text=self.images.seats[chatInfo.seat]
 
     //determine width of tableChatBox
     if(numLines > 1)  {largestTextWidth = self.images.seats[chatInfo.seat].chat.text.lineWidth}
-      else{largestTextWidth = getStringWidth(self.images.seats[chatInfo.seat].chat.text.text)}
+      else{largestTextWidth = self.getStringWidth(self.images.seats[chatInfo.seat].chat.text.text, chatFont)}
 
         //assign width of chat graphic
      var chatBoxWidth = imageToTextWidthRatio*largestTextWidth+1.5
@@ -6335,9 +6395,13 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
        socket.on('player_sits', function(player, is_you){
        
         if(is_you == true){
-                   
             self.gameState.userSeatNumber = player.seat
-   self.changeUserSeatView()
+
+
+     if(self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber  !== 0){ // if user is seated at normal seat there is no need for popup
+     self.changeUserSeatView()
+      self.events.confirmSeatRotation()
+         }//message box popup
             socket.emit('get_add_chips_info')
             self.displaySeatedOptions()
       //      self.displayChildren(self.images.stand, false, ['stand'])
