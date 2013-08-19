@@ -2747,13 +2747,12 @@ var stopWheel = function(e){
           'font': chatMessageFont,
           'font-size':chatMessageFontSize + 'px',
           'color': chatMessageFontColor ,
-          'word-wrap': 'break-word',
-'word-break': 'break-all',
+
 'text-overflow': 'auto',
 //'bottom':'-'+(parseFloat(this.tableChatFull.chatMessageText.position.y) + parseFloat(this.tableChatFull.chatMessageText.size.y))+'px',
-'left': '0px'
-           //    'left':this.tableChatFull.htmlChatStageElement.position.x+'px',
- //  'top':this.tableChatFull.htmlChatStageElement.position.y +'px',
+    'top': this.tableChatFull.chatMessageText.position.y+'px',
+       'left':this.tableChatFull.chatMessageText.position.x+'px',
+       
   //  'z-index':1
            })
 
