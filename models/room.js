@@ -120,13 +120,13 @@ module.exports = (function () {
   };
 
   RoomSchema.methods.broadcastChatMessage = function(socket, message) {
-    var username = socket.user && socket.user.username || 'Guest'
+    var username = socket.user && socket.user.username
       , seat_num = socket.player && socket.player.seat
-      , chat_obj = { message : message };
-    if (username !== chat_obj.sender) {
-      console.error(username, 'tried to send a message as', chat_obj.sender);
+      , chat_obj = { sender: username, message: message };
+    if (! _.isString(username)) {
+      console.error('Socket without user or user.username send chat message!', socket, message);
+      return;
     }
-    chat_obj.sender = username;
     if (_.isNumber(seat_num)) { chat_obj.seat = seat_num; }
     this.broadcast('user_chats', chat_obj);
   };
