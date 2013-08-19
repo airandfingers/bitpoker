@@ -278,9 +278,9 @@ module.exports = (function () {
     return this.serialize(['chips_won', 'hand', 'has_acted']);
   };
 
+  var default_include = ['username', 'seat', 'chips', 'current_bet', 'sitting_out'];
   PlayerSchema.methods.serialize = function(also_include) {
     var self = this
-      , default_include = ['username', 'seat', 'chips', 'current_bet', 'sitting_out']
       , include = _.union(default_include, also_include || [])
       , player_obj = {};
     //console.log('player.serialize called, include is', include);

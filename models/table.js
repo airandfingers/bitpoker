@@ -242,11 +242,10 @@ module.exports = (function () {
 
   static_properties.player_events.sit = 'playerSits';
   TableSchema.methods.playerSits = function(player, seat_num) {
-    var socket = player.socket
-      , player_obj = player.serialize();
+    var socket = player.socket;
     this.seats[seat_num] = player;
-    socket.emitToOthers('player_sits', player_obj, false);
-    socket.emit('player_sits', player_obj, true);
+    socket.emitToOthers('player_sits', player.serialize(), false);
+    socket.emit('player_sits', player.serialize(['preferences']), true);
   };
 
   static_properties.player_events.stand = 'playerStands';
