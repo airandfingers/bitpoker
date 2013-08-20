@@ -3112,6 +3112,7 @@ console.log(this.images.background.image.isVisible())
        this.images.setDefaultEvents()
        this.images.setDefaultMessages()
       this.displayTableChatBox()
+      console.log('this.createallitems finished')
     }
      
 //return betsize that is rounded down or FALSE if betsize is not a number, also checks to make sure betsize is within in and max
@@ -4561,7 +4562,177 @@ return isAtBottom
 
 }
 
+this.displayBubbleChat = function(chatInfo){
 
+self.images.seats[chatInfo.seat].chat.text.text = ''
+//trim front and trailing whitespace from chat message
+chatInfo.message = chatInfo.message.replace(/^\s+|\s+$/g,'')
+     //perform animation only if string is longer than 0 and is not purely spaces
+  if (/\S/.test(chatInfo.message)){
+
+  //remove previous tweens that may be running:
+  createjs.Tween.removeTweens(self.images.seats[chatInfo.seat].chat.image)
+//  createjs.Tween.removeTweens(self.images.seats[chatInfo.seat].chat.text)
+
+var messageToAdd
+
+     originalImageAlpha = self.imageData.chatBoxAlpha
+var numLines = 1
+     var textShortened = false
+var finished = false
+var currentLine = 0
+var needElipses = false
+var largestTextWidth = 0
+var wasTrimmed = false
+var numAddedChars = 0
+var chatFont = self.images.seats[chatInfo.seat].chat.text.font
+var symbols = "!@#$%^&*()+=-[]\';,./{}|\":<>?"
+var ifSymbolRegex = /^[\.,-\/#!$%\^&\*;:{}=\-_`~()]+$/
+
+while(finished == false){
+
+     wasTrimmed  = false //reset wasTrimmed variable
+  //set messagetoadd equal to whatever is currently added to the chat text
+messageToAdd = chatInfo.message.substring(self.images.seats[chatInfo.seat].chat.text.text.length-numAddedChars,chatInfo.message.length)
+     //loop to start excising end  String to single line
+
+ var keepTrimming = true
+     while(keepTrimming === true && self.getStringWidth(messageToAdd, chatFont)>self.images.seats[chatInfo.seat].chat.text.lineWidth){
+     
+var lastRemovedChar = messageToAdd.charAt(messageToAdd.length-1) //store last character
+messageToAdd = messageToAdd.substring(0,messageToAdd.length-1) //remove last character from string
+
+//check if length is shorter than the new bounds
+ if(self.getStringWidth(messageToAdd, chatFont)<=self.images.seats[chatInfo.seat].chat.text.lineWidth){
+  //exit out of while loop
+var keepTrimming = false
+if(lastRemovedChar === ' '){ // check if the char we just removed is a space
+//we can add the character back into the string as it will now wrap properly
+messageToAdd = messageToAdd + lastRemovedChar
+}//if lastremoved chat is a space
+
+if(messageToAdd.charAt(messageToAdd.length-1) === ' '){ // check if last char of messageToAdd is a space
+//we can do nothing because string will wrap automatically to next line
+wasTrimmed = true
+}//if last char of messageToAdd is a space
+
+else if(messageToAdd.charAt(messageToAdd.length-2) === ' '){// check if last char of messageToAdd is a space
+//trim last char
+messageToAdd = messageToAdd.substring(0,messageToAdd.length-1)
+wasTrimmed = true
+
+}//if second to last char of messageToAdd is a space, but last char is not a space
+
+// check if lastremovedchar is a symbol, or last in messagetoadd
+else if(ifSymbolRegex.test(lastRemovedChar) || ifSymbolRegex.test(messageToAdd.charAt(messageToAdd.length-1))){
+
+  //so we want to trim last character and replace it with hyphen and space, to wrap to next line
+messageToAdd = messageToAdd + ' '
+numAddedChars = numAddedChars +1
+wasTrimmed = true
+}//if if last char in messagetoadd, or lastremoved char is a symbol
+
+else {// last char is not a symbol
+  
+  //so we want to trim last character 
+messageToAdd = messageToAdd.substring(0,messageToAdd.length-1)
+wasTrimmed = true
+//see what to replace last char with
+if(ifSymbolRegex.test(messageToAdd.charAt(messageToAdd.length-1))){//check if new last is a symbol
+messageToAdd = messageToAdd + ' ' //replace with space
+numAddedChars = numAddedChars +1
+}//check if new lastchar is a symbol
+
+//see what to replace last char with
+else{//new last char is NOT a symbol
+messageToAdd = messageToAdd + '- ' //replace with hyphen and space
+numAddedChars = numAddedChars +2
+}//check if new lastchar is NOT symbol
+
+
+}//if second to last char of messageToAdd is a space, but last char is not a space
+
+ }// if messageToAdd is shorter or equal length to the line length
+
+
+    }//loop through message to add
+
+//}//loop thorugh entire text object to add text until end
+
+  //append messageToAdd to the end of seats
+self.images.seats[chatInfo.seat].chat.text.text = self.images.seats[chatInfo.seat].chat.text.text + messageToAdd
+
+    //increase lines
+if(wasTrimmed == true){
+
+  if(numLines < self.userPreferences.playerChatMaxLines){
+//increase lin counter
+   numLines++
+  currentLine++
+}//if not on last line allowed
+   
+
+
+  else{//determine if elipses are needed
+finished = true
+// if message is finished elipses not needed
+ if(self.images.seats[chatInfo.seat].chat.text.text.length-numAddedChars == chatInfo.message.length){ }
+  else{needElipses = true}
+  
+  
+}
+
+}//if message was trimmed
+
+else{ //if message was not trimmed
+  finished = true
+}//if message not trimmed
+  }//continue looping until last line, finished must = true for loop to continue
+
+
+
+if(needElipses == true){    //add elipses .... to end of text if text was shortened
+
+self.images.seats[chatInfo.seat].chat.text.text=self.images.seats[chatInfo.seat].chat.text.text.substring(0,self.images.seats[chatInfo.seat].chat.text.text.length-4)
+        self.images.seats[chatInfo.seat].chat.text.text = self.images.seats[chatInfo.seat].chat.text.text + '...'
+    }//if needElipses = true
+
+
+    //determine ratio of chat.text to chat.image
+   var imageToTextWidthRatio =  self.images.seats[chatInfo.seat].chat.size.x/self.images.seats[chatInfo.seat].chat.text.lineWidth
+
+    //determine width of tableChatBox
+    if(numLines > 1)  {largestTextWidth = self.images.seats[chatInfo.seat].chat.text.lineWidth}
+      else{largestTextWidth = self.getStringWidth(self.images.seats[chatInfo.seat].chat.text.text, chatFont)}
+
+        //assign width of chat graphic
+     var chatBoxWidth = imageToTextWidthRatio*largestTextWidth+1.5
+
+    //draw new chatBox and set alpha to original alpha
+    self.images.seats[chatInfo.seat].chat.image.drawChat(chatBoxWidth, numLines) // drawChat function resets alpha automatically
+self.images.seats[chatInfo.seat].chat.text.alpha = 1
+//set chat text to correct Y positoin
+self.images.seats[chatInfo.seat].chat.text.y = self.images.seats[chatInfo.seat].chat.position.y - (numLines-1)*self.images.seats[chatInfo.seat].chat.text.getMeasuredLineHeight()
+//display chat image and text
+console.log(self.images.seats[chatInfo.seat].chat)
+    self.displayChildren(self.images.seats[chatInfo.seat].chat)
+     console.log(self.images.seats[chatInfo.seat].chat.text.text)
+      //tween image
+     createjs.Tween.get(self.images.seats[chatInfo.seat].chat.image,{loop:false, override:true})
+     .to({alpha:originalImageAlpha})
+    .to({alpha:0}, 10000)
+    .call(self.hideImage,[self.images.seats[chatInfo.seat].chat], self)
+    .to({alpha:originalImageAlpha})
+
+    //tween text
+     createjs.Tween.get(self.images.seats[chatInfo.seat].chat.text,{loop:false, override:true})
+     .to({alpha:1})
+    .to({alpha:0}, 10000)
+    .call(self.hideText,[self.images.seats[chatInfo.seat].chat], self)
+    .to({alpha:1})
+    }
+
+  }//playerChats function
 
 this.appendTableChatFullMessageText = function(textString, options){
 
@@ -6032,8 +6203,9 @@ for(var i = 0;i<=8;i++){
     
   //---------------------SOCKET CODE------------------------
     this.receiveTableState = function(){
+      console.log('receiveTableState called')
    socket.once('table_state', function(table_state){
-             
+             console.log('one time table_state message received')
              self.displayInitialTableState(table_state)
             self.activateSockets()
     })
@@ -6374,10 +6546,28 @@ if( self.gameState.seats[player.seat].toAct == true){self.startCountdown(player.
      }
 })
 
+//notification received
+ socket.on('notification', function(notificationString){
+  if(notificationString == "You will sit out as soon as the hand is over."){return null}
+   var chatInfo  = {}
+   chatInfo.seat = self.gameState.userSeatNumber
+chatInfo.message = notificationString
+
+  self.displayBubbleChat(chatInfo)
+
+})
+
 
 //player to act (not the user)
  socket.on('user_chats', function(chatInfo){
-if(_.isNull(chatInfo.seat)||_.isUndefined(chatInfo.seat)){
+
+//remove all leading and trailing whitespace from message
+  chatInfo.message = chatInfo.message.replace(/^\s+|\s+$/g,'')
+
+if (/\S/.test(chatInfo.message)){//make sure chatInfo.message is not empty
+
+
+if(_.isNull(chatInfo.seat)||_.isUndefined(chatInfo.seat)){ // if no seat, then observer chat
 
 //update tableChatFull popup
 var chatObjectForInternalFunctionUse = {}
@@ -6387,12 +6577,8 @@ chatObjectForInternalFunctionUse.message = chatInfo.sender+' (obs) says: '+chatI
 self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInternalFunctionUse)
 return null
 }
-//self.playerChats (chatInfo)
-self.images.seats[chatInfo.seat].chat.text.text = ''
-//trim front and trailing whitespace from chat message
-chatInfo.message = chatInfo.message.replace(/^\s+|\s+$/g,'')
-     //perform animation only if string is longer than 0 and is not purely spaces
-  if (/\S/.test(chatInfo.message)){
+
+else{//if player (seated) chat
 
 //update tableChatFull popup
 var chatObjectForInternalFunctionUse = {}
@@ -6401,114 +6587,15 @@ chatObjectForInternalFunctionUse.message = chatInfo.sender+' says: '+chatInfo.me
 
 self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInternalFunctionUse)
 
-  //remove previous tweens that may be running:
-  createjs.Tween.removeTweens(self.images.seats[chatInfo.seat].chat.image)
-//  createjs.Tween.removeTweens(self.images.seats[chatInfo.seat].chat.text)
-
-var messageToAdd
-
-     originalImageAlpha = self.imageData.chatBoxAlpha
-var numLines = 1
-     var textShortened = false
-var finished = false
-var currentLine = 0
-var needElipses = false
-var largestTextWidth = 0
-var wasTrimmed = false
-var numAddedSpaces = 0
-var chatFont = self.images.seats[chatInfo.seat].chat.text.font
-while(finished == false){
-
-     wasTrimmed  = false //reset wasTrimmed variable
-  //set messagetoadd equal to whatever is currently added to the chat text
-messageToAdd = chatInfo.message.substring(self.images.seats[chatInfo.seat].chat.text.text.length-numAddedSpaces,chatInfo.message.length)
-     //loop to start excising end  String to single line
-
-     while(self.getStringWidth(messageToAdd, chatFont)>self.images.seats[chatInfo.seat].chat.text.lineWidth){
-
-messageToAdd = messageToAdd.substring(0,messageToAdd.length-1) 
- wasTrimmed  = true
-    }
-    //add spaces if trimmed to allow easel js to wrap text
-if(wasTrimmed == true){  
-  messageToAdd = messageToAdd.substring(0,messageToAdd.length-1)
-  messageToAdd= messageToAdd+' '   
-numAddedSpaces++
-}
-  //append messageToAdd to the end of seats
-self.images.seats[chatInfo.seat].chat.text.text = self.images.seats[chatInfo.seat].chat.text.text + messageToAdd
-
-    //increase lines
-if(wasTrimmed == true){
-
-  if(numLines < self.userPreferences.playerChatMaxLines){
-//increase lin counter
-   numLines++
-  currentLine++
-}//if not on last line allowed
-   
+}//if player chat
+}//check to make sure chatInfo.message is NOT empty
 
 
-  else{//determine if elipses are needed
-finished = true
-// if message is finished elipses not needed
- if(self.images.seats[chatInfo.seat].chat.text.text.length-numAddedSpaces == chatInfo.message.length){ }
-  else{needElipses = true}
-  
-  
-}
-
-}//if message was trimmed
-
-else{ //if message was not trimmed
-  finished = true
-}
-  }//continue looping until last line
-
-
-
-if(needElipses == true){    //add elipses .... to end of text if text was shortened
-
-self.images.seats[chatInfo.seat].chat.text.text=self.images.seats[chatInfo.seat].chat.text.text.substring(0,self.images.seats[chatInfo.seat].chat.text.text.length-4)
-        self.images.seats[chatInfo.seat].chat.text.text = self.images.seats[chatInfo.seat].chat.text.text + '...'
-    }//if needElipses = true
-
-
-    //determine ratio of chat.text to chat.image
-   var imageToTextWidthRatio =  self.images.seats[chatInfo.seat].chat.size.x/self.images.seats[chatInfo.seat].chat.text.lineWidth
-
-    //determine width of tableChatBox
-    if(numLines > 1)  {largestTextWidth = self.images.seats[chatInfo.seat].chat.text.lineWidth}
-      else{largestTextWidth = self.getStringWidth(self.images.seats[chatInfo.seat].chat.text.text, chatFont)}
-
-        //assign width of chat graphic
-     var chatBoxWidth = imageToTextWidthRatio*largestTextWidth+1.5
-
-    //draw new chatBox and set alpha to original alpha
-    self.images.seats[chatInfo.seat].chat.image.drawChat(chatBoxWidth, numLines) // drawChat function resets alpha automatically
-self.images.seats[chatInfo.seat].chat.text.alpha = 1
-//set chat text to correct Y positoin
-self.images.seats[chatInfo.seat].chat.text.y = self.images.seats[chatInfo.seat].chat.position.y - (numLines-1)*self.images.seats[chatInfo.seat].chat.text.getMeasuredLineHeight()
-//display chat image and text
-console.log(self.images.seats[chatInfo.seat].chat)
-    self.displayChildren(self.images.seats[chatInfo.seat].chat)
-     console.log(self.images.seats[chatInfo.seat].chat.text.text)
-      //tween image
-     createjs.Tween.get(self.images.seats[chatInfo.seat].chat.image,{loop:false, override:true})
-     .to({alpha:originalImageAlpha})
-    .to({alpha:0}, 10000)
-    .call(self.hideImage,[self.images.seats[chatInfo.seat].chat], self)
-    .to({alpha:originalImageAlpha})
-
-    //tween text
-     createjs.Tween.get(self.images.seats[chatInfo.seat].chat.text,{loop:false, override:true})
-     .to({alpha:1})
-    .to({alpha:0}, 10000)
-    .call(self.hideText,[self.images.seats[chatInfo.seat].chat], self)
-    .to({alpha:1})
-    }
+  self.displayBubbleChat(chatInfo)
 
 })
+
+
 //player sits in
        socket.on('player_sits_in', function(player){
            self.images.seats[player.seat].status.text.text = player.chips
@@ -6648,14 +6735,15 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
 jQuery(document).ready(function(){
     holdemCanvas = new Table(10)
    holdemCanvas.initialize()
+     holdemCanvas.receiveTableState()
 })
 
 
 jQuery(window).load(function (){
-     
+
 
  //   holdemCanvas.createAllItems()
-  holdemCanvas.receiveTableState()
+
 
       console.log(document)
 
