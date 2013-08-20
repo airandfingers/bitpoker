@@ -26,7 +26,7 @@ module.exports = (function () {
   var static_properties = {
   // static properties (attached below) - Model.property_name
     // list of rooms to be created in Room.setup
-    ROOMS: ['lobby']
+    ROOMS: ['']
     // existing rooms, { room_id: room_document }
   , rooms: {}
     // the messages a Table should react to, on each player's socket
@@ -120,13 +120,13 @@ module.exports = (function () {
   };
 
   RoomSchema.methods.broadcastChatMessage = function(socket, message) {
-    var username = socket.user && socket.user.username || 'Guest'
+    var username = socket.user && socket.user.username
       , seat_num = socket.player && socket.player.seat
-      , chat_obj = { message : message };
-    if (username !== chat_obj.sender) {
-      console.error(username, 'tried to send a message as', chat_obj.sender);
+      , chat_obj = { sender: username, message: message };
+    if (! _.isString(username)) {
+      console.error('Socket without user or user.username send chat message!', socket, message);
+      return;
     }
-    chat_obj.sender = username;
     if (_.isNumber(seat_num)) { chat_obj.seat = seat_num; }
     this.broadcast('user_chats', chat_obj);
   };
@@ -166,6 +166,12 @@ module.exports = (function () {
   // listen for incoming socket connections
   io.sockets.on('connection', function(socket) {
     //console.log('A socket with sessionID ' + socket.handshake.sessionID + ' connected!');
+    var room_id = socket.handshake.room_id //socket.handshake = data object from authorization handler
+      , room = Room.getRoom(room_id);
+    if (room === undefined) {
+      console.error('no room with room_id', room_id);
+      return;
+    }
 
     // override emit method to log, then emit
     var emit = socket.emit;
@@ -198,12 +204,6 @@ module.exports = (function () {
       });
     }
 
-    var room_id = socket.handshake.room_id //socket.handshake = data object from authorization handler
-      , room = Room.getRoom(room_id);
-    if (room === undefined) {
-      console.error('no room with room_id', room_id);
-      room = Room.getRoom('table_1');
-    }
     room.join(socket);
     socket.on('disconnect', function() {
       room.leave(socket);
@@ -212,4 +212,3 @@ module.exports = (function () {
 
   return Room;
 })();
-

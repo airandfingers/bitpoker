@@ -103,16 +103,28 @@ module.exports = (function () {
   });
 
   //home, index and '/' link to the same page
-  var renderHome = function(req, res) {
-    res.render('index', {
-      message: req.flash('error'),
-      user: req.user
-    });
-  };
-  app.get('/', renderHome);
-  app.get('/home', renderHome);
-  app.get('/index', renderHome);
+  function renderHome(req, res) {
+    var users = Room.getRoom('').getUsernames()
+      , table_games = Table.getTableGames()
+      , room_state = { users: users };
+    //console.log('Got table_games:', table_games);
 
+    res.render('index', {
+      table_games: table_games
+    , room_state: JSON.stringify(room_state)
+    , message: req.flash('error')
+    , user: req.user
+    });
+  }
+  app.get('/', renderHome);
+
+  function redirectToHome(req, res) {
+    res.redirect('/');
+  }
+  app.get('/home', redirectToHome);
+  app.get('/index', redirectToHome);
+  app.get('/lobby', redirectToHome);
+  app.get('/play', redirectToHome);
 
   app.get('/leaderboard', function (req, res) {
     User.getLeaders('funbucks', function (err, funbucks_leaders) {
@@ -184,7 +196,7 @@ module.exports = (function () {
   });
 
   //home, index and '/' link to the same page
-  var renderRegister = function(req, res) {
+  function renderRegister(req, res) {
     var next_page = req.query.next || base_page;
     if (! auth.isAuthenticated(req)) {
       //Show the registration form.
@@ -210,8 +222,7 @@ module.exports = (function () {
         res.redirect(next_page);
       }
     }
-    
-  };
+  }
   app.get('/register', renderRegister);
   app.get('/guest_convert', renderRegister);
 
@@ -586,18 +597,6 @@ module.exports = (function () {
     //End this user's session.
     req.logout();
     res.redirect(base_page);
-  });
-
-  app.get('/lobby', function(req, res) {
-    var users = Room.getRoom('lobby').getUsernames()
-      , table_games = Table.getTableGames()
-      , room_state = { users: users };
-    //console.log('Got table_games:', table_games);
-    res.render('lobby', {
-      table_games: table_games
-    , room_state: JSON.stringify(room_state)
-    , hide_navbar: true
-    });
   });
 
   app.get('/' + Table.TABLE_PREFIX + ':id', auth.ensureAuthenticated, function(req, res, next) {

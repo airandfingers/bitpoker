@@ -8,17 +8,15 @@ title += ' - Logged in as ' + username;
         <link type="text/css" rel="stylesheet" href="/css/pokertable.css" />
 <% include head_end_and_header %>
 
-        <div id="pokerTableWrapper">
+        <div id="pokerTableWrapper" >
             <div id="pokerCanvasDiv">
              <div id="tableChatFullTextDiv">
             <p id = 'tableChatFullText' ></p>
-             <canvas id = 'tableChatFullTextCanvas' width="999" height="999" ></canvas>
-              </div> <!-- tableChatFullTextDiv-->
-            <canvas id = 'tableChatFullCanvas' width="999" height="999" ></canvas>
 
-                    <canvas id="canvas" width="690" height="480" ></canvas>
-                    
+              </div> <!-- tableChatFullTextDiv-->
+              
                    </div> <!-- pokerCanvasDiv-->
+
             <div id="cashierDiv">
                 <form id = 'cashier' style='display: none'>    
 
@@ -46,6 +44,8 @@ title += ' - Logged in as ' + username;
 </div> <!-- autoRebuyDiv-->
 
             </div> <!-- cashier-->
+
+
             <div id="chatDiv">
                 <form id='chatForm'>
            <input type = 'text' id="chat">
@@ -54,12 +54,14 @@ title += ' - Logged in as ' + username;
              </div> <!-- chatDiv-->
 
              <!-- bet size DIV-->
+
             <div id="betSizeDiv">
                 <form id='betSizeForm'>
            <input type = 'text' id="betSize">
                 <input type = 'text' id="trololol" style ="display :none">
                 </form>
-             </div> <!-- bet size DIV-->
+             </div> 
+             <!-- bet size DIV-->
                
         </div> <!-- poker table wrapper -->
             <!--include values to expose to scripts-->
@@ -98,10 +100,9 @@ title += ' - Logged in as ' + username;
         <script src="/js/vendor/tweenjs-0.4.0.min.js"></script>
         <script src="/js/vendor/preloadjs-0.3.0.min.js"></script>
         <script src="/js/vendor/jquery-ui.js"></script>
-
-
-
-
+         <script src="/js/vendor/jquery.nicescroll.js"></script>
+         <script src="/js/vendor/jquery.scrollTo-1.4.3.1-min.js"></script>
+         
         <!--
           <script src="/js/vendor/easeljs-0.6.0.min.js"></script>
         <script src="/js/vendor/preloadjs/AbstractLoader.js"></script>
@@ -109,12 +110,10 @@ title += ' - Logged in as ' + username;
         <script src="/js/vendor/preloadjs/TagLoader.js"></script>
         <script src="/js/vendor/preloadjs/XHRLoader.js"></script>
         <script src="/js/vendor/easeljs/EventDispatcher.js"></script>
-
         <script src="/js/vendor/easeljs/container.js"></script>
-
         -->
 
         <script src="js/vendor/async.js"></script>
-
         <script src="/js/pokertable.js"></script>
+
 <% include foot %>

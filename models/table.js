@@ -170,6 +170,10 @@ module.exports = (function () {
       , user = socket.user
       , username = user.username
       , player = self.players[username];
+    if (! _.isFunction(user.checkBalance)) {
+      console.error('Unauthenticated user somehow joined table room!', self.name);
+      return;
+    }
     if (! (player instanceof Player)) {
       // create a new player
       player = Player.createPlayer({
@@ -238,11 +242,10 @@ module.exports = (function () {
 
   static_properties.player_events.sit = 'playerSits';
   TableSchema.methods.playerSits = function(player, seat_num) {
-    var socket = player.socket
-      , player_obj = player.serialize();
+    var socket = player.socket;
     this.seats[seat_num] = player;
-    socket.emitToOthers('player_sits', player_obj, false);
-    socket.emit('player_sits', player_obj, true);
+    socket.emitToOthers('player_sits', player.serialize(), false);
+    socket.emit('player_sits', player.serialize(['preferences']), true);
   };
 
   static_properties.player_events.stand = 'playerStands';
@@ -280,6 +283,7 @@ module.exports = (function () {
       , username = user.username
       , table_state = self.getCurrentHand().serialize(username, hand_include)
       , player = self.players[username];
+    //console.log('user is', user, ', checkBalance is', user.checkBalance);
     table_state.table_name = self.name;
     if (player instanceof Player) {
       table_state.num_chips = player.num_chips;

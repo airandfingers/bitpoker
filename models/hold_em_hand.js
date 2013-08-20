@@ -960,7 +960,7 @@ module.exports = (function () {
       , game = self.game
       , hand_include = include
       , all_players_include = []
-      , this_player_include = ['hand', 'flags']
+      , this_player_include = ['hand', 'flags', 'preferences']
       , hand_obj = {};
 
     if (_.isString(include)) {
