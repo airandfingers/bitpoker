@@ -1,13 +1,13 @@
 module.exports = (function() {
   var mongoose = require('mongoose')
-  , Schema = mongoose.Schema
-  , ObjectId = Schema.ObjectId
+    , Schema = mongoose.Schema
+    , ObjectId = Schema.ObjectId
 
-  , async = require('async')
-  , request = require('request')
-  , _ = require('underscore')
+    , async = require('async')
+    , request = require('request')
+    , _ = require('underscore')
 
-  , db = require('./db');
+    , db = require('./db');
 
   //Create Message Mongoose model:
   //Define MessageSchema (hand_num, type, message, timestamp?)
@@ -21,7 +21,7 @@ module.exports = (function() {
   //Write Message.createMessage(spec) static function
   MessageSchema.statics.createMessage = function(spec) {
     /* our "constructor" function.*/
-    console.log('Message.createMessage called!', spec);
+    //console.log('Message.createMessage called!', spec);
     var message = new Message(spec);
     return message;
   };
@@ -35,7 +35,7 @@ module.exports = (function() {
       .exec(function (err, messages) {
         if (err) return cb(err);
         messages = _.pluck(messages, 'message');
-        console.log('messages are', messages);
+        //console.log('messages are', messages);
         cb(err, messages);
       });
   };
@@ -48,5 +48,4 @@ module.exports = (function() {
   var Message = mongoose.model('Message', MessageSchema);
 
   return Message;
-
 })();
