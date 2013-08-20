@@ -135,7 +135,7 @@ mouseMoveOutside:true
             this.gameState.zPositionData.finalMessageBox={stage:messageBox,container:29}
           
 
-            this.gameState.zPositionData.loadingBackground= {stage:loadingContainers,container:0, newCanvas:true,stageOptions:this.gameState.zPositionData.background.stageOptions}
+            this.gameState.zPositionData.loadingBackground= {stage:loadingContainers,container:0, numContainers:3, newCanvas:true,stageOptions:this.gameState.zPositionData.background.stageOptions}
             this.gameState.zPositionData.loadingAnimation={stage:loadingContainers,container:1}
             
             this.gameState.zPositionData.tableChatFull={stage:tableChatFull,container:0,canvasHidden:true, newCanvas:true ,numContainers:4, stageOptions:this.gameState.zPositionData.button.stageOptions}
@@ -903,10 +903,10 @@ console.log('changing userseat view')
     var isBetValueValid = ( !isNaN(betValue)) && _.isNumber(betValue) 
      if(isBetValueValid == true){ var newBet = change+betValue} //use current value
       else{var newBet = change + self.gameState.betSize} //use previous known value if current value is invalid
-console.log(newBet+'before rounding')
+//console.log(newBet+'before rounding')
         //round the new  bet
       newBet = self.returnRoundedDownBetSize(newBet)
-      console.log(newBet+'after rounding')
+   //   console.log(newBet+'after rounding')
         self.adjustBetDisplay(newBet)
     }
 
@@ -1219,7 +1219,7 @@ else if(i==13){cardRank = 'k'}
     introScreen.background.image.graphics.beginFill(introScreenBackgroundColor)
     .drawRect(introScreen.background.position.x, introScreen.background.position.y,  introScreen.background.size.x, introScreen.background.size.y)
 
-    introScreen.preloadBar = new this.images.Item(canvasWidth - preloadBarWidth/2, preloadBarY, preloadBarWidth, preloadBarHeight, this.gameState.zPositionData.loadingAnimation)
+    introScreen.preloadBar = new this.images.Item(canvasWidth/2 - preloadBarWidth/2, preloadBarY, preloadBarWidth, preloadBarHeight, this.gameState.zPositionData.loadingAnimation)
     introScreen.title = new this.images.Item(0, preloadBarY-titleAndPreloadBarDistanceY-titleHeight, canvasWidth, titleHeight,this.gameState.zPositionData.loadingAnimation)
      introScreen.status = new this.images.Item(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y - statusHeight, canvasWidth-introScreen.preloadBar.x, statusHeight,this.gameState.zPositionData.loadingAnimation)
   
@@ -1295,7 +1295,7 @@ this.images.imageLoading.title.text.x= this.images.imageLoading.title.position.x
  
     var displayPreloadScreen  = function(){
         //add images and text to containers 
-      
+      console.log(introScreen)
 self.displayChildren(introScreen,{update:false})        
 
     }
@@ -1433,8 +1433,9 @@ preloadSounds(flashSoundSourceArray, soundSourceArray)
 this.images.setDefaults = function(){
    //prevent document scorlling
   // $(document).bind('DOMMouseScroll mousewheelscroll',function(e){e.preventDefault()})
-   
-
+ $('#iframe, iframe').bind('mousewheel',function(e){
+console.log(e)
+  e.preventDefault()})
 //========================IMAGE STATIC VARIABLES ==============================
  var canvasWidth = self.arrayOfParentsOfStageAndOfContainerArray[self.gameState.zPositionData.background.stage].stage.canvas.width
      var canvasHeight = self.arrayOfParentsOfStageAndOfContainerArray[self.gameState.zPositionData.background.stage].stage.canvas.height
@@ -1659,7 +1660,8 @@ $('#chat').css('color', htmlTableChatBoxReminderTextColor)
 
 //set z-index of chatDiv
 var chatBoxStageParent = self.arrayOfParentsOfStageAndOfContainerArray[self.images.htmlTableChatBox.position.z.stage]
-var chatBoxStageCanvasZIndex = $('#'+chatBoxStageParent.canvasID).css('z-index')
+console.log(chatBoxStageParent)
+var chatBoxStageCanvasZIndex = $(chatBoxStageParent.stage.canvas).css('z-index')
 $('#chatDiv').css('z-index', parseInt(chatBoxStageCanvasZIndex)+1)
 
 $('#chat').css({
@@ -2046,7 +2048,7 @@ self.updateBetSize('')
 
 //set z-index of betsizediv
 var betSizeStageParent = self.arrayOfParentsOfStageAndOfContainerArray[self.images.betSlider.vertical.position.z.stage]
-var betSizeStageCanvasZIndex = $('#'+betSizeStageParent.canvasID).css('z-index')
+var betSizeStageCanvasZIndex = $(betSizeStageParent.stage.canvas).css('z-index')
 $('#betSizeDiv').css('z-index', parseInt(betSizeStageCanvasZIndex)+1)
 
 //highlight when clicked
@@ -2637,7 +2639,7 @@ var htmlChatStageElementHeight = this.tableChatFull.htmlStageElement.size.y - ht
 
 this.tableChatFull.htmlChatStageElement = new this.Item(htmlChatStageElementX, htmlChatStageElementY, htmlChatStageElementWidth ,htmlChatStageElementHeight, self.gameState.zPositionData.tableChatFull)
 var tableChatFullParentOfStage = self.arrayOfParentsOfStageAndOfContainerArray[ this.tableChatFull.htmlChatStageElement.position.z.stage]
-var tableChatFullStageCanvasZIndex = $('#'+tableChatFullParentOfStage.canvasID).css('z-index')
+var tableChatFullStageCanvasZIndex = $(tableChatFullParentOfStage.stage.canvas).css('z-index')
  
 
    $('#tableChatFullTextDiv').attr({
@@ -2746,13 +2748,12 @@ var stopWheel = function(e){
           'font': chatMessageFont,
           'font-size':chatMessageFontSize + 'px',
           'color': chatMessageFontColor ,
-          'word-wrap': 'break-word',
-'word-break': 'break-all',
+
 'text-overflow': 'auto',
 //'bottom':'-'+(parseFloat(this.tableChatFull.chatMessageText.position.y) + parseFloat(this.tableChatFull.chatMessageText.size.y))+'px',
-'left': '0px'
-           //    'left':this.tableChatFull.htmlChatStageElement.position.x+'px',
- //  'top':this.tableChatFull.htmlChatStageElement.position.y +'px',
+    'top': this.tableChatFull.chatMessageText.position.y+'px',
+       'left':this.tableChatFull.chatMessageText.position.x+'px',
+
   //  'z-index':1
            })
 
@@ -2818,9 +2819,138 @@ popup('mailto:CryptoPoker@gmail.com')
 
 } //end set Defaults
 
+//options.stageNumber, if on existing number, will push the existing number up 1
+this.createStage = function (options){
+console.log('creating a stage with the following options')
+console.log(options)
+
+//this functions sets the stage's settings after it's been created
+var initializeStageSettings = function (options){
+  if(!options){var options = {}}
+  if(!options.stageOptions){options.stageOptions = {}}
+
+    if(!_.isNumber(options.stage)){var stageNumber = self.arrayOfParentsOfStageAndOfContainerArray.length-1}
+else{var stageNumber = options.stage}
+var stageOptions = options.stageOptions
+
+ self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.autoClear=false
+  self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.snapToPixel = false
+ self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.snapToPixelEnabled = false
+//set stage options
+if(stageOptions){
+  console.log(stageOptions)
+  if(stageOptions.touchEnabled === true){
+        createjs.Touch.enable(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage)
+      }
+        if(!_.isNull(stageOptions.mouseEnabled) &&!_.isUndefined(stageOptions.mouseEnabled)){
+        self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.mouseEnabled = stageOptions.mouseEnabled
+      }
+        if(!_.isNull(stageOptions.mouseMoveOutside) &&!_.isUndefined(stageOptions.mouseMoveOutside)){
+        self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.mouseMoveOutside = stageOptions.mouseMoveOutside
+      }
+ if(_.isNumber(stageOptions.mouseOverFrequency)){
+          self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.enableMouseOver(stageOptions.mouseOverFrequency)
+      }
+        if(!_.isNull(stageOptions.enableDOMEvents)  && !_.isUndefined(stageOptions.enableDOMEvents)){
+        self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.enableDOMEvents(stageOptions.enableDOMEvents)
+      }
+
+
+}//if stageOptions
+
+if(options.canvasHidden === true){
+$(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.canvas).css('display','none')
+}
+
+//create containers and add them to stage
+if(_.isNumber(options.numContainers)){
+  var numContainers = options.numContainers
+if(!_.isArray(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers)) {
+  self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers =  []}
+
+    for(var i  =0;i<numContainers;i++){
+ self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[i] = new createjs.Container()
+ self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.addChild(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[i])
+    }
+
+}//if stageOptions.numContainers is specified create contianers
+}
+
+
+
+if(!options){var options = {}}
+  //set default stage as last one if not listed
+if(!_.isNumber(options.stage)){options.stage = this.arrayOfParentsOfStageAndOfContainerArray.length}
+
+
+if(options.stage === 0 || this.arrayOfParentsOfStageAndOfContainerArray.length == 0){
+  var previousCanvasIDNumber = 0
+    var newCanvasIDNumber = 0
+
+}//if first canvas, assign 0
+
+else{
+
+  //find previous canvas
+  for(var i = options.stage-1;i>=0;i--){
+if(!_.isEmpty(this.arrayOfParentsOfStageAndOfContainerArray[i])){
+var previousStageNumber = i;i = -9999}
+  }
+  console.log('currently creating stage number '+ options.stage + ', previous stage number is '+ previousStageNumber)
+  var previousCanvasID = this.arrayOfParentsOfStageAndOfContainerArray[previousStageNumber].stage.canvas.id
+var previousCanvasIDNumber = parseFloat(previousCanvasID.replace('canvas',''))
+
+  //check if stage is on top of all other existing stagse
+if(options.stage>this.arrayOfParentsOfStageAndOfContainerArray.length-1){
+var newCanvasIDNumber = previousCanvasIDNumber + 1//increment from previous canvas
+}//if stage is "toppest" stage
+
+else { //if stage is in the middle
+    var nextCanvasID = this.arrayOfParentsOfStageAndOfContainerArray[options.stage].stage.canvas.id
+  var nextCanvasIDNumber = parseFloat( nextCanvasID.replace('canvas',''))
+var newCanvasIDNumber = (previousCanvasIDNumber + nextCanvasIDNumber )/2//increment from previous canvas
+}//if stage is in the "middle"
+
+}//if NOT the first canvas
+
+console.log('canvas id number determined to be :'+newCanvasIDNumber)
+//if we want to create a new canvas and use NEW canvasID number
+if(options.newCanvas === true || options.stage === 0){
+var newCanvasID = 'canvas'+newCanvasIDNumber
+//defaults
+var canvasWidth = 690
+var canvasHeight = 480
+var canvasClass = 'pokerCanvasClass'
+var zIndexesPerCanvas = 10
+var initialZIndex = 3
+
+self.jQueryObjects.canvasDiv.append('<canvas id = '+'\''+newCanvasID+'\''+ 'class = '+ '\''+canvasClass+ '\''+' width='+'\''+canvasWidth+'\''+' height=' +'\''+canvasHeight+'\''+'></canvas>')
+
+console.log('created canvas with canvas id of: '+newCanvasID)
+//set proper z-index
+$('#'+newCanvasID).css('z-index',parseInt(newCanvasIDNumber*zIndexesPerCanvas)+initialZIndex)
+}//if we want to create a new canvas
+
+else{ //here we want to use previous canvasID number
+  var newCanvasID = 'canvas'+previousCanvasIDNumber
+}//if we DONT want to create a new canvas
+
+console.log('creating stage number '+options.stage)
+//creating the new stage
+self.arrayOfParentsOfStageAndOfContainerArray.splice(options.stage, 0, {})
+self.arrayOfParentsOfStageAndOfContainerArray[options.stage].nickName = options.nickName
+var canvas = document.getElementById(newCanvasID)
+        self.arrayOfParentsOfStageAndOfContainerArray[options.stage].stage = new createjs.Stage(canvas)
+
+//IN THE FUTURE WE WANT TO INCREASE THE FUTURE CANVAS/STAGES DATA TO WE CAN ADD IT HERE
+initializeStageSettings(options)
+}
+
+
 
 this.initializeStagesAndCanvasCallThisFirst = function(){
 var zPositionData = this.gameState.zPositionData
+console.log(zPositionData)
 var stageData = []
 
 //parse zPositionData to get data for stages =====>put in stageData
@@ -2836,24 +2966,20 @@ stageData[zPositionData[index].stage].nickName = index
   //this is a sample of what the basic data will look like after its parsed
   /*
         this.gameState.stageData[this.gameState.zPositionData.background.stage] = {numContainers:3,nickName:'background'}
-       this.gameState.stageData[this.gameState.zPositionData.holeCards.stage] = {numContainers:3,nickName:'hole cards', newCanvas:true}
-         this.gameState.stageData[this.gameState.zPositionData.button.stage] = {numContainers:4,nickName:'buttons'}
-         this.gameState.stageData[this.gameState.zPositionData.cardAnimation.stage] = {numContainers:4,nickName:'graphics that move around like chips'}
-                  this.gameState.stageData[this.gameState.zPositionData.playerBubbleChat.stage] = {numContainers:2,nickName:'playerBubbleChat'}
-         
-        this.gameState.stageData[this.gameState.zPositionData.tableChatFull.stage] = {numContainers:5,nickName:'table chat full', newCanvas:true}
-  this.gameState.stageData[this.gameState.zPositionData.chat.stage] = {numContainers:2,nickName:'table chat box'}
-        this.gameState.stageData[this.gameState.zPositionData.cashier.stage] = {numContainers:3,nickName:'cashier',newCanvas:true}
-        this.gameState.stageData[this.gameState.zPositionData.initialMessageBox.stage] = {numContainers:32,nickName:'message boxes',newCanvas:true}
-this.gameState.stageData[this.gameState.zPositionData.loadingBackground.stage] = {numContainers:3,nickName:'loading containers',newCanvas:true}
-*/
 
+*/
 
 
 //iterate through data to create stages
   var canvasNumber = 0
   console.log(stageData)
+_.each(_.range (stageData.length), function(stageIteration){
 
+ self.createStage (stageData[stageIteration])
+
+})
+
+/*
 _.each(_.range (stageData.length), function(stageNumber){
 
   console.log('initializing stage'+stageNumber)
@@ -2881,11 +3007,7 @@ $('#'+canvasID).css('z-index',canvasNumber*zIndexesPerCanvas+initialZIndex)
 
 //create basic object
 
-self.arrayOfParentsOfStageAndOfContainerArray[stageNumber] = {}
-self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].nickName = stageData[stageNumber].nickName
-self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].canvasID = canvasID
-var canvas = document.getElementById(canvasID)
-        self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage = new createjs.Stage(canvas)
+
         //stage clearing is manually enabled in this.updateStage()
   self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.autoClear=false
   self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.snapToPixel = false
@@ -2928,7 +3050,7 @@ self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers = []
     }
 
 })//end iteration through this.gameState.stageData
-
+*/
 }
 
 
@@ -4245,8 +4367,8 @@ $('#betSize').css('display','none')
 
 
         //unbind scroll wheel events
-         $('#canvas').unbind('mousewheel')
-         $('#canvas').unbind('DOMMouseScroll')
+         $(this.arrayOfParentsOfStageAndOfContainerArray[this.images.betSlider.vertical.position.z.stage].stage.canvas, '#betSize').unbind('mousewheel')
+        $('#betSizeDiv').unbind('mousewheel')
  }
 
 
@@ -4585,17 +4707,26 @@ this.updateUserOptionsBasedOnFlagsAndPreactions()
 
 //scroll wheel
 
-    $(this.getParentOfStageObject(this.images.betSlider.vertical).stage.canvas).bind('mousewheel', function(event) {
+    $(this.getParentOfStageObject(this.images.betSlider.vertical).stage.canvas).bind('mousewheel', function(event,delta, deltaX, deltaY) {
 
-wheelScrolls = event.originalEvent.wheelDelta/120
-self.events.wheelScroll(wheelScrolls)
+//console.log(event, delta, deltaX, deltaY)
+//wheelScrolls = event.originalEvent.wheelDelta/120
+self.events.wheelScroll(deltaY)
         })
-     $(this.getParentOfStageObject(this.images.betSlider.vertical).stage.canvas).bind('DOMMouseScroll', function(event) {
+    $('#betSizeDiv').bind('mousewheel', function(event,delta, deltaX, deltaY) {
+//console.log(event, delta, deltaX, deltaY)
+//wheelScrolls = event.originalEvent.wheelDelta/120
+self.events.wheelScroll(deltaY)
+        })
+
+   
+    /*
+     $(this.getParentOfStageObject(this.images.betSlider.vertical).stage.canvas).bind('DOMMouseScroll', function(event, delta, deltaX, deltaY) {
       
 wheelScrolls = event.originalEvent.wheelDelta/120
 self.events.wheelScroll(wheelScrolls)
         })
-
+*/
     }
 this.playerChats = function(chatInfo){
 
@@ -5523,10 +5654,10 @@ this.restoreActiveStages=function(activeStageArray){
     
 this.streetEnds = function(potSizes){
 
-        //unbind scroll wheel events
-         $('#canvas').unbind('mousewheel')
-$('#canvas').unbind('DOMMouseScroll')
 
+        //unbind scroll wheel events
+         $(this.arrayOfParentsOfStageAndOfContainerArray[this.images.betSlider.vertical.position.z.stage].stage.canvas).unbind('mousewheel')
+$('#betSizeDiv').unbind('mousewheel')
       var animationTime = 200
         var ticks = 6
         var chipIntoPotAnimationArray = []
@@ -5790,7 +5921,8 @@ function tick(event){
                parentOfLoadingStage.stage.removeAllChildren()
                self.updateStage(self.gameState.zPositionData.loadingBackground.stage)
               // parentOfLoadingStage.stage.update()
-               $('#'+parentOfLoadingStage.canvasID).css('display','none')
+              console.log('loading canvas now')
+               $(parentOfLoadingStage.stage.canvas).css('display','none')
        }
        console.log('increasing tick')
        numTicks ++
@@ -6130,8 +6262,8 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
              if(player.seat == self.gameState.userSeatNumber){
               self.gameState.seats[self.gameState.userSeatNumber].preActions.once = {}
         //unbind scroll wheel events
-         $('#canvas').unbind('mousewheel')
-         $('#canvas').unbind('DOMMouseScroll')
+         $(self.arrayOfParentsOfStageAndOfContainerArray[self.images.betSlider.vertical.position.z.stage].stage.canvas).unbind('mousewheel')
+$('#betSizeDiv').unbind('mousewheel')
             }
 })
 
@@ -6245,7 +6377,16 @@ if( self.gameState.seats[player.seat].toAct == true){self.startCountdown(player.
 
 //player to act (not the user)
  socket.on('user_chats', function(chatInfo){
+if(_.isNull(chatInfo.seat)||_.isUndefined(chatInfo.seat)){
 
+//update tableChatFull popup
+var chatObjectForInternalFunctionUse = {}
+chatObjectForInternalFunctionUse.chatSourceType = 'observer'
+chatObjectForInternalFunctionUse.message = chatInfo.sender+' (obs) says: '+chatInfo.message
+
+self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInternalFunctionUse)
+return null
+}
 //self.playerChats (chatInfo)
 self.images.seats[chatInfo.seat].chat.text.text = ''
 //trim front and trailing whitespace from chat message
