@@ -903,10 +903,10 @@ console.log('changing userseat view')
     var isBetValueValid = ( !isNaN(betValue)) && _.isNumber(betValue) 
      if(isBetValueValid == true){ var newBet = change+betValue} //use current value
       else{var newBet = change + self.gameState.betSize} //use previous known value if current value is invalid
-console.log(newBet+'before rounding')
+//console.log(newBet+'before rounding')
         //round the new  bet
       newBet = self.returnRoundedDownBetSize(newBet)
-      console.log(newBet+'after rounding')
+   //   console.log(newBet+'after rounding')
         self.adjustBetDisplay(newBet)
     }
 
@@ -1219,7 +1219,7 @@ else if(i==13){cardRank = 'k'}
     introScreen.background.image.graphics.beginFill(introScreenBackgroundColor)
     .drawRect(introScreen.background.position.x, introScreen.background.position.y,  introScreen.background.size.x, introScreen.background.size.y)
 
-    introScreen.preloadBar = new this.images.Item(canvasWidth - preloadBarWidth/2, preloadBarY, preloadBarWidth, preloadBarHeight, this.gameState.zPositionData.loadingAnimation)
+    introScreen.preloadBar = new this.images.Item(canvasWidth/2 - preloadBarWidth/2, preloadBarY, preloadBarWidth, preloadBarHeight, this.gameState.zPositionData.loadingAnimation)
     introScreen.title = new this.images.Item(0, preloadBarY-titleAndPreloadBarDistanceY-titleHeight, canvasWidth, titleHeight,this.gameState.zPositionData.loadingAnimation)
      introScreen.status = new this.images.Item(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y - statusHeight, canvasWidth-introScreen.preloadBar.x, statusHeight,this.gameState.zPositionData.loadingAnimation)
   
@@ -1433,8 +1433,9 @@ preloadSounds(flashSoundSourceArray, soundSourceArray)
 this.images.setDefaults = function(){
    //prevent document scorlling
   // $(document).bind('DOMMouseScroll mousewheelscroll',function(e){e.preventDefault()})
-   
-
+ $('#iframe, iframe').bind('mousewheel',function(e){
+console.log(e)
+  e.preventDefault()})
 //========================IMAGE STATIC VARIABLES ==============================
  var canvasWidth = self.arrayOfParentsOfStageAndOfContainerArray[self.gameState.zPositionData.background.stage].stage.canvas.width
      var canvasHeight = self.arrayOfParentsOfStageAndOfContainerArray[self.gameState.zPositionData.background.stage].stage.canvas.height
@@ -2752,7 +2753,7 @@ var stopWheel = function(e){
 //'bottom':'-'+(parseFloat(this.tableChatFull.chatMessageText.position.y) + parseFloat(this.tableChatFull.chatMessageText.size.y))+'px',
     'top': this.tableChatFull.chatMessageText.position.y+'px',
        'left':this.tableChatFull.chatMessageText.position.x+'px',
-       
+
   //  'z-index':1
            })
 
@@ -4366,8 +4367,8 @@ $('#betSize').css('display','none')
 
 
         //unbind scroll wheel events
-         $('#canvas').unbind('mousewheel')
-         $('#canvas').unbind('DOMMouseScroll')
+         $(this.arrayOfParentsOfStageAndOfContainerArray[this.images.betSlider.vertical.position.z.stage].stage.canvas, '#betSize').unbind('mousewheel')
+        $('#betSizeDiv').unbind('mousewheel')
  }
 
 
@@ -4706,17 +4707,26 @@ this.updateUserOptionsBasedOnFlagsAndPreactions()
 
 //scroll wheel
 
-    $(this.getParentOfStageObject(this.images.betSlider.vertical).stage.canvas).bind('mousewheel', function(event) {
+    $(this.getParentOfStageObject(this.images.betSlider.vertical).stage.canvas).bind('mousewheel', function(event,delta, deltaX, deltaY) {
 
-wheelScrolls = event.originalEvent.wheelDelta/120
-self.events.wheelScroll(wheelScrolls)
+//console.log(event, delta, deltaX, deltaY)
+//wheelScrolls = event.originalEvent.wheelDelta/120
+self.events.wheelScroll(deltaY)
         })
-     $(this.getParentOfStageObject(this.images.betSlider.vertical).stage.canvas).bind('DOMMouseScroll', function(event) {
+    $('#betSizeDiv').bind('mousewheel', function(event,delta, deltaX, deltaY) {
+//console.log(event, delta, deltaX, deltaY)
+//wheelScrolls = event.originalEvent.wheelDelta/120
+self.events.wheelScroll(deltaY)
+        })
+
+   
+    /*
+     $(this.getParentOfStageObject(this.images.betSlider.vertical).stage.canvas).bind('DOMMouseScroll', function(event, delta, deltaX, deltaY) {
       
 wheelScrolls = event.originalEvent.wheelDelta/120
 self.events.wheelScroll(wheelScrolls)
         })
-
+*/
     }
 this.playerChats = function(chatInfo){
 
@@ -5644,10 +5654,10 @@ this.restoreActiveStages=function(activeStageArray){
     
 this.streetEnds = function(potSizes){
 
-        //unbind scroll wheel events
-         $('#canvas').unbind('mousewheel')
-$('#canvas').unbind('DOMMouseScroll')
 
+        //unbind scroll wheel events
+         $(this.arrayOfParentsOfStageAndOfContainerArray[this.images.betSlider.vertical.position.z.stage].stage.canvas).unbind('mousewheel')
+$('#betSizeDiv').unbind('mousewheel')
       var animationTime = 200
         var ticks = 6
         var chipIntoPotAnimationArray = []
@@ -6252,8 +6262,8 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
              if(player.seat == self.gameState.userSeatNumber){
               self.gameState.seats[self.gameState.userSeatNumber].preActions.once = {}
         //unbind scroll wheel events
-         $('#canvas').unbind('mousewheel')
-         $('#canvas').unbind('DOMMouseScroll')
+         $(self.arrayOfParentsOfStageAndOfContainerArray[self.images.betSlider.vertical.position.z.stage].stage.canvas).unbind('mousewheel')
+$('#betSizeDiv').unbind('mousewheel')
             }
 })
 
