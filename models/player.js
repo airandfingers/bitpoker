@@ -677,16 +677,22 @@ module.exports = (function () {
         , update_interval = current_prompt.update_interval
         , cb = current_prompt.callback;
 
-      this.sendMessage('act_prompt', actions, remaining_timeout);
+      if (remaining_timeout > 0) {
+        this.sendMessage('act_prompt', actions, remaining_timeout);
 
-      this.socket.once('act', function(action, num_chips) {
-        console.log(this.username, 'responds with', action, num_chips);
+        this.socket.once('act', function(action, num_chips) {
+          console.log(this.username, 'responds with', action, num_chips);
+          this.current_prompt = undefined;
+          this.idle = false;
+          clearTimeout(act_timeout);
+          clearInterval(update_interval);
+          cb(action, num_chips);
+        });
+      }
+      else {
+        console.error('expired current_prompt found!', current_prompt);
         this.current_prompt = undefined;
-        this.idle = false;
-        clearTimeout(act_timeout);
-        clearInterval(update_interval);
-        cb(action, num_chips);
-      });
+      }
     }
     else {
       //console.log('Not sending prompt because current_prompt is', this.current_prompt);
