@@ -717,7 +717,7 @@ module.exports = (function () {
       this.pending_actions[method_name] = args_array;
       // notify user that the requested action has been delayed
       var message = 'You will ' + action_to_english[method_name] + ' as soon as the hand is over.';
-      this.sendMessage('error', message);
+      this.sendMessage('notification', message);
       this.setFlag('pending_' + action_to_flag_name[method_name], true);
     }
     else {
