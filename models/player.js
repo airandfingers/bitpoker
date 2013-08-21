@@ -44,7 +44,7 @@ module.exports = (function () {
       // whether this player is currently participating in a hand
     , in_hand: Boolean
       // actions this player will perform once the current hand is over
-    , pending_actions: { type: Schema.Types.Mixed, hand_default: function() { return {}; } }
+    , pending_actions: { type: Schema.Types.Mixed, default: function() { return {}; }, hand_default: function() { return {}; } }
       // what the outcome of the current (or last) hand was for this player
     , hand_result: { type: Schema.Types.Mixed, hand_default: function() { return {}; } }
       // whether this player is currently sitting out (not participating in future hands)
@@ -234,11 +234,6 @@ module.exports = (function () {
         , sitOut: 'sit_out'
         , vacateSeat: 'stand'
         }
-      , action_to_flag_name = {
-          addChips: 'add_chips'
-        , sitOut: 'sit_out'
-        , vacateSeat: 'stand'
-        }
       , actions = [];
 
     self.in_hand = false;
@@ -249,10 +244,7 @@ module.exports = (function () {
         actions.push(function(acb) {
           self.performAction(method_name, args_array);
           // wait until the event that the method triggers when it's done
-          self.once(complete_events[method_name], function() {
-            this.setFlag('pending_' + action_to_flag_name[method_name], false);
-            acb();
-          });
+          self.once(complete_events[method_name], acb);
         });
       }
     });
@@ -452,7 +444,8 @@ module.exports = (function () {
       clearTimeout(this.sit_out_timer);
     }
     else {
-      console.log('sitIn called when', this.username, 'is not sitting out!');
+      console.log('sitIn called when', this.username, 'is not sitting out');
+      delete this.pending_actions.sitOut;
     }
   };
 
@@ -707,24 +700,19 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.pendAction = function(method_name) {
-    var args_array = _.toArray(arguments)
-      , action_to_english = {
-          addChips: 'add chips'
-        , vacateSeat: 'stand'
-        , sitOut: 'sit out'
-        }
-      , action_to_flag_name = {
-          addChips: 'add_chips'
-        , vacateSeat: 'stand'
-        , sitOut: 'sit_out'
-        };
+    var args_array = _.toArray(arguments);
     args_array.shift(); // remove method_name from arguments
     if (this.in_hand) {
       this.pending_actions[method_name] = args_array;
       // notify user that the requested action has been delayed
-      var message = 'You will ' + action_to_english[method_name] + ' as soon as the hand is over.';
-      this.sendMessage('notification', message);
-      this.setFlag('pending_' + action_to_flag_name[method_name], true);
+      if (method_name === 'addChips') {
+        this.sendMessage('notification',
+                         'You will add ' + args_array + ' chips as soon as the hand is over.');
+      }
+      else if (method_name === 'vacateSeat') {
+        this.sendMessage('notification',
+                         'You will stand as soon as the hand is over.');
+      }
     }
     else {
       this.performAction(method_name, args_array);
