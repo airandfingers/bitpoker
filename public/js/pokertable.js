@@ -22,7 +22,32 @@ self  = this
       chatBoxAlpha:0.75,
       maxChipColumns:3
   }
-  this.userPreferences = {
+
+ this.sessionPreferences = {
+
+      changeUserSeatView:0,
+
+tableChatFull:{
+
+        defaultItemsToHideFalseHidesItem:{
+                  hideDealerMessages:true,
+                  hideDealerMessagesOn: false,
+                  hidePlayerMessages:true,
+                  hidePlayerMessagesOn: false,
+                  hideObserverMessages:true,
+                  hideObserverMessagesOn: false,
+                  disableTouchScroll:true,
+                  disableTouchScrollOn:false
+
+
+  }//defaul titems to hide
+}//table chat full
+
+  }//session preferences declaration
+
+
+
+  this.permanentPreferences = {
       
 
       bigBlindsPerHorizontalSliderTick : 0.5,
@@ -31,7 +56,6 @@ self  = this
       animate: true,
       chatTextColor: '#000000',
       playerChatMaxLines:3,
-      changeUserSeatView:['bottom','middle'],
 
       tableChatFull:{
 
@@ -39,15 +63,7 @@ self  = this
         chatMessageFontColor: 'white',
         windowColor: 'black',
         windowAlpha: 0.4,
-        defaultItemsToHideFalseHidesItem:{
-                  hideDealerMessages:true,
-                  hideDealerMessagesOn: false,
-                  hidePlayerMessages:true,
-                  hidePlayerMessagesOn: false,
-                  hideObserverMessages:true,
-                  hideObserverMessagesOn: false
-
-        }
+        
 
       }
 
@@ -789,8 +805,8 @@ self.images.tableChatFull.chatMessageText.parentOfStage.stage.update()
 this.events.hideDealerMessagesClicked = function(){
 console.log('hideDealerMessagesClicked')
 //change user preferences
-self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages = false
-self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn = true
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages = false
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn = true
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
@@ -799,38 +815,38 @@ self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 this.events.hideDealerMessagesOnClicked = function(){
 console.log('hideDealerMessagesOnClicked')
 //change user preferences
-self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages = true
-self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn = false
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages = true
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn = false
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true}) 
 }
 
 this.events.hidePlayerMessagesClicked = function(){
   console.log('hidePlayerMessagesClicked')
-self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages = false
-self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn = true
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages = false
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn = true
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 
 }
 this.events.hidePlayerMessagesOnClicked = function(){
    console.log('hidePlayerMessagesOnClicked')
-self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages = true
-self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn = false
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages = true
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn = false
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
 this.events.hideObserverMessagesClicked = function(){
    console.log('hideObserverMessagesClicked')
-self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages = false
-self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn = true
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages = false
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn = true
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
 this.events.hideObserverMessagesOnClicked = function(){
 
-self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages = true
-self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn = false
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages = true
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn = false
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
@@ -838,7 +854,7 @@ self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 
 this.events.confirmSeatRotation = function(){
 
-if(self.userPreferences.alwaysRotate === true){return 'user prefers to always rotate seats'}
+if(self.permanentPreferences.alwaysRotate === true){return 'user prefers to always rotate seats'}
    if(self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber  !== self.gameState.userSeatNumber){ // if user is seated at normal seat there is no need for popup
       
 console.log('changing userseat view')
@@ -898,7 +914,7 @@ console.log('changing userseat view')
 
     this.events.wheelScroll = function(numScrolls){
       if(_.isNumber(numScrolls) == false){return 'scroll failed'}
-      var change = numScrolls*self.userPreferences.bigBlindsPerMouseScroll*self.gameState.bigBlind
+      var change = numScrolls*self.permanentPreferences.bigBlindsPerMouseScroll*self.gameState.bigBlind
           var betValue  = parseFloat($('#betSize').val())
     var isBetValueValid = ( !isNaN(betValue)) && _.isNumber(betValue) 
      if(isBetValueValid == true){ var newBet = change+betValue} //use current value
@@ -915,7 +931,7 @@ console.log('changing userseat view')
         var minX = self.images.betSlider.horizontal.position.x
          var maxX = self.images.betSlider.horizontal.position.x + self.images.betSlider.horizontal.size.x-self.images.betSlider.vertical.size.x
        
-         var pixelsPerTick = self.gameState.bigBlind*self.userPreferences.bigBlindsPerHorizontalSliderTick/(self.gameState.maxBet-self.gameState.minBet)*(maxX-minX)
+         var pixelsPerTick = self.gameState.bigBlind*self.permanentPreferences.bigBlindsPerHorizontalSliderTick/(self.gameState.maxBet-self.gameState.minBet)*(maxX-minX)
           
 
          //takes vertical slider location and proportionaly shows bet size
@@ -963,7 +979,7 @@ self.adjustBetDisplay(roundedBet)
          if(pixelDirection>0||pixelDirection<0)
          {
              createjs.Tween.get(self.images.betSlider.vertical.image,{override:true, loop:true})
-.wait(self.userPreferences.timePerHorizontalSliderTick)
+.wait(self.permanentPreferences.timePerHorizontalSliderTick)
 .call(moveSlider, [event])
          }
          }
@@ -1646,7 +1662,7 @@ $('#chat').css('color', htmlTableChatBoxReminderTextColor)
 $('#chat').focus(function(){
     if($('#chat').val() == defaultMessage){
     $('#chat').val('')
-$('#chat').css('color', self.userPreferences.chatTextColor)}
+$('#chat').css('color', self.permanentPreferences.chatTextColor)}
 })
 
 //redisplay reminder text ONLY if text value is only spaces or nothing
@@ -2569,10 +2585,10 @@ var tableChatFullStageCanvas =  self.arrayOfParentsOfStageAndOfContainerArray[ t
   //  'z-index':1
            })
 
-var tableChatFullWindowBackgroundColor = self.userPreferences.tableChatFull.windowColor
+var tableChatFullWindowBackgroundColor = self.permanentPreferences.tableChatFull.windowColor
 var tableChatFullWindowBorderColor = '#000000'
 var tableChatFullWindowBorderWidth = 1
-var tableChatFullWindowAlpha = self.userPreferences.tableChatFull.windowAlpha
+var tableChatFullWindowAlpha = self.permanentPreferences.tableChatFull.windowAlpha
 var tableChatFullRoundedRectCornerSizeRatioOfHeight = 0.05
 
   this.tableChatFull.window = new this.Item(0, 0, tableChatFullStageWidth, tableChatFullStageHeight,self.gameState.zPositionData.tableChatFull)
@@ -2641,11 +2657,6 @@ this.tableChatFull.htmlChatStageElement = new this.Item(htmlChatStageElementX, h
 var tableChatFullParentOfStage = self.arrayOfParentsOfStageAndOfContainerArray[ this.tableChatFull.htmlChatStageElement.position.z.stage]
 var tableChatFullStageCanvasZIndex = $(tableChatFullParentOfStage.stage.canvas).css('z-index')
  
-
-   $('#tableChatFullTextDiv').attr({
-      'width': this.tableChatFull.htmlChatStageElement.size.x+'px',
-'height': this.tableChatFull.htmlChatStageElement.size.y+'px'
-  })
         $('#tableChatFullTextDiv').css({
                     '-webkit-touch-callout': 'none',
 '-webkit-user-select': 'none',
@@ -2677,9 +2688,9 @@ var chatMessageOffsetBottom =  chatMessageOffsetTop
 
 this.tableChatFull.chatMessageText = new this.Item(chatMessageOffsetLeft, chatMessageOffsetTop, htmlChatStageElementWidth -  chatMessageOffsetLeft - chatMessageOffsetRight,htmlChatStageElementHeight  - chatMessageOffsetTop - chatMessageOffsetBottom, self.gameState.zPositionData.tableChatFullText)
 
-var chatMessageFontSize = self.userPreferences.tableChatFull.chatMessageFontSize
+var chatMessageFontSize = self.permanentPreferences.tableChatFull.chatMessageFontSize
 var chatMessageFont = 'arial'
-var chatMessageFontColor = self.userPreferences.tableChatFull.chatMessageFontColor
+var chatMessageFontColor = self.permanentPreferences.tableChatFull.chatMessageFontColor
 
 //create create js text display object
 //this.tableChatFull.chatMessageText.text = new createjs.DOMElement(document.getElementById('tableChatFullTextDiv'))
@@ -2701,7 +2712,7 @@ enablescrollonselection:false,
 //enablemousewheel:false,
 hwacceleration:false,
 bouncescroll:false,
-cursoropacitymax:self.userPreferences.tableChatFull.windowAlpha, 
+cursoropacitymax:self.permanentPreferences.tableChatFull.windowAlpha, 
 autohidemode:false,
 
 touchbehavior :true,
@@ -3185,7 +3196,7 @@ $('#chat').css({
 
 this.changeUserSeatView = function(seatNumberToRotateTo){
   console.log('changing userseat view to seatNumberToRotateTo '+seatNumberToRotateTo)
-/*if(self.userPreferences.changeUserSeatView == ['bottom','middle']){}
+/*if(self.permanentPreferences.changeUserSeatView == ['bottom','middle']){}
   else{return 'change view when seated setting is off'}*/
   var  copyItemDisplayObjectLocationData = function(item){
 var itemCopyWithOnlyLocationData = {}
@@ -4586,7 +4597,7 @@ var largestTextWidth = 0
 var wasTrimmed = false
 var numAddedChars = 0
 var chatFont = self.images.seats[chatInfo.seat].chat.text.font
-var symbols = "!@#$%^&*()+=-[]\';,./{}|\":<>?"
+
 var ifSymbolRegex = /^[\.,-\/#!$%\^&\*;:{}=\-_`~()]+$/
 
 while(finished == false){
@@ -4665,7 +4676,7 @@ self.images.seats[chatInfo.seat].chat.text.text = self.images.seats[chatInfo.sea
     //increase lines
 if(wasTrimmed == true){
 
-  if(numLines < self.userPreferences.playerChatMaxLines){
+  if(numLines < self.permanentPreferences.playerChatMaxLines){
 //increase lin counter
    numLines++
   currentLine++
@@ -4746,7 +4757,7 @@ else if(options && options.moveTable == true){self.moveTableChatFullMessageText(
 
 this.updateTableChatFullMessageTextFromCurrentOrAdditionalData = function(chatInfo, options){
 
-if(this.gameState.tableChatFull.currentlyShowingObserverMessages == this.userPreferences.tableChatFull.hideObserverMessages)
+if(this.gameState.tableChatFull.currentlyShowingObserverMessages == this.permanentPreferences.tableChatFull.hideObserverMessages)
 
 //current preferences
 var isDisplayingDealerMessages = this.gameState.tableChatFull.currentlyDisplayingDealerMessages
@@ -4758,11 +4769,11 @@ var shouldDisplayDealerMessages
  var shouldDisplayPlayerMessages
 var shouldDisplayObserverMessages
 
-if(self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn === false){ shouldDisplayDealerMessages = true}
+if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn === false){ shouldDisplayDealerMessages = true}
   else{ shouldDisplayDealerMessages = false}
-    if(self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn === false){ shouldDisplayPlayerMessages = true}
+    if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn === false){ shouldDisplayPlayerMessages = true}
   else{ shouldDisplayPlayerMessages = false}
-    if(self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn === false){ shouldDisplayObserverMessages = true}
+    if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn === false){ shouldDisplayObserverMessages = true}
   else{ shouldDisplayObserverMessages = false}
 
 
@@ -5295,15 +5306,15 @@ var interval = 1000
 this.updateTableChatFullDisplayDoesNotUpdateStageByDefault = function(displayOrHideChildrenOptions){
 
 //hide items that should be hidden by default
-_.each(self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem,function(value, index, list){
+_.each(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem,function(value, index, list){
 
-if(self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem[index] === false){
+if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem[index] === false){
   self.hideChildren(self.images.tableChatFull[index], displayOrHideChildrenOptions)
   console.log('hiding' + index)
 }
 else{self.displayChildren(self.images.tableChatFull[index], displayOrHideChildrenOptions)}
 
-})//end loop through self.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem
+})//end loop through self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem
 
 //update text
 this.updateTableChatFullMessageTextFromCurrentOrAdditionalData()
@@ -5312,17 +5323,17 @@ this.updateTableChatFullMessageTextFromCurrentOrAdditionalData()
 this.displayTableChatFull = function(){
 //update what is showing and what isnt from current preferences
 
-if(this.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages === false){
+if(this.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages === false){
   this.gameState.tableChatFull.currentlyDisplayingDealerMessages = false
 }
 else{this.gameState.tableChatFull.currentlyDisplayingDealerMessages = true}
 
-  if(this.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages === false){
+  if(this.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages === false){
   this.gameState.tableChatFull.currentlyDisplayingPlayerMessages = false
 }
 else{this.gameState.tableChatFull.currentlyDisplayingPlayerMessages = true}
 
-  if(this.userPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages === false){
+  if(this.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages === false){
   this.gameState.tableChatFull.scurrentlyDisplayingObserverMessages = false
 }
 else{this.gameState.tableChatFull.currentlyDisplayingObserverMessages = true}
