@@ -6567,7 +6567,7 @@ chatInfo.message = notificationString
 if (/\S/.test(chatInfo.message)){//make sure chatInfo.message is not empty
 
 
-if(_.isNull(chatInfo.seat)||_.isUndefined(chatInfo.seat)||_.isEmpty(chatInfo.seat)){ // if no seat, then observer chat
+if(_.isNull(chatInfo.seat)||_.isUndefined(chatInfo.seat)){ // if no seat, then observer chat
 
 //update tableChatFull popup
 var chatObjectForInternalFunctionUse = {}
@@ -6575,6 +6575,7 @@ chatObjectForInternalFunctionUse.chatSourceType = 'observer'
 chatObjectForInternalFunctionUse.message = chatInfo.sender+' (obs) says: '+chatInfo.message
 
 self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInternalFunctionUse)
+return null
 }
 
 else{//if player (seated) chat
@@ -6586,13 +6587,11 @@ chatObjectForInternalFunctionUse.message = chatInfo.sender+' says: '+chatInfo.me
 
 self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInternalFunctionUse)
 
-
-  self.displayBubbleChat(chatInfo)
-
 }//if player chat
 }//check to make sure chatInfo.message is NOT empty
 
 
+  self.displayBubbleChat(chatInfo)
 
 })
 

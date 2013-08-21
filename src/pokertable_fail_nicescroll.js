@@ -2642,10 +2642,6 @@ var tableChatFullParentOfStage = self.arrayOfParentsOfStageAndOfContainerArray[ 
 var tableChatFullStageCanvasZIndex = $(tableChatFullParentOfStage.stage.canvas).css('z-index')
  
 
-   $('#tableChatFullTextDiv').attr({
-      'width': this.tableChatFull.htmlChatStageElement.size.x+'px',
-'height': this.tableChatFull.htmlChatStageElement.size.y+'px'
-  })
         $('#tableChatFullTextDiv').css({
                     '-webkit-touch-callout': 'none',
 '-webkit-user-select': 'none',
@@ -4555,7 +4551,10 @@ console.log('total height ' + scroll[0].getContentSize().h)
 console.log('pixels invisible above paragraph element' +  scroll[0].getScrollTop())
 console.log('height of paragraph element ' + $('#tableChatFullText').height())
 */
-
+console.log(scroll)
+console.log('getContentSize = ' + scroll[0].getContentSize().h)
+console.log('scroll top size = ' + scroll[0].getScrollTop())
+console.log('full height = ' + $('#tableChatFullText').height())
 var isAtBottom = ( scroll[0].getContentSize().h - scroll[0].getScrollTop() ===  $('#tableChatFullText').height())
 console.log('var isAtBottom = ' + isAtBottom)
 return isAtBottom
@@ -6586,13 +6585,13 @@ chatObjectForInternalFunctionUse.message = chatInfo.sender+' says: '+chatInfo.me
 
 self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInternalFunctionUse)
 
-
-  self.displayBubbleChat(chatInfo)
+ self.displayBubbleChat(chatInfo)
 
 }//if player chat
 }//check to make sure chatInfo.message is NOT empty
 
 
+ 
 
 })
 
