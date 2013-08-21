@@ -6578,7 +6578,7 @@ chatInfo.message = notificationString
 if (/\S/.test(chatInfo.message)){//make sure chatInfo.message is not empty
 
 
-if(_.isNull(chatInfo.seat)||_.isUndefined(chatInfo.seat)||_.isEmpty(chatInfo.seat)){ // if no seat, then observer chat
+if(_.isNull(chatInfo.seat)||_.isUndefined(chatInfo.seat)){ // if no seat, then observer chat
 
 //update tableChatFull popup
 var chatObjectForInternalFunctionUse = {}
