@@ -25,49 +25,83 @@ self  = this
 
  this.sessionPreferences = {
 
-      changeUserSeatView:0,
+      changeUserSeatView:{value:0, updateValue: function(newValue){
+this.value  = newValue
+self.changeUserSeatView(this.value)
+        } 
+      },
 
 tableChatFull:{
 
         defaultItemsToHideFalseHidesItem:{
-                  hideDealerMessages:true,
-                  hideDealerMessagesOn: false,
-                  hidePlayerMessages:true,
-                  hidePlayerMessagesOn: false,
-                  hideObserverMessages:true,
-                  hideObserverMessagesOn: false,
-                  disableTouchScroll:true,
-                  disableTouchScrollOn:false
+                  hideDealerMessages:{value:true},
+                  hideDealerMessagesOn: {value:false},
+                  hidePlayerMessages:{value:true},
+                  hidePlayerMessagesOn: {value:false},
+                  hideObserverMessages:{value:true},
+                  hideObserverMessagesOn: {value:false},
+                  disableTouchScroll:{value:true},
+                  disableTouchScrollOn:{value:false}
 
+  }//default items to hide
 
-  }//defaul titems to hide
 }//table chat full
 
   }//session preferences declaration
 
 
-
   this.permanentPreferences = {
       
 
-      bigBlindsPerHorizontalSliderTick : 0.5,
-      bigBlindsPerMouseScroll: 0.5,
-      timePerHorizontalSliderTick: 500,
-      animate: true,
-      chatTextColor: '#000000',
-      playerChatMaxLines:3,
+      bigBlindsPerHorizontalSliderTick :{value: 0.5},
+      bigBlindsPerMouseScroll:{value: 0.5},
+      timePerHorizontalSliderTick: {value:500},
+      animate: {value:true},
+      playerChatMaxLines:{value:3},
+
+
+      chatTextColor: {value:'#000000',  updateValue: function(newValue){
+this.value = newValue
+        for(var i = 0 ;i<self.images.seats.length;i++){
+self.images.seats[i].chat.text.color = this.value}//iterate thorugh this.images.seats
+
+self.updateStage(self.images.seats[i].chat.position.z.stage)
+      }//onchange function
+
+    },
+      
 
       tableChatFull:{
+        //         scrollBarType : 'mCustomScrollbar',
+        chatMessageFontSize: {value:11 , updateValue: function(newValue){
+this.value  = newValue
+self.jQueryObjects.tableChatFullParagraph.css('font-size', this.value)
 
-        chatMessageFontSize: 11,
-        chatMessageFontColor: 'white',
-        windowColor: 'black',
-        windowAlpha: 0.4,
-        
+        } 
 
+          },
+        chatMessageFontColor: {value:'white', updateValue: function(newValue){
+
+this.value  = newValue
+self.jQueryObjects.tableChatFullParagraph.css('color', this.value)
+
+        } 
+           },
+
+        windowColor: {value:'black'  },
+
+        windowAlpha:{value: 0.4 , updateValue: function(newValue){
+
+this.value = newValue
+self.images.tableChatFull.window.alpha = this.value
+
+         }//windowAlpha.updateValue
       }
 
-  }
+  }//permanent preferences . tableChatFull
+
+}//permanent preferences
+
         this.gameState = {}
         this.gameState.tableChatFull = {
           log:[],
@@ -161,6 +195,9 @@ this.gameState.zPositionData.tableChatFullText={stage:tableChatFull,container:1}
 
         this.jQueryObjects = {}
 this.jQueryObjects.canvasDiv = $('#pokerCanvasDiv')
+this.jQueryObjects.tableChatFullDiv = $('#tableChatFullTextDiv')
+this.jQueryObjects.tableChatFullParagraph = $('#tableChatFullText')
+
 
         //define basic data for each stage
         this.gameState.stageData = []
@@ -680,7 +717,7 @@ this.events.showTableChatFullOnClick = function(){
 console.log('show clicked')
 self.displayTableChatFull()
 $('#chatForm').blur()
-$('#tableChatFullText').blur()
+self.jQueryObjects.tableChatFullParagraph.blur()
 }
 
 this.events.hideTableChatFullOnClick = function(){
@@ -725,13 +762,23 @@ otherScrollBarHandle.css('top',lowestScrollBarHandleY)
 
 //$("#tableChatFullTextDiv").scrollTop(scroll[0].getScrollTop()*2)
 
+if(self.permanentPreferences.tableChatFull.scrollBarType == 'mCustomScrollbar'){
+//console.log('creating mCustomScrollbar')
+//show so that scroll bar can be initialized
+ //$("#tableChatFullTextDiv").css('display','inline')
 
+$('#tableChatFullTextDiv').mCustomScrollbar('scrollTo','bottom')
+$('#tableChatFullTextDiv').mCustomScrollbar('update')
+// $("#tableChatFullTextDiv").css('display','none')
+
+}//if mCustomScrollbar is used
+else{
 if(scroll[0].getContentSize().h != $('#tableChatFullTextDiv').height()){
  $('#tableChatFullTextDiv').scrollTop(scroll[0].getContentSize().h)
 scroll[0].resize()
 }
 
-
+}//if not mcustomscrollbar
 
 /*
 $('#tableChatFullTextDiv').trigger("mousewheel",  {intDelta:0, deltaX:1, deltaY:0}) 
@@ -751,8 +798,14 @@ if(!movementObject.magnitude){movementObject.magnitude = 0}
 if(movementObject.positionUnit == 'pixels'){}
 
 if (movementObject.resize === true){
-scroll[0].resize()
-}
+  if(self.permanentPreferences.tableChatFull.scrollBarType == 'mCustomScrollbar'){
+
+$('#tableChatFullTextDiv').mCustomScrollbar('update')
+
+}//if mCustomScrollBar
+
+else{scroll[0].resize()}
+}//if movementObject.resize == true
 
 }//if movementObject exists
 }
@@ -801,12 +854,38 @@ self.images.tableChatFull.chatMessageText.parentOfStage.stage.update()
 
 }
 
+this.events.disableTouchScrollClicked = function(){
+console.log('disableTouchScrollClicked')
+//change user preferences
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.disableTouchScroll.value = false
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.disableTouchScrollOn.value = true
+
+/*
+console.log($('#tableChatFullTextDiv').getNiceScroll())
+
+$('#tableChatFullTextDiv').getNiceScroll()[0].istouchcapable = false
+*/
+self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
+}
+
+this.events.disableTouchScrollOnClicked = function(){
+console.log('disableTouchScrollClicked')
+//change user preferences
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.disableTouchScroll.value = true
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.disableTouchScrollOn.value = false
+/*
+console.log($('#tableChatFullTextDiv').getNiceScroll())
+$('#tableChatFullTextDiv').getNiceScroll()[0].istouchcapable = true
+*/
+self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
+}
+
 
 this.events.hideDealerMessagesClicked = function(){
 console.log('hideDealerMessagesClicked')
 //change user preferences
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages = false
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn = true
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages.value = false
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn.value = true
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
@@ -815,38 +894,38 @@ self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 this.events.hideDealerMessagesOnClicked = function(){
 console.log('hideDealerMessagesOnClicked')
 //change user preferences
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages = true
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn = false
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages.value = true
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn.value = false
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true}) 
 }
 
 this.events.hidePlayerMessagesClicked = function(){
   console.log('hidePlayerMessagesClicked')
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages = false
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn = true
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages.value = false
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn.value = true
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 
 }
 this.events.hidePlayerMessagesOnClicked = function(){
    console.log('hidePlayerMessagesOnClicked')
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages = true
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn = false
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages.value = true
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn.value = false
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
 this.events.hideObserverMessagesClicked = function(){
    console.log('hideObserverMessagesClicked')
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages = false
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn = true
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages.value = false
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn.value = true
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
 this.events.hideObserverMessagesOnClicked = function(){
 
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages = true
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn = false
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages.value = true
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn.value = false
 
 self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
 }
@@ -914,7 +993,7 @@ console.log('changing userseat view')
 
     this.events.wheelScroll = function(numScrolls){
       if(_.isNumber(numScrolls) == false){return 'scroll failed'}
-      var change = numScrolls*self.permanentPreferences.bigBlindsPerMouseScroll*self.gameState.bigBlind
+      var change = numScrolls*self.permanentPreferences.bigBlindsPerMouseScroll.value*self.gameState.bigBlind
           var betValue  = parseFloat($('#betSize').val())
     var isBetValueValid = ( !isNaN(betValue)) && _.isNumber(betValue) 
      if(isBetValueValid == true){ var newBet = change+betValue} //use current value
@@ -931,7 +1010,7 @@ console.log('changing userseat view')
         var minX = self.images.betSlider.horizontal.position.x
          var maxX = self.images.betSlider.horizontal.position.x + self.images.betSlider.horizontal.size.x-self.images.betSlider.vertical.size.x
        
-         var pixelsPerTick = self.gameState.bigBlind*self.permanentPreferences.bigBlindsPerHorizontalSliderTick/(self.gameState.maxBet-self.gameState.minBet)*(maxX-minX)
+         var pixelsPerTick = self.gameState.bigBlind*self.permanentPreferences.bigBlindsPerHorizontalSliderTick.value/(self.gameState.maxBet-self.gameState.minBet)*(maxX-minX)
           
 
          //takes vertical slider location and proportionaly shows bet size
@@ -979,7 +1058,7 @@ self.adjustBetDisplay(roundedBet)
          if(pixelDirection>0||pixelDirection<0)
          {
              createjs.Tween.get(self.images.betSlider.vertical.image,{override:true, loop:true})
-.wait(self.permanentPreferences.timePerHorizontalSliderTick)
+.wait(self.permanentPreferences.timePerHorizontalSliderTick.value)
 .call(moveSlider, [event])
          }
          }
@@ -1662,7 +1741,7 @@ $('#chat').css('color', htmlTableChatBoxReminderTextColor)
 $('#chat').focus(function(){
     if($('#chat').val() == defaultMessage){
     $('#chat').val('')
-$('#chat').css('color', self.permanentPreferences.chatTextColor)}
+$('#chat').css('color', self.permanentPreferences.chatTextColor.value)}
 })
 
 //redisplay reminder text ONLY if text value is only spaces or nothing
@@ -1721,14 +1800,34 @@ this.itemAsBitmap(this.sitOutNextBlind, this.sources.checkBox)
         this.itemAsBitmap(this.foldToAnyBetOn, this.sources.checkBoxChecked)
 this.itemAsBitmap(this.sitOutNextHandOn, this.sources.checkBoxChecked)
 this.itemAsBitmap(this.sitOutNextBlindOn, this.sources.checkBoxChecked)
+
+  //hitAreas for buttons
+      
+      var drawCheckBoxButtonHitSquareAndAdjustItemWidth = function(item){
+          //get width of text
+        var textWidth =   self.getTextWidthAndFontSize(item)[0]
+        var totalWidth = checkBoxButtonCheckBoxWidth + checkBoxButtonDistanceFromBoxToText + textWidth
+        item.size.x = totalWidth
+        //draw rectangular shape
+        var hitSquare = new createjs.Shape()
+        hitSquare.graphics.beginFill('#FFFFFF').beginStroke(0)
+        .drawRect(0, checkBoxButtonDistanceFromEdgeToInteriorHitAreaY, totalWidth, item.size.y - checkBoxButtonDistanceFromEdgeToInteriorHitAreaY)
+        return hitSquare
+      }
+
 //function for creating text from all fast
-    var addCheckBoxButtonText = function(parentOfImageObject, text){
+    var addCheckBoxButtonText = function(parentOfImageObject, text, options){
                 parentOfImageObject.text = new createjs.Text(text, checkBoxButtonSizeAndFont, checkBoxButtonTextColor)
 parentOfImageObject.text.x=parentOfImageObject.position.x + checkBoxButtonCheckBoxWidth + checkBoxButtonDistanceFromBoxToText
 parentOfImageObject.text.y=parentOfImageObject.position.y + 1
 parentOfImageObject.text.baseline = 'top'
 parentOfImageObject.text.textAlign = 'left'
 parentOfImageObject.textColor = checkBoxButtonTextColor
+
+var hit = drawCheckBoxButtonHitSquareAndAdjustItemWidth(parentOfImageObject)
+parentOfImageObject.text.hitArea  = hit
+parentOfImageObject.image.hitArea  = hit
+
 }
 //off state
       addCheckBoxButtonText( this.foldToAnyBet, 'Auto check/fold' )
@@ -1740,27 +1839,8 @@ parentOfImageObject.textColor = checkBoxButtonTextColor
       addCheckBoxButtonText(this.sitOutNextHandOn, 'Sit out next hand')
       addCheckBoxButtonText (  this.sitOutNextBlindOn,'Sit out next blind' )
 
-      //hitAreas for buttons
-      
-      var drawCheckBoxButtonHitSquare = function(item){
-          //get width of text
-        var textWidth =   self.getTextWidthAndFontSize(item)[0]
-        var totalWidth = checkBoxButtonCheckBoxWidth + checkBoxButtonDistanceFromBoxToText + textWidth
-        //draw rectangular shape
-        var hitSquare = new createjs.Shape()
-        hitSquare.graphics.beginFill('#FFFFFF').beginStroke(0)
-        .drawRect(0, checkBoxButtonDistanceFromEdgeToInteriorHitAreaY, totalWidth, item.size.y - checkBoxButtonDistanceFromEdgeToInteriorHitAreaY)
-        return hitSquare
-      }
+   
 
-                    //hit areas
-      this.foldToAnyBet.image.hitArea =  drawCheckBoxButtonHitSquare(this.foldToAnyBet)
-        this.sitOutNextHand.image.hitArea = drawCheckBoxButtonHitSquare(this.sitOutNextHand)
-          this.sitOutNextBlind.image.hitArea  = drawCheckBoxButtonHitSquare(this.sitOutNextBlind)
-     
-                  this.foldToAnyBetOn.image.hitArea  = drawCheckBoxButtonHitSquare(this.foldToAnyBetOn)
-                  this.sitOutNextHandOn.image.hitArea = drawCheckBoxButtonHitSquare(this.sitOutNextHandOn)
-                    this.sitOutNextBlindOn.image.hitArea = drawCheckBoxButtonHitSquare(this.sitOutNextBlindOn)
 
       //onclick
        this.foldToAnyBet.image.onclick =  self.events.onButtonClick
@@ -2585,10 +2665,10 @@ var tableChatFullStageCanvas =  self.arrayOfParentsOfStageAndOfContainerArray[ t
   //  'z-index':1
            })
 
-var tableChatFullWindowBackgroundColor = self.permanentPreferences.tableChatFull.windowColor
+var tableChatFullWindowBackgroundColor = self.permanentPreferences.tableChatFull.windowColor.value
 var tableChatFullWindowBorderColor = '#000000'
 var tableChatFullWindowBorderWidth = 1
-var tableChatFullWindowAlpha = self.permanentPreferences.tableChatFull.windowAlpha
+var tableChatFullWindowAlpha = self.permanentPreferences.tableChatFull.windowAlpha.value
 var tableChatFullRoundedRectCornerSizeRatioOfHeight = 0.05
 
   this.tableChatFull.window = new this.Item(0, 0, tableChatFullStageWidth, tableChatFullStageHeight,self.gameState.zPositionData.tableChatFull)
@@ -2598,46 +2678,58 @@ this.tableChatFull.window.image.graphics.beginFill(tableChatFullWindowBackground
 .drawRoundRect(this.tableChatFull.window.position.x, this.tableChatFull.window.position.y, this.tableChatFull.window.size.x, this.tableChatFull.window.size.y, tableChatFullRoundedRectCornerSizeRatioOfHeight*this.tableChatFull.window.size.y)
 this.tableChatFull.window.image.alpha = tableChatFullWindowAlpha
 
-var hideDealerMessagesOffsetLeft =  (this.tableChatFull.htmlStageElement.size.x*.2)/2 //checkBoxButtonOffSetLeft
+var hideDealerMessagesOffsetLeft =  this.tableChatFull.htmlStageElement.size.x*.05 //checkBoxButtonOffSetLeft
 var hideDealerMessagesOffsetRight =  hideDealerMessagesOffsetLeft//checkBoxButtonOffSetLeft
 var hideDealerMessagesOffsetTop =  checkBoxButtonDistanceY
 
 this.tableChatFull.hideDealerMessages = new this.Item(hideDealerMessagesOffsetLeft, hideDealerMessagesOffsetTop, this.tableChatFull.window.size.x - checkBoxButtonOffSetLeft*2, checkBoxButtonHeight,self.gameState.zPositionData.tableChatFullText)
 this.itemAsBitmap(this.tableChatFull.hideDealerMessages, this.sources.checkBox)
 addCheckBoxButtonText(this.tableChatFull.hideDealerMessages, 'Hide dealer messages')
-this.tableChatFull.hideDealerMessages.image.hitArea = drawCheckBoxButtonHitSquare(this.tableChatFull.hideDealerMessages)
 this.tableChatFull.hideDealerMessages.image.onClick = self.events.hideDealerMessagesClicked
 
 this.tableChatFull.hideDealerMessagesOn = new this.Item(hideDealerMessagesOffsetLeft, this.tableChatFull.hideDealerMessages.position.y, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,self.gameState.zPositionData.tableChatFullText)
 this.itemAsBitmap(this.tableChatFull.hideDealerMessagesOn, this.sources.checkBoxChecked)
 addCheckBoxButtonText(this.tableChatFull.hideDealerMessagesOn, 'Hide dealer messages')
-this.tableChatFull.hideDealerMessagesOn.image.hitArea = drawCheckBoxButtonHitSquare(this.tableChatFull.hideDealerMessagesOn)
 this.tableChatFull.hideDealerMessagesOn.image.onClick = self.events.hideDealerMessagesOnClicked
 
 this.tableChatFull.hidePlayerMessages = new this.Item(hideDealerMessagesOffsetLeft, hideDealerMessagesOffsetTop*2+checkBoxButtonHeight, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,self.gameState.zPositionData.tableChatFullText)
 this.itemAsBitmap(this.tableChatFull.hidePlayerMessages, this.sources.checkBox)
 addCheckBoxButtonText(this.tableChatFull.hidePlayerMessages, 'Hide player messages')
-this.tableChatFull.hidePlayerMessages.image.hitArea = drawCheckBoxButtonHitSquare(this.tableChatFull.hideDealerMessages)
 this.tableChatFull.hidePlayerMessages.image.onClick = self.events.hidePlayerMessagesClicked
 
 this.tableChatFull.hidePlayerMessagesOn = new this.Item(hideDealerMessagesOffsetLeft, this.tableChatFull.hidePlayerMessages.position.y, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,self.gameState.zPositionData.tableChatFullText)
 this.itemAsBitmap(this.tableChatFull.hidePlayerMessagesOn, this.sources.checkBoxChecked)
 addCheckBoxButtonText(this.tableChatFull.hidePlayerMessagesOn, 'Hide player messages')
-this.tableChatFull.hidePlayerMessagesOn.image.hitArea = drawCheckBoxButtonHitSquare(this.tableChatFull.hidePlayerMessagesOn)
 this.tableChatFull.hidePlayerMessagesOn.image.onClick = self.events.hidePlayerMessagesOnClicked
 
 this.tableChatFull.hideObserverMessages = new this.Item(hideDealerMessagesOffsetLeft, checkBoxButtonDistanceY*3+checkBoxButtonHeight*2, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,self.gameState.zPositionData.tableChatFullText)
 this.itemAsBitmap(this.tableChatFull.hideObserverMessages, this.sources.checkBox)
 addCheckBoxButtonText(this.tableChatFull.hideObserverMessages, 'Hide observer messages')
-this.tableChatFull.hideObserverMessages.image.hitArea = drawCheckBoxButtonHitSquare(this.tableChatFull.hideObserverMessages)
 this.tableChatFull.hideObserverMessages.image.onClick = self.events.hideObserverMessagesClicked
 
 this.tableChatFull.hideObserverMessagesOn = new this.Item(hideDealerMessagesOffsetLeft, this.tableChatFull.hideObserverMessages.position.y, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,self.gameState.zPositionData.tableChatFullText)
 this.itemAsBitmap(this.tableChatFull.hideObserverMessagesOn, this.sources.checkBoxChecked)
 addCheckBoxButtonText(this.tableChatFull.hideObserverMessagesOn, 'Hide observer messages')
-this.tableChatFull.hideObserverMessagesOn.image.hitArea = drawCheckBoxButtonHitSquare(this.tableChatFull.hideObserverMessagesOn)
 this.tableChatFull.hideObserverMessagesOn.image.onClick = self.events.hideObserverMessagesOnClicked
 
+
+
+var longestLeftSideCheckBoxAndTextItemWidth = this.tableChatFull.hideObserverMessages.size.x
+if(this.tableChatFull.hidePlayerMessages.size.x > longestLeftSideCheckBoxAndTextItemWidth){longestLeftSideCheckBoxAndTextItemWidth = this.tableChatFull.hidePlayerMessages.size.x }
+if(this.tableChatFull.hideDealerMessages.size.x > longestLeftSideCheckBoxAndTextItemWidth){longestLeftSideCheckBoxAndTextItemWidth = this.tableChatFull.hidePlayerMessages.size.x }
+
+var rightSideCheckBoxX = this.tableChatFull.hideDealerMessages.position.x + longestLeftSideCheckBoxAndTextItemWidth + hideDealerMessagesOffsetRight
+var rightSideCheckBoxY = this.tableChatFull.hideDealerMessages.position.y
+
+this.tableChatFull.disableTouchScroll = new this.Item(rightSideCheckBoxX, rightSideCheckBoxY, 0, checkBoxButtonHeight,self.gameState.zPositionData.tableChatFullText)
+this.itemAsBitmap(this.tableChatFull.disableTouchScroll, this.sources.checkBox)
+addCheckBoxButtonText(this.tableChatFull.disableTouchScroll, 'Disable touch scroll')
+this.tableChatFull.disableTouchScroll.image.onClick = self.events.disableTouchScrollClicked
+
+this.tableChatFull.disableTouchScrollOn = new this.Item(this.tableChatFull.disableTouchScroll.position.x, this.tableChatFull.disableTouchScroll.position.y, this.tableChatFull.disableTouchScroll.size.x, checkBoxButtonHeight,self.gameState.zPositionData.tableChatFullText)
+this.itemAsBitmap(this.tableChatFull.disableTouchScrollOn, this.sources.checkBoxChecked)
+addCheckBoxButtonText(this.tableChatFull.disableTouchScrollOn, 'Disable touch scroll')
+this.tableChatFull.disableTouchScrollOn.image.onClick = self.events.disableTouchScrollOnClicked
 
 //chat message text
 
@@ -2688,9 +2780,9 @@ var chatMessageOffsetBottom =  chatMessageOffsetTop
 
 this.tableChatFull.chatMessageText = new this.Item(chatMessageOffsetLeft, chatMessageOffsetTop, htmlChatStageElementWidth -  chatMessageOffsetLeft - chatMessageOffsetRight,htmlChatStageElementHeight  - chatMessageOffsetTop - chatMessageOffsetBottom, self.gameState.zPositionData.tableChatFullText)
 
-var chatMessageFontSize = self.permanentPreferences.tableChatFull.chatMessageFontSize
+var chatMessageFontSize = self.permanentPreferences.tableChatFull.chatMessageFontSize.value
 var chatMessageFont = 'arial'
-var chatMessageFontColor = self.permanentPreferences.tableChatFull.chatMessageFontColor
+var chatMessageFontColor = self.permanentPreferences.tableChatFull.chatMessageFontColor.value
 
 //create create js text display object
 //this.tableChatFull.chatMessageText.text = new createjs.DOMElement(document.getElementById('tableChatFullTextDiv'))
@@ -2712,7 +2804,7 @@ enablescrollonselection:false,
 //enablemousewheel:false,
 hwacceleration:false,
 bouncescroll:false,
-cursoropacitymax:self.permanentPreferences.tableChatFull.windowAlpha, 
+cursoropacitymax:self.permanentPreferences.tableChatFull.windowAlpha.value, 
 autohidemode:false,
 
 touchbehavior :true,
@@ -2722,8 +2814,45 @@ background:'transparent'
 }
 
 
+
+
+ var mCustomScrollbarOptions = {
+
+  // contentTouchScroll: true,
+  theme: 'light',
+ updateOnContentResize: true,
+ scrollButtons:{
+          enable:true
+        },
+ callbacks:{
+    onScrollStart: function(){
+      console.log('scrolling started')
+    }
+},
+  set_height: this.tableChatFull.htmlChatStageElement.size.y,
+  horizontalScroll: false
+}
+
+
+
+if(self.permanentPreferences.tableChatFull.scrollBarType == 'mCustomScrollbar'){
+//console.log('creating mCustomScrollbar')
+//show so that scroll bar can be initialized
+ //$("#tableChatFullTextDiv").css('display','inline')
+
+$('#tableChatFullTextDiv').mCustomScrollbar(mCustomScrollbarOptions)
+// $("#tableChatFullTextDiv").css('display','none')
+
+}
+
+else{
+
  $("#tableChatFullTextDiv").niceScroll(messageTextScrollBarNiceScrollOptions)
 
+
+
+
+}
 
 //scrollBarObject.css('overflow','hidden')
 //scrollBarObject.css('z-index','-1')
@@ -2750,10 +2879,10 @@ var stopWheel = function(e){
 
 
  
- //  $('#tableChatFullText').attr({  })
+ //  self.jQueryObjects.tableChatFullParagraph.attr({  })
  
 
-        $('#tableChatFullText').css({
+        self.jQueryObjects.tableChatFullParagraph.css({
                'width': this.tableChatFull.chatMessageText.size.x+'px',
 'height': this.tableChatFull.chatMessageText.size.y+'px',
           'font': chatMessageFont,
@@ -2787,7 +2916,7 @@ this.tableChatFull.chatMessageText.text.hitArea = tableChatFullHitArea
 */
 //this.tableChatFull.chatMessageText.text.htmlElement.onMouseDown = self.events.tableChatFullChatMessageTextMouseDown
 
-//$('#tableChatFullText').mousedown(function(event){self.events.tableChatFullChatMessageTextMouseDown(event)})​
+//self.jQueryObjects.tableChatFullParagraph.mousedown(function(event){self.events.tableChatFullChatMessageTextMouseDown(event)})​
 
 
 console.log(this.tableChatFull.chatMessageText)
@@ -3196,7 +3325,7 @@ $('#chat').css({
 
 this.changeUserSeatView = function(seatNumberToRotateTo){
   console.log('changing userseat view to seatNumberToRotateTo '+seatNumberToRotateTo)
-/*if(self.permanentPreferences.changeUserSeatView == ['bottom','middle']){}
+/*if(self.permanentPreferences.changeUserSeatView.value == ['bottom','middle']){}
   else{return 'change view when seated setting is off'}*/
   var  copyItemDisplayObjectLocationData = function(item){
 var itemCopyWithOnlyLocationData = {}
@@ -4564,10 +4693,18 @@ var scroll = $('#tableChatFullTextDiv').getNiceScroll()//grab niceScroll instanc
 /*
 console.log('total height ' + scroll[0].getContentSize().h)
 console.log('pixels invisible above paragraph element' +  scroll[0].getScrollTop())
-console.log('height of paragraph element ' + $('#tableChatFullText').height())
+console.log('height of paragraph element ' + self.jQueryObjects.tableChatFullParagraph.height())
 */
+if(self.permanentPreferences.tableChatFull.scrollBarType == 'mCustomScrollbar'){
+//console.log('creating mCustomScrollbar')
+//show so that scroll bar can be initialized
 
-var isAtBottom = ( scroll[0].getContentSize().h - scroll[0].getScrollTop() ===  $('#tableChatFullText').height())
+//$('#tableChatFullTextDiv').mCustomScrollbar(mCustomScrollbarOptions)
+var isAtBottom = true//( scroll[0].getContentSize().h - scroll[0].getScrollTop() ===  self.jQueryObjects.tableChatFullParagraph.height())
+}
+else{
+var isAtBottom = ( scroll[0].getContentSize().h - scroll[0].getScrollTop() ===  self.jQueryObjects.tableChatFullParagraph.height())
+}
 console.log('var isAtBottom = ' + isAtBottom)
 return isAtBottom
 
@@ -4676,7 +4813,7 @@ self.images.seats[chatInfo.seat].chat.text.text = self.images.seats[chatInfo.sea
     //increase lines
 if(wasTrimmed == true){
 
-  if(numLines < self.permanentPreferences.playerChatMaxLines){
+  if(numLines < self.permanentPreferences.playerChatMaxLines.value){
 //increase lin counter
    numLines++
   currentLine++
@@ -4747,17 +4884,15 @@ console.log(self.images.seats[chatInfo.seat].chat)
 
 this.appendTableChatFullMessageText = function(textString, options){
 
- isAtBottom = this.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText() 
+var isAtBottom = this.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText() 
 
-$('#tableChatFullText').append('<br>'+ textString)
+self.jQueryObjects.tableChatFullParagraph.append('<br>'+ textString)
 
 if(isAtBottom == true && self.gameState.tableChatFull.mouseDown != true && options && options.moveTable !== false){ self.moveTableChatFullMessageText()}
 else if(options && options.moveTable == true){self.moveTableChatFullMessageText()}
 }
 
 this.updateTableChatFullMessageTextFromCurrentOrAdditionalData = function(chatInfo, options){
-
-if(this.gameState.tableChatFull.currentlyShowingObserverMessages == this.permanentPreferences.tableChatFull.hideObserverMessages)
 
 //current preferences
 var isDisplayingDealerMessages = this.gameState.tableChatFull.currentlyDisplayingDealerMessages
@@ -4769,11 +4904,11 @@ var shouldDisplayDealerMessages
  var shouldDisplayPlayerMessages
 var shouldDisplayObserverMessages
 
-if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn === false){ shouldDisplayDealerMessages = true}
+if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn.value === false){ shouldDisplayDealerMessages = true}
   else{ shouldDisplayDealerMessages = false}
-    if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn === false){ shouldDisplayPlayerMessages = true}
+    if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn.value === false){ shouldDisplayPlayerMessages = true}
   else{ shouldDisplayPlayerMessages = false}
-    if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn === false){ shouldDisplayObserverMessages = true}
+    if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn.value === false){ shouldDisplayObserverMessages = true}
   else{ shouldDisplayObserverMessages = false}
 
 
@@ -4815,7 +4950,7 @@ self.gameState.tableChatFull.fullTextString = self.gameState.tableChatFull.fullT
 }//if we want to display this index of tableChatFull.log
 }//iterate through tableChatFull.log
 
-$('#tableChatFullText').html(self.gameState.tableChatFull.fullTextString)//add
+self.jQueryObjects.tableChatFullParagraph.html(self.gameState.tableChatFull.fullTextString)//add
 
 this.gameState.tableChatFull.currentlyDisplayingDealerMessages = shouldDisplayDealerMessages
 this.gameState.tableChatFull.currentlyDisplayingPlayerMessages = shouldDisplayPlayerMessages
@@ -5307,8 +5442,9 @@ this.updateTableChatFullDisplayDoesNotUpdateStageByDefault = function(displayOrH
 
 //hide items that should be hidden by default
 _.each(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem,function(value, index, list){
-
-if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem[index] === false){
+//console.log(index)
+//console.log(value)
+if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem[index].value === false){
   self.hideChildren(self.images.tableChatFull[index], displayOrHideChildrenOptions)
   console.log('hiding' + index)
 }
@@ -5323,17 +5459,17 @@ this.updateTableChatFullMessageTextFromCurrentOrAdditionalData()
 this.displayTableChatFull = function(){
 //update what is showing and what isnt from current preferences
 
-if(this.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages === false){
+if(this.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages.value === false){
   this.gameState.tableChatFull.currentlyDisplayingDealerMessages = false
 }
 else{this.gameState.tableChatFull.currentlyDisplayingDealerMessages = true}
 
-  if(this.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages === false){
+  if(this.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages.value === false){
   this.gameState.tableChatFull.currentlyDisplayingPlayerMessages = false
 }
 else{this.gameState.tableChatFull.currentlyDisplayingPlayerMessages = true}
 
-  if(this.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages === false){
+  if(this.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages.value === false){
   this.gameState.tableChatFull.scurrentlyDisplayingObserverMessages = false
 }
 else{this.gameState.tableChatFull.currentlyDisplayingObserverMessages = true}
@@ -5354,7 +5490,7 @@ this.updateStage(this.images.tableChatFull.htmlStageElement.position.z.stage)
 var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.images.tableChatFull.htmlStageElement.position.z.stage].stage.canvas
 
 $(tableChatFullCanvas).css('display','inline')
-$('#tableChatFullText').css('display','inline ')
+self.jQueryObjects.tableChatFullParagraph.css('display','inline ')
 //console.log(this.images.tableChatFull)
 //console.log(this.images.tableChatFull.stage.contains(this.images.tableChatFull.window.image))
 //console.log(this.images.tableChatFull.window.image.isVisible())
@@ -5373,7 +5509,7 @@ this.updateStage(this.images.tableChatFull.htmlStageElement.position.z.stage)
 var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.images.tableChatFull.htmlStageElement.position.z.stage].stage.canvas
 
 $(tableChatFullCanvas).css('display','none')
-$('#tableChatFullText').css('display','none')
+self.jQueryObjects.tableChatFullParagraph.css('display','none')
 }
 
     //make sure to set buttonText as FALSE if you want to display the default text
@@ -5807,6 +5943,14 @@ $(this.arrayOfParentsOfStageAndOfContainerArray[ this.images.cashier.window.posi
 
 }
 
+this.saveSessionPreference = function(preference, variableInStringFormat){
+
+  if(_.isObject(preference)){preference = preference.value}
+
+    socket.emit('set_flag', variableInStringFormat, preference)
+
+
+}
 
 this.storeActiveStages = function(){
   
@@ -5993,7 +6137,112 @@ self.hideChildren(self.images.foldToAnyBet)
 } //end check if useris not sitting out
 }
 
-this.updateLocalDataBasedOnServerPlayerObject = function(player){
+this.getPermanentPreferences = function() {
+
+//var permanentPreferences = $.getJSON('/preferences/1')
+
+$.getJSON('/table_1', function(response) { console.log(response); }); 
+// response.data will probably be the preferences Object
+
+//console.log(permanentPreferences)
+console.log('permanet')
+
+console.log($('#server_values')[0].dataset)
+console.log($('#server_values').data('table_1'))
+$//('#server_values')[0].dataset.table_state_url
+//.data('x').. I forget the specifics, 
+//but take a look at #server_values, and if it has data-table_name, then replace "x" with "table_name".
+
+//return permanentPreferences
+}
+
+
+
+this.initializeServerPreferenceObjects = function (currentPreferenceObject, options){
+
+if(!options){var options = {}}
+
+  if(!_.isNumber(options.maxDepth)){options.maxDepth = 3}
+if (!_.isString(options.currentObjectString)){options.currentObjectString = ''}
+
+
+var createBlankObjectOnServerIfNeeded = function(serverObjectString, options){
+ /* if(options && options.currentObjectString){var serverObjectString = options.currentObjectString +'.' serverObjectIndex}
+socket.emit('set_preferences', options.currentObjectString)
+
+
+
+
+$.getJSON('/preferences/TABLE_NAME')
+You should be able to get the name of the table (e.g. table_1) from $('#server_values').data('x').. I forget the specifics, but take a look at #server_values, and if it has data-table_name, then replace "x" with "table_name".
+You could also probably pull this from the URL.. let me know if you need more help
+*/
+
+
+if(options.maxDepth>=0){//check  to make suer we should continue looking
+
+  _.each (currentPreferenceObject, function(element,index,list) {
+//do nothing if new value is undefined
+  if(_.isObject( currentPreferenceObject[index])){
+    if(_.isUndefined(currentPreferenceObject[index].value) && _.isUndefined(currentPreferenceObject[index].updateValue)){
+createBlankObjectOnServerIfNeeded(options.currentObjectString+index)
+self.initializeServerPreferenceObjects(currentPreferenceObject[index],{currentObjectString: options.currentObjectString+index,maxDepth:maxDepth-1})
+}
+}//if( currentPreferenceObject[index] is Object
+})//iterate thorugh currentPreferenceObject
+  }//check if we are at max depth
+}
+
+
+}
+
+this.updatePreference = function(currentPreferenceObject, newPreferenceObject, options){
+
+if(!options){var options = {}}
+
+  if(!_.isNumber(options.maxDepth)){options.maxDepth = 4}
+options.maxDepth--
+if(options.maxDepth>=0){//check  to make suer we should continue looking
+
+  _.each (newPreferenceObject, function(element,index,list) {
+//do nothing if new value is undefined
+  if(!_.isUndefined( newPreferenceObject[index] )){
+
+    //check to make sure current preference object exists, create if it doesnt
+if (!_.isObject(currentPreferenceObject[index])){currentPreferenceObject[index] = {}}
+
+//check if newpreference[index]is object and .value is denied
+ if( _.isObject(newPreferenceObject[index]) && !_.isUndefined(newPreferenceObject[index].value)){
+  var newValue = newPreferenceObject[index].value}
+
+    //check if index is value itself by virtue of not being an object
+  else if (!_.isObject(newPreferenceObject[index])){var newValue = newPreferenceObject[index]}
+
+//check to make sure new value exists, and that new value is differnent from old
+if(!_.isUndefined(newValue) && newValue !== currentPreferenceObject[index].value){
+
+
+  //check to make sure updateValue function exists
+  if(_.isFunction(currentPreferenceObject[index].updateValue)){
+        currentPreferenceObject[index].updateValue(newPreferenceObject[index])
+  }//if updateValue function exists
+
+//if not we manually change value
+else if (!_.isUndefined(newPreferenceObject[index].value)){currentPreferenceObject[index].value = newPreferenceObject[index]}
+
+}//if new and current preference are not equal and if new preference exists
+
+     //if neither updateValue nor value exist, we conclude this is another preference object and call this function again
+else{self.updateSingleObjectPreference(currentPreferenceObject[index],newPreferenceObject[index], options )}
+
+}//make sure newPreference[index] is not undefined
+})//iterate through new preference object
+
+}//check if we are at max depth or not
+}
+
+
+this.updateLocalGameDataBasedOnServerPlayerObject = function(player){
   if(player.is_you == true){self.gameState.userSeatNumber = player.seat}
     //updated local based on flags
 if(player.flags){
@@ -6135,14 +6384,36 @@ this.displayChildren(this.images.currencyDisplay)
         this.displayAllCommunity(table_state.community)
         
         if(table_state.seats.length == 0){this.displayChildren(this.images.getChipsDisabledShape)}
+
+//assign session and permanent preferencee if they exist
+ for (var i = 0;i< table_state.seats.length;i++) {
+if(table_state.seats[i].is_you == true){
+  
+  this.gameState.userSeatNumber = table_state.seats[i].seat 
+
+  //grab session preferences
+  if(table_state.seats[i].flags && _.isObject(table_state.seats[i].flags.sessionPreferences)){
+          var sessionPreferences = table_state.seats[i].flags.sessionPreferences
+this.updatePreference(this.sessionPreferences, sessionPreferences)
+        }// if session preferences
+          //grab permanent preferences
+        if( _.isObject(table_state.seats[i].userPreferences)) {  
+        var permanentPreferences = table_state.seats[i].userPreferences
+this.updatePreference(this.permanentPreferences, permanentPreferences)
+      } //if permanent preferences
+      i = 9999
+  }//if seated player is user
+ }
+
                 //display seats and assign userSeatNumber
          for (var i = 0;i< table_state.seats.length;i++) {
           self.playerSits(table_state.seats[i].seat, table_state.seats[i].username, table_state.seats[i].chips)
           //update local data
-          self.updateLocalDataBasedOnServerPlayerObject(table_state.seats[i])
+          self.updateLocalGameDataBasedOnServerPlayerObject(table_state.seats[i])
           //assign userSeatNumber if player is user
          if(table_state.seats[i].is_you == true){
-         this.gameState.userSeatNumber = table_state.seats[i].seat 
+         
+         //store session_preferences for later parsing if there
          self.changeUserSeatView()
          self.events.confirmSeatRotation()
          console.log('calling display seated options')
@@ -6198,16 +6469,10 @@ this.updateTableChatFullMessageTextFromCurrentOrAdditionalData(null, {update:tru
 }
 
 
-for(var i = 0;i<=8;i++){
 
- //console.log('stage '+i+ this.arrayOfParentsOfStageAndOfContainerArray[i].stage.mouseEnabled)
- /*
- if(i>self.images.getChips.position.z.stage){
-  $('#'+'stage'+i).css('display','none')
- }
-*/
-}
+if(_.isObject(sessionPreferences)){this.updatePreference(self.sessionPreferences, sessionPreferences)}
 
+this.initializeServerPreferenceObjects(self.sessionPreferences)
 
 
     }
@@ -6613,7 +6878,7 @@ self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInte
            self.images.seats[player.seat].status.text.text = player.chips
 
         if(player.seat == self.gameState.userSeatNumber){
-          self.updateLocalDataBasedOnServerPlayerObject(player) 
+          self.updateLocalGameDataBasedOnServerPlayerObject(player) 
             self.updateUserOptionsBasedOnFlagsAndPreactions()
 }
         self.updateStage(self.images.seats[player.seat].status.position.z.stage)
@@ -6624,7 +6889,7 @@ self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInte
            self.images.seats[player.seat].status.text.text = 'Sitting Out'
    self.updateStage(self.images.seats[player.seat].status.position.z.stage)
         if(player.seat == self.gameState.userSeatNumber){
-       self.updateLocalDataBasedOnServerPlayerObject(player) 
+       self.updateLocalGameDataBasedOnServerPlayerObject(player) 
 self.updateUserOptionsBasedOnFlagsAndPreactions()
 }
        
@@ -6745,17 +7010,25 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
     //---------------END SOCKET CODE----------------------------
 
 jQuery(document).ready(function(){
-    holdemCanvas = new Table(10)
-   holdemCanvas.initialize()
-     holdemCanvas.receiveTableState()
+
 })
 
 
 jQuery(window).load(function (){
-
-
+  console.log('window load function claled')
+  /*
+$('#tableChatFullTextDiv').mCustomScrollbar('destroy')
+$('#tableChatFullTextDiv').mCustomScrollbar()
+*/
  //   holdemCanvas.createAllItems()
 
+ console.log($('#server_values').data('table_state'))
+    holdemCanvas = new Table(10)
+socket.emit('flag','post_blind')
+    holdemCanvas.updatePreference(holdemCanvas.permanentPreferences, holdemCanvas.getPermanentPreferences())
+
+   holdemCanvas.initialize()
+     holdemCanvas.receiveTableState()
 
       console.log(document)
 
