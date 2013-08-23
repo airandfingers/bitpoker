@@ -364,8 +364,7 @@ if(options){
 
 }//if options
 this.drawRoundedRectangle = function(fillColor){
-this.image.graphics.beginFill(fillColor).drawRoundRect(0, 0, this.size.x, this.size.y,this.size.y*.1)
-           
+this.image.graphics.beginFill(fillColor).drawRoundRect(this.position.x, this.position.y, this.size.x, this.size.y,this.size.y*.1)
             }
 
 }
@@ -395,7 +394,6 @@ this.image.graphics.beginFill(fillColor).drawRoundRect(0, 0, this.size.x, this.s
             //actually a rectangle with rounded edges
              this.images.itemAsRectangle = function (item,fillColor){
  item.image = new createjs.Shape()
-  self.positionItemImage(item)
 item.drawRoundedRectangle(fillColor)
 item.image.parentOfImageObject = item
 item.fillColor = fillColor
@@ -417,13 +415,12 @@ if(item.messages){
 if(options && options.middleDividerStrokeWidth){var middleDividerStrokeWidth = options.middleDividerStrokeWidth}
             else{var middleDividerStrokeWidth = 1}
 
-              var x = outerStrokeWidth/2; var y = outerStrokeWidth/2
+              var x = parent.position.x + outerStrokeWidth/2; var y = parent.position.y + outerStrokeWidth/2
               var width = parent.size.x - outerStrokeWidth;  var height = parent.size.y - outerStrokeWidth
 
               parent.image.graphics.clear() //clear previous graphics on the shape
-      /*        parent.image.x = 0 //reset previous transformations of the image
+              parent.image.x = 0 //reset previous transformations of the image
               parent.image.y = 0
-              */
               parent.image.alpha = 1
    parent.image.snapToPixel = true
 
@@ -504,7 +501,7 @@ distanceToFill = 0
             parent.image.outerStrokeWidth = outerStrokeWidth
              parent.image.middleDividerStrokeWidth = middleDividerStrokeWidth
 
-               self.positionItemImage(parent, {update:false})
+          
       }
 
             //for example: (parentOfImageObject, fold, "13px Arial", "#100D08")
@@ -512,7 +509,7 @@ distanceToFill = 0
                 
                 parentOfImageObject.text = new createjs.Text(text, sizeAndFont, color)
 parentOfImageObject.text.x=parentOfImageObject.position.x + parentOfImageObject.size.x/2 
-parentOfImageObject.text.y=parentOfImageObject.position.y + 2
+parentOfImageObject.text.y=parentOfImageObject.position.y + 1
 parentOfImageObject.text.baseline = 'top'
 parentOfImageObject.text.textAlign = 'center'
 parentOfImageObject.text.maxWidth = parentOfImageObject.size.x*.9
@@ -2095,19 +2092,14 @@ self.images.seats[i].chat.image.drawChat = function(width,numLines){
    self.images.seats[i].chat.image.graphics.clear()
    //define parent
 self.images.seats[i].chat.image.parentOfImageObject = self.images.seats[i].chat
-
-//get new relative X coordinates of chat box
-var x =   (self.images.seats[i].chat.size.x - width)/2
-var y = 0
+//get new X coordinates of chat box
+var x = self.images.seats[i].seat.position.x + self.images.seats[i].seat.size.x/2 - width/2
+var y = self.images.seats[i].chat.position.y
     self.images.seats[i].chat.image.snapToPixel = true
 self.images.seats[i].chat.image.graphics.setStrokeStyle(1,'round').beginStroke(chatBoxBorderColor).beginFill('#000000')
-.drawRoundRect(x, y - (numLines-1)*(chatBoxFontSize+1), width, self.images.seats[i].chat.size.y+(numLines-1)*(chatBoxFontSize+1),  self.images.seats[i].chat.size.y*.16)
+.drawRoundRect(x, y - (numLines-1)*(chatBoxFontSize+1), width, self.images.seats[i].chat.size.y+(numLines-1)*(chatBoxFontSize+1),  self.images.seats[i].chat.size.y*.20)
 
 self.images.seats[i].chat.image.alpha = self.imageData.chatBoxAlpha
-
-//position image
- self.positionItemImage(self.images.seats[i].chat, {update:false})
-
 }//end drawchat function
 
 //player chat text
@@ -2116,12 +2108,10 @@ self.images.seats[i].chat.text.x=self.images.seats[i].chat.position.x +  self.im
  self.images.seats[i].chat.text.y= self.images.seats[i].chat.position.y
  self.images.seats[i].chat.text.baseline = 'top'
  self.images.seats[i].chat.text.textAlign = 'center'
- self.images.seats[i].chat.text.lineWidth =   self.images.seats[i].chat.size.x*.85
+ self.images.seats[i].chat.text.lineWidth =           self.images.seats[i].chat.size.x*.85
 
  // self.images.seats[i].chat.text.lineHeight = chatBoxFontSize+1
  // self.images.seats[i].chat.text.maxWidth = self.images.seats[i].chat.size.x*.85
-
-
 
  })
 
@@ -4953,13 +4943,10 @@ self.images.seats[chatInfo.seat].chat.text.text=self.images.seats[chatInfo.seat]
       else{largestTextWidth = self.getStringWidth(self.images.seats[chatInfo.seat].chat.text.text, chatFont)}
 
         //assign width of chat graphic
-     var chatBoxWidth = imageToTextWidthRatio*largestTextWidth+1
-
-     console.log('drawing chat widh Width of '+ chatBoxWidth)
+     var chatBoxWidth = imageToTextWidthRatio*largestTextWidth+1.5
 
     //draw new chatBox and set alpha to original alpha
     self.images.seats[chatInfo.seat].chat.image.drawChat(chatBoxWidth, numLines) // drawChat function resets alpha automatically
-
 self.images.seats[chatInfo.seat].chat.text.alpha = 1
 //set chat text to correct Y positoin
 self.images.seats[chatInfo.seat].chat.text.y = self.images.seats[chatInfo.seat].chat.position.y - (numLines-1)*self.images.seats[chatInfo.seat].chat.text.getMeasuredLineHeight()
