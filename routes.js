@@ -602,6 +602,7 @@ module.exports = (function () {
   app.get('/' + Table.TABLE_PREFIX + ':id', auth.ensureAuthenticated, function(req, res, next) {
     var table_id = req.params.id
       , table = Table.getTable(table_id)
+      , table_name = table.name
       , username = req.user.username;
     if (table instanceof Table) {
       var table_state = table.getCurrentHand().serialize(username)
@@ -609,6 +610,7 @@ module.exports = (function () {
         , room_state = { users: users };
       res.render('table', {
         table_id: table_id
+      , table_name: table_name
       , username: username
       , game: table.game
       , hide_navbar: true
