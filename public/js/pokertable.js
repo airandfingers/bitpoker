@@ -73,7 +73,7 @@ self.updateStage(self.images.seats[i].chat.position.z.stage)
       
 
       tableChatFull:{
-        //         scrollBarType : 'mCustomScrollbar',
+    // scrollBarType :   {value:'mCustomScrollbar'},
         chatMessageFontSize: {value:11 , updateValue: function(newValue){
 this.value  = newValue
 self.jQueryObjects.tableChatFullParagraph.css('font-size', this.value)
@@ -737,28 +737,6 @@ self.hideTableChatFull()
 this.moveTableChatFullMessageText = function(movementObject){
 console.log('moveTableChatFullMessageText called')
 var velocityTo0InMiliseconds = 1000
-var scroll = $('#tableChatFullTextDiv').getNiceScroll()
-
-var setScrollHandleToMinimum = function(){
-  var scrollBar = $($("#tableChatFullTextDiv").getNiceScroll()[0].rail[0])
-  console.log(scrollBar)
-var scrollBarHandle = $($("#tableChatFullTextDiv").getNiceScroll()[0].rail[0].firstChild)
-console.log(scrollBarHandle)
-var otherScrollBarHandle = $(scroll[0].railh)
-console.log(otherScrollBarHandle)
-var lowestScrollBarHandleY = scrollBar.height() - scrollBarHandle.height()
-console.log('scrollbarheight = '+scrollBar.height())
-console.log('handlebar height = '+scrollBarHandle.height())
-
-console.log('setting handlebar top to '+lowestScrollBarHandleY)
-scrollBarHandle.css('top',lowestScrollBarHandleY)
-scrollBarHandle[0].style.top = '0px'
-console.log('handlebar top property is now '+scrollBarHandle.css('top'))
-otherScrollBarHandle.css('top',lowestScrollBarHandleY)
-//scrollBarHandle.css('bottom',scrollBar.height())
-//otherScrollBarHandle.css('bottom',scrollBar.height())
-}
-
 
 
   //if movement is not specified, reposition message text at very bottom
@@ -770,8 +748,8 @@ otherScrollBarHandle.css('top',lowestScrollBarHandleY)
 
 //$("#tableChatFullTextDiv").scrollTop(scroll[0].getScrollTop()*2)
 
-if(self.permanentPreferences.tableChatFull.scrollBarType == 'mCustomScrollbar'){
-//console.log('creating mCustomScrollbar')
+if(self.permanentPreferences.tableChatFull.scrollBarType && self.permanentPreferences.tableChatFull.scrollBarType.value == 'mCustomScrollbar'){
+console.log('using mcustomsrollbar function to scroll to bottom, then update')
 //show so that scroll bar can be initialized
  //$("#tableChatFullTextDiv").css('display','inline')
 
@@ -780,9 +758,12 @@ $('#tableChatFullTextDiv').mCustomScrollbar('update')
 // $("#tableChatFullTextDiv").css('display','none')
 
 }//if mCustomScrollbar is used
-else{
+
+else{//if not mcustomscrollbar
+  console.log('scrolling to bottom with nicescroll')
+  var scroll = $('#tableChatFullTextDiv').getNiceScroll()
 if(scroll[0].getContentSize().h != $('#tableChatFullTextDiv').height()){
- $('#tableChatFullTextDiv').scrollTop(scroll[0].getContentSize().h)
+ $('#tableChatFullTextDiv').scrollTop(scroll[0].getContentSize().h*1.5)
 scroll[0].resize()
 }
 
@@ -806,13 +787,18 @@ if(!movementObject.magnitude){movementObject.magnitude = 0}
 if(movementObject.positionUnit == 'pixels'){}
 
 if (movementObject.resize === true){
-  if(self.permanentPreferences.tableChatFull.scrollBarType == 'mCustomScrollbar'){
-
+  if(self.permanentPreferences.tableChatFull.scrollBarType && self.permanentPreferences.tableChatFull.scrollBarType.value == 'mCustomScrollbar'){
+console.log('calling update function of mcustomscrollbar')
 $('#tableChatFullTextDiv').mCustomScrollbar('update')
 
 }//if mCustomScrollBar
 
-else{scroll[0].resize()}
+//if not using mCustomSCrollbar
+else{
+var scroll = $('#tableChatFullTextDiv').getNiceScroll()
+  scroll[0].resize()
+}
+
 }//if movementObject.resize == true
 
 }//if movementObject exists
@@ -961,7 +947,7 @@ this.events.rotateSeatsIfNeededAndConfirm = function(){
 if(self.permanentPreferences.alwaysRotate === true){}
 //  console.log(self.sessionPreferences)
 //console.log(self.images.seats[self.gameState.userSeatNumber])
-   if(self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber  !== self.sessionPreferences.changeUserSeatViewTo.value){ // if user is seated at normal seat there is no need for popup
+   if(self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber  !== self.sessionPreferences.changeUserSeatViewTo.value && self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber !== 0){ // if user is seated at normal seat there is no need for popup
       
 console.log('changing userseat view')
       
@@ -2879,8 +2865,8 @@ background:'transparent'
 
 
 
-if(self.permanentPreferences.tableChatFull.scrollBarType == 'mCustomScrollbar'){
-//console.log('creating mCustomScrollbar')
+if(self.permanentPreferences.tableChatFull.scrollBarType && self.permanentPreferences.tableChatFull.scrollBarType.value == 'mCustomScrollbar'){
+console.log('creating mCustomScrollbar')
 //show so that scroll bar can be initialized
  //$("#tableChatFullTextDiv").css('display','inline')
 
@@ -3354,9 +3340,10 @@ this.changeUserSeatView = function(seatNumberToRotateTo){
  if(!_.isNumber(seatNumberToRotateTo)){var seatNumberToRotateTo = 0}
 if(seatNumberToRotateTo > this.gameState.numSeats){ return 'seatNumber too high, invalid'}
 
-//  console.log(this.images.seats)
+console.log('rotating to seat: '+seatNumberToRotateTo)
+ console.log(this.images.seats)
 
-var clockWiseRotationNumber = 0
+var clockWiseRotationNumberBasedOnUnRotatedPosition
 var temporaryArrayOfNonrotatedSeats = []
 //make remporary array equal to seats.length
 for(var i = 0;i<this.gameState.numSeats;i++){temporaryArrayOfNonrotatedSeats.push({})}
@@ -3493,17 +3480,22 @@ console.log(self.images.seats[self.images.seats.length-1].nonRotatedSeatNumber)
           console.log('centering seat 2 and 8')
                           var sideYDistance = (self.images.seats[2].seat.position.y - self.images.seats[3].seat.position.y)/2 
 
+
                           //adjust seat 2
              for(var i in self.images.seats[2]){
                  if(self.images.seats[2][i] instanceof self.images.Item){
                    self.images.seats[2][i].position.y =  self.images.seats[2][i].position.y - sideYDistance
-                   if(self.images.seats[2][i].image){self.images.seats[2][i].image.y = self.images.seats[2][i].image.y - sideYDistance}
-               if(self.images.seats[2][i].text){self.images.seats[2][i].text.y = self.images.seats[2][i].text.y - sideYDistance
-               }
+                   if(self.images.seats[2][i].image){self.images.seats[2][i].image.y = self.images.seats[2][i].position.y }
+               if(self.images.seats[2][i].text){self.images.seats[2][i].text.y = self.images.seats[2][i].position.y}
+
+
+                self.setDisplayObjectLocationsInItemAEqualToOnesInItemB(self.images.seats[8][i], self.images.seats[2][i])
+
+
                }//iterate through self.images.seats[2][index]
               }//iterate through self.images.seats[2]
               //adjust seat 8
-                    for(var i in self.images.seats[8]){
+         /*           for(var i in self.images.seats[8]){
                     if(self.images.seats[8][i] instanceof self.images.Item){
                         
    self.images.seats[8][i].position.y =  self.images.seats[8][i].position.y - sideYDistance
@@ -3512,7 +3504,7 @@ console.log(self.images.seats[self.images.seats.length-1].nonRotatedSeatNumber)
                    }
               if(self.images.seats[8][i].text){self.images.seats[8][i].text.y = self.images.seats[8][i].text.y - sideYDistance}
        }//iterate through self.images.seats[8][index]
-               }//iterate through self.images.seats[8]
+               }//iterate through self.images.seats[8] */
                }  //center seat 2 and 8 function
 
 //================================ACTION PART OF FUNCTION======================================
@@ -3631,13 +3623,14 @@ this.gameState.numSeats = numSeats
                                                               
           }
           
-        
+  /*      
  for(var i =0; i<10;i++){
-//  console.log('index is '+i)
-//       console.log(     this.images.seats[i].nonRotatedSeatNumber )
- //      console.log(       this.images.seats[i].rotatedSeatNumber)
+  console.log('index is '+i)
+      console.log(     this.images.seats[i].nonRotatedSeatNumber )
+      console.log(       this.images.seats[i].rotatedSeatNumber)
          //   this.images.seats[i].openSeat.messages = ['sit', i]
-          }       
+          }    
+          */   
 
           //update numbers
           for(var i =0; i<this.gameState.numSeats;i++){
@@ -4769,7 +4762,7 @@ if(i == players.length-1){next(null, errorNumber)}
 this.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText = function(){
 
 console.log('checking if messageText is at bottom' )
-var scroll = $('#tableChatFullTextDiv').getNiceScroll()//grab niceScroll instance on the scroll div
+
 
 //calculate total height of text
 /*
@@ -4777,15 +4770,19 @@ console.log('total height ' + scroll[0].getContentSize().h)
 console.log('pixels invisible above paragraph element' +  scroll[0].getScrollTop())
 console.log('height of paragraph element ' + self.jQueryObjects.tableChatFullParagraph.height())
 */
-if(self.permanentPreferences.tableChatFull.scrollBarType == 'mCustomScrollbar'){
+if(self.permanentPreferences.tableChatFull.scrollBarType && self.permanentPreferences.tableChatFull.scrollBarType.value == 'mCustomScrollbar'){
 //console.log('creating mCustomScrollbar')
 //show so that scroll bar can be initialized
 
 //$('#tableChatFullTextDiv').mCustomScrollbar(mCustomScrollbarOptions)
+console.log('assinging isAtBottom is true because i dontk now how to do it on mcustomscrollbar')
 var isAtBottom = true//( scroll[0].getContentSize().h - scroll[0].getScrollTop() ===  self.jQueryObjects.tableChatFullParagraph.height())
-}
-else{
-var isAtBottom = ( scroll[0].getContentSize().h - scroll[0].getScrollTop() ===  self.jQueryObjects.tableChatFullParagraph.height())
+}//if we using mCustomScrollBar
+
+else{//if we don't want to use mCustomScrollbar
+  var scroll = $('#tableChatFullTextDiv').getNiceScroll()//grab niceScroll instance on the scroll div
+console.log('content size = '+scroll[0].getContentSize().h +' upper scroll value = '+scroll[0].getScrollTop()+' height of visible paragraph = '+(self.jQueryObjects.tableChatFullParagraph.outerHeight(true)+1))
+var isAtBottom = ( scroll[0].getContentSize().h - scroll[0].getScrollTop() <=  parseFloat(self.jQueryObjects.tableChatFullParagraph.outerHeight(true))+1)
 }
 console.log('var isAtBottom = ' + isAtBottom)
 return isAtBottom
@@ -4994,9 +4991,9 @@ if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDe
   else{ shouldDisplayObserverMessages = false}
 
 
-console.log(shouldDisplayDealerMessages +''+ shouldDisplayPlayerMessages +''+ shouldDisplayObserverMessages)
+//console.log(shouldDisplayDealerMessages +''+ shouldDisplayPlayerMessages +''+ shouldDisplayObserverMessages)
 
-console.log(isDisplayingDealerMessages+''+isDisplayingPlayerMessages+''+isDisplayingObserverMessages)
+//console.log(isDisplayingDealerMessages+''+isDisplayingPlayerMessages+''+isDisplayingObserverMessages)
 
 var needToUpdate = (isDisplayingDealerMessages !==  shouldDisplayDealerMessages) || (isDisplayingPlayerMessages !== shouldDisplayPlayerMessages) || (isDisplayingObserverMessages !== shouldDisplayObserverMessages)
 
@@ -6221,10 +6218,10 @@ $.getJSON('/preferences/1', function(response) { console.log(response); });
 // response.data will probably be the preferences Object
 
 //console.log(permanentPreferences)
-console.log('permanet')
+//console.log('permanet')
 
-console.log($('#server_values')[0].dataset)
-console.log($('#server_values').data('table_1'))
+//console.log($('#server_values')[0].dataset)
+//console.log($('#server_values').data('table_1'))
 $//('#server_values')[0].dataset.table_state_url
 //.data('x').. I forget the specifics, 
 //but take a look at #server_values, and if it has data-table_name, then replace "x" with "table_name".
@@ -6952,7 +6949,7 @@ if (/\S/.test(chatInfo.message)){//make sure chatInfo.message is not empty
 
 
 if(_.isNull(chatInfo.seat)||_.isUndefined(chatInfo.seat)){ // if no seat, then observer chat
-
+console.log('observer chatted')
 //update tableChatFull popup
 var chatObjectForInternalFunctionUse = {}
 chatObjectForInternalFunctionUse.chatSourceType = 'observer'
@@ -6962,7 +6959,7 @@ self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInte
 }
 
 else{//if player (seated) chat
-
+console.log('seated player chatted')
 //update tableChatFull popup
 var chatObjectForInternalFunctionUse = {}
 chatObjectForInternalFunctionUse.chatSourceType = 'player'
