@@ -67,15 +67,12 @@ title += ' - Logged in as ' + username;
              <!-- bet size DIV-->
                
         </div> <!-- poker table wrapper -->
-            <!--include values to expose to scripts-->
-
-            <input type="hidden" id="server_values" data-table_state="<%= table_state %>" data-table_state_url="/table_state/<%= table_id %>" data-room_state="<%= room_state %>" />
-
 
         <!--include values to expose to scripts-->
         <input type="hidden" id="server_values"
                data-table_state="<%= table_state %>"\
                data-table_state_url="/table_state/<%= table_id %>"
+               data-preferences_url="/preferences/<%= table_id %>"
                data-room_state="<%= room_state %>"
         />
 

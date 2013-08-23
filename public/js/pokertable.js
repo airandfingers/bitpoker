@@ -1001,7 +1001,12 @@ self.saveSessionPreferences()
       socket.emit('stand')
         window.location.href = '/lobby'
         self.hideMessageBox()
-        parent.iframes.closeIframe()
+        if (_.isObject(parent.iframes)) {
+          parent.iframes.closeIframe(/*$('#server_values').data('preferences_url')*/)
+        }
+        else {
+          console.log('Close window instead');
+        }
       }
         self.displayMessageBox("Are you sure you want to leave?",messageInfo)
 
