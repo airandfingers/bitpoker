@@ -58,8 +58,7 @@
     var iframe_id = id_prefix + table_name
       , $iframe = $iframe_container.find('#' + iframe_id);
     if ($iframe.length > 0) {
-      console.log('found iframe with id', iframe_id);
-      // delete $iframe from DOM
+      $iframe.remove();
     }
     else {
       console.error('no iframe found with id', iframe_id);
