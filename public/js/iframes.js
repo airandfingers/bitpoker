@@ -34,10 +34,9 @@
     , $html_body = $('html,body'); // elements to be scrolled
 
   function openNewIframe(table_name) {
-    var iframe_id = id_prefix + table_name
-      , $iframe = $iframe_container.find('#iframe_' + iframe_id);
+    var $iframe = findIframe(table_name);
     if ($iframe.length > 0) {
-        console.log('iframe already open with iframe_id', iframe_id);
+        console.log('iframe already open for table_name', table_name);
         $html_body.animate({ scrollTop: $iframe.offset().top }, 500);
         return;
     }
@@ -54,20 +53,36 @@
     });
   }
 
+  function setIframeTitle(table_name, title) {
+    console.log('setIframeTitle called with', table_name, title)
+    var $iframe = findIframe(table_name);
+    if ($iframe.length > 0) {
+      $iframe.find('.iframe_header').text(title);
+    }
+    else {
+      console.error('no iframe found for table_name', table_name);
+    }
+  }
+
   function closeIframe(table_name) {
-    var iframe_id = id_prefix + table_name
-      , $iframe = $iframe_container.find('#' + iframe_id);
+    var $iframe = findIframe(table_name);
     if ($iframe.length > 0) {
       $iframe.remove();
     }
     else {
-      console.error('no iframe found with id', iframe_id);
+      console.error('no iframe found for table_name', table_name);
     }
   }
-  // reference code (for pokertable.js): parent.window.iframes.closeIframe(href);
+  
+  function findIframe(table_name) {
+    var iframe_id = id_prefix + table_name
+      , $iframe = $iframe_container.find('#' + iframe_id);
+    return $iframe;
+  }
 
   iframes = {
     openNewIframe: openNewIframe
+  , setIframeTitle: setIframeTitle
   , closeIframe: closeIframe
   };
 })();
