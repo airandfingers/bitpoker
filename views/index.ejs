@@ -3,21 +3,10 @@
     <link rel="stylesheet" href="/css/bootstrap-switch.css" />
 <% include head_end_and_header %>
     <div id="container">
-        
-        <div class="row-fluid">
-            <!-- display list of tables -->
-            <div id="table_list_container" class="span10 offset1">
-                <% include table_list %>
-            </div>
-        </div>
-
         <% if (typeof user === 'undefined') { %>
             <h1>Welcome to Bitcoin Poker</h1>
             <div id="button_groups"> 
                 <h1>Choose one:</h1>
-                <form action="/lobby" method="get">
-                    <button id="go_all_in" class="btn btn-custom btn-large" title="Lobby">Lobby</button>
-                </form>
                 <form action="/register" method="get">
                     <button class="btn btn-success btn-large">Register</button>
                 </form>
@@ -42,11 +31,17 @@
             <!--
             <input type="hidden" id="server_values" data-room_state="<%= room_state %>" />
             -->
-
-            <div id="iframe_container">
-            </div>
-            
         <% } %>
+        
+        <div class="row-fluid">
+            <!-- display list of tables -->
+            <div id="table_list_container" class="span10 offset1">
+                <% include table_list %>
+            </div>
+        </div>
+
+        <div id="iframe_container">
+        </div>
 
         <% if (message) { %>
           <p><%= message %></p>
