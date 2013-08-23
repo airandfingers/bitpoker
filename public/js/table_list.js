@@ -58,7 +58,7 @@
     // Add a click handler for the table rows
     $('#table_list tbody').on('click', 'tr', function(e) {
       var table_name = $(this).attr('id');
-      iframes.openNewIframe('/' + table_name);
+      iframes.openNewIframe(table_name);
       //window.location.href = '/' + table_name;
       //return popup(table_name);
     });
