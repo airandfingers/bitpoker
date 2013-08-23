@@ -998,9 +998,10 @@ self.saveSessionPreferences()
        messageInfo.cancel = true
        messageInfo.okayEvent = function(){
        // self.events.exit()
- socket.emit('stand')
+      socket.emit('stand')
         window.location.href = '/lobby'
         self.hideMessageBox()
+        parent.iframes.closeIframe()
       }
         self.displayMessageBox("Are you sure you want to leave?",messageInfo)
 

@@ -42,15 +42,9 @@
     $iframe_container.append($iframe);
   }
 
-  function closeIframe(href) {
-    var $iframe = $iframe_container.find('iframe[src="' + href + '"]');
-    if ($iframe.length > 0) {
-      console.log('found iframe with href', href);
-      // delete $iframe from DOM
-    }
-    else {
-      console.error('no iframe found with href[', href);
-    }
+  function closeIframe() {
+    // delete $iframe from DOM
+    $('#iframe_container').empty();
   }
   // reference code (for pokertable.js): parent.window.iframes.closeIframe(href);
 
