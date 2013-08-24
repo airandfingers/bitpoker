@@ -395,7 +395,7 @@ this.image.graphics.beginFill(fillColor).drawRoundRect(0, 0, this.size.x, this.s
             //actually a rectangle with rounded edges
              this.images.itemAsRectangle = function (item,fillColor){
  item.image = new createjs.Shape()
-  self.positionItemImage(item)
+  self.positionItemImage(item,{update:false})
 item.drawRoundedRectangle(fillColor)
 item.image.parentOfImageObject = item
 item.fillColor = fillColor
@@ -1409,26 +1409,27 @@ self.displayChildren(introScreen,{update:false})
 
     var totalSources = imageSourceArray.length+soundSourceArray.length+flashSoundSourceArray.length
  //define image.onload functions
-    function handleLoad(src, id){
+    function handleLoad(src, id, onComplete){
         loadedFiles++
         introScreen.status.text.text = src + ' loaded'
         introScreen.preloadBar.drawBar(loadedFiles/totalSources)
-        console.log(src +' loaded file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
+   //     console.log(src +' loaded file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
         if (id == imageSourceArray[imageSourceArray.length-1].id){
-            console.log("image load completed")
+            console.log("last image loaded")
         }
          else if(id == soundSourceArray[soundSourceArray.length-1].id){
-          console.log('non-flash sound load completed')
+          console.log('last non-flash sound loaded')
         }
+       
         self.updateStage(introScreen.status.position.z.stage)
-        
+         if(onComplete){onComplete()}
     }
-    function handleLoadError(src,id){
+    function handleLoadError(src,id, onComplete){
         loadedFiles++
         errorFiles++
         errorSrcArray.push(src)
         introScreen.status.text.text = src + ' loaded'
-         console.log(src + ' error loading file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
+  //       console.log(src + ' error loading file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
         introScreen.preloadBar.drawBar(loadedFiles/totalSources)
          if (id == imageSourceArray[imageSourceArray.length-1].id)  {
             console.log('last image loaded')
@@ -1436,15 +1437,24 @@ self.displayChildren(introScreen,{update:false})
         else if(id == soundSourceArray[soundSourceArray.length-1].id){
           console.log('last non-flash sound loaded')
         }
+
         if(loadedFiles>=totalSources){
 console.log('load completed with total of '+ errorFiles +' image and sound errors whose sources are in the following array:')
 console.log(errorSrcArray)
+
         }
+
         self.updateStage(introScreen.status.position.z.stage)
+        if(onComplete){onComplete()}
     }
 
 
  var  preloadImages = function (imageArray, onComplete){
+  var loadedImages = 0
+  var increaseCounter = function(){
+    loadedImages++
+console.log('loaded '+ loadedImages+' images out of a total of '+imageArray.length + ' images')
+  }
     var newImages=[]
     //iterate through imageArray to preload images
     _.each(_.range(imageArray.length), function(i){
@@ -1452,11 +1462,21 @@ console.log(errorSrcArray)
         if(typeof imageArray[i] == 'string'){newImages[i].src=imageArray[i]}
         else if (typeof imageArray[i] == 'object'){newImages[i].src=imageArray[i].src}
         
-        newImages[i].onload=function(){handleLoad(newImages[i].src, imageArray[i].id)}
-        newImages[i].onerror=function(){handleLoadError(newImages[i].src, imageArray[i].id) }
+        newImages[i].onload=function(){handleLoad(newImages[i].src, imageArray[i].id, increaseCounter)}
+        newImages[i].onerror=function(){handleLoadError(newImages[i].src, imageArray[i].id, increaseCounter) }
+
         //on last iteration call onComplete function
-        if(i == imageArray.length-1){onComplete()}
+
     })
+//periodicaly checkto see if its completed
+var checkIfCompleted = setInterval (function(){
+if(loadedImages >= imageArray.length){
+  console.log('calling onComplete function')
+  onComplete()
+  clearInterval(checkIfCompleted)
+}
+},25)
+
   }
 
 var preloadSounds = function(flashArray, soundArray){
@@ -1489,12 +1509,14 @@ for(var i =0;i<flashArray.length;i++){
 }
 
     displayPreloadScreen()
+
     preloadImages(imageSourceArray, function(){
+      self.displayChildren(self.images.imageLoading.title,{update:false})
         self.createAllItems()
-        self.displayChildren(self.images.imageLoading.title,{update:false})
+        
         } )
-    
-preloadSounds(flashSoundSourceArray, soundSourceArray)
+  preloadSounds(flashSoundSourceArray, soundSourceArray)
+
 
 
  /*
@@ -2991,6 +3013,8 @@ popup('mailto:CryptoPoker@gmail.com')
 }
 */
 
+console.log('all createjs images have been created')
+
 } //end set Defaults
 
 //options.stageNumber, if on existing number, will push the existing number up 1
@@ -3214,10 +3238,13 @@ event.target.parentOfImageObject.messages.push('sit',event.target.parentOfImageO
     this.createAllItems = function(){
         this.setBackground()
         this.images.setDefaults()
+
+     this.receiveTableState()
+
        this.images.setDefaultEvents()
        this.images.setDefaultMessages()
       this.displayTableChatBox()
-      console.log('this.createallitems finished')
+      console.log('this.create all items finished')
     }
      
 //return betsize that is rounded down or FALSE if betsize is not a number, also checks to make sure betsize is within in and max
@@ -7128,14 +7155,12 @@ $('#tableChatFullTextDiv').mCustomScrollbar()
 
  console.log($('#server_values').data('table_state'))
     holdemCanvas = new Table()
-socket.emit('flag','post_blind')
     holdemCanvas.updatePreference(holdemCanvas.permanentPreferences, holdemCanvas.getPermanentPreferences())
 
    holdemCanvas.initialize()
-     holdemCanvas.receiveTableState()
 
       console.log(document)
-
+console.log(holdemCanvas.images.seats)
     })
  
     
