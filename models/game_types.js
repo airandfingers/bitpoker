@@ -49,6 +49,13 @@ module.exports = (function() {
     , [ 1E6,  5E6,   1E8,    10]
     , [ 5E6, 25E6,   5E8,    10]
     , [25E6,100E6,  25E8,     2]
+    , [1,5,  100,     3]
+    , [1,5,  100,     4]
+    , [1,5,  100,     5]
+    , [1,5,  100,     6]
+    , [1,5,  100,     7]
+    , [1,5,  100,     8]
+    , [1,5,  100,     9]
     ]
 
   // which values are enumerated below for each currency type
