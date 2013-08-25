@@ -66,7 +66,7 @@ this.value = newValue
         for(var i = 0 ;i<self.images.seats.length;i++){
 self.images.seats[i].chat.text.color = this.value}//iterate thorugh this.images.seats
 
-self.updateStage(self.images.seats[i].chat.position.z.stage)
+self.updateStages(self.images.seats[i].chat.position.z.stage)
       }//onchange function
 
     },
@@ -78,6 +78,7 @@ self.updateStage(self.images.seats[i].chat.position.z.stage)
 this.value  = newValue
 self.jQueryObjects.tableChatFullParagraph.css('font-size', this.value)
 
+ 
         } 
 
           },
@@ -103,7 +104,11 @@ self.images.tableChatFull.window.alpha = this.value
 
 }//permanent preferences
 
+this.performance = {}
+this.performance.numCanvasClears = 0
+
         this.gameState = {}
+        this.gameState.defaulttimeToActInMS = 15000
         this.gameState.numSeats = 10
         this.gameState.tableChatFull = {
           log:[],
@@ -203,7 +208,7 @@ this.jQueryObjects.canvasDiv = $('#pokerCanvasDiv')
 this.jQueryObjects.tableChatFullDiv = $('#tableChatFullTextDiv')
 this.jQueryObjects.tableChatFullParagraph = $('#tableChatFullText')
 this.jQueryObjects.chatBoxInput = $('#chat')
-
+this.jQueryObjects.cashierForm = $('#cashier')
 
 
         //define basic data for each stage
@@ -505,6 +510,14 @@ distanceToFill = 0
              parent.image.middleDividerStrokeWidth = middleDividerStrokeWidth
 
                self.positionItemImage(parent, {update:false})
+
+               //set stage upToDate status
+               var stage = parent.position.z.stage
+               var container = parent.position.z.container
+              if(self.arrayOfParentsOfStageAndOfContainerArray[stage].containers[container].contains(parent.image)){
+                self.arrayOfParentsOfStageAndOfContainerArray[stage].upToDate = false
+              }
+return stage
       }
 
             //for example: (parentOfImageObject, fold, "13px Arial", "#100D08")
@@ -527,14 +540,14 @@ parentOfImageObject.textColor = color
 this.events.buttonMouseDown = function(event){
      if(event.target instanceof createjs.Shape) {
          event.target.graphics.clear()
-  event.target.graphics.beginFill('red').drawRoundRect(event.target.parentOfImageObject.position.x, event.target.parentOfImageObject.position.y, event.target.parentOfImageObject.size.x, event.target.parentOfImageObject.size.y,event.target.parentOfImageObject.size.y*.15)
-  event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.position.y + 2
-     self.updateStage(event.target.parentOfImageObject.position.z.stage)
+  event.target.graphics.beginFill('red').drawRoundRect(0, 0, event.target.parentOfImageObject.size.x, event.target.parentOfImageObject.size.y,event.target.parentOfImageObject.size.y*.15)
+  event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.text.y + 2
+     self.updateStages(event.target.parentOfImageObject.position.z.stage)
      event.onMouseUp = function(event){
          event.target.graphics.clear()       
-        event.target.graphics.beginFill(event.target.parentOfImageObject.fillColor).drawRoundRect(event.target.parentOfImageObject.position.x, event.target.parentOfImageObject.position.y, event.target.parentOfImageObject.size.x, event.target.parentOfImageObject.size.y,event.target.parentOfImageObject.size.y*.15); 
-event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.position.y
-    self.updateStage(event.target.parentOfImageObject.position.z.stage)
+        event.target.graphics.beginFill(event.target.parentOfImageObject.fillColor).drawRoundRect(0, 0, event.target.parentOfImageObject.size.x, event.target.parentOfImageObject.size.y,event.target.parentOfImageObject.size.y*.15); 
+event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.text.y - 2 
+    self.updateStages(event.target.parentOfImageObject.position.z.stage)
      }
      }
      }
@@ -737,7 +750,7 @@ var velocityTo0InMiliseconds = 1000
   //if movement is not specified, reposition message text at very bottom
   if(!movementObject || !_.isNumber(movementObject.magnitude)){
     
- //$('#tableChatFullTextDiv').scrollTop(scroll[0].getContentSize().h)
+ //self.jQueryObjects.tableChatFullDiv.scrollTop(scroll[0].getContentSize().h)
 
 //console.log(scroll[0].getScrollTop())
 
@@ -748,28 +761,28 @@ console.log('using mcustomsrollbar function to scroll to bottom, then update')
 //show so that scroll bar can be initialized
  //$("#tableChatFullTextDiv").css('display','inline')
 
-$('#tableChatFullTextDiv').mCustomScrollbar('scrollTo','bottom')
-$('#tableChatFullTextDiv').mCustomScrollbar('update')
+self.jQueryObjects.tableChatFullDiv.mCustomScrollbar('scrollTo','bottom')
+self.jQueryObjects.tableChatFullDiv.mCustomScrollbar('update')
 // $("#tableChatFullTextDiv").css('display','none')
 
 }//if mCustomScrollbar is used
 
 else{//if not mcustomscrollbar
   console.log('scrolling to bottom with nicescroll')
-  var scroll = $('#tableChatFullTextDiv').getNiceScroll()
-if(scroll[0].getContentSize().h != $('#tableChatFullTextDiv').height()){
- $('#tableChatFullTextDiv').scrollTop(scroll[0].getContentSize().h*1.5)
+  var scroll = self.jQueryObjects.tableChatFullDiv.getNiceScroll()
+if(scroll[0].getContentSize().h != self.jQueryObjects.tableChatFullDiv.height()){
+ self.jQueryObjects.tableChatFullDiv.scrollTop(scroll[0].getContentSize().h*1.5)
 scroll[0].resize()
 }
 
 }//if not mcustomscrollbar
 
 /*
-$('#tableChatFullTextDiv').trigger("mousewheel",  {intDelta:0, deltaX:1, deltaY:0}) 
-$('#tableChatFullTextDiv').trigger("DOMMouseScroll", [0]) 
+self.jQueryObjects.tableChatFullDiv.trigger("mousewheel",  {intDelta:0, deltaX:1, deltaY:0}) 
+self.jQueryObjects.tableChatFullDiv.trigger("DOMMouseScroll", [0]) 
 */
 
-//$('#tableChatFullTextDiv').scrollTo(scroll[0].getScrollTop(),0,{axis:'y'})
+//self.jQueryObjects.tableChatFullDiv.scrollTo(scroll[0].getScrollTop(),0,{axis:'y'})
 
 //scroll[0].setScrollTop(scroll[0].getScrollTop())
 // setScrollHandleToMinimum()
@@ -784,13 +797,13 @@ if(movementObject.positionUnit == 'pixels'){}
 if (movementObject.resize === true){
   if(self.permanentPreferences.tableChatFull.scrollBarType && self.permanentPreferences.tableChatFull.scrollBarType.value == 'mCustomScrollbar'){
 console.log('calling update function of mcustomscrollbar')
-$('#tableChatFullTextDiv').mCustomScrollbar('update')
+self.jQueryObjects.tableChatFullDiv.mCustomScrollbar('update')
 
 }//if mCustomScrollBar
 
 //if not using mCustomSCrollbar
 else{
-var scroll = $('#tableChatFullTextDiv').getNiceScroll()
+var scroll = self.jQueryObjects.tableChatFullDiv.getNiceScroll()
   scroll[0].resize()
 }
 
@@ -850,13 +863,13 @@ self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.disableTo
 self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.disableTouchScrollOn.value = true
 
 /*
-console.log($('#tableChatFullTextDiv').getNiceScroll())
+console.log(self.jQueryObjects.tableChatFullDiv.getNiceScroll())
 
-$('#tableChatFullTextDiv').getNiceScroll()[0].istouchcapable = false
+self.jQueryObjects.tableChatFullDiv.getNiceScroll()[0].istouchcapable = false
 */
 //save preference on server
 self.saveSessionPreferences()
-self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
+self.updateTableChatFullDisplay({update:true})
 }
 
 this.events.disableTouchScrollOnClicked = function(){
@@ -865,10 +878,10 @@ console.log('disableTouchScrollClicked')
 self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.disableTouchScroll.value = true
 self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.disableTouchScrollOn.value = false
 /*
-console.log($('#tableChatFullTextDiv').getNiceScroll())
-$('#tableChatFullTextDiv').getNiceScroll()[0].istouchcapable = true
+console.log(self.jQueryObjects.tableChatFullDiv.getNiceScroll())
+self.jQueryObjects.tableChatFullDiv.getNiceScroll()[0].istouchcapable = true
 */
-self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
+self.updateTableChatFullDisplay({update:true})
 }
 
 
@@ -881,7 +894,7 @@ self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDeale
 //save preference on server
 self.saveSessionPreferences()
 
-self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
+self.updateTableChatFullDisplay({update:true})
 }
 
 
@@ -894,7 +907,7 @@ self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDeale
 //save preference on server
 self.saveSessionPreferences()
 
-self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true}) 
+self.updateTableChatFullDisplay({update:true}) 
 }
 
 this.events.hidePlayerMessagesClicked = function(){
@@ -906,7 +919,7 @@ self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlaye
 //save preference on server
 self.saveSessionPreferences()
 
-self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
+self.updateTableChatFullDisplay({update:true})
 
 }
 this.events.hidePlayerMessagesOnClicked = function(){
@@ -917,7 +930,7 @@ self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlaye
 //save preference on server
 self.saveSessionPreferences()
 
-self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
+self.updateTableChatFullDisplay({update:true})
 }
 this.events.hideObserverMessagesClicked = function(){
    console.log('hideObserverMessagesClicked')
@@ -925,7 +938,7 @@ self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObser
 self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn.value = true
 //save preference on server
 self.saveSessionPreferences()
-self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
+self.updateTableChatFullDisplay({update:true})
 }
 this.events.hideObserverMessagesOnClicked = function(){
 
@@ -933,7 +946,7 @@ self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObser
 self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn.value = false
 //save preference on server
 self.saveSessionPreferences()
-self.updateTableChatFullDisplayDoesNotUpdateStageByDefault({update:true})
+self.updateTableChatFullDisplay({update:true})
 }
 
 
@@ -1267,10 +1280,12 @@ if(sourceEnding == '.SWF'){return true}
            flashSoundSourceArray.push({src: this.images.sources[i], id:resourceID})
            resourceID++
     }//end check if this.images.sources[i] = flashSound
+
     else if(isSoundSource(this.images.sources[i])){
            soundSourceArray.push({src: this.images.sources[i], id:resourceID})
            resourceID++
     }//end check if this.images.sources[i] = sound
+
   }//end check if this.images.sources[i] = string
     else if (_.isObject(this.images.sources[i])){
         for(var n in this.images.sources[i]){
@@ -1302,6 +1317,8 @@ else if(i==13){cardRank = 'k'}
         resourceID++
     }
 
+    //push card back
+imageSourceArray.push({src:this.images.sources.cardImageFolder+this.images.sources.hiddenCardFileName, id: resourceID})
 
 
 
@@ -1339,7 +1356,7 @@ else if(i==13){cardRank = 'k'}
 
      //define function for drawing the loading bar graphic
      introScreen.preloadBar.image  = new createjs.Shape()
-     introScreen.preloadBar.drawBar  = function (progressRatio){
+     introScreen.preloadBar.drawBar = function (progressRatio){
          //where to start fill
          var progressX = introScreen.preloadBar.size.x*progressRatio + introScreen.preloadBar.position.x
          // where to end fill
@@ -1370,8 +1387,16 @@ else if(i==13){cardRank = 'k'}
 if(unfinishedX != false && unfinishedX<introScreen.preloadBar.position.x+introScreen.preloadBar.size.x){
        introScreen.preloadBar.image.graphics.setStrokeStyle(0).beginFill(preloadBarUnfinishedColor)
        .beginStroke(null).drawRect(unfinishedX, introScreen.preloadBar.position.y, introScreen.preloadBar.position.x+introScreen.preloadBar.size.x - unfinishedX, introScreen.preloadBar.size.y)
-
    }
+
+var stage = introScreen.preloadBar.position.z.stage
+var container = introScreen.preloadBar.position.z.container
+//if image is on the stage, we need to set the stage upToDate variable to false
+if(self.arrayOfParentsOfStageAndOfContainerArray[stage].containers[container].contains(introScreen.preloadBar.image))
+{
+  self.arrayOfParentsOfStageAndOfContainerArray[stage].upToDate = false
+}
+return stage
      }
 
      //define title text
@@ -1419,7 +1444,7 @@ self.displayChildren(introScreen,{update:false})
         loadedFiles++
         introScreen.status.text.text = src + ' loaded'
         introScreen.preloadBar.drawBar(loadedFiles/totalSources)
-   //     console.log(src +' loaded file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
+        console.log(src +' loaded file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
         if (id == imageSourceArray[imageSourceArray.length-1].id){
             console.log("last image loaded")
         }
@@ -1427,7 +1452,7 @@ self.displayChildren(introScreen,{update:false})
           console.log('last non-flash sound loaded')
         }
        
-        self.updateStage(introScreen.status.position.z.stage)
+        self.updateStages(introScreen.status.position.z.stage)
          if(onComplete){onComplete()}
     }
     function handleLoadError(src,id, onComplete){
@@ -1435,7 +1460,7 @@ self.displayChildren(introScreen,{update:false})
         errorFiles++
         errorSrcArray.push(src)
         introScreen.status.text.text = src + ' loaded'
-  //       console.log(src + ' error loading file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
+         console.log(src + ' error loading file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
         introScreen.preloadBar.drawBar(loadedFiles/totalSources)
          if (id == imageSourceArray[imageSourceArray.length-1].id)  {
             console.log('last image loaded')
@@ -1450,7 +1475,7 @@ console.log(errorSrcArray)
 
         }
 
-        self.updateStage(introScreen.status.position.z.stage)
+        self.updateStages(introScreen.status.position.z.stage)
         if(onComplete){onComplete()}
     }
 
@@ -1797,7 +1822,6 @@ self.jQueryObjects.chatBoxInput.css('color', htmlTableChatBoxReminderTextColor)
 
 //set z-index of chatDiv
 var chatBoxStageParent = self.arrayOfParentsOfStageAndOfContainerArray[self.images.htmlTableChatBox.position.z.stage]
-console.log(chatBoxStageParent)
 var chatBoxStageCanvasZIndex = $(chatBoxStageParent.stage.canvas).css('z-index')
 $('#chatDiv').css('z-index', parseInt(chatBoxStageCanvasZIndex)+1)
 
@@ -2810,7 +2834,7 @@ this.tableChatFull.htmlChatStageElement = new this.Item(htmlChatStageElementX, h
 var tableChatFullParentOfStage = self.arrayOfParentsOfStageAndOfContainerArray[ this.tableChatFull.htmlChatStageElement.position.z.stage]
 var tableChatFullStageCanvasZIndex = $(tableChatFullParentOfStage.stage.canvas).css('z-index')
  
-        $('#tableChatFullTextDiv').css({
+        self.jQueryObjects.tableChatFullDiv.css({
                     '-webkit-touch-callout': 'none',
 '-webkit-user-select': 'none',
 '-khtml-user-select': 'none',
@@ -2902,7 +2926,7 @@ console.log('creating mCustomScrollbar')
 //show so that scroll bar can be initialized
  //$("#tableChatFullTextDiv").css('display','inline')
 
-$('#tableChatFullTextDiv').mCustomScrollbar(mCustomScrollbarOptions)
+self.jQueryObjects.tableChatFullDiv.mCustomScrollbar(mCustomScrollbarOptions)
 // $("#tableChatFullTextDiv").css('display','none')
 
 }
@@ -2919,7 +2943,7 @@ else{
 //scrollBarObject.css('overflow','hidden')
 //scrollBarObject.css('z-index','-1')
 /*
-$('#tableChatFullTextDiv').hover(function() {
+self.jQueryObjects.tableChatFullDiv.hover(function() {
     $(document).bind('mousewheel DOMMouseScroll',function(e){ 
         e.preventDefault()
     });
@@ -3142,6 +3166,7 @@ else{ //here we want to use previous canvasID number
 //console.log('creating stage number '+options.stage)
 //creating the new stage
 self.arrayOfParentsOfStageAndOfContainerArray.splice(options.stage, 0, {})
+self.arrayOfParentsOfStageAndOfContainerArray[options.stage].upToDate = true
 self.arrayOfParentsOfStageAndOfContainerArray[options.stage].nickName = options.nickName
 var canvas = document.getElementById(newCanvasID)
         self.arrayOfParentsOfStageAndOfContainerArray[options.stage].stage = new createjs.Stage(canvas)
@@ -3289,11 +3314,20 @@ if(betSize>self.gameState.maxBet){return self.gameState.maxBet}
 
     }
 
-    this.hideAllBets  = function(options){
+    this.hideAllBets = function(options){
+      if(!options){var options = {}}
+        var update = options.update
+options.update = false
+
+var stagesToUpdate = []
 
     for (var i=0;i<this.images.seats.length;i=i+1){
-         this.hideBet(i, options)
+      stagesToUpdate.push(   this.hideBet(i, options) )
         }
+
+options.update = update
+if(update !== false){this.updateStages(stagesToUpdate)}
+else{ return stagesToUpdate}
     }
 
     //rotates positions of players seats and their hole cards n times clockwise
@@ -3321,7 +3355,7 @@ if(_.isObject(item.text)){
 */
 
 if(!_.isObject(options)){return}
-if(options.update !== false){this.updateStage(item.position.z.stage)}
+if(options.update !== false){this.updateStages(item.position.z.stage)}
    
     }
 
@@ -3446,7 +3480,7 @@ self.setDisplayObjectLocationsInItemAEqualToOnesInItemB(this.images.seats[i][ind
 }//end iteration through this.images.seats
 
 
-this.updateStage(this.images.seats[0].seat.position.z.stage)
+this.updateStages(this.images.seats[0].seat.position.z.stage)
 
 }
 
@@ -3697,7 +3731,7 @@ this.gameState.numSeats = numSeats
 this.imageData.numberOfPlayersSet = true
     }
 
-    this.displayShownCard = function (cardText,parentOfImageObject){
+    this.displayShownCard = function (cardText,parentOfImageObject, options){
         
       //  parentOfImageObject.text.text= cardText
       //sprite sheet order numerical first starting with 2, then the same order as bridge suits
@@ -3751,29 +3785,37 @@ this.imageData.numberOfPlayersSet = true
       */
       this.images.cardAsBitmap(parentOfImageObject,cardText)
      
-            this.displayChildren(parentOfImageObject)
+     return(       this.displayChildren(parentOfImageObject, options) )
     }
 
-        this.displayHoleCards = function (hand,seatNumber){
+        this.displayHoleCards = function (hand,seatNumber, options){
+          if(!options){var options = {}}
+            var update  = options.update
+          options.update = false
 
+var stagesToUpdate = []
                //check for and remove face down card images
          if(this.arrayOfParentsOfStageAndOfContainerArray[this.images.seats[seatNumber].hiddenCard0.position.z.stage].stage.contains(this.images.seats[seatNumber].hiddenCard0.image)){
-            this.hideChildren(this.images.seats[seatNumber].hiddenCard0)
-            this.hideChildren(this.images.seats[seatNumber].hiddenCard1)
+            this.hideChildren(this.images.seats[seatNumber].hiddenCard0, options)
+            this.hideChildren(this.images.seats[seatNumber].hiddenCard1, options)
             }
 
-        this.displayShownCard(hand[0], this.images.seats[seatNumber].shownCard0)
-        this.displayShownCard(hand[1], this.images.seats[seatNumber].shownCard1)
+        this.displayShownCard(hand[0], this.images.seats[seatNumber].shownCard0, options)
+        this.displayShownCard(hand[1], this.images.seats[seatNumber].shownCard1, options)
 
+if(options.update !== false){this.updateStages(stagesToUpdate)}
+return stagesToUpdate
     }
 
-    this.hideHoleCards = function (seatNumber){
+    this.hideHoleCards = function (seatNumber, options){
         
+var itemsToHide = []
+itemsToHide.push ( this.images.seats[seatNumber].hiddenCard0)
+itemsToHide.push ( this.images.seats[seatNumber].hiddenCard1)
+itemsToHide.push ( this.images.seats[seatNumber].shownCard0)
+itemsToHide.push ( this.images.seats[seatNumber].shownCard1)
 
-            this.hideChildren(this.images.seats[seatNumber].hiddenCard0)
-            this.hideChildren(this.images.seats[seatNumber].hiddenCard1)
-this.hideChildren(this.images.seats[seatNumber].shownCard0)
-            this.hideChildren(this.images.seats[seatNumber].shownCard1)
+     return  this.hideChildren(itemsToHide, options)
 
 
     }
@@ -3831,10 +3873,10 @@ self.displayChipStack(parseFloat(potSize[i]), self.images.pots[i], self.images.p
        }
          
 
-if(!options || options.update !== false){this.updateStage(this.images.totalPotSize.position.z.stage)}
+if(!options || options.update !== false){this.updateStages(this.images.totalPotSize.position.z.stage)}
     }
 
-    this.playerSits = function(seatNumber, playerName, chips){
+    this.playerSits = function(seatNumber, playerName, chips, options){
 
         this.gameState.seats[seatNumber].displayMessageType = 'seat'
         this.images.seats[seatNumber].playerName.text.text =  playerName
@@ -3845,27 +3887,34 @@ if(!options || options.update !== false){this.updateStage(this.images.totalPotSi
              this.images.seats[seatNumber].status.text.text =  'adding chips'
         }
        
-        this.displayCorrectSeatMessage(seatNumber)
+      var stagesToUpdate =   this.displayCorrectSeatMessage(seatNumber, options)
+      return stagesToUpdate
     }
 
     this.hideBet = function (seatNumber, options){
-   
-            this.hideChildren(this.images.seats[seatNumber].bet, options)
-                this.hideChildren(this.images.seats[seatNumber].chips, options)     
+   var stagesToUpdate = []
+      stagesToUpdate.push(      this.hideChildren(this.images.seats[seatNumber].bet, options) )
+             stagesToUpdate.push(          this.hideChildren(this.images.seats[seatNumber].chips, options)     )
             
         //    this.images.seats[seatNumber].chips.splice(0, this.images.seats[seatNumber].chips.length)
            
   while (this.images.seats[seatNumber].chips.length > 0) {this.images.seats[seatNumber].chips.pop()}
 
+return stagesToUpdate
     }
 
     this.addChildToContainer = function (child, containerIndex, options){
+ //     console.log('adding child to stage ')
+ //     console.log(options)
         if(options){
           
           if(_.isNumber(options.stageNumber)){var stageNumber = options.stageNumber}//if options does not exist
+   
+}//if options
       else{var stageNumber= child.parentOfImageObject.position.z.stage}
 
- }//if options
+ 
+
         this.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[containerIndex].addChild(child)
 
     }
@@ -3964,7 +4013,7 @@ if(!options || options.update !== false){this.updateStage(this.images.totalPotSi
         }
 if(!options || (options.update !== false && options.hidden !== true)){
   if(_.isArray(parentOfChipArray.chips)&&parentOfChipArray.chips.length>0 && parentOfChipArray.chips[0] instanceof this.images.Item){
-    this.updateStage(parentOfChipArray.chips[0].position.z.stage)}
+    this.updateStages(parentOfChipArray.chips[0].position.z.stage)}
 }
 
     }
@@ -4085,7 +4134,7 @@ self.displayChildren(parentOfImageObject)
            parentOfImageObject.text.x =parentOfImageObject.text.x+distancePerTickX
           parentOfImageObject.text.y =parentOfImageObject.text.y+distancePerTickY
           }
-            self.updateStage(parentOfImageObject.position.z.stage)
+            self.updateStages(parentOfImageObject.position.z.stage)
 
             if(tick >= lastTick){
    if(parentOfImageObject.image)   {    
@@ -4102,7 +4151,7 @@ else if(parentOfImageObject.text){
 parentOfImageObject.text.y = finalY
 
 }
-    self.updateStage(parentOfImageObject.position.z.stage)
+    self.updateStages(parentOfImageObject.position.z.stage)
 clearInterval(imageAnimation)
              if(  performOnEnd){ performOnEnd()}
                 }//if last tick
@@ -4206,7 +4255,7 @@ else if(communityArray.length == 3){
     self.displayChildren(self.images.community[i],{update:false})
       }
       //update stage to display face up cards
-      self.updateStage(self.images.community[i].position.z.stage)
+      self.updateStages(self.images.community[i].position.z.stage)
       //hide facedown animated card
       self.hideChildren(animatedCard)
 
@@ -4358,16 +4407,18 @@ self.images.betSlider.vertical.image.x = newX //adjust vertical slider location
 self.images.bet.messages = ['act','bet',betSize]
 self.images.raise.messages = ['act','raise',betSize]
 self.updateBetSize(betSize)
-this.updateStage(self.images.betSlider.vertical.position.z.stage)
+this.updateStages(self.images.betSlider.vertical.position.z.stage)
          }
 
-   this.displayAllCommunity = function(communityArray){
-
+   this.displayAllCommunity = function(communityArray, options){
+var stagesToUpdate = []
     for (var i = 0; i < communityArray.length; i = i + 1) {
 
-    if (communityArray[i] === '' || communityArray[i] === null) {}
-    else{this.displayShownCard(communityArray[i], this.images.community[i])}
+    if ( _.isString(communityArray[i]) && communityArray[i].length >= 2) {
+  stagesToUpdate.push(    this.displayShownCard(communityArray[i], this.images.community[i], options) )}
     }
+
+return stagesToUpdate
     }
 
     this.getParentOfStageObject  = function(item){
@@ -4385,13 +4436,14 @@ this.updateBetSize = function(betSize){
  
     //parameter is parent of the actual Image object
     this.displayImage = function (parentOfImageObject, options){
-if(!_.isObject(options)){var options = {}}
+ if(!_.isObject(options)){var optionsWithCondom = {}}
+    else{var optionsWithCondom = _.clone(options)}
 
-if(!_.isNumber(options.stageNumber)){
-  options.stageNumber = parentOfImageObject.position.z.stage
+if(!_.isNumber(optionsWithCondom.stageNumber)){
+  optionsWithCondom.stageNumber = parentOfImageObject.position.z.stage
 }
-if(options.container){
-  var container = options.container
+if(optionsWithCondom.container){
+  var container = optionsWithCondom.container
 }//if options.conainer
 
   else {
@@ -4402,26 +4454,31 @@ var container = parentOfImageObject.position.z.container
         if(parentOfImageObject.image){
 //if html element
          if(_.isString(parentOfImageObject.image.innerHTML)){$(parentOfImageObject.image).css('display','inline')}
-         else{
-this.addChildToContainer(parentOfImageObject.image, container, options)
-var stageChanged = true
+        
+         else if (this.arrayOfParentsOfStageAndOfContainerArray[optionsWithCondom.stageNumber].containers[container].contains(parentOfImageObject.image) !==true){
+this.addChildToContainer(parentOfImageObject.image, container, optionsWithCondom)
+this.arrayOfParentsOfStageAndOfContainerArray[optionsWithCondom.stageNumber].upToDate = false
+var changedWithoutUpdate = optionsWithCondom.stageNumber
         } //if easeljs object
         
             }//if image exists
 
-              if((options.update !== false && stageChanged === true)||(options&&options.update===true)){
-        this.updateStage(options.stageNumber)     
+              if((optionsWithCondom.update !== false && this.arrayOfParentsOfStageAndOfContainerArray[optionsWithCondom.stageNumber].upToDate !== true)||optionsWithCondom.update===true){
+        this.updateStages(options.stageNumber)  
+        
+        var changedWithoutUpdate = false
 }
+return changedWithoutUpdate   
     }
     
     this.displayText = function (parentOfTextObject, options){
-  if(!_.isObject(options)){var options = {}}
-
+  if(!_.isObject(options)){var optionsWithCondom = {}}
+    else{var optionsWithCondom = _.clone(options)}
 if(!_.isNumber(options.stageNumber)){
-  options.stageNumber = parentOfTextObject.position.z.stage
+  optionsWithCondom.stageNumber = parentOfTextObject.position.z.stage
 }
 if(options.container){
-  var container = options.container
+  var container = optionsWithCondom.container
 }//if options.conainer
 
   else {
@@ -4432,35 +4489,45 @@ var container = parentOfTextObject.position.z.container
 
         // if html element
          if(_.isString(parentOfTextObject.text.innerHTML)){$(parentOfTextObject.text).css('display','inline')}
+        
 //if easeljs
-      else    {
-this.addChildToContainer(parentOfTextObject.text, container+1, options)
-var stageChanged = true
+      else if(this.arrayOfParentsOfStageAndOfContainerArray[optionsWithCondom.stageNumber].containers[container+1].contains(parentOfTextObject.text) !==true)   {
+this.addChildToContainer(parentOfTextObject.text, container+1, optionsWithCondom)
+this.arrayOfParentsOfStageAndOfContainerArray[optionsWithCondom.stageNumber].upToDate = false
+var    changedWithoutUpdate  = optionsWithCondom.stageNumber
         } //if easeljs object
      
 }//if .text exists
 
-  if((options.update !== false && stageChanged === true)||(options&&options.update===true)){
-        this.updateStage(options.stageNumber)     
+  if((optionsWithCondom.update !== false && this.arrayOfParentsOfStageAndOfContainerArray[optionsWithCondom.stageNumber].upToDate  !== true)||optionsWithCondom.update===true){
+        this.updateStages(optionsWithCondom.stageNumber)   
+   var    changedWithoutUpdate  =false
 }
+return changedWithoutUpdate   
     }
 
+//returns stagesToUpdateArray
     this.displayChildren = function(parentOrGrandparent, options){
-        
+//      console.log('display children called')
+  //    console.log(options)
+        if (!options){var options = {}}
+          var update = options.update//store our update preference now
+        options.update = false//we are not going to update until the end
+var stagesToUpdateArray = []
 
         //check if input is parent
         if(parentOrGrandparent instanceof this.images.Item){
-            this.displayImage(parentOrGrandparent, options)
-         this.displayText(parentOrGrandparent, options)
+        stagesToUpdateArray.push(    this.displayImage(parentOrGrandparent, options) )
+       stagesToUpdateArray.push(   this.displayText(parentOrGrandparent, options))
         }//if parameter is an Item
 
 
 
-        else if(_.isArray(parentOrGrandparent)){
+        else if(_.isArray(parentOrGrandparent)){//if array
             for(var i =0;i<parentOrGrandparent.length;i++){
                     if(parentOrGrandparent[i] instanceof this.images.Item){
-            this.displayImage(parentOrGrandparent[i], options)
-         this.displayText(parentOrGrandparent[i], options)
+        stagesToUpdateArray.push(     this.displayImage(parentOrGrandparent[i], options) )
+      stagesToUpdateArray.push(    this.displayText(parentOrGrandparent[i], options) )
         }
 
             }
@@ -4469,34 +4536,46 @@ var stageChanged = true
 
                 //input is grandparent object
         else if (_.isObject(parentOrGrandparent)){
-          console.log('displayChildren function displaying a grandparent Object')
             for(var i in parentOrGrandparent){
     if(parentOrGrandparent[i] instanceof this.images.Item){
-            this.displayImage(parentOrGrandparent[i], options)
-         this.displayText(parentOrGrandparent[i], options)
+ stagesToUpdateArray.push(    this.displayImage(parentOrGrandparent[i], options))
+  stagesToUpdateArray.push(     this.displayText(parentOrGrandparent[i], options) )
         }
             }
 
         }//if parameter is non-Item object
 
+        //udpate if not false
+if(update !== false){
+options.update = update
+this.updateStages(stagesToUpdateArray, options)
+}//if update was not specified as false
+
+//return if not updated so we can update later
+else {return stagesToUpdateArray}
+
 }
 
- this.displayHiddenCards =function(seatNumber){
-     this.displayChildren(this.images.seats[seatNumber].hiddenCard0)
-     this.displayChildren(this.images.seats[seatNumber].hiddenCard1)
+ this.displayHiddenCards =function(seatNumber, options){
+  var stagesToUpdate = []
+  stagesToUpdate.push(   this.displayChildren(this.images.seats[seatNumber].hiddenCard0, options) )
+  stagesToUpdate.push(    this.displayChildren(this.images.seats[seatNumber].hiddenCard1, options) )
+
+  return stagesToUpdate
 
  }
     this.hideText = function(parentOfTextObject, options){
-  if(!_.isObject(options)){var options = {}}
+ if(!_.isObject(options)){var optionsWithCondom = {}}
+    else{var optionsWithCondom = _.clone(options)}
 
-if( !_.isNumber(options.stageNumber)){
+if( !_.isNumber(optionsWithCondom.stageNumber)){
   var stageNumber = parentOfTextObject.position.z.stage
 }//if options.parentofstage
 else{
-  var stageNumber = options.stageNumber 
+  var stageNumber = optionsWithCondom.stageNumber 
 }//if no options.parentOfStage
-if(_.isNumber(options.container)){
-  var container = options.container
+if(_.isNumber(optionsWithCondom.container)){
+  var container = optionsWithCondom.container
 }//if options.conainer
 
   else {
@@ -4508,31 +4587,34 @@ var container = parentOfTextObject.position.z.container
  // if html element
          if(_.isString(parentOfTextObject.text.innerHTML)){$(parentOfTextObject.text).css('display','none')}
 //if easeljs
-      else  if(this.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.contains(parentOfTextObject.text))  {
+      else  if(this.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[container+1].contains(parentOfTextObject.text))  {
 
             self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[container+1].removeChild(parentOfTextObject.text)
-var stageChanged = true
+this.arrayOfParentsOfStageAndOfContainerArray[stageNumber].upToDate = false
+var changedWithoutUpdate = stageNumber
           }
         
         }//if text object
-                      if((options.update !== false && stageChanged === true)||(options&&options.update===true)){
-        this.updateStage(stageNumber)     
+                      if((optionsWithCondom.update !== false && this.arrayOfParentsOfStageAndOfContainerArray[stageNumber].upToDate  !== true)||optionsWithCondom.update===true){
+        this.updateStages(stageNumber)  
+        var changedWithoutUpdate = false   
 }
+return changedWithoutUpdate
         }
 
  
  this.hideImage = function(parentOfImageObject, options){
+ if(!_.isObject(options)){var optionsWithCondom = {}}
+    else{var optionsWithCondom = _.clone(options)}
 
- if(!_.isObject(options)){var options = {}}
-
-if( !_.isNumber(options.stageNumber)){
+if( !_.isNumber(optionsWithCondom.stageNumber)){
   var stageNumber = parentOfImageObject.position.z.stage
 }//if options.parentofstage
 else{
-  var stageNumber = options.stageNumber 
+  var stageNumber = optionsWithCondom.stageNumber 
 }//if no options.parentOfStage
-if(_.isNumber(options.container)){
-  var container = options.container
+if(_.isNumber(optionsWithCondom.container)){
+  var container = optionsWithCondom.container
 }//if options.conainer
 
   else {
@@ -4540,34 +4622,45 @@ var container = parentOfImageObject.position.z.container
 }//if no optoins.container specified
 
         if(parentOfImageObject.image) {
-
  // if html element
          if(_.isString(parentOfImageObject.image.innerHTML)){$(parentOfImageObject.image).css('display','none')}
 //if easeljs
-      else  if(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.contains(parentOfImageObject.image))  {
+      else  if(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[container].contains(parentOfImageObject.image))  {
         self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[container].removeChild(parentOfImageObject.image)
-var stageChanged = true
+this.arrayOfParentsOfStageAndOfContainerArray[stageNumber].upToDate = false
+var changedWithoutUpdate = stageNumber
       }
 
           }//if image object
 
-                        if((options.update !== false && stageChanged === true)||(options&&options.update===true)){
-        this.updateStage(stageNumber)     
+                        if((optionsWithCondom.update !== false && this.arrayOfParentsOfStageAndOfContainerArray[stageNumber].upToDate  !== true)||optionsWithCondom.update===true){
+        this.updateStages(stageNumber)     
+        var changedWithoutUpdate = false
 }
+return changedWithoutUpdate
         }
 
- this.playerSitsOut =function(seatNumber){
+ this.playerSitsOut =function(seatNumber, options){
             
-            this.images.seats[seatNumber].status.text.text = "Sitting Out"
+         if(this.images.seats[seatNumber].status.text.text !== "Sitting Out"){
+          this.images.seats[seatNumber].status.text.text = "Sitting Out"
+        if (options && options.update === false){return this.images.seats[seatNumber].status.position.z.stage }
+  else(this.updateStages(this.images.seats[seatNumber].status.position.z.stage ))
+         }
+
 
         }
 
  this.hideChildren = function(parentOrGrandparent, options){
+       if (!options){var options = {}}
+          var update = options.update//store our update preference now
+        options.update = false//we are not going to update until the end
+var stagesToUpdateArray = []
 
              //check if input is parent
         if(parentOrGrandparent instanceof this.images.Item){
-            this.hideImage(parentOrGrandparent, options)
-         this.hideText(parentOrGrandparent, options)
+     stagesToUpdateArray.push(       this.hideImage(parentOrGrandparent, options))
+       stagesToUpdateArray.push(         this.hideText(parentOrGrandparent, options))
         }
 
 
@@ -4576,8 +4669,8 @@ var stageChanged = true
             for(var i =0;i<parentOrGrandparent.length;i++){
                     if(parentOrGrandparent[i] instanceof this.images.Item){
 
-            this.hideImage(parentOrGrandparent[i], options)
-         this.hideText(parentOrGrandparent[i], options)
+     stagesToUpdateArray.push(              this.hideImage(parentOrGrandparent[i], options))
+      stagesToUpdateArray.push(          this.hideText(parentOrGrandparent[i], options))
         }
 
             }
@@ -4588,22 +4681,43 @@ var stageChanged = true
         else if(_.isObject(parentOrGrandparent)){
             for(var i in parentOrGrandparent){
     if(parentOrGrandparent[i] instanceof this.images.Item){
-            this.hideImage(parentOrGrandparent[i], options)
-         this.hideText(parentOrGrandparent[i], options)
+      stagesToUpdateArray.push(             this.hideImage(parentOrGrandparent[i], options))
+      stagesToUpdateArray.push(          this.hideText(parentOrGrandparent[i], options))
         }
             }
 
         }
           
+
+        //udpate if not false
+if(update !== false){
+  options.update = update
+this.updateStages(stagesToUpdateArray, options)
+}//if update was not specified as false
+
+//return if not updated so we can update later
+else {return stagesToUpdateArray}
+
+
  }
 
- this.hideAllActionButtons =function(){
-this.hideChildren(this.images.fold)
-this.hideChildren(this.images.call)
-this.hideChildren(this.images.check)
-this.hideChildren(this.images.raise)
-this.hideChildren(this.images.bet)
-this.hideChildren(this.images.betSlider)
+ this.hideAllActionButtons =function(options){
+      if(!options){var options = {}}
+        var update = options.update
+      options.update = false
+
+
+var stagesToUpdateArray = []
+stagesToUpdateArray.push(this.hideChildren(this.images.fold, options))
+stagesToUpdateArray.push(this.hideChildren(this.images.call, options))
+stagesToUpdateArray.push(this.hideChildren(this.images.check, options))
+stagesToUpdateArray.push(this.hideChildren(this.images.raise, options))
+stagesToUpdateArray.push(this.hideChildren(this.images.bet, options))
+stagesToUpdateArray.push(this.hideChildren(this.images.betSlider, options))
+stagesToUpdateArray = _.flatten(stagesToUpdateArray)
+
+if(update !== false){this.updateStages(stagesToUpdateArray)}
+  else{return stagesToUpdateArray}
 $('#betSize').css('display','none')
      
 
@@ -4611,29 +4725,40 @@ $('#betSize').css('display','none')
 
 
 
- this.roundEnds = function(){
-     
+ this.roundEnds = function(options){
+     if(!options){var options ={}}
+      var update = options.update
+      options.update = false
+
+var stagesToUpdate = []
+
      //hide community cards
-     for(var i=0; i<this.images.community.length;i++){ this.hideChildren(this.images.community[i])}
+     
+stagesToUpdate.push(this.hideChildren(this.images.community[i]))
 
      //hide players' hands
-       for(var i=0; i<this.images.seats.length;i++){
-         
-        this.hideChildren(this.images.seats[i].hiddenCard0)
-        this.hideChildren(this.images.seats[i].hiddenCard1)
-        this.hideChildren(this.images.seats[i].shownCard0)
-        this.hideChildren(this.images.seats[i].shownCard1)
-
+       for(var i=0; i<this.images.seats.length;i++){ 
+        this.hideChildren(this.images.seats[i].hiddenCard0, {update:false})
+        this.hideChildren(this.images.seats[i].hiddenCard1, {update:false})
+        this.hideChildren(this.images.seats[i].shownCard0, {update:false})
+        this.hideChildren(this.images.seats[i].shownCard1, {update:false})
      }
+stagesToUpdate.push(this.images.seats[0].hiddenCard0.position.z.stage)
+stagesToUpdate.push(this.images.seats[0].shownCard0.position.z.stage)
+
      //remove all player's bets
-        self.hideAllBets()
+    stagesToUpdate.push(    self.hideAllBets(options) )
         //hide the pot
-        self.hideChildren(self.images.totalPotSize) //main pot
+    stagesToUpdate.push(     self.hideChildren(self.images.totalPotSize, {update:false}) )//main pot
         //side pots
          for(var i=0; i<this.images.pots.length;i++){
-        self.hideChildren(self.images.pots[i].potSize)
-        self.hideChildren(self.images.pots[i].chips)}
+    stagesToUpdate.push(     self.hideChildren(self.images.pots[i].potSize, {update:false}) )
+   stagesToUpdate.push(      self.hideChildren(self.images.pots[i].chips, {update:false}))
+ }
 
+options.update = update
+if(update !== false){this.updateStages(stagesToUpdate)}
+  else{return stagesToUpdate}
 
         //unbind scroll wheel events
          $(this.arrayOfParentsOfStageAndOfContainerArray[this.images.betSlider.vertical.position.z.stage].stage.canvas, '#betSize').unbind('mousewheel')
@@ -4802,7 +4927,7 @@ if(i == players.length-1){next(null, errorNumber)}
 )//end push
 
  async.series(finalArray, function(err, results){
-  self.updateStage(self.images.seats[0].status.position.z.stage)
+  self.updateStages(self.images.seats[0].status.position.z.stage)
     console.log('winners async series completed with the following errors next line and results 2nd line')
   console.log(err)
   console.log(results)
@@ -4827,13 +4952,13 @@ if(self.permanentPreferences.tableChatFull.scrollBarType && self.permanentPrefer
 //console.log('creating mCustomScrollbar')
 //show so that scroll bar can be initialized
 
-//$('#tableChatFullTextDiv').mCustomScrollbar(mCustomScrollbarOptions)
+//self.jQueryObjects.tableChatFullDiv.mCustomScrollbar(mCustomScrollbarOptions)
 console.log('assinging isAtBottom is true because i dontk now how to do it on mcustomscrollbar')
 var isAtBottom = true//( scroll[0].getContentSize().h - scroll[0].getScrollTop() ===  self.jQueryObjects.tableChatFullParagraph.height())
 }//if we using mCustomScrollBar
 
 else{//if we don't want to use mCustomScrollbar
-  var scroll = $('#tableChatFullTextDiv').getNiceScroll()//grab niceScroll instance on the scroll div
+  var scroll = self.jQueryObjects.tableChatFullDiv.getNiceScroll()//grab niceScroll instance on the scroll div
 console.log('content size = '+scroll[0].getContentSize().h +' upper scroll value = '+scroll[0].getScrollTop()+' height of visible paragraph = '+(self.jQueryObjects.tableChatFullParagraph.outerHeight(true)+1))
 var isAtBottom = ( scroll[0].getContentSize().h - scroll[0].getScrollTop() <=  parseFloat(self.jQueryObjects.tableChatFullParagraph.outerHeight(true))+1)
 }
@@ -5124,23 +5249,31 @@ for (var i = 0; i < openSeats.length; i = i + 1)
          this.displayChildren(this.images.sitOutNextBlind)
     }
 
-    this.hideSeatedOptions = function(){
+    this.hideSeatedOptions = function(options){
+      if(!options){var options = {}}
+        var update = options.update
+      options.update = false
+var stagesToUpdate = []
+
 this.images.standUp.image.onClick = null
 this.images.getChips.image.onClick = null
-this.displayChildren (this.images.standUpDisabledShape)
-this.displayChildren (this.images.getChipsDisabledShape)
+stagesToUpdate.push( this.displayChildren (this.images.standUpDisabledShape, options))
+stagesToUpdate.push(this.displayChildren (this.images.getChipsDisabledShape, options))
 
-this.hideChildren(self.images.sitOutNextHandOn )
-this.hideChildren(self.images.sitOutNextHand)
-this.hideChildren(self.images.sitOutNextBlind)
-this.hideChildren(self.images.sitOutNextBlindOn )
-this.hideChildren(self.images.foldToAnyBet )
-this.hideChildren(self.images.foldToAnyBetOn)
+stagesToUpdate.push(this.hideChildren(self.images.sitOutNextHandOn , options))
+stagesToUpdate.push(this.hideChildren(self.images.sitOutNextHand, options))
+stagesToUpdate.push(this.hideChildren(self.images.sitOutNextBlind, options))
+stagesToUpdate.push(this.hideChildren(self.images.sitOutNextBlindOn, options ))
+stagesToUpdate.push(this.hideChildren(self.images.foldToAnyBet , options))
+stagesToUpdate.push(this.hideChildren(self.images.foldToAnyBetOn, options))
 
-      self.hideChildren(self.images.rebuy)
-      self.hideChildren(self.images.sitIn)
+    stagesToUpdate.push(  self.hideChildren(self.images.rebuy, options))
+   stagesToUpdate.push(   self.hideChildren(self.images.sitIn, options))
 
-this.hideAllActionButtons()
+stagesToUpdate.push(this.hideAllActionButtons(options))
+
+if(update === false){return stagesToUpdate}
+  else{this.updateStages(stagesToUpdate)}
     }
 
 
@@ -5187,110 +5320,127 @@ this.gameState.tableChatFull.log.push(chatInfo)
 //this.images.tableChatFull.chatMessageText
 }
 
-    this.displayCorrectSeatMessage = function(seatNumber){
+    this.displayCorrectSeatMessage = function(seatNumber, options){
+      if(!options){var options = {}}
+        var update = options.update
+      options.update = false
+var stagesToUpdate = []
+
+
+
 
         switch (this.gameState.seats[seatNumber].displayMessageType){
 
             case 'seat':
-            this.displayChildren(this.images.seats[seatNumber].seat)
-            this.displayChildren(this.images.seats[seatNumber].status)
-            this.displayChildren(this.images.seats[seatNumber].playerName)
-            this.hideText(this.images.seats[seatNumber].action)
-            this.hideText(this.images.seats[seatNumber].winner)
-            this.hideText(this.images.seats[seatNumber].countdown)
-             this.hideChildren(this.images.seats[seatNumber].openSeat)
-             this.hideChildren(this.images.seats[seatNumber].disabledSeat)
+   stagesToUpdate.push(         this.displayChildren(this.images.seats[seatNumber].seat, options))
+    stagesToUpdate.push(             this.displayChildren(this.images.seats[seatNumber].status, options))
+   stagesToUpdate.push(              this.displayChildren(this.images.seats[seatNumber].playerName, options))
+   stagesToUpdate.push(              this.hideText(this.images.seats[seatNumber].action, options))
+    stagesToUpdate.push(             this.hideText(this.images.seats[seatNumber].winner, options))
+    stagesToUpdate.push(             this.hideText(this.images.seats[seatNumber].countdown, options))
+      stagesToUpdate.push(            this.hideChildren(this.images.seats[seatNumber].openSeat, options))
+      stagesToUpdate.push(            this.hideChildren(this.images.seats[seatNumber].disabledSeat, options))
             break;
 
             case 'countdown':
-              this.displayChildren(this.images.seats[seatNumber].seat)
-             this.displayText(this.images.seats[seatNumber].countdown)
-            this.displayChildren(this.images.seats[seatNumber].status)
-
-            this.hideChildren(this.images.seats[seatNumber].playerName)
-            this.hideText(this.images.seats[seatNumber].action)
-            this.hideText(this.images.seats[seatNumber].seat)
-            this.hideText(this.images.seats[seatNumber].winner)
-
-             this.hideChildren(this.images.seats[seatNumber].openSeat)
-             this.hideChildren(this.images.seats[seatNumber].disabledSeat)
+     stagesToUpdate.push(              this.displayChildren(this.images.seats[seatNumber].seat, options))
+     //make sure player is toAct
+     if(self.gameState.seats[seatNumber].toAct === true){
+        stagesToUpdate.push(             this.displayText(this.images.seats[seatNumber].countdown, options))
+ stagesToUpdate.push(           this.hideChildren(this.images.seats[seatNumber].playerName, options))
+      }
+        else{
+   stagesToUpdate.push(              this.displayChildren(this.images.seats[seatNumber].playerName, options))
+   stagesToUpdate.push(             this.hideText(this.images.seats[seatNumber].countdown, options))
+        }
+     stagesToUpdate.push(            this.displayChildren(this.images.seats[seatNumber].status, options))     
+     stagesToUpdate.push(            this.hideText(this.images.seats[seatNumber].action, options))
+     stagesToUpdate.push(            this.hideText(this.images.seats[seatNumber].winner, options))
+     stagesToUpdate.push(             this.hideChildren(this.images.seats[seatNumber].openSeat, options))
+      stagesToUpdate.push(            this.hideChildren(this.images.seats[seatNumber].disabledSeat, options))
             break;
 
             case 'action':
-             this.displayChildren(this.images.seats[seatNumber].seat)
-             this.displayText(this.images.seats[seatNumber].action)
-            this.displayChildren(this.images.seats[seatNumber].status)
+     stagesToUpdate.push(             this.displayChildren(this.images.seats[seatNumber].seat, options))
+    stagesToUpdate.push(              this.displayText(this.images.seats[seatNumber].action, options))
+    stagesToUpdate.push(             this.displayChildren(this.images.seats[seatNumber].status, options))
 
-            this.hideChildren(this.images.seats[seatNumber].playerName)
-            this.hideText(this.images.seats[seatNumber].winner)
-            this.hideText(this.images.seats[seatNumber].seat)
-            this.hideText(this.images.seats[seatNumber].countdown)
-             this.hideChildren(this.images.seats[seatNumber].openSeat)
-             this.hideChildren(this.images.seats[seatNumber].disabledSeat)
+       stagesToUpdate.push(          this.hideChildren(this.images.seats[seatNumber].playerName, options))
+       stagesToUpdate.push(          this.hideText(this.images.seats[seatNumber].winner, options))
+       stagesToUpdate.push(          this.hideText(this.images.seats[seatNumber].seat, options))
+      stagesToUpdate.push(           this.hideText(this.images.seats[seatNumber].countdown, options))
+      stagesToUpdate.push(           this.hideChildren(this.images.seats[seatNumber].openSeat, options))
+       stagesToUpdate.push(           this.hideChildren(this.images.seats[seatNumber].disabledSeat, options))
             break;
 
             case 'winner':
-              this.displayChildren(this.images.seats[seatNumber].seat)
-            this.displayChildren(this.images.seats[seatNumber].status)
-           this.displayChildren(this.images.seats[seatNumber].winner)
+      stagesToUpdate.push(             this.displayChildren(this.images.seats[seatNumber].seat, options))
+      stagesToUpdate.push(           this.displayChildren(this.images.seats[seatNumber].status, options))
+      stagesToUpdate.push(          this.displayChildren(this.images.seats[seatNumber].winner, options))
 
-           this.hideChildren(this.images.seats[seatNumber].playerName)
-            this.hideText(this.images.seats[seatNumber].action)
-            this.hideText(this.images.seats[seatNumber].countdown)
-            this.hideChildren(this.images.seats[seatNumber].openSeat)
-            this.hideChildren(this.images.seats[seatNumber].disabledSeat)
+   stagesToUpdate.push(             this.hideChildren(this.images.seats[seatNumber].playerName, options))
+    stagesToUpdate.push(             this.hideText(this.images.seats[seatNumber].action, options))
+    stagesToUpdate.push(             this.hideText(this.images.seats[seatNumber].countdown, options))
+    stagesToUpdate.push(             this.hideChildren(this.images.seats[seatNumber].openSeat, options))
+     stagesToUpdate.push(            this.hideChildren(this.images.seats[seatNumber].disabledSeat, options))
             break;
 
             case 'openSeat':
             
                      if(_.isNumber(this.gameState.userSeatNumber)) {
                 
-                this.hideChildren(this.images.seats[seatNumber].openSeat)
-                this.displayChildren(this.images.seats[seatNumber].disabledSeat)
+      stagesToUpdate.push(               this.hideChildren(this.images.seats[seatNumber].openSeat, options))
+      stagesToUpdate.push(               this.displayChildren(this.images.seats[seatNumber].disabledSeat, options))
             }
 
          else     if((this.gameState.userSeatNumber == false) || _.isNull(this.gameState.userSeatNumber)||_.isUndefined(this.gameState.userSeatNumber)){
      
-                this.hideChildren(this.images.seats[seatNumber].disabledSeat)
-            this.displayChildren(this.images.seats[seatNumber].openSeat)
+      stagesToUpdate.push(               this.hideChildren(this.images.seats[seatNumber].disabledSeat, options))
+       stagesToUpdate.push(          this.displayChildren(this.images.seats[seatNumber].openSeat, options))
 
             }
 
             
-              this.hideChildren(this.images.seats[seatNumber].seat)
-            this.hideChildren(this.images.seats[seatNumber].status)
-            this.hideChildren(this.images.seats[seatNumber].playerName)
-            this.hideText(this.images.seats[seatNumber].action)
-            this.hideText(this.images.seats[seatNumber].winner)
-            this.hideText(this.images.seats[seatNumber].countdown)
+      stagesToUpdate.push(             this.hideChildren(this.images.seats[seatNumber].seat, options))
+      stagesToUpdate.push(           this.hideChildren(this.images.seats[seatNumber].status, options))
+      stagesToUpdate.push(           this.hideChildren(this.images.seats[seatNumber].playerName, options))
+      stagesToUpdate.push(           this.hideText(this.images.seats[seatNumber].action, options))
+      stagesToUpdate.push(           this.hideText(this.images.seats[seatNumber].winner, options))
+     stagesToUpdate.push(            this.hideText(this.images.seats[seatNumber].countdown, options))
             break;
 
             default:
 
              if(_.isNumber(this.gameState.userSeatNumber)) {
                 
-                this.hideChildren(this.images.seats[seatNumber].openSeat)
-                this.displayChildren(this.images.seats[seatNumber].disabledSeat)
+       stagesToUpdate.push(              this.hideChildren(this.images.seats[seatNumber].openSeat, options))
+      stagesToUpdate.push(               this.displayChildren(this.images.seats[seatNumber].disabledSeat, options))
             }
         
-      else        if((this.gameState.userSeatNumber == false) || _.isNull(this.gameState.userSeatNumber)||_.isUndefined(this.gameState.userSeatNumber)){
-                this.hideChildren(this.images.seats[seatNumber].disabledSeat)
-            this.displayChildren(this.images.seats[seatNumber].openSeat)
+      else {
+      stagesToUpdate.push(               this.hideChildren(this.images.seats[seatNumber].disabledSeat, options))
+     stagesToUpdate.push(            this.displayChildren(this.images.seats[seatNumber].openSeat, options))
 
             }
       
             
-              this.hideChildren(this.images.seats[seatNumber].seat)
-            this.hideChildren(this.images.seats[seatNumber].status)
-            this.hideChildren(this.images.seats[seatNumber].playerName)
-            this.hideText(this.images.seats[seatNumber].action)
-            this.hideText(this.images.seats[seatNumber].winner)
-            this.hideText(this.images.seats[seatNumber].countdown)
+     stagesToUpdate.push(              this.hideChildren(this.images.seats[seatNumber].seat, options))
+    stagesToUpdate.push(             this.hideChildren(this.images.seats[seatNumber].status, options))
+    stagesToUpdate.push(             this.hideChildren(this.images.seats[seatNumber].playerName, options))
+     stagesToUpdate.push(            this.hideText(this.images.seats[seatNumber].action, options))
+     stagesToUpdate.push(            this.hideText(this.images.seats[seatNumber].winner, options))
+     stagesToUpdate.push(            this.hideText(this.images.seats[seatNumber].countdown, options))
             break;
 
             
 
         }
+
+
+
+
+if(update === false){return stagesToUpdate}
+  else{this.updateStages(stagesToUpdate)}
 
     }
 
@@ -5300,7 +5450,7 @@ this.gameState.tableChatFull.log.push(chatInfo)
         if(seatNumber === self.gameState.userSeatNumber){this.hideAllActionButtons(this.gameState.userSeatNumber)}
         this.gameState.seats[seatNumber].displayMessageType = 'action'
 
-        self.images.seats[seatNumber].action.text.text = 'actionText'
+        self.images.seats[seatNumber].action.text.text = actionText
 
        
 
@@ -5320,12 +5470,12 @@ this.gameState.tableChatFull.log.push(chatInfo)
         else if(alpha>1){
                 self.images.seats[seatNumber].action.text.alpha = 1
                 self.images.seats[seatNumber].action.text.text = actionText
-                self.updateStage(self.images.seats[seatNumber].action.position.z.stage)
+                self.updateStages(self.images.seats[seatNumber].action.position.z.stage)
                 }
             else{
                 self.images.seats[seatNumber].action.text.alpha = alpha
             self.images.seats[seatNumber].action.text.text = actionText
-            self.updateStage(self.images.seats[seatNumber].action.position.z.stage)
+            self.updateStages(self.images.seats[seatNumber].action.position.z.stage)
             }
             
             alpha = alpha - interval/1000
@@ -5345,12 +5495,12 @@ this.gameState.tableChatFull.log.push(chatInfo)
 
          var interval = 100
          var alpha
-        if(typeof fadeTimeInSeconds == 'number'){alpha = fadeTimeInSeconds}
+        if(_.isNumber(fadeTimeInSeconds)){alpha = fadeTimeInSeconds}
         else{alpha = 2.5}
 
 
       var declareWinner =   setInterval(function() {
-
+var stagesToUpdate = []
           if(self.gameState.seats[seatNumber].displayMessageType != 'winner'||alpha<=0)
           {
                 if(self.gameState.seats[seatNumber].displayMessageType === 'winner'){self.gameState.seats[seatNumber].displayMessageType = 'seat'}
@@ -5361,24 +5511,26 @@ this.gameState.tableChatFull.log.push(chatInfo)
             else if(alpha>1){
                 self.images.seats[seatNumber].winner.text.alpha = 1
                 self.images.seats[seatNumber].winner.text.text = 'Wins '+chipsWon
-                self.updateStage(self.images.seats[seatNumber].winner.position.z.stage)
+           stagesToUpdate.push(self.images.seats[seatNumber].winner.position.z.stage)
                 }
             else{
                 self.images.seats[seatNumber].winner.text.alpha = alpha
             self.images.seats[seatNumber].winner.text.text = 'Wins '+chipsWon
-            self.updateStage(self.images.seats[seatNumber].winner.position.z.stage)
+             stagesToUpdate.push(self.images.seats[seatNumber].winner.position.z.stage)
             }
             
             alpha = alpha - interval/1000
-self.displayCorrectSeatMessage(seatNumber)
+ stagesToUpdate.push(self.displayCorrectSeatMessage(seatNumber, {update:false}))
+ self.updateStages(stagesToUpdate)
 
 }, interval)
 
     }
 
     this.playerToAct =function(seatNumber, timeoutInMS){
-      self.gameState.seats[seatNumber].timeToAct = timeoutInMS
+      self.gameState.seats[seatNumber].timeToActInMS = timeoutInMS
          self.gameState.seats[seatNumber].toAct = true
+self.gameState.seats[seatNumber].displayMessageType = 'countdown'
 
         //function that will convert hex to RGB
     var hexToRGB =     function(hex) {
@@ -5433,7 +5585,7 @@ var toActBorderColor = originalBorderColor
 var toActMiddleDividerColor = '#FFFFFF'
 
         var timeToChangeColors = 3000
-        var ticksPerColorChange = 30
+        var ticksPerColorChange = 15
         var interval = timeToChangeColors/ticksPerColorChange
         var lastTick = ticksPerColorChange-1
          var tick = 0
@@ -5442,16 +5594,20 @@ var toActMiddleDividerColor = '#FFFFFF'
          var lastCompletedFillColorCounter = -1
 
 
- 
+ //================DO STUFF BELOW====================================
+ //console.log('starting countdown function with an interval of '+ interval)
+ //console.log(self.playerToAct.caller)
 //-----------start swapping colors until toAct becomes false----------------
               var countdown = setInterval(function() {
+var stagesToUpdate = []
+
                  //get RGBA fill color of seat
            var currentFillColor =  self.images.seats[seatNumber].seat.image.fillColor
-          var red; var green; var blue
-          var previousTargetRed; var previousTargetGreen; var previousTargetBlue
-          var targetRed; var targetGreen; var targetBlue
-         var redIncreasePerTick; var greenIncreasePerTick; var blueIncreasePerTick
-         var nextRed; var nextGreen; var nextBlue
+          var red;                var green;                var blue
+          var previousTargetRed;  var previousTargetGreen;  var previousTargetBlue
+          var targetRed;          var targetGreen;          var targetBlue
+          var redIncreasePerTick; var greenIncreasePerTick; var blueIncreasePerTick
+          var nextRed;            var nextGreen;            var nextBlue
          
 //===================extract RGB values from current fill color ==================
 var currentColors = extractRGB(currentFillColor)
@@ -5527,32 +5683,63 @@ var nextCounter = lastCompletedFillColorCounter+1
 
     //concatanate to create new fill color
     newFillColor = rgbArrayToString([nextRed, nextGreen, nextBlue])
-//console.log('current time left to act = ' + self.gameState.seats[seatNumber].timeToAct)
+//console.log('current time left to act = ' + self.gameState.seats[seatNumber].timeToActInMS)
 //console.log('original time to act = ' + timeoutInMS)
-   self.images.drawSeat(self.images.seats[seatNumber].seat, toActBorderColor, newFillColor, toActMiddleDividerColor, {borderFillRatio: self.gameState.seats[seatNumber].timeToAct/timeoutInMS, newFillColor:toActTimeLeftBorderColor})
-    self.updateStage(self.images.seats[seatNumber].seat.position.z.stage)
-    
-                if (self.gameState.seats[seatNumber].toAct==false)
+
+//check if we want to end our interval
+                if (self.gameState.seats[seatNumber].toAct === false)
                   {
                       clearInterval(countdown)
-                     self.images.drawSeat(self.images.seats[seatNumber].seat, originalBorderColor, originalFillColor, originalMiddleDividerColor)
+           stagesToUpdate.push( self.images.drawSeat(self.images.seats[seatNumber].seat, originalBorderColor, originalFillColor, originalMiddleDividerColor) )
+           if(self.gameState.seats[seatNumber].displayMessageType == 'countdown'){self.gameState.seats[seatNumber].displayMessageType = 'seat'}
                       }
-                      self.gameState.seats[seatNumber].timeToAct = self.gameState.seats[seatNumber].timeToAct - interval
+else{
+//UPDATE GRAPHIC AROUND THE TABLE SEAT
+ stagesToUpdate.push(  self.images.drawSeat(self.images.seats[seatNumber].seat, toActBorderColor, newFillColor, toActMiddleDividerColor, {borderFillRatio: self.gameState.seats[seatNumber].timeToActInMS/timeoutInMS, newFillColor:toActTimeLeftBorderColor}) )
+    
+    //================COUNTDOWN TEXT START================================================================
+
+var countDownText = 'Time: '+ Math.ceil(self.gameState.seats[seatNumber].timeToActInMS/1000)
+
+   if ( self.gameState.seats[seatNumber].timeToActInMS>= 0){
+       if( self.images.seats[seatNumber].countdown.text.text !== countDownText){
+        self.images.seats[seatNumber].countdown.text.text =  countDownText
+        var countDownTextStage = self.images.seats[seatNumber].countdown.position.z.stage
+var countdownTextContainer = self.images.seats[seatNumber].countdown.position.z.container
+
+        if(self.arrayOfParentsOfStageAndOfContainerArray[countDownTextStage].containers[countdownTextContainer].contains(self.images.seats[seatNumber].countdown.text)){
+                self.arrayOfParentsOfStageAndOfContainerArray[countDownTextStage].upToDate = false
+        stagesToUpdate.push(countDownTextStage)
+      }//if countdown text is on the stage
+
+       }//if we need to change countdown text cuz its different
+   }//if time to act is 0 or higher
+     
+     //==============================================================COUNT DOWN TEXT END================================================
+        
+         }//if we did NOT clear the countdown
+
+//update stages as necessary
+                   stagesToUpdate.push(   self.displayCorrectSeatMessage(seatNumber, {update:false}) )
+                      self.updateStages(stagesToUpdate)
+
+                      //decrement time to act
+                      self.gameState.seats[seatNumber].timeToActInMS = self.gameState.seats[seatNumber].timeToActInMS - interval
         },interval)
 
     }
 
 
 
-    
+    /*
 
  this.startCountdown = function(seatNumber, secondsToAct){
 secondsToAct = parseInt(secondsToAct)
      if(self.gameState.seats[seatNumber].toAct == true) {this.gameState.seats[seatNumber].displayMessageType = 'countdown'
          self.images.seats[seatNumber].countdown.text.text = 'Time: '+secondsToAct
      }
-                  //hide other messages on the seat box
-
+               
+ //hide other messages on the seat box
 var interval = 1000
       var countdown = setInterval(function() {
 
@@ -5561,7 +5748,7 @@ var interval = 1000
    else if ( secondsToAct>= 0){
         self.images.seats[seatNumber].countdown.text.text = 'Time: '+secondsToAct
        secondsToAct=secondsToAct-1
-         self.updateStage(self.images.seats[seatNumber].countdown.position.z.stage)
+         self.updateStages(self.images.seats[seatNumber].countdown.position.z.stage)
    }
 
    else{
@@ -5574,24 +5761,107 @@ var interval = 1000
 }, interval)
 
 }
-this.updateTableChatFullDisplayDoesNotUpdateStageByDefault = function(displayOrHideChildrenOptions){
+
+*/
+this.updateTableChatFullDisplay = function(displayOrHideChildrenOptions){
+if(!displayOrHideChildrenOptions){var displayOrHideChildrenOptions = {}}
+  var update = displayOrHideChildrenOptions.update
+displayOrHideChildrenOptions.update = false
+
+var stagesToUpdate = []
 
 //hide items that should be hidden by default
 _.each(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem,function(value, index, list){
 //console.log(index)
 //console.log(value)
 if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem[index].value === false){
-  self.hideChildren(self.images.tableChatFull[index], displayOrHideChildrenOptions)
+stagesToUpdate.push(  self.hideChildren(self.images.tableChatFull[index], displayOrHideChildrenOptions) )
   console.log('hiding' + index)
 }
-else{self.displayChildren(self.images.tableChatFull[index], displayOrHideChildrenOptions)}
+else{stagesToUpdate.push(  self.displayChildren(self.images.tableChatFull[index], displayOrHideChildrenOptions) )}
 
 })//end loop through self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem
 
 //update text
 this.updateTableChatFullMessageTextFromCurrentOrAdditionalData()
+//console.log('finished adding to stages for tableChatFull display, now showing which stages should be updated')
+//console.log(stagesToUpdate)
+
+if(update !== false){this.updateStages(stagesToUpdate)}
+else{return stagesToUpdate}
 }
 
+
+this.displayTableChatFull = function(hideOrDisplayChildrenOptions){
+    if(!hideOrDisplayChildrenOptions){var hideOrDisplayChildrenOptions = {}}
+        var update = hideOrDisplayChildrenOptions.update
+        hideOrDisplayChildrenOptions.update = false
+
+
+        var stagesToUpdate = []
+
+//update what is showing and what isnt from current preferences
+
+if(this.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages.value === false){
+  this.gameState.tableChatFull.currentlyDisplayingDealerMessages = false
+}
+else{this.gameState.tableChatFull.currentlyDisplayingDealerMessages = true}
+
+  if(this.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages.value === false){
+  this.gameState.tableChatFull.currentlyDisplayingPlayerMessages = false
+}
+else{this.gameState.tableChatFull.currentlyDisplayingPlayerMessages = true}
+
+  if(this.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages.value === false){
+  this.gameState.tableChatFull.scurrentlyDisplayingObserverMessages = false
+}
+else{this.gameState.tableChatFull.currentlyDisplayingObserverMessages = true}
+
+stagesToUpdate.push(this.displayChildren(this.images.hideTableChatFull,hideOrDisplayChildrenOptions))
+stagesToUpdate.push(this.hideChildren(this.images.showTableChatFull,hideOrDisplayChildrenOptions))
+stagesToUpdate.push(this.displayChildren(this.images.tableChatFull, hideOrDisplayChildrenOptions))
+//stagesToUpdate.push(this.displayChildren(this.images.tableChatFull.chatMessageText,hideOrDisplayChildrenOptions))
+
+stagesToUpdate.push( this.updateTableChatFullDisplay(hideOrDisplayChildrenOptions) )
+
+
+var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.images.tableChatFull.htmlStageElement.position.z.stage].stage.canvas
+
+$(tableChatFullCanvas).css('display','inline')
+self.jQueryObjects.tableChatFullParagraph.css('display','inline ')
+
+if(update !== false){
+  this.updateStages(stagesToUpdate)}
+  else{return stagesToUpdate}
+
+
+
+//console.log(this.images.tableChatFull.stage.contains(this.images.tableChatFull.window.image))
+//console.log(this.images.tableChatFull.window.image.isVisible())
+}
+
+
+this.hideTableChatFull = function(options){
+if(!options){var options = {}}
+  var update = options.update
+options.update = false
+
+var stagesToUpdate = []
+
+console.log('calling hideTableChatFull')
+ stagesToUpdate.push(this.displayChildren(this.images.showTableChatFull,options))
+stagesToUpdate.push(this.hideChildren(this.images.hideTableChatFull,options))
+stagesToUpdate.push(this.hideChildren(this.images.tableChatFull, options))
+
+var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.images.tableChatFull.htmlStageElement.position.z.stage].stage.canvas
+
+$(tableChatFullCanvas).css('display','none')
+self.jQueryObjects.tableChatFullParagraph.css('display','none')
+if(update!== false){this.updateStages(stagesToUpdate)}
+  else{stagesToUpdate}
+}
+
+/*
 this.displayTableChatFull = function(){
 //update what is showing and what isnt from current preferences
 
@@ -5617,11 +5887,11 @@ this.displayChildren(this.images.tableChatFull.chatMessageText,{update:false})
 console.log('getting ready to update stages')
 
 
-this.updateTableChatFullDisplayDoesNotUpdateStageByDefault()
+this.updateTableChatFullDisplay({update:false})
 
 //console.log(this.images.tableChatFull)
-this.updateStage(this.images.hideTableChatFull.position.z.stage)
-this.updateStage(this.images.tableChatFull.htmlStageElement.position.z.stage)
+this.updateStages(this.images.hideTableChatFull.position.z.stage)
+this.updateStages(this.images.tableChatFull.htmlStageElement.position.z.stage)
 
 var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.images.tableChatFull.htmlStageElement.position.z.stage].stage.canvas
 
@@ -5632,21 +5902,7 @@ self.jQueryObjects.tableChatFullParagraph.css('display','inline ')
 //console.log(this.images.tableChatFull.window.image.isVisible())
 }
 
-this.hideTableChatFull = function(){
-console.log('calling hideTableChatFull')
-  this.displayChildren(this.images.showTableChatFull,{update:false})
-this.hideChildren(this.images.hideTableChatFull,{update:false})
-this.hideChildren(this.images.tableChatFull, { update:false})
-this.hideChildren(this.images.tableChatFull.chatMessageText,{update:false})
-
-this.updateStage(this.images.showTableChatFull.position.z.stage)
-this.updateStage(this.images.tableChatFull.htmlStageElement.position.z.stage)
-
-var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.images.tableChatFull.htmlStageElement.position.z.stage].stage.canvas
-
-$(tableChatFullCanvas).css('display','none')
-self.jQueryObjects.tableChatFullParagraph.css('display','none')
-}
+*/
 
     //make sure to set buttonText as FALSE if you want to display the default text
   this.displayButton =  function (parentOfImageObject, buttonText, messages){
@@ -5666,14 +5922,13 @@ self.jQueryObjects.tableChatFullParagraph.css('display','none')
      }
  
     }
-
-    this.hideButton = function (parentOfImageObject, messages){
-        this.hideChildren(parentOfImageObject)
-        if(messages){parentOfImageObject.messages = messages}
-        // parentOfImageObject.image.onClick = null
-    }
     
-    this.hideCashier = function(){
+    this.hideCashier = function(hideOrDisplayChildrenOptions){
+      if(!hideOrDisplayChildrenOptions){var hideOrDisplayChildrenOptions = {}}
+        var update = hideOrDisplayChildrenOptions.update
+        hideOrDisplayChildrenOptions.update = false
+
+        var stagesToUpdate = []
 //hide cashierCanvas
 $(self.arrayOfParentsOfStageAndOfContainerArray[self.images.cashier.window.position.z.stage].stage.canvas).css('display','none')
 
@@ -5684,7 +5939,7 @@ $(self.arrayOfParentsOfStageAndOfContainerArray[self.images.cashier.window.posit
        self.enableTableChatBox()
        }
 
-                $('#cashier').css('display','none')
+                self.jQueryObjects.cashierForm.css('display','none')
 
                 self.restoreActiveStages(self.gameState.cashier.activeStages)
         self.gameState.cashier.display = false
@@ -5697,11 +5952,21 @@ $(self.arrayOfParentsOfStageAndOfContainerArray[self.images.cashier.window.posit
            $('#autoRebuyAmount').val('')
            $('#maxAmount').val('')
            //hide cashier children
-           self.hideChildren(self.images.cashier)
+     stagesToUpdate.push(      self.hideChildren(self.images.cashier, hideOrDisplayChildrenOptions))
+
+     if(update !== false){self.updateStages(stagesToUpdate)}
+      else{return stagesToUpdate}
 
     }
 
-    this.hideMessageBox = function(){
+    this.hideMessageBox = function(hideOrDisplayChildrenOptions){
+      if(!hideOrDisplayChildrenOptions){var hideOrDisplayChildrenOptions = {}}
+        var update = hideOrDisplayChildrenOptions.update
+        hideOrDisplayChildrenOptions.update = false
+
+        var stagesToUpdate = []
+
+
 
 var messageBoxStageNumber = self.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex].window.position.z.stage
 
@@ -5712,7 +5977,7 @@ console.log(self.gameState.messageBox.messageBoxImageContainerIndex)
         if(self.gameState.messageBox.messageBoxImageContainerIndex === self.gameState.zPositionData.initialMessageBox.container){     
 
         if(self.gameState.cashier.display === true){
-            $('#cashier').css('display','inline')
+            this.jQueryObjects.cashierForm.css('display','inline')
         }
 
         //enable tableChatBox if necessary
@@ -5720,8 +5985,9 @@ console.log(self.gameState.messageBox.messageBoxImageContainerIndex)
 
         }
 
-console.log(self.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex])
-      self.hideChildren(self.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex])
+//console.log(self.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex])
+
+stagesToUpdate.push(      self.hideChildren(self.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex], hideOrDisplayChildrenOptions))
 
       //if  bottom message box
 if(self.gameState.messageBox.messageBoxImageContainerIndex === self.gameState.zPositionData.initialMessageBox.container){     
@@ -5734,10 +6000,21 @@ $(self.arrayOfParentsOfStageAndOfContainerArray[ messageBoxStageNumber].stage.ca
 
 //store new active message box container variable
         self.gameState.messageBox.messageBoxImageContainerIndex = self.gameState.messageBox.messageBoxImageContainerIndex - self.gameState.zPositionData.containersPerMessageBox
-    }//if bottom message box
+   
+if(update !== false){this.updateStages(stagesToUpdate)}
+      else{return stagesToUpdate}
 
 
-    this.displayMessageBox = function(messageString, messageInfo){
+    }
+
+
+    this.displayMessageBox = function(messageString, messageInfo, hideOrDisplayChildrenOptions){
+      if(!hideOrDisplayChildrenOptions){var hideOrDisplayChildrenOptions = {}}
+        var update = hideOrDisplayChildrenOptions.update
+        hideOrDisplayChildrenOptions.update = false
+
+        var stagesToUpdate = []
+
       var messageBoxStageNumber = this.images.messageBox[0].window.position.z.stage
        var messageBoxImageContainerIndex = this.images.messageBox[0].window.position.z.container
 var initialContainer = messageBoxImageContainerIndex
@@ -5759,7 +6036,7 @@ console.log(messageBoxImageContainerIndex)
        if( $('#maxRadio').is(':visible')){
           
        self.gameState.cashier.display = true
-       $('#cashier').css('display', 'none')
+       this.jQueryObjects.cashierForm.css('display', 'none')
        }
        else{self.gameState.cashier.display = false}
        
@@ -5974,18 +6251,25 @@ if(messageInfo.closeWindowMessages){
             self.arrayOfParentsOfStageAndOfContainerArray[messageBoxStageNumber].containers[i].mouseEnabled = false
         }
 
-                self.displayChildren(self.images.messageBox[messageBoxImageContainerIndex])
+           stagesToUpdate.push(   self.displayChildren(self.images.messageBox[messageBoxImageContainerIndex], hideOrDisplayChildrenOptions))
 
 
 //display messageBoxCanvas
 $(this.arrayOfParentsOfStageAndOfContainerArray[ messageBoxStageNumber].stage.canvas).css('display','inline')
 
+if(update !== false){this.updateStages(stagesToUpdate)}
+      else{return stagesToUpdate}
+
     }
 
 
-    this.displayCashier = function(info)
-    {
-      
+    this.displayCashier = function(info, hideOrDisplayChildrenOptions){
+    if(!hideOrDisplayChildrenOptions){var hideOrDisplayChildrenOptions = {}}
+        var update = hideOrDisplayChildrenOptions.update
+        hideOrDisplayChildrenOptions.update = false
+
+        var stagesToUpdate = []
+
       var cashierImageContainerIndex = this.images.cashier.window.position.z.container
 
       //disable tableChatBox
@@ -6069,12 +6353,13 @@ var cashierStageNumber = this.images.cashier.window.position.z.stage
         }
 
         console.log(this.images.cashier)
-                this.displayChildren(this.images.cashier)
+           stagesToUpdate.push(     this.displayChildren(this.images.cashier, hideOrDisplayChildrenOptions) )
 
 //display cashierCanvas
 $(this.arrayOfParentsOfStageAndOfContainerArray[ this.images.cashier.window.position.z.stage].stage.canvas).css('display','inline')
 
-
+if(update !== false){this.updateStages(stagesToUpdate)}
+  else{return stagesToUpdate}
 
 
 }
@@ -6195,21 +6480,25 @@ if(self.images.pots[i] && self.images.pots[i].chips && self.images.pots[i].chips
 
 
 
-this.updateUserOptionsBasedOnFlagsAndPreactions = function(){
+this.updateUserOptionsBasedOnFlagsAndPreactions = function(options){
+if(!options){var options = {}}
+  var update = options.update
+options.update = false
+var stagesToUpdate = [] 
 
 if(!_.isNumber(self.gameState.userSeatNumber)){
 
-this.hideSeatedOptions()
+stagesToUpdate.push( this.hideSeatedOptions() )
 
-  return 'updated based on non seated player'}
+  return 'display updated based on non seated player'}
 
 else{//if player is seated
 
 //enable basic seatedoptions
    this.images.getChips.image.onClick = self.events.onButtonClick
      this.images.standUp.image.onClick = self.events.onButtonClick
-          this.hideChildren(this.images.getChipsDisabledShape,{update:false})
- this.hideChildren(this.images.standUpDisabledShape,{update:true})
+  stagesToUpdate.push(        this.hideChildren(this.images.getChipsDisabledShape,options) )
+stagesToUpdate.push(  this.hideChildren(this.images.standUpDisabledShape,options))
 
 
 //var userSeatIndex = this.getSeatImageIndex(self.gameState.userSeatNumber, 'rotatedSeatNumber')
@@ -6223,72 +6512,84 @@ var preActionOnce = self.gameState.seats[self.gameState.userSeatNumber].preActio
 
              //display sitout next hand depending on user's flag
               if(flags.pending_sit_out == true){
-self.hideChildren(self.images.sitOutNextBlind)
-self.hideChildren(self.images.sitOutNextBlindOn)
-self.hideChildren(self.images.sitOutNextHand)
-                self.displayChildren(self.images.sitOutNextHandOn)
+stagesToUpdate.push( self.hideChildren(self.images.sitOutNextBlind,options))
+stagesToUpdate.push( self.hideChildren(self.images.sitOutNextBlindOn,options))
+stagesToUpdate.push( self.hideChildren(self.images.sitOutNextHand,options))
+        stagesToUpdate.push(        self.displayChildren(self.images.sitOutNextHandOn,options))
               }
              else if (self.gameState.seats[self.gameState.userSeatNumber].sitting_out != true){
-              self.hideChildren(self.images.sitOutNextHandOn)
-              self.displayChildren(self.images.sitOutNextHand)
+          stagesToUpdate.push(     self.hideChildren(self.images.sitOutNextHandOn,options))
+          stagesToUpdate.push(     self.displayChildren(self.images.sitOutNextHand,options))
             }
 
                   //check if user is sitting out
                   if(user.sitting_out == true){
-                    self.hideChildren(self.images.sitOutNextBlind)
-self.hideChildren(self.images.sitOutNextBlindOn)
-self.hideChildren(self.images.foldToAnyBet)
-self.hideChildren(self.images.foldToAnyBetOn)
-                    this.playerSitsOut(self.gameState.userSeatNumber)
-                    self.hideChildren(self.images.sitOutNextHand)
-                     self.displayChildren(self.images.sitOutNextHandOn)
+        stagesToUpdate.push(             self.hideChildren(self.images.sitOutNextBlind,options))
+stagesToUpdate.push( self.hideChildren(self.images.sitOutNextBlindOn,options))
+stagesToUpdate.push( self.hideChildren(self.images.foldToAnyBet,options))
+stagesToUpdate.push( self.hideChildren(self.images.foldToAnyBetOn,options))
+              stagesToUpdate.push(       this.playerSitsOut(self.gameState.userSeatNumber,options))
+              stagesToUpdate.push(       self.hideChildren(self.images.sitOutNextHand,options))
+              stagesToUpdate.push(        self.displayChildren(self.images.sitOutNextHandOn,options))
                        //either display rebuy OR sitin if user is sitting out
              if(user.notEnoughChips == true){
-              self.hideChildren(self.images.sitIn)
-              self.displayChildren(self.images.rebuy)
+        stagesToUpdate.push(       self.hideChildren(self.images.sitIn,options))
+        stagesToUpdate.push(       self.displayChildren(self.images.rebuy,options))
 }
                  else{ 
-                  self.hideChildren(self.images.rebuy)
-                  self.displayChildren(self.images.sitIn)
+       stagesToUpdate.push(            self.hideChildren(self.images.rebuy,options))
+        stagesToUpdate.push(           self.displayChildren(self.images.sitIn,options))
                 }
 }//user.sitting_out == true
 
          //if user is not sitting out
          else{
-          self.hideChildren(self.images.sitIn)
-          self.hideChildren(self.images.rebuy)
+    stagesToUpdate.push(       self.hideChildren(self.images.sitIn,options))
+     stagesToUpdate.push(      self.hideChildren(self.images.rebuy,options))
                             //display sit out next big blind depending on user's flag
               if(flags.post_blind == false){
-self.hideChildren(self.images.sitOutNextBlind)
-                self.displayChildren(self.images.sitOutNextBlindOn)
+stagesToUpdate.push( self.hideChildren(self.images.sitOutNextBlind,options))
+       stagesToUpdate.push(          self.displayChildren(self.images.sitOutNextBlindOn,options))
               }
                     else{
-                      self.hideChildren(self.images.sitOutNextBlindOn)
-                      self.displayChildren(self.images.sitOutNextBlind)
+                  stagesToUpdate.push(     self.hideChildren(self.images.sitOutNextBlindOn,options))
+                 stagesToUpdate.push(      self.displayChildren(self.images.sitOutNextBlind,options))
                     }
   //check if user is holding cards to display fold toAnyBet
              if(this.arrayOfParentsOfStageAndOfContainerArray[self.images.seats[self.gameState.userSeatNumber].shownCard0.position.z.stage].stage.contains(self.images.seats[self.gameState.userSeatNumber].shownCard0.image)){
                         //fold to any bet button on or off
                         if(preActionHand.check == true && preActionHand.fold == true){
-self.hideChildren(self.images.foldToAnyBet)
-                          self.displayChildren(self.images.foldToAnyBetOn)
+stagesToUpdate.push( self.hideChildren(self.images.foldToAnyBet,options))
+                    stagesToUpdate.push(       self.displayChildren(self.images.foldToAnyBetOn,options))
                         }
              else{ 
-              self.hideChildren(self.images.foldToAnyBetOn)
-              self.displayChildren(self.images.foldToAnyBet)
+          stagesToUpdate.push(     self.hideChildren(self.images.foldToAnyBetOn,options))
+          stagesToUpdate.push(     self.displayChildren(self.images.foldToAnyBet,options))
             }
          }//end check if user is holding cards
 
 } //end check if useris not sitting out
 
 }//if seated players
+
+//console.log('updateUserOptionsBasedOnFlagsAndPreactions stages to update: ')
+//console.log(stagesToUpdate)
+
+if(update === false){return stagesToUpdate}
+  else{this.updateStages(stagesToUpdate)}
 }
 
 this.getPermanentPreferences = function() {
 
 //var permanentPreferences = $.getJSON('/preferences/1')
 
-$.getJSON('/preferences/1', function(response) { console.log(response); });
+$.getJSON('/preferences/1', function(response) { 
+
+  console.log(response); 
+  if(_.isObject(response)){
+self.updatePreference(self.permanentPreferences, response.permanentPreferences)
+}
+});
 // response.data will probably be the preferences Object
 
 //console.log(permanentPreferences)
@@ -6441,40 +6742,120 @@ if(_.isNumber(player.chips)&& player.chips>0){self.gameState.seats[player.seat].
 
 }
 
-this.updateStage = function(stageNumberLeaveBlankForAll){
-  if(_.isNumber(stageNumberLeaveBlankForAll)){
-    var stagesToUpdate = []
-    stagesToUpdate.push()
-    var canvasID = this.arrayOfParentsOfStageAndOfContainerArray[stageNumberLeaveBlankForAll].stage.canvas.id
+this.updateStages = function(stageNumberLeaveBlankForAll, options){
+
+//=======================define private functions=================================
+var getStageFamilyArray = function(stageNumber, options){
+  var stageFamilyArray = []
+var canvasID = self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.canvas.id
 //determine which stages share the same canvas with specified stagenumber
-for(var i  = 0;i<this.arrayOfParentsOfStageAndOfContainerArray.length;i++){
-  if(this.arrayOfParentsOfStageAndOfContainerArray[i].stage.canvas.id === canvasID){stagesToUpdate.push(i)}
+for(var i  = 0;i<self.arrayOfParentsOfStageAndOfContainerArray.length;i++){
+  if(self.arrayOfParentsOfStageAndOfContainerArray[i].stage.canvas.id === canvasID){stageFamilyArray.push(i)}
 }
-if(stagesToUpdate.length == 0){console.log('no stages found to update'+ stageNumberLeaveBlankForAll)}
+return stageFamilyArray
+}//get stageFamilyArray function
 
-//console.log('clearing the canvasof stage number '+stagesToUpdate[0]+', with a canvas id of: '+this.arrayOfParentsOfStageAndOfContainerArray[stagesToUpdate[0]].stage.canvas.id)
-this.arrayOfParentsOfStageAndOfContainerArray[stagesToUpdate[0]].stage.clear()
+var setStagesUpToDateValueFromArrayFalseByDefault = function(stages, options){
+  if(!options){var options = {}}
+    if(options.upToDate !== true && options.uptoDate !== false){options.upToDate = false}
+if(_.isNumber(stages)){  self.arrayOfParentsOfStageAndOfContainerArray[stages].upToDate = options.upToDate}
+  if(_.isArray(stages)){
+    for(var i = 0;i<stages.length;i++){ self.arrayOfParentsOfStageAndOfContainerArray[stages[i]].upToDate = options.upToDate}
+  }
 
-for(var i = 0;i<stagesToUpdate.length;i++){
-//  console.log('updating stage number '+stagesToUpdate[i])
- // console.log('drawing to stage: ' + stagesToUpdate[i]+', whose canvas id is: ' +this.arrayOfParentsOfStageAndOfContainerArray[stagesToUpdate[i]].stage.canvas.id)
-
-  this.arrayOfParentsOfStageAndOfContainerArray[stagesToUpdate[i]].stage.update()
 }
 
-  }//if a stage number is specified
+var updateStagesFromArray = function(stageArray, options){
 
-  else{
-console.log('updating all stages')
+if(!options){var options = {}}
+if(stageArray.length == 0){
+  return
+// console.log('no stages found to update'+ stageNumberLeaveBlankForAll)
+}
+
+var sortfunction = function(x, y){return (x - y) }//causes an array to be sorted numerically and ascending
+//sort array to make sure we display objects in the right order of Z
+stageArray.sort(sortfunction)
+ // console.log(stageArray)
+
+var canvasesCleared = []
+var stagesUpdated = []
 var currentCanvasID = null
-for(var i  = 0;i<this.arrayOfParentsOfStageAndOfContainerArray.length;i++){
+for(var i  = 0;i<stageArray.length;i++){
+
   //check if new canvas, if it is clear it
- if( this.arrayOfParentsOfStageAndOfContainerArray[i].stage.canvas.id !== currentCanvasID){
-  currentCanvasID = this.arrayOfParentsOfStageAndOfContainerArray[i].stage.canvas.id
-  this.arrayOfParentsOfStageAndOfContainerArray[i].stage.clear()
+ if( self.arrayOfParentsOfStageAndOfContainerArray[stageArray[i]].stage.canvas.id !== currentCanvasID && options.clear !== false){
+  currentCanvasID = self.arrayOfParentsOfStageAndOfContainerArray[stageArray[i]].stage.canvas.id
+  canvasesCleared.push(currentCanvasID)
+  self.arrayOfParentsOfStageAndOfContainerArray[stageArray[i]].stage.clear()
+  self.performance.numCanvasClears++
+ 
+  setStagesUpToDateValueFromArrayFalseByDefault(getStageFamilyArray(stageArray[i]))
+}//if new canvas
+
+  //make sure stage is not upToDate
+if(self.arrayOfParentsOfStageAndOfContainerArray[stageArray[i]].upToDate !== true || options.forceUpdate === true){
+stagesUpdated.push(stageArray[i])
+  self.arrayOfParentsOfStageAndOfContainerArray[stageArray[i]].stage.update()
+  self.arrayOfParentsOfStageAndOfContainerArray[stageArray[i]].upToDate = true
+}//check to make sure stage is NOT up to date
+
+}//iterate through array
+
+if(canvasesCleared.length + stagesUpdated.length >0 && self.performance.numCanvasClears %50 === 0){
+var logString = 'canvases cleared: '+canvasesCleared.toString()+', total cleared: '+self.performance.numCanvasClears+ ', stages updated: '+stagesUpdated.toString()
+ console.log(logString)
 }
-  this.arrayOfParentsOfStageAndOfContainerArray[i].stage.update()
-}
+
+}//updateStagesFromArray function
+
+//=============================START ACTION PART OF: updateStages FUNCTION==============================
+
+if(!options){var options  = {}}
+
+  if(_.isNumber(stageNumberLeaveBlankForAll)){ //if given number as parameter
+
+  if(this.arrayOfParentsOfStageAndOfContainerArray[stageNumberLeaveBlankForAll].upToDate !== true || options.forceUpdate === true) {
+    var stagesToUpdate = getStageFamilyArray(stageNumberLeaveBlankForAll)
+    updateStagesFromArray(stagesToUpdate)
+
+}//if stage is NOT uptodate and options.update !== true
+  }//if a stage number is specified as a number
+ 
+
+else if(_.isArray(stageNumberLeaveBlankForAll)){ // if passed parameter as ARRAY
+if(stageNumberLeaveBlankForAll.length === 0){return 'updatestages passed 0 length array as parameter'}
+
+//flatten array
+stageNumberLeaveBlankForAll = _.flatten(stageNumberLeaveBlankForAll)
+
+//remove any non number values from array
+stageNumberLeaveBlankForAll = _.without(stageNumberLeaveBlankForAll ,null, undefined, false, true, {})
+//remove repeats from the array
+stageNumberLeaveBlankForAll = _.uniq(stageNumberLeaveBlankForAll)
+
+var lengthOfArray = stageNumberLeaveBlankForAll.length
+//iterate through array
+for(var i = 0;i<lengthOfArray;i++){
+  //here we get the family of stages for each member of the stage array, then concat + uniquize with our array
+stageNumberLeaveBlankForAll.push (getStageFamilyArray(stageNumberLeaveBlankForAll[i]))
+}//stageNumberLeaveBlankForAll iteration
+
+//flatten array cuz its now nested
+stageNumberLeaveBlankForAll = _.flatten(stageNumberLeaveBlankForAll)
+//uniqize the rray
+stageNumberLeaveBlankForAll = _.uniq(stageNumberLeaveBlankForAll)
+//sorting the array wilbe done automatically in the updateStagesFromArray function
+
+updateStagesFromArray(stageNumberLeaveBlankForAll)
+
+}//if parameter is array
+
+  else{//if we want to update All stages
+console.log('updating all stages')
+var allStages = []
+for(var i = 0;i<this.arrayOfParentsOfStageAndOfContainerArray.length;i++){allStages.push(i)}
+ updateStagesFromArray( allStages)
 }//if no stage number specified
 
 }
@@ -6492,7 +6873,7 @@ createjs.Ticker.setPaused(false)
 
 //add one elipse to the loading text
 self.images.imageLoading.title.text.text = self.images.imageLoading.title.text.text+ '.'
-this.updateStage(this.images.imageLoading.title.position.z.stage)
+this.updateStages(this.images.imageLoading.title.position.z.stage)
 function tick(event){
   
     //update loading images graphic evert 3 ticks
@@ -6531,7 +6912,7 @@ function tick(event){
                       //remove all loadingContainers from the stage and remove all children from them
                var parentOfLoadingStage =       self.arrayOfParentsOfStageAndOfContainerArray[self.gameState.zPositionData.loadingBackground.stage]
                parentOfLoadingStage.stage.removeAllChildren()
-               self.updateStage(self.gameState.zPositionData.loadingBackground.stage)
+               self.updateStages(self.gameState.zPositionData.loadingBackground.stage)
               // parentOfLoadingStage.stage.update()
               console.log('loading canvas now')
                $(parentOfLoadingStage.stage.canvas).css('display','none')
@@ -6548,7 +6929,7 @@ function tick(event){
          this.displayChildren(this.images.standUp)
          this.displayChildren(this.images.exitTable)
 
-//remove S
+//remove extra S
          this.images.currencyDisplay.text.text = '1 chip is equal to ' + table_state.currency_per_chip + ' ' + table_state.currency
 if(table_state.currency_per_chip == 1 && table_state.currency.charAt(table_state.currency.length-1)=='s'||'S'){
   this.images.currencyDisplay.text.text = this.images.currencyDisplay.text.text.substring(0,this.images.currencyDisplay.text.text.length-1)
@@ -6862,7 +7243,7 @@ $('#betSizeDiv').unbind('mousewheel')
  socket.on('act_prompt', function(actions, timeout){
 
 self.playerToAct(self.gameState.userSeatNumber, timeout)
-     self.startCountdown(self.gameState.userSeatNumber,Math.round(timeout/1000))
+   //  self.startCountdown(self.gameState.userSeatNumber,Math.round(timeout/1000))
 
      for (var i = 0; i < actions.length; i++){
      if (typeof actions[i].fold !== 'undefined'){
@@ -6901,26 +7282,8 @@ self.playerToAct(self.gameState.userSeatNumber, timeout)
 //hands turned face up
  socket.on('update_time_to_act', function(seatNumber, time){
 
-self.gameState.seats[seatNumber].timeToAct = time
+self.gameState.seats[seatNumber].timeToActInMS = time
 
-})
-
-//player to act (not the user)
- socket.on('player_to_act', function(player, timeout){
-    var timeToCountDown = 3000
-
-//if user = player, do not initiate to act function, as act_prompt will be sent instead
-    if(player.seat != self.gameState.userSeatNumber){self.playerToAct(player.seat, timeout)}
-
-var delayedCountDown = function(){
-if( self.gameState.seats[player.seat].toAct == true){self.startCountdown(player.seat, Math.round(timeToCountDown/1000))}
-}
-     //do a countdown when time is low for non-user players
-     if(player.seat != self.gameState.userSeatNumber){
-     createjs.Tween.get(self.images.seats[player.seat].countdown, {override:true, loop:false})
-     .wait(timeout-timeToCountDown)
-    .call(delayedCountDown)
-     }
 })
 
 //hands turned face up
@@ -6954,6 +7317,7 @@ self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInte
 //if user = player, do not initiate to act function, as act_prompt will be sent instead
     if(player.seat != self.gameState.userSeatNumber){self.playerToAct(player.seat, timeout)}
 
+/*
 var delayedCountDown = function(){
 if( self.gameState.seats[player.seat].toAct == true){self.startCountdown(player.seat, Math.round(timeToCountDown/1000))}
 }
@@ -6963,6 +7327,7 @@ if( self.gameState.seats[player.seat].toAct == true){self.startCountdown(player.
      .wait(timeout-timeToCountDown)
     .call(delayedCountDown)
      }
+     */
 })
 
 //notification received
@@ -7024,13 +7389,13 @@ self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInte
           self.updateLocalGameDataBasedOnServerPlayerObject(player) 
             self.updateUserOptionsBasedOnFlagsAndPreactions()
 }
-        self.updateStage(self.images.seats[player.seat].status.position.z.stage)
+        self.updateStages(self.images.seats[player.seat].status.position.z.stage)
 })
 
 //player sits out
        socket.on('player_sits_out', function(player){
            self.images.seats[player.seat].status.text.text = 'Sitting Out'
-   self.updateStage(self.images.seats[player.seat].status.position.z.stage)
+   self.updateStages(self.images.seats[player.seat].status.position.z.stage)
         if(player.seat == self.gameState.userSeatNumber){
        self.updateLocalGameDataBasedOnServerPlayerObject(player) 
 self.updateUserOptionsBasedOnFlagsAndPreactions()
@@ -7096,23 +7461,33 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
 
 //player adds chips to his stack
        socket.on('player_adds_chips', function(player,is_you){
+var options = {}
+options.update = false
+
+var stagesToUpdate = []
+
+
            if(is_you == true){player.seat = self.gameState.userSeatNumber}
-           if(player.sitting_out == true){
-                          
-           self.images.seats[player.seat].status.text.text = 'Sitting Out'
-           }
+      if(player.sitting_out == true){  
+        //this playerSitsOutfunction wil automatically make ure not to update if not necessary
+        stagesToUpdate.push(self.playerSitsOut(player.seat, options))  
+      }
            else if(player.chips>0){
+            if(self.images.seats[player.seat].status.text.text+''!== player.chips+''){
                 self.images.seats[player.seat].status.text.text = player.chips
-           }
+                stagesToUpdate.push(self.images.seats[player.seat].status.position.z.stage)
+              }
+           }//if player out of chips
 
 
         if(is_you){
-            self.hideCashier()
-            if(player.chips>0){self.hideChildren(self.images.rebuy)
-            if (player.sitting_out == true){self.displayChildren(self.images.sitIn)}
+      stagesToUpdate.push(      self.hideCashier(options) )
+            if(player.chips>0){stagesToUpdate.push( self.hideChildren(self.images.rebuy, options))
+            if (player.sitting_out == true){stagesToUpdate.push(self.displayChildren(self.images.sitIn, options))}
             }
         }
-        self.updateStage(self.images.seats[player.seat].status.position.z.stage)
+
+        self.updateStages(stagesToUpdate)
  }  ) 
 
 
@@ -7128,17 +7503,24 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
 
 //reset table
 socket.on('reset_table', function(players){
-         self.roundEnds()
+var options = {}
+options.update = false
+
+var stagesToUpdate = []
+
+     stagesToUpdate.push(    self.roundEnds() )
  for(var i = 0;i<self.images.seats.length;i++){
   self.gameState.seats[i].preActions.street = {}
    self.gameState.seats[i].preActions.hand = {}
-    self.hideChildren(self.images.seats[i].hiddenCard0)
-   self.hideChildren(self.images.seats[i].hiddenCard1)
-   self.hideChildren(self.images.seats[i].shownCard0)
-   self.hideChildren(self.images.seats[i].shownCard1)
+stagesToUpdate.push(    self.hideChildren(self.images.seats[i].hiddenCard0,options))
+ stagesToUpdate.push(  self.hideChildren(self.images.seats[i].hiddenCard1,options))
+ stagesToUpdate.push(  self.hideChildren(self.images.seats[i].shownCard0,options))
+ stagesToUpdate.push(  self.hideChildren(self.images.seats[i].shownCard1,options))
 }
-self.updateUserOptionsBasedOnFlagsAndPreactions()
+stagesToUpdate.push(self.hideChildren(self.images.community,options))
+stagesToUpdate.push( self.updateUserOptionsBasedOnFlagsAndPreactions(options))
 
+self.updateStages(stagesToUpdate)
 })
     }
 
@@ -7154,8 +7536,8 @@ jQuery(document).ready(function(){
 jQuery(window).load(function (){
   console.log('window load function claled')
   /*
-$('#tableChatFullTextDiv').mCustomScrollbar('destroy')
-$('#tableChatFullTextDiv').mCustomScrollbar()
+self.jQueryObjects.tableChatFullDiv.mCustomScrollbar('destroy')
+self.jQueryObjects.tableChatFullDiv.mCustomScrollbar()
 */
  //   holdemCanvas.createAllItems()
 
