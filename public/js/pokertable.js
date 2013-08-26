@@ -1007,7 +1007,6 @@ self.saveSessionPreferences()
 
     this.events.exit = function(event){
         socket.emit('stand')
-        window.location.href = '/lobby'
         self.hideMessageBox()
         if (_.isObject(parent.iframes)) {
           console.log('Close iframe');

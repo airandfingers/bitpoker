@@ -25,12 +25,13 @@ module.exports = (function() {
     //the code used to confirm this user's email
   , confirmation_code: String
     //whether the user has confirmed his/r email address
-  , email_confirmed  : { type: Boolean, default: false }
-  , funbucks         : { type: Number, default: 100, min: 0 }
-  , satoshi          : { type: Number, default: 0, min: 0 }
-  , recovery_code    : { type: String }
-  , registration_date: { type: Date, default: Date.now }
-  , deposit_address  : { type: String }
+  , email_confirmed    : { type: Boolean, default: false }
+  , funbucks           : { type: Number, default: 100, min: 0 }
+  , satoshi            : { type: Number, default: 0, min: 0 }
+  , recovery_code      : { type: String }
+  , registration_date  : { type: Date, default: Date.now }
+  , deposit_address    : { type: String }
+  , current_table_names: { type: [String], default: function() { return {}; } }
   });
 
   // static methods - Model.method()
@@ -175,34 +176,54 @@ module.exports = (function() {
   };
 
   UserSchema.methods.generateDepositAddress = function(cb) {
-      var user = this
-      // generate deposit public address for this user
-        , url = 'https://blockchain.info/api/receive?method=create' +
-                '&address=1NpMFVFNjutgY2VXGfn97WcBa1JafSVHF' +
-                '&shared=false' +
-                '&callback=https://bitcoin-poker-7793.onmodulus.net/bitcoin_deposit/' + user.username
-        , error = null;
-      request({
-        url: url
-      }, function(err, response, body) {
-        if (err) {
-          error = 'Error while creating deposit address: ' + err.message;
-          console.error(error);
-        }
-        else if (response &&
-                 response.statusCode !== 200 &&
-                 response.statusCode !== 201) {
-          error = 'Unsuccessful response code while creating deposit address: ' + response.statusCode
-          console.error(error);
-        }
-        else {
-          var body = JSON.parse(response.body);
-          user.deposit_address = body.input_address;
-          console.log('augmented user with deposit_address:' + user.deposit_address);
-        }
-        cb(error);
-      });
-    };  
+    var user = this
+    // generate deposit public address for this user
+      , url = 'https://blockchain.info/api/receive?method=create' +
+              '&address=1NpMFVFNjutgY2VXGfn97WcBa1JafSVHF' +
+              '&shared=false' +
+              '&callback=https://bitcoin-poker-7793.onmodulus.net/bitcoin_deposit/' + user.username
+      , error = null;
+    request({
+      url: url
+    }, function(err, response, body) {
+      if (err) {
+        error = 'Error while creating deposit address: ' + err.message;
+        console.error(error);
+      }
+      else if (response &&
+               response.statusCode !== 200 &&
+               response.statusCode !== 201) {
+        error = 'Unsuccessful response code while creating deposit address: ' + response.statusCode
+        console.error(error);
+      }
+      else {
+        var body = JSON.parse(response.body);
+        user.deposit_address = body.input_address;
+        console.log('augmented user with deposit_address:' + user.deposit_address);
+      }
+      cb(error);
+    });
+  };
+
+  UserSchema.methods.onJoinTable = function(table_name) {
+    this.update({ $addToSet: { current_table_names: table_name } }, function(err, result) {
+      if (err) {
+        var error = 'Error in User.joinTable: ' + err.message;
+        console.error(error);
+      }
+      console.log('onJoinTable(' + table_name + ') update returns', err, result);
+    });
+  };
+
+  UserSchema.methods.onLeaveTable = function(table_name) {
+    this.update({ $pull: { current_table_names: table_name } }, function(err, result) {
+      if (err) {
+        var error = 'Error in User.leaveTable: ' + err.message;
+        console.error(error);
+      }
+      console.log('onLeaveTable(' + table_name + ') update returns', err, result);
+    });
+  };
 
   UserSchema.statics.getLeaders = function(currency, cb) {
     console.log ('getLeaders function called');

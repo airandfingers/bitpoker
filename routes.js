@@ -608,6 +608,7 @@ module.exports = (function () {
       var table_state = table.getCurrentHand().serialize(username)
         , users = table.room.getUsernames()
         , room_state = { users: users };
+      req.user.onJoinTable(table_name);
       res.render('table', {
         table_id: table_id
       , table_name: table_name
@@ -702,6 +703,16 @@ module.exports = (function () {
         res.json(hand_histories);
       }
     });
+  });
+
+  app.post('/leave_table', auth.ensureAuthenticated, function(req, res) {
+    var table_name = req.body.table_name;
+    console.log('/leave_table called on', req.user.username, 'for', table_name);
+    if (! _.isString(table_name)) {
+      return res.json({ error: 'table_name is a required field for /leave_table'});
+    }
+    req.user.onLeaveTable(table_name);
+    res.json(table_name);
   });
 
   //Handle all other cases with a 404

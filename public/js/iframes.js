@@ -23,7 +23,7 @@
   var id_prefix = 'iframe_'
     , iframe_template =
   '<div id="iframe_<%= table_name %>" class="iframe">' +
-    '<div class="iframe_header">Iframe Title Here</div>' +
+    '<div class="iframe_header"></div>' +
     '<iframe src="/<%= table_name %>" width="690" height="480">' +
         '<p>Your browser does not support iframes.</p>' +
         '<p><a href="http://www.smashingmagazine.com/2012/07/10/dear-web-user-please-upgrade-your-browser/">Upgrade your browser</a></p>' +
@@ -72,6 +72,9 @@
     else {
       console.error('no iframe found for table_name', table_name);
     }
+    $.post('/leave_table', { table_name: table_name }, function(response) {
+      console.log('/leave_table returns', response)
+    })
   }
   
   function findIframe(table_name) {
