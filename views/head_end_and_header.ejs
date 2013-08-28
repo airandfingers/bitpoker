@@ -56,6 +56,22 @@
                             <% } %>
                         </li>
                     <% } %>
+
+                    <% if (title === 'Bitcoin Poker') { %>
+                      <div id="lobbyWrapperDiv">
+                      <li>
+                        <a href = "#" id="lobby_trigger" title="lobby">
+                        LOBBY
+                        </a>
+                      </li>
+
+                      <!-- lobby dropdown -->
+                      <div id="lobby">
+                        <% include table_list %>
+                      </div>
+                      </div> <!-- wrapperDiv: This is to help with hoverIntent -->
+                     <%  } %>
+
                     <li>
                         <a href="#" id="report_bug_trigger" title="Submit bugs or feedback">
                           <img src="/img/bug.png" />

@@ -1,4 +1,6 @@
       <% if (! locals.hide_navbar) { %>
+      <script src="/js/vendor/jquery.hoverIntent.min.js"></script>
+
         <!-- Navbar script (for dropdown animation) -->
         <script>
           $('.navbar li ul').css({
@@ -141,6 +143,62 @@
                   .hide('slide', { direction: 'up' }, 500);
               }
             });
+           
+            <!-- Hide/Show Lobby functionality -->
+              var $lobby = $('#lobby');
+              $(document).ready(function() {
+                $lobby.hide();
+
+                $('#lobbyWrapperDiv').hoverIntent(function() {
+                  console.log('hover trigger fired!');
+                  if ($('#lobbytrigger').hasClass('active')) {
+                    return;
+                  }
+                  else {
+                    $lobby
+                      .css({
+                        left: $('#lobby_trigger').position().left - $('#lobby_trigger').width() - 20
+                      , top: $('#lobby_trigger').position().top + $('#lobby_trigger').height()
+                      })
+                      .show('slide', { direction: 'up' }, 500)                  }                  
+
+                }, function() {
+                  console.log('hover off trigger fired!');
+                  if ($('#lobby_trigger').hasClass('active')) {
+                    return;
+                  }
+                  else {
+                    $lobby.hide('slide', {direction: 'up' }, 500);
+                  }
+
+                });
+
+                $('#lobby_trigger').click(function() {
+                  console.log('lobby trigger fired!');
+                  $lobby.stop(true, true);
+                  if (! $(this).hasClass('active')) {
+
+                    // add active class
+                    $(this)
+                      .addClass('active');
+                    // hide lobby form
+                    $lobby
+                      .css({
+                        left: $(this).position().left - $(this).width() - 20
+                      , top: $(this).position().top + $(this).height()
+                      })
+                      .show('slide', { direction: 'up' }, 500)
+                  }
+                  else {
+                    // remove active class
+                    $(this)
+                      .removeClass('active');
+                    // hide lobby form
+                    $lobby
+                      .hide('slide', { direction: 'up' }, 500);
+                  }
+                });
+              });
 
             // ajax form submission
             $report_bug.find('form').submit(function(e) {

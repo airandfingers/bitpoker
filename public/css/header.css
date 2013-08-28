@@ -86,7 +86,17 @@ h3 {
     display: none;
 }
 
-#login, #register, #report_bug {
+#lobby {
+    background-color: rgba(0,0,0,0);
+    min-width: 200px;
+    position: absolute;
+    display: none;
+    font-size: .8em;
+    padding: 1em;
+    text-align: center;
+}
+
+#login, #register, #report_bug{
     background-color: rgba(0,0,0,.88);
     color: #CCCCCC;
     min-width: 200px;
