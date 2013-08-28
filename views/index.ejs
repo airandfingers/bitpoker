@@ -1,23 +1,11 @@
-<% var title = 'Bitcoin Poker- Welcome!'; %>
 <% include head_start %>
     <link rel="stylesheet" href="/css/bootstrap-switch.css" />
 <% include head_end_and_header %>
     <div id="container">
-        
-        <div class="row-fluid">
-            <!-- display list of tables -->
-            <div id="table_list_container" class="span10 offset1">
-                <% include table_list %>
-            </div>
-        </div>
-
         <% if (typeof user === 'undefined') { %>
             <h1>Welcome to Bitcoin Poker</h1>
             <div id="button_groups"> 
                 <h1>Choose one:</h1>
-                <form action="/lobby" method="get">
-                    <button id="go_all_in" class="btn btn-custom btn-large" title="Lobby">Lobby</button>
-                </form>
                 <form action="/register" method="get">
                     <button class="btn btn-success btn-large">Register</button>
                 </form>
@@ -39,14 +27,14 @@
             </div>
             -->
             <!-- include values to expose to scripts -->
-            <!--
-            <input type="hidden" id="server_values" data-room_state="<%= room_state %>" />
-            -->
-
-            <div id="iframe_container">
-            </div>
-            
+            <input type="hidden" id="server_values"
+                data-room_state="<%= room_state %>"
+                data-current_table_names="<%= JSON.stringify(user.current_table_names) %>"
+            />
         <% } %>
+
+        <div id="iframe_container">
+        </div>
 
         <% if (message) { %>
           <p><%= message %></p>
@@ -59,12 +47,11 @@
     <script src="/js/vendor/jquery.dataTables.min.js"></script>
     <script src="/js/vendor/jquery.transform2d.js"></script>
 
+    <!-- iframe-related code -->
+    <script src="/js/iframes.js"></script>
     <script src="/js/table_list.js"></script>
 
     <script src="/socket.io/socket.io.js"></script>
     <!--<script src="/js/chat.js"></script>-->
-
-    <!-- iframes/pokertable resizer -->
-    <script src="/js/iframes.js"></script>
 
 <% include foot %>

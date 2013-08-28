@@ -10,14 +10,13 @@
                 <ul>
                     <%
                     var pages = [
-                        { name: 'home', href: '/' },
-                        { name: 'bitcoins', href: '/bitcoin_info' },
-                        { name: 'Leaders', href: '/leaderboard'}
+                        { name: 'home', href: '/', title: 'Bitcoin Poker' },
+                        { name: 'bitcoins', href: '/bitcoin_info', title: 'Bitcoin Information' },
+                        { name: 'Leaders', href: '/leaderboard', title: 'Leaderboard' }
                         /*
-                        { name: 'lobby', href: '/lobby' },
-                        { name: 'about', href: '/site_info' },
-                        { name: 'legal', href: '/legal_info' },
-                        { name: 'promotions', href: '/promo' }
+                        { name: 'about', href: '/site_info', title: 'Site Information' },
+                        { name: 'legal', href: '/legal_info', title: 'Legal Information' },
+                        { name: 'promotions', href: '/promo', title: 'Promo' }
                         */
                     ],
                         i,
@@ -33,11 +32,14 @@
                     for (i = 0, len = pages.length; i < len; i++) {
                         page_name = pages[i].name;
                         page_href = pages[i].href;
+                        page_title = pages[i].title;
                         page_dropdown = pages[i].dropdown;
                     %>
                         <li>
-                            <a href="<%= page_href %>">
-                                <%= page_name.toUpperCase() %>
+                            <a href="<%= page_href %>"
+                               <%= title === page_title ? 'class=current_page' : '' %>
+                            >
+                              <%= page_name.toUpperCase() %>
                             </a>
                            <!--write nested ul for dropdowns-->
                             <% if (page_dropdown !== undefined ) { %>
@@ -56,9 +58,25 @@
                             <% } %>
                         </li>
                     <% } %>
+
+                    <% if (title === 'Bitcoin Poker') { %>
+                      <div id="lobbyWrapperDiv">
+                      <li>
+                        <a href = "#" id="lobby_trigger">
+                        LOBBY
+                        </a>
+                      </li>
+
+                      <!-- lobby dropdown -->
+                      <div id="lobby">
+                        <% include table_list %>
+                      </div>
+                      </div> <!-- wrapperDiv: This is to help with hoverIntent -->
+                     <%  } %>
+
                     <li>
-                        <a href="#" id="report_bug_trigger" title="bugs & feedback">
-                          <img src="/img/bug.png" alt="Bug Image designed by FatCow Web Hosting"></img>
+                        <a href="#" id="report_bug_trigger" title="Submit bugs or feedback">
+                          <img src="/img/bug.png" />
                         </a>
                     </li>
                     <% include bug_report %>
@@ -97,9 +115,11 @@
                     <!--Login or Logout Link-->
                     <li class="right">
                         <% if (locals.username) { %>
-                          <a href="/account" title="My Account">
-                              <i class="icon-cog icon-white"></i>
-                              <%= locals.username.toUpperCase() %> 
+                          <a href="/account" title="My Account"
+                             <%= title === 'Account' ? 'class=current_page' : '' %>
+                          >
+                            <i class="icon-cog icon-white"></i>
+                            <%= locals.username.toUpperCase() %> 
                           </a>
                         <% } else { %>
                           <a href="#" id="login_trigger">LOGIN</a>

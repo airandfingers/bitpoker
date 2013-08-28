@@ -55,31 +55,10 @@
     })
     .on('click', function(e) { e.stopPropagation(); });
 
-    var iframe_template =
-    '<iframe src="<%= href %>" width="690" height="480">' +
-        '<p>Your browser does not support iframes.</p>' +
-        '<p><a href="http://www.smashingmagazine.com/2012/07/10/dear-web-user-please-upgrade-your-browser/">Upgrade your browser</a></p>' +
-        '<p>Or go directly to <a href="<%= href %>"><%= href %></a>.</p>' +
-    '</iframe>'
-      , $iframe_container = $('#iframe_container')
-      , $html_body = $('html,body'); // elements to be scrolled
-    function openNewIframe(href) {
-        var $iframe = $iframe_container.find('iframe[src="' + href + '"]');
-        if ($iframe.length > 0) {
-            console.log('iframe already open with href', href);
-            $html_body.animate({ scrollTop: $iframe.offset().top }, 500);
-            return;
-        }
-        var $iframe = _.template(iframe_template, {
-            href: href
-        });
-        $iframe_container.append($iframe);
-    }
-
     // Add a click handler for the table rows
     $('#table_list tbody').on('click', 'tr', function(e) {
       var table_name = $(this).attr('id');
-      openNewIframe('/' + table_name);
+      iframes.openNewIframe(table_name);
       //window.location.href = '/' + table_name;
       //return popup(table_name);
     });

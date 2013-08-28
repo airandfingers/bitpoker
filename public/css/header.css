@@ -62,7 +62,8 @@ header {
 .navbar a:link    { color: white; }
 .navbar a:visited { color: #CCCCCC; }
 .navbar a:hover   { color: red; }
-.navbar a.current_site  { color: chartreuse; }
+.navbar a.current_page  { color: chartreuse; }
+.navbar a#lobby_trigger  { color: orange; }
 
 .navbar li:hover ul, .navbar li ul:hover {
     overflow: visible;
@@ -86,7 +87,17 @@ h3 {
     display: none;
 }
 
-#login, #register, #report_bug {
+#lobby {
+    background-color: rgba(0,0,0,0);
+    min-width: 200px;
+    position: absolute;
+    display: none;
+    font-size: .8em;
+    padding: 1em;
+    text-align: center;
+}
+
+#login, #register, #report_bug{
     background-color: rgba(0,0,0,.88);
     color: #CCCCCC;
     min-width: 200px;
@@ -99,8 +110,7 @@ h3 {
 
 #report_bug {
     height: 275px;
-    width: 250px;
-
+    width: 275px;
 }
 
 #report_bug_textarea {

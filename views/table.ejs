@@ -67,15 +67,13 @@ title += ' - Logged in as ' + username;
              <!-- bet size DIV-->
                
         </div> <!-- poker table wrapper -->
-            <!--include values to expose to scripts-->
-
-            <input type="hidden" id="server_values" data-table_state="<%= table_state %>" data-table_state_url="/table_state/<%= table_id %>" data-room_state="<%= room_state %>" />
-
 
         <!--include values to expose to scripts-->
         <input type="hidden" id="server_values"
                data-table_state="<%= table_state %>"\
+               data-table_name="<%= table_name %>"\               
                data-table_state_url="/table_state/<%= table_id %>"
+               data-preferences_url="/preferences/<%= table_id %>"
                data-room_state="<%= room_state %>"
         />
 
@@ -127,8 +125,12 @@ title += ' - Logged in as ' + username;
 
         <script src="js/vendor/async.js"></script>
         <script src="js/vendor/array.move.js"></script>
-     <script src="/js/pokertable.min.js"></script>
-     
-  <!--      <script src="/js/pokertable.js"></script>  -->
- 
+        <script src="/js/pokertable.min.js"></script>
+        <script>
+          // set iframe header if this is an embedded table
+          if (_.isObject(parent.iframes)) {
+            var table_name = $('#server_values').data('table_name');
+            parent.iframes.setIframeTitle(table_name, $('title').text());
+          }
+        </script>
 <% include foot %>

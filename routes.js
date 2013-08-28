@@ -35,7 +35,7 @@ module.exports = (function () {
 
   app.get('/bitcoin_info', function(req, res) {
     res.render('bitcoin_info', {
-      title: 'bitcoin_info',
+      title: 'Bitcoin Information',
     });
   });
 
@@ -97,12 +97,12 @@ module.exports = (function () {
 
   app.get('/withdraw_bitcoins', auth.ensureAuthenticated, function(req, res) {
     res.render('withdraw_bitcoins', {
-     title: 'withdraw_bitcoins',
+     title: 'Withdraw Bitcoins',
      bitcoins: req.user.satoshi / 10E8,
     });
   });
 
-  //home, index and '/' link to the same page
+  // home, index, lobby, play, and / all show the landing page
   function renderHome(req, res) {
     var users = Room.getRoom('').getUsernames()
       , table_games = Table.getTableGames()
@@ -110,7 +110,8 @@ module.exports = (function () {
     //console.log('Got table_games:', table_games);
 
     res.render('index', {
-      table_games: table_games
+      title: 'Bitcoin Poker'
+    , table_games: table_games
     , room_state: JSON.stringify(room_state)
     , message: req.flash('error')
     , user: req.user
@@ -133,7 +134,7 @@ module.exports = (function () {
       User.getLeaders('satoshi', function (err, satoshi_leaders) {
         if (err) return (err);
         res.render('leaderboard', {
-          title: 'leaderboard',
+          title: 'Leaderboard',
           funbucks_leaders: funbucks_leaders,
           satoshi_leaders: satoshi_leaders
         });        
@@ -143,18 +144,21 @@ module.exports = (function () {
 
   app.get('/legal_info', function (req, res) {
     res.render('legal_info', {
-      title: 'legal_info',
+      title: 'Legal Information',
     });
   });
 
   app.get('/login', function (req, res) {
+    var table_games = Table.getTableGames();
     var next_page = req.query.next || base_page;
     if (! auth.isAuthenticated(req)) {
       //Show the login form.
       res.render('login', {
+        table_games: table_games,
         message: req.flash('error'),
         next: next_page,
-        title: 'Bitcoin Poker Login',
+        title: 'Login',
+        table_games: table_games
       });
     }
     else {
@@ -168,7 +172,7 @@ module.exports = (function () {
     res.render('password_recovery', {
       message: req.flash('error'),
       next: req.query.next,
-      title: 'Bitcoin Poker Password Recovery',
+      title: 'Password Recovery',
     });
   });
 
@@ -181,7 +185,7 @@ module.exports = (function () {
       console.log(email + recovery_code + username);
     res.render('password_reset', {
       message: req.flash('error'),
-      title: 'Bitcoin Poker Password Reset',
+      title: 'Password Reset',
       email: email,
       recovery_code: recovery_code,
       username: username,
@@ -191,7 +195,7 @@ module.exports = (function () {
 
   app.get('/promo', function (req, res) {
     res.render('promo', {
-      title: 'promo',
+      title: 'Promo',
     });
   });
 
@@ -228,7 +232,7 @@ module.exports = (function () {
 
   app.get('/site_info', function(req, res) {
     res.render('site_info', {
-      title: 'site_info',
+      title: 'Site Information',
     });
   });
 
@@ -424,12 +428,10 @@ module.exports = (function () {
     console.log('report bug route called');
     mailer.sendBugReport(username, message, function(error) {
       if (error) {
-        res.json({ success: false, error: error });
-      }
-      else {
-        res.json({ success: true });
+        console.error('Error while trying to send bug reportemail!', error);
       }
     });
+    res.json({ success: true });
   });
 
 
@@ -602,13 +604,16 @@ module.exports = (function () {
   app.get('/' + Table.TABLE_PREFIX + ':id', auth.ensureAuthenticated, function(req, res, next) {
     var table_id = req.params.id
       , table = Table.getTable(table_id)
+      , table_name = table.name
       , username = req.user.username;
     if (table instanceof Table) {
       var table_state = table.getCurrentHand().serialize(username)
         , users = table.room.getUsernames()
         , room_state = { users: users };
+      req.user.onJoinTable(table_name);
       res.render('table', {
         table_id: table_id
+      , table_name: table_name
       , username: username
       , game: table.game
       , hide_navbar: true
@@ -702,6 +707,16 @@ module.exports = (function () {
     });
   });
 
+  app.post('/leave_table', auth.ensureAuthenticated, function(req, res) {
+    var table_name = req.body.table_name;
+    console.log('/leave_table called on', req.user.username, 'for', table_name);
+    if (! _.isString(table_name)) {
+      return res.json({ error: 'table_name is a required field for /leave_table'});
+    }
+    req.user.onLeaveTable(table_name);
+    res.json(table_name);
+  });
+
   //Handle all other cases with a 404
   //Note: ONLY do this if app.use(app.router) comes after
   //      app.use(express.static) in this app's configuration;
@@ -709,6 +724,6 @@ module.exports = (function () {
   //      including requests for static files that exist.
   app.all('*', function(req, res) {
     res.status(404);
-    res.render('404', {title: 'pagey not foundy'});
+    res.render('404', {title: '404 Not Found'});
   });
 })();

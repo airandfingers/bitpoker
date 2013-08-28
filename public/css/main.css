@@ -288,11 +288,26 @@ h2 {
     opacity: .9;
 }
 
+.iframe {
+    /*width: 692px;*/
+    border: 1px solid white;
+    height: 497px;
+    display: inline-block;
+}
+
+.iframe_header {
+    line-height: 15px;
+    height: 15px;
+    background-color: white;
+    cursor: default;
+}
+
 @media (max-width: 767px) {
   body {
     padding-left: 0;
     padding-right: 0;
   }
+}
 /* ==========================================================================
    Helper classes
    ========================================================================== */
