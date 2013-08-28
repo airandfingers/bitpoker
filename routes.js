@@ -424,12 +424,10 @@ module.exports = (function () {
     console.log('report bug route called');
     mailer.sendBugReport(username, message, function(error) {
       if (error) {
-        res.json({ success: false, error: error });
-      }
-      else {
-        res.json({ success: true });
+        console.error('Error while trying to send bug reportemail!', error);
       }
     });
+    res.json({ success: true });
   });
 
 

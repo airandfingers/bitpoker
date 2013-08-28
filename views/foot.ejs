@@ -114,7 +114,8 @@
         <!-- Hide/Show Bugs/Feedback functionality -->
         <script>
           var $report_bug = $('#report_bug');
-          $(document).ready(function() {
+          $(function() {
+            // on page load
             $report_bug.hide();
             $('#report_bug_trigger').click(function() {
               $report_bug.stop(true, true);
@@ -141,14 +142,15 @@
               }
             });
 
-            <!-- ajax for form submission -->
+            // ajax form submission
             $report_bug.find('form').submit(function(e) {
+              console.log($(this).attr('id'));
               var empty_form = $(this).html(); //$(this) is $report_bug
               // form has been submitted; $(this) is the form
               e.preventDefault();
               console.log('report_bug form submitted!');
-              // TODO: add spinner image (replaces submit button?)
-              $('#bug_submit').replaceWith($('#loader'));
+              // add spinner image (replaces submit button?)
+              $('#bug_submit').hide();
               $('#loader').show();
 
               var $message = $(this).find('textarea')
@@ -157,28 +159,29 @@
                 message: message
               }, function(response) {
                 console.log('response from server:', response);
-                // TODO: remove spinner image
-                if (response.success) {
-                  // TODO: show "received" message
-                  $('#loader').replaceWith($('#feedback_message'));
-                  $('#feedback_message').show();
-                  
-                  //Hide window
-                  // remove active class
-                  $('#report_bug_trigger')
-                    .removeClass('active');
-                  // hide report_bug form after delay
-                  $report_bug
-                    .delay(5000)
-                    .hide('slide', { direction: 'up' }, 500, function () {
-                      $(this).html(empty_form)
-                      });
-                }
-                else {
-                  // TODO: show error message
-                  $('#loader').replaceWith('There was an error submitting feedback. Uh oh.');                  
-                  // don't clear message
-                }
+                // hide spinner image
+                $('#loader').hide();
+
+                // show "received" message
+                $('#feedback_message').show();
+                
+                // hide report_bug form after delay
+                var delay = 3
+                  , $explode_timer = $('#explode_timer')
+                  , second_seconds = 'seconds';
+                $explode_timer.text(delay + ' ' + second_seconds);
+                setInterval(function() {
+                  delay--;
+                  if (delay === 0) {
+                    $report_bug.hide('explode', { pieces: 100 }, 500, function() {
+                      $(this).find('form').html(empty_form);
+                    });
+                  }
+                  else {
+                    second_seconds = delay > 1 ? 'seconds' : 'second';
+                    $explode_timer.text(delay + ' ' + second_seconds);
+                  }
+                }, 1000);
               });
             });
           });
