@@ -35,7 +35,7 @@ module.exports = (function () {
 
   app.get('/bitcoin_info', function(req, res) {
     res.render('bitcoin_info', {
-      title: 'bitcoin_info',
+      title: 'Bitcoin Information',
     });
   });
 
@@ -97,7 +97,7 @@ module.exports = (function () {
 
   app.get('/withdraw_bitcoins', auth.ensureAuthenticated, function(req, res) {
     res.render('withdraw_bitcoins', {
-     title: 'withdraw_bitcoins',
+     title: 'Withdraw Bitcoins',
      bitcoins: req.user.satoshi / 10E8,
     });
   });
@@ -110,7 +110,8 @@ module.exports = (function () {
     //console.log('Got table_games:', table_games);
 
     res.render('index', {
-      table_games: table_games
+      title: 'Bitcoin Poker'
+    , table_games: table_games
     , room_state: JSON.stringify(room_state)
     , message: req.flash('error')
     , user: req.user
@@ -133,7 +134,7 @@ module.exports = (function () {
       User.getLeaders('satoshi', function (err, satoshi_leaders) {
         if (err) return (err);
         res.render('leaderboard', {
-          title: 'leaderboard',
+          title: 'Leaderboard',
           funbucks_leaders: funbucks_leaders,
           satoshi_leaders: satoshi_leaders
         });        
@@ -143,7 +144,7 @@ module.exports = (function () {
 
   app.get('/legal_info', function (req, res) {
     res.render('legal_info', {
-      title: 'legal_info',
+      title: 'Legal Information',
     });
   });
 
@@ -156,7 +157,7 @@ module.exports = (function () {
         table_games: table_games,
         message: req.flash('error'),
         next: next_page,
-        title: 'Bitcoin Poker Login',
+        title: 'Login',
         table_games: table_games
       });
     }
@@ -171,7 +172,7 @@ module.exports = (function () {
     res.render('password_recovery', {
       message: req.flash('error'),
       next: req.query.next,
-      title: 'Bitcoin Poker Password Recovery',
+      title: 'Password Recovery',
     });
   });
 
@@ -184,7 +185,7 @@ module.exports = (function () {
       console.log(email + recovery_code + username);
     res.render('password_reset', {
       message: req.flash('error'),
-      title: 'Bitcoin Poker Password Reset',
+      title: 'Password Reset',
       email: email,
       recovery_code: recovery_code,
       username: username,
@@ -194,7 +195,7 @@ module.exports = (function () {
 
   app.get('/promo', function (req, res) {
     res.render('promo', {
-      title: 'promo',
+      title: 'Promo',
     });
   });
 
@@ -231,7 +232,7 @@ module.exports = (function () {
 
   app.get('/site_info', function(req, res) {
     res.render('site_info', {
-      title: 'site_info',
+      title: 'Site Information',
     });
   });
 
@@ -723,6 +724,6 @@ module.exports = (function () {
   //      including requests for static files that exist.
   app.all('*', function(req, res) {
     res.status(404);
-    res.render('404', {title: 'pagey not foundy'});
+    res.render('404', {title: '404 Not Found'});
   });
 })();

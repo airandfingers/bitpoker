@@ -62,7 +62,8 @@ header {
 .navbar a:link    { color: white; }
 .navbar a:visited { color: #CCCCCC; }
 .navbar a:hover   { color: red; }
-.navbar a.current_site  { color: chartreuse; }
+.navbar a.current_page  { color: chartreuse; }
+.navbar a#lobby_trigger  { color: orange; }
 
 .navbar li:hover ul, .navbar li ul:hover {
     overflow: visible;
