@@ -1,4 +1,4 @@
-<% var title = 'Bitcoin Poker- Welcome!'; %>
+<% var title = 'Bitcoin Poker'; %>
 <% include head_start %>
     <link rel="stylesheet" href="/css/bootstrap-switch.css" />
 <% include head_end_and_header %>
@@ -32,13 +32,6 @@
             <input type="hidden" id="server_values" data-room_state="<%= room_state %>" />
             -->
         <% } %>
-        
-        <div class="row-fluid">
-            <!-- display list of tables -->
-            <div id="table_list_container" class="span10 offset1">
-                <% include table_list %>
-            </div>
-        </div>
 
         <div id="iframe_container">
         </div>

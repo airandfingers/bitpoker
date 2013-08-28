@@ -148,13 +148,16 @@ module.exports = (function () {
   });
 
   app.get('/login', function (req, res) {
+    var table_games = Table.getTableGames();
     var next_page = req.query.next || base_page;
     if (! auth.isAuthenticated(req)) {
       //Show the login form.
       res.render('login', {
+        table_games: table_games,
         message: req.flash('error'),
         next: next_page,
         title: 'Bitcoin Poker Login',
+        table_games: table_games
       });
     }
     else {
