@@ -380,6 +380,7 @@ this.image.graphics.beginFill(fillColor).drawRoundRect(0, 0, this.size.x, this.s
     tempImage.src = imageSource
     item.image = new createjs.Bitmap(tempImage)
      self.positionItemImage(   item, {update:false})
+
     item.image.parentOfImageObject = item
     item.bitmapSource = imageSource
     if(item.messages){
@@ -1319,7 +1320,7 @@ imageSourceArray.push({src:this.images.sources.cardImageFolder+this.images.sourc
     //console.log(imageSourceArray)
     //define dimensions of preloading screen
     var introScreen = {}
-    console.log(this.arrayOfParentsOfStageAndOfContainerArray)
+   // console.log(this.arrayOfParentsOfStageAndOfContainerArray)
     var canvasWidth = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.width
     var canvasHeight = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.height
     var titleSizeAndFont = '20px Arial'
@@ -1496,7 +1497,7 @@ console.log('loaded '+ loadedImages+' images out of a total of '+imageArray.leng
 //periodicaly checkto see if its completed
 var checkIfCompleted = setInterval (function(){
 if(loadedImages >= imageArray.length){
-  console.log('calling onComplete function')
+ // console.log('calling onComplete function')
   onComplete()
   clearInterval(checkIfCompleted)
 }
@@ -3195,7 +3196,7 @@ stageData[zPositionData[index].stage].nickName = index
 
 //iterate through data to create stages
   var canvasNumber = 0
-  console.log(stageData)
+ // console.log(stageData)
 _.each(_.range (stageData.length), function(stageIteration){
 
  self.createStage (stageData[stageIteration])
@@ -3334,6 +3335,43 @@ self.jQueryObjects.chatBoxInput.css({
  'display'   : 'inline'
 })
     }
+
+this.activateTicker = function(FPS,onTick){
+if(!_.isNumber(FPS)){var FPS = 15}
+createjs.Ticker.setFPS(FPS)
+  createjs.Ticker.addEventListener('tick', handleTick)
+
+ function handleTick(event, onTick) {
+     // Actions carried out each frame
+     if(onTick){onTick()}
+   //  console.log(event)
+     if (!event.paused) {
+         // Actions carried out when the Ticker is not paused.
+         self.updateStages()
+     }
+ }
+
+}
+
+this.disableTicker = function(){
+
+createjs.Ticker.setFPS(12)
+  createjs.Ticker.removeEventListener('tick')
+
+ function handleTick(event) {
+     // Actions carried out each frame
+     if(onTick){onTick()}
+     console.log(event)
+     if (!event.paused) {
+         // Actions carried out when the Ticker is not paused.
+         self.updateStages()
+     }
+ }
+
+}
+
+
+
 
     this.positionItemImage = function (item, options) {
 
@@ -4007,8 +4045,10 @@ return stagesToUpdate
         }
 if(!options || (options.update !== false && options.hidden !== true)){
   if(_.isArray(parentOfChipArray.chips)&&parentOfChipArray.chips.length>0 && parentOfChipArray.chips[0] instanceof this.images.Item){
-    this.updateStages(parentOfChipArray.chips[0].position.z.stage)}
+    this.updateStages(parentOfChipArray.chips[0].position.z.stage,options)}
 }
+
+else {return parentOfChipArray.chips[0].position.z.stage}
 
     }
 
@@ -4077,79 +4117,105 @@ for(var i   = 0; i<parentOfChipArray.chips.length-1;i++){
 
  }
 
+//initialX, initialY, time, numTicks, item, finalX, finalY, onEnd, onTick
+ this.animateImage =function(animationInfo){
+
+if(!animationInfo){return }
+
+//assign defaults
+var defaults = {}
+if(animationInfo.item.image){
+  defaults.initialX = animationInfo.item.image.x
+  defaults.initialY = animationInfo.item.image.y
+}
+else if(animationInfo.item.text){
+  defaults.initialX = animationInfo.item.text.x
+  defaults.initialY = animationInfo.item.text.y
+}
+defaults.numTicks = 10
+defaults.time = 300
+defaults.onEnd = function(animationInfo, setIntervalFunction){
+  self.hideChildren(item)
+//self.updateStages(animationInfo.item.position.z.stage)
+}
+defaults.onTick = function(animationInfo, setIntervalFunction){
+self.updateStages(animationInfo.item.position.z.stage)
+}
 
 
+animationInfo = _.defaults(animationInfo, defaults)
 
- this.animateImage =function(initialX, initialY, totalTime, ticks, parentOfImageObject, finalX, finalY, performOnEnd){
-
-
-            var fractionDistancePerTick = 1/ticks
-            var lastTick = ticks -1 
-           var   interval = totalTime/ticks
+            var fractionDistancePerTick = 1/animationInfo.numTicks
+            var lastTick =animationInfo.numTicks -1 
+           var   interval = animationInfo.time/animationInfo.numTicks
      
-                    var totalDistanceX = finalX - initialX
-                     var totalDistanceY = finalY - initialY
+                    var totalDistanceX = animationInfo.finalX - animationInfo.initialX
+                     var totalDistanceY = animationInfo.finalY - animationInfo.initialY
                    var distancePerTickX =  totalDistanceX*fractionDistancePerTick
                    var distancePerTickY = totalDistanceY*fractionDistancePerTick
 
-      if( parentOfImageObject.text && parentOfImageObject.image)    {
-           var textOffSetX = parentOfImageObject.text.x - parentOfImageObject.image.x
-           var textOffSetY = parentOfImageObject.text.y - parentOfImageObject.image.y
+      if( animationInfo.item.text && animationInfo.item.image)    {
+           var textOffSetX = animationInfo.item.text.x - animationInfo.item.image.x
+           var textOffSetY = animationInfo.item.text.y - animationInfo.item.image.y
           }
 
-          if(parentOfImageObject.image){
-              parentOfImageObject.image.x = initialX
-parentOfImageObject.image.y = initialY
+          if(animationInfo.item.image){
+              animationInfo.item.image.x = animationInfo.initialX
+animationInfo.item.image.y = animationInfo.initialY
 
 
-  if(parentOfImageObject.text){
-      parentOfImageObject.text.x = initialX + textOffSetX
-parentOfImageObject.text.y = initialY + textOffSetY
+  if(animationInfo.item.text){
+      animationInfo.item.text.x = animationInfo.initialX + textOffSetX
+animationInfo.item.text.y = animationInfo.initialY + textOffSetY
 }
 
 }
 
-else if(parentOfImageObject.text){
-     parentOfImageObject.text.x = initialX
-parentOfImageObject.text.y = initialY
+else if(animationInfo.item.text){
+     animationInfo.item.text.x = animationInfo.initialX
+animationInfo.item.text.y = animationInfo.initialY
 }
 
-self.displayChildren(parentOfImageObject)
+self.displayChildren(animationInfo.item)
                    var tick = 0
 
        var imageAnimation =   setInterval(function() {
 
-       if(  parentOfImageObject.image) {    
-       parentOfImageObject.image.x =parentOfImageObject.image.x+distancePerTickX
-          parentOfImageObject.image.y =parentOfImageObject.image.y+distancePerTickY
+       if(  animationInfo.item.image) {    
+       animationInfo.item.image.x =animationInfo.item.image.x+distancePerTickX
+          animationInfo.item.image.y =animationInfo.item.image.y+distancePerTickY
           }
 
-      if( parentOfImageObject.text)    {
-           parentOfImageObject.text.x =parentOfImageObject.text.x+distancePerTickX
-          parentOfImageObject.text.y =parentOfImageObject.text.y+distancePerTickY
+      if( animationInfo.item.text)    {
+          animationInfo. item.text.x =animationInfo.item.text.x+distancePerTickX
+        animationInfo.  item.text.y =animationInfo.item.text.y+distancePerTickY
           }
-            self.updateStages(parentOfImageObject.position.z.stage)
+
+          animationInfo.onTick(animationInfo, imageAnimation)  
 
             if(tick >= lastTick){
-   if(parentOfImageObject.image)   {    
-    parentOfImageObject.image.x = finalX
-parentOfImageObject.image.y = finalY
+   if(animationInfo.item.image)   {    
+    animationInfo.item.image.x = animationInfo.finalX
+animationInfo.item.image.y = animationInfo.finalY
 
 
-  if( parentOfImageObject.text){ parentOfImageObject.text.x = finalX + textOffSetX
-parentOfImageObject.text.y = finalY +textOffSetY
+  if( animationInfo.item.text){ animationInfo.item.text.x = animationInfo.finalX + textOffSetX
+animationInfo.item.text.y = animationInfo.finalY +textOffSetY
 }
 }
-else if(parentOfImageObject.text){
-     parentOfImageObject.text.x = finalX
-parentOfImageObject.text.y = finalY
+else if(animationInfo.item.text){
+    animationInfo. item.text.x = animationInfo.finalX
+animationInfo.item.text.y = animationInfo.finalY
+}
+   
 
-}
-    self.updateStages(parentOfImageObject.position.z.stage)
 clearInterval(imageAnimation)
-             if(  performOnEnd){ performOnEnd()}
+
+
+             if(  animationInfo.onEnd){ animationInfo.onEnd(animationInfo, imageAnimation)}
                 }//if last tick
 
+//if we want to continue looping
             else{tick++}
 }, interval)
 
@@ -4174,70 +4240,79 @@ clearInterval(imageAnimation)
 
  //must include false or undefined slots for already dealt cards
  this.dealCommunity = function (communityArray){
-     
-     var initialX = this.images.startingCard.position.x
-     var initialY = this.images.startingCard.position.y
-     var animationTime = 200
-     var fractionDistancePerTick = .2
+     //initialX, initialY, time, numTicks, item, finalX, finalY, onEnd, onTick, 
+     var initialAnimationInfo = {}
+     var animationTime = 250
+     fractionDistancePerTick = .05
      var lastTick = 1/fractionDistancePerTick -1 
      var   interval = fractionDistancePerTick*animationTime
+var stagesToUpdate = []
+
+  //create TEMPORARY face down card to animate
+    var animatedCard = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.zPositionData.cardAnimation)
+   this.images.itemAsBitmap(animatedCard, this.images.seats[0].hiddenCard0.bitmapSource)
 
      //play deal sound
      var communitySound = createjs.Sound.createInstance(this.images.sources.dealCommunity)
      communitySound.play()
 
+//calculated variables
+initialAnimationInfo.numTicks = lastTick + 1
+      initialAnimationInfo.initialX = this.images.startingCard.position.x
+       initialAnimationInfo.initialY = this.images.startingCard.position.y
+       initialanimationInfo.item = animatedCard
+       initialAnimationInfo.onTick = null
+        initialAnimationInfo.time = animationTime
+//initialAnimationInfo.onEnd = function(){callback(null, 1)}
+
      //river animation
 if(communityArray.length ==5){
-    //create TEMPORARY face down card to animate
-    var animatedCard = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.zPositionData.cardAnimation)
-     this.images.itemAsBitmap(animatedCard, this.images.seats[0].hiddenCard0.bitmapSource)
 
+//assign end value for initial animation
+initialAnimationInfo.finalX =  self.images.community[4].position.x 
+initialAnimationInfo.finalY = self.images.community[4].position.y
 
-      async.series([
-
-        function(callback){  
-       self.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, self.images.community[4].position.x,self.images.community[4].position.y, function(){callback(null, 1)})
-
- },
-
-    function(callback){
-       self.displayShownCard(communityArray[4], self.images.community[4])
-       self.hideChildren(animatedCard)
-        }   
-    ])
+//end of function function
+initialAnimationInfo.onEnd  = function(){
+  stagesToUpdate.push(     self.displayShownCard(communityArray[4], self.images.community[4]) )
+     stagesToUpdate.push(  self.hideChildren(animatedCard,{update:false}) )
+     self.updateStages(stagesToUpdate)
 }
+}//river animation
+
 //turn animation
-else if(communityArray.length ==4){
-    //create TEMPORARY face down card to animate
-    var animatedCard = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.zPositionData.cardAnimation)
-     this.images.itemAsBitmap(animatedCard, this.images.seats[0].hiddenCard0.bitmapSource)
+else if(communityArray.length == 4){
 
-      async.series([
+//assign end value for initial animation
+initialAnimationInfo.finalX =  self.images.community[3].position.x 
+initialAnimationInfo.finalY = self.images.community[3].position.y
 
-        function(callback){  
-        self.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, self.images.community[3].position.x,self.images.community[3].position.y,function(){callback(null, 1)})
 
- },
-
-    function(callback){
-       self.displayShownCard(communityArray[3],self.images.community[3])
-       self.hideChildren(animatedCard)
-        }   
-    ])
+//end of function function
+initialAnimationInfo.onEnd  = function(){
+    stagesToUpdate.push(    self.displayShownCard(communityArray[3],self.images.community[3]))
+    stagesToUpdate.push(    self.hideChildren(animatedCard,{update:false}))
+       self.updateStages(stagesToUpdate)
+}
+     
+        self.animateImage(initialAnimationInfo)
     
      
-}
+}//turn animation
 
 //flop animation
 else if(communityArray.length == 3){
-        //create TEMPORARY face down card to animate to animate to community[0] position
-    var animatedCard = new self.images.Item(initialX, initialY, self.images.community[0].size.x, self.images.community[0].size.y, self.gameState.zPositionData.cardAnimation)
-     self.images.itemAsBitmap(animatedCard, self.images.seats[0].hiddenCard0.bitmapSource)
 
+
+//assign end value for initial animation
+initialAnimationInfo.finalX =  self.images.community[3].position.x 
+initialAnimationInfo.finalY = self.images.community[3].position.y
+//callback for async series
+initialAnimationInfo.onEnd = function(){callback(null, 1)}
       async.series([
 
         function(callback){  
-        self.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCard, self.images.community[0].position.x,self.images.community[0].position.y,function(){callback(null, 1)})
+        self.animateImage(initialAnimationInfo)
 
  },
 
@@ -4246,16 +4321,31 @@ else if(communityArray.length == 3){
          for(var i =0;i<=2;i++){
     self.images.cardAsBitmap(self.images.community[i],communityArray[i])
     self.images.community[i].image.x = self.images.community[0].position.x
-    self.displayChildren(self.images.community[i],{update:false})
+ stagesToUpdate.push(   self.displayChildren(self.images.community[i],{update:false}))
       }
-      //update stage to display face up cards
-      self.updateStages(self.images.community[i].position.z.stage)
+     
       //hide facedown animated card
-      self.hideChildren(animatedCard)
+    stagesToUpdate.push(    self.hideChildren(animatedCard,{update:false}) )
+       //update stage to display face up cards
+      self.updateStages( stagesToUpdate)
 
  //move cards from community[0] position to final destinations
-     self.animateImage(self.images.community[0].position.x, self.images.community[1].position.y,animationTime, lastTick+1, self.images.community[1],self.images.community[1].position.x, self.images.community[1].position.y)
-     self.animateImage(self.images.community[0].position.x, self.images.community[2].position.y,animationTime, lastTick+1, self.images.community[2],self.images.community[2].position.x, self.images.community[2].position.y)      
+ var community1Animation = {
+ initialX: self.images.community[0].position.x,
+ initialY: self.images.community[0].position.y,
+ numTicks : lastTick+1,
+ finalX: self.images.community[1].position.x,
+ finalY: self.images.community[1].position.y,
+ item: self.images.community[1],
+time: animationTime,
+onEnd: null
+}
+var community2Animation = _.clone(community1Animation)
+community2Animation.finalX= self.images.community[2].position.x
+community2Animation.finalY=self.images.community[2].position.y
+community2Animation.item=self.images.community[2]
+     self.animateImage(community1Animation)    
+     self.animateImage(community1Animation)      
     }   
     ])
     
@@ -4294,24 +4384,38 @@ var dealHoleCardSound =  createjs.Sound.createInstance(self.images.sources.dealH
             
                     animatedCards0[cardsDealt] = new self.images.Item(initialX, initialY, self.images.community[0].size.x, self.images.community[0].size.y, self.gameState.zPositionData.cardAnimation)
           self.images.itemAsBitmap(animatedCards0[cardsDealt], self.images.seats[playerArray[playerArrayNumber]].hiddenCard0.bitmapSource)
-           self.animateImage(initialX,initialY,animationTime, lastTick+1,  animatedCards0[cardsDealt], self.images.seats[playerArray[playerArrayNumber]].hiddenCard0.position.x,self.images.seats[playerArray[playerArrayNumber]].hiddenCard0.position.y, function(){
-               callback(null, callBackNumber)
-               
-               })
+          var dealCard0AnimationInfo = {
+            time: animationTime,
+            ticks: lastTick+1,
+            item: animatedCards0[cardsDealt],
+            finalX:self.images.seats[playerArray[playerArrayNumber]].hiddenCard0.position.x,
+            finalY: self.images.seats[playerArray[playerArrayNumber]].hiddenCard0.position.y,
+            onEnd: function(){callback(null, callBackNumber)},
+            onTick:null
           }
+           self.animateImage(dealCard0AnimationInfo)
+          }//if dealing first hole card
 
           else if(cardsDealt>playerArrayNumber){
           animatedCards1[cardsDealt] = new self.images.Item(initialX, initialY, self.images.community[0].size.x, self.images.community[0].size.y, self.gameState.zPositionData.cardAnimation)
           self.images.itemAsBitmap(animatedCards1[cardsDealt], self.images.seats[playerArray[playerArrayNumber]].hiddenCard0.bitmapSource) 
-               self.animateImage(initialX,initialY,animationTime, lastTick+1, animatedCards1[cardsDealt], self.images.seats[playerArray[playerArrayNumber]].hiddenCard1.position.x,self.images.seats[playerArray[playerArrayNumber]].hiddenCard1.position.y, function(){
-                   callback(null, callBackNumber)
+               var dealCard1AnimationInfo = {
+            time: animationTime,
+            ticks: lastTick+1,
+            item: animatedCards1[cardsDealt],
+            finalX:self.images.seats[playerArray[playerArrayNumber]].hiddenCard1.position.x,
+            finalY: self.images.seats[playerArray[playerArrayNumber]].hiddenCard1.position.y,
+            onEnd: function(){callback(null, callBackNumber)},
+            onTick:null
+          }
+
+               self.animateImage(dealCard1AnimationInfo)
                    
-                 
-                   })
+                   }//if dealing second hole card
               
- }
- 
  })
+
+ 
                 
  callBackNumber ++
         asyncArray.push( function(callback){
@@ -4836,9 +4940,19 @@ self.displayChipStack(potWinners[potNumber][i].amountWon, temporaryStacks[potWin
                 _.each(_.range(temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips.length), function(n){
 
 potIntoChipAnimationArray[potNumber].push(function(callback){
-   //animate chipstacks to the players      
 
-      self.animateImage(temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n].position.x, temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n].position.y, chipAnimationTime,ticks, temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n], temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n].position.x +animationDistanceX, temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n].position.y+ animationDistanceY, function(){callback(null, callID)})
+   //animate chipstacks to the players      
+   var potIntoChipStackAnimationInfo = {
+    item: temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n],
+    finalX: temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n].position.x +animationDistanceX,
+    finalY:temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n].position.y+ animationDistanceY,
+    numTicks: ticks,
+    onEnd: function(){callback(null, callID)},
+    onTick:null,
+   time: chipAnimationTime
+   }
+ 
+      self.animateImage(potIntoChipStackAnimationInfo)
   //   console.log('animating the '+ n+'th chip in the  temporary stack number '+potWinners[potNumber][i].temporaryStackNumber)
                 }) 
 
@@ -6423,9 +6537,21 @@ console.log('calling callback function of first chip in the array of player '+se
   else{var endOfAnimationFunction = function(){}}
 */
 chipIntoPotAnimationArray.push(function(callback){
+  self.hideText(self.images.seats[seatNumber].bet,{update:false})
+  var animationInfo = {}
+  animationInfo.item =  self.images.seats[seatNumber].chips[n]
+  animationInfo.finalX = self.images.seats[seatNumber].chips[n].position.x + animationDistanceX
+  animationInfo.finalY = self.images.seats[seatNumber].chips[n].position.y+ animationDistanceY
+  animationInfo.numTicks = ticks
+  animationInfo.time = animationTime
+  animationInfo.onEnd = function(){
+    console.log('completed animation of player'+seatNumber+' chipstack and chip number '+n);
+    callback(null, callBackNumber)
+    onTick:null
+  }
 
-  self.hideText(self.images.seats[seatNumber].bet)
-      self.animateImage(self.images.seats[seatNumber].chips[n].position.x, self.images.seats[seatNumber].chips[n].position.y, animationTime, ticks, self.images.seats[seatNumber].chips[n], self.images.seats[seatNumber].chips[n].position.x + animationDistanceX, self.images.seats[seatNumber].chips[n].position.y+ animationDistanceY, function(){console.log('completed animation of player'+seatNumber+' chipstack and chip number '+n);callback(null, callBackNumber)})
+
+      self.animateImage(animationInfo)
 
                 })    //push function into chipIntoPotAnimationArray
                 callBackNumber++      
@@ -6578,8 +6704,8 @@ this.getPermanentPreferences = function() {
 //var permanentPreferences = $.getJSON('/preferences/1')
 
 $.getJSON('/preferences/1', function(response) { 
-
-  console.log(response); 
+console.log('get permanent preferences called, response is: ')
+   console.log(response); 
   if(_.isObject(response)){
 self.updatePreference(self.permanentPreferences, response.permanentPreferences)
 }
@@ -6770,7 +6896,7 @@ if(stageArray.length == 0){
 var sortfunction = function(x, y){return (x - y) }//causes an array to be sorted numerically and ascending
 //sort array to make sure we display objects in the right order of Z
 stageArray.sort(sortfunction)
- // console.log(stageArray)
+ console.log(stageArray)
 
 var canvasesCleared = []
 var stagesUpdated = []
@@ -6820,6 +6946,8 @@ if(!options){var options  = {}}
 else if(_.isArray(stageNumberLeaveBlankForAll)){ // if passed parameter as ARRAY
 if(stageNumberLeaveBlankForAll.length === 0){return 'updatestages passed 0 length array as parameter'}
 
+var wantToUpdate = []
+
 //flatten array
 stageNumberLeaveBlankForAll = _.flatten(stageNumberLeaveBlankForAll)
 
@@ -6828,28 +6956,32 @@ stageNumberLeaveBlankForAll = _.without(stageNumberLeaveBlankForAll ,null, undef
 //remove repeats from the array
 stageNumberLeaveBlankForAll = _.uniq(stageNumberLeaveBlankForAll)
 
-var lengthOfArray = stageNumberLeaveBlankForAll.length
 //iterate through array
-for(var i = 0;i<lengthOfArray;i++){
+for(var i = 0;i<stageNumberLeaveBlankForAll.length;i++){
   //here we get the family of stages for each member of the stage array, then concat + uniquize with our array
-stageNumberLeaveBlankForAll.push (getStageFamilyArray(stageNumberLeaveBlankForAll[i]))
+
+  //check if update == true
+  if(self.arrayOfParentsOfStageAndOfContainerArray[stageNumberLeaveBlankForAll[i]].upToDate !== true || options.update === true ){
+wantToUpdate.push (getStageFamilyArray(stageNumberLeaveBlankForAll[i]))
+}
+
 }//stageNumberLeaveBlankForAll iteration
 
 //flatten array cuz its now nested
-stageNumberLeaveBlankForAll = _.flatten(stageNumberLeaveBlankForAll)
+wantToUpdate = _.flatten(wantToUpdate)
 //uniqize the rray
-stageNumberLeaveBlankForAll = _.uniq(stageNumberLeaveBlankForAll)
+wantToUpdate = _.uniq(wantToUpdate)
 //sorting the array wilbe done automatically in the updateStagesFromArray function
 
-updateStagesFromArray(stageNumberLeaveBlankForAll)
+updateStagesFromArray(wantToUpdate)
 
 }//if parameter is array
 
   else{//if we want to update All stages
-console.log('updating all stages')
+//console.log('updating all stages')
 var allStages = []
 for(var i = 0;i<this.arrayOfParentsOfStageAndOfContainerArray.length;i++){allStages.push(i)}
- updateStagesFromArray( allStages)
+ this.updateStages( allStages, options)
 }//if no stage number specified
 
 }
@@ -7535,14 +7667,15 @@ self.jQueryObjects.tableChatFullDiv.mCustomScrollbar()
 */
  //   holdemCanvas.createAllItems()
 
- console.log($('#server_values').data('table_state'))
+ //console.log($('#server_values').data('table_state'))
     holdemCanvas = new Table()
     holdemCanvas.updatePreference(holdemCanvas.permanentPreferences, holdemCanvas.getPermanentPreferences())
 
    holdemCanvas.initialize()
 
       console.log(document)
-console.log(holdemCanvas.images.seats)
+      holdemCanvas.activateTicker(2)
+//console.log(holdemCanvas.images.seats)
     })
  
     
