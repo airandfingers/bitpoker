@@ -28,9 +28,10 @@
             </div>
             -->
             <!-- include values to expose to scripts -->
-            <!--
-            <input type="hidden" id="server_values" data-room_state="<%= room_state %>" />
-            -->
+            <input type="hidden" id="server_values"
+                data-room_state="<%= room_state %>"
+                data-current_table_names="<%= JSON.stringify(user.current_table_names) %>"
+            />
         <% } %>
         
         <div class="row-fluid">

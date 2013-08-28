@@ -102,7 +102,7 @@ module.exports = (function () {
     });
   });
 
-  //home, index and '/' link to the same page
+  // home, index, lobby, play, and / all show the landing page
   function renderHome(req, res) {
     var users = Room.getRoom('').getUsernames()
       , table_games = Table.getTableGames()

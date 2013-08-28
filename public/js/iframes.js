@@ -1,24 +1,24 @@
 (function() {
   function resizeWindowJazz(e) {
-    var height = $(window).height();
-    var width = $(window).width();
-    var ratio = _.min([width / 690, height / 495, 1]);
-    var distance_to_shift = (1-ratio)/2;
-    var translate = distance_to_shift/ratio * 100;
-    var scale_ratio = 'scale('+ ratio + ', ' + ratio + ') translate(-'+ translate + '%, -' + translate + '%)';
-    console.log('scale_ratio is', scale_ratio);
-    console.log('translate number is ', translate);
+    var height = $(window).height()
+      , width = $(window).width()
+      , scale_ratio = _.min([width / 690, height / 495, 1])
+      , scale_string = 'scale(' + scale_ratio + ', ' + scale_ratio + ')'
+      , distance_to_shift = (1 - scale_ratio) / 2
+      , translate_ratio = distance_to_shift / scale_ratio * 100
+      , translate_string = 'translate(-'+ translate_ratio + '%, -' + translate_ratio + '%)'
+      , transform_string = scale_string + ' ' + translate_string;
     console.log('Window resized with dimensions', height, ',', width);
-    $('.iframe').css('transform', scale_ratio);
+    $('.iframe').css('transform', transform_string);
   }
 
   var throttled = _.throttle(resizeWindowJazz, 2000);
 
+  // resize once every 2 seconds when window is resized
   $(window).resize(throttled);
 
-  $(function() {
-    resizeWindowJazz();
-  });
+  // resize once upon page load
+  $(resizeWindowJazz);
 
   var id_prefix = 'iframe_'
     , iframe_template =
@@ -31,7 +31,8 @@
     '</iframe>' +
   '</div>'
     , $iframe_container = $('#iframe_container')
-    , $html_body = $('html,body'); // elements to be scrolled
+    , $html_body = $('html,body') // elements to be scrolled
+    , initial_tables = $('#server_values').data('current_table_names');
 
   function openNewIframe(table_name) {
     var $iframe = findIframe(table_name);
@@ -52,6 +53,11 @@
     , stack: '.iframe'
     });
   }
+
+  // open iframes for each table_name in initial_tables
+  _.each(initial_tables, function(table_name) {
+    openNewIframe(table_name);
+  });
 
   function setIframeTitle(table_name, title) {
     console.log('setIframeTitle called with', table_name, title)
