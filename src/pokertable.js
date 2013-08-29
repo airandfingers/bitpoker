@@ -4144,7 +4144,8 @@ else if(animationInfo.item.text){
 defaults.numTicks = 10
 defaults.time = 300
 defaults.onEnd = function(animationInfo, setIntervalFunction){
-  self.hideChildren(item)
+  console.log('hiding animated item by default')
+  self.hideChildren(animationInfo.item)
 //self.updateStages(animationInfo.item.position.z.stage)
 }
 defaults.onTick = function(animationInfo, setIntervalFunction){
@@ -4250,11 +4251,13 @@ clearInterval(imageAnimation)
  //must include false or undefined slots for already dealt cards
  this.dealCommunity = function (communityArray){
      //initialX, initialY, time, numTicks, item, finalX, finalY, onEnd, onTick, 
-     var initialAnimationInfo = {}
+     
      var animationTime = 250
      fractionDistancePerTick = .05
      var lastTick = 1/fractionDistancePerTick -1 
      var   interval = fractionDistancePerTick*animationTime
+var initialX = this.images.startingCard.position.x
+     var initialY = this.images.startingCard.position.y
 var stagesToUpdate = []
 
   //create TEMPORARY face down card to animate
@@ -4265,11 +4268,10 @@ var stagesToUpdate = []
      var communitySound = createjs.Sound.createInstance(this.images.sources.dealCommunity)
      communitySound.play()
 
+var initialAnimationInfo = {}
 //calculated variables
 initialAnimationInfo.numTicks = lastTick + 1
-      initialAnimationInfo.initialX = this.images.startingCard.position.x
-       initialAnimationInfo.initialY = this.images.startingCard.position.y
-       initialanimationInfo.item = animatedCard
+       initialAnimationInfo.item = animatedCard
        initialAnimationInfo.onTick = null
         initialAnimationInfo.time = animationTime
 //initialAnimationInfo.onEnd = function(){callback(null, 1)}
@@ -4287,6 +4289,8 @@ initialAnimationInfo.onEnd  = function(){
      stagesToUpdate.push(  self.hideChildren(animatedCard,{update:false}) )
      self.updateStages(stagesToUpdate)
 }
+
+  self.animateImage(initialAnimationInfo)
 }//river animation
 
 //turn animation
@@ -4314,13 +4318,14 @@ else if(communityArray.length == 3){
 
 
 //assign end value for initial animation
-initialAnimationInfo.finalX =  self.images.community[3].position.x 
-initialAnimationInfo.finalY = self.images.community[3].position.y
-//callback for async series
-initialAnimationInfo.onEnd = function(){callback(null, 1)}
+initialAnimationInfo.finalX =  self.images.community[0].position.x 
+initialAnimationInfo.finalY = self.images.community[0].position.y
+
       async.series([
 
         function(callback){  
+          //callback for async series
+initialAnimationInfo.onEnd = function(){callback(null, 1)}
         self.animateImage(initialAnimationInfo)
 
  },
@@ -4347,14 +4352,14 @@ initialAnimationInfo.onEnd = function(){callback(null, 1)}
  finalY: self.images.community[1].position.y,
  item: self.images.community[1],
 time: animationTime,
-onEnd: null
+onEnd: function(){}
 }
 var community2Animation = _.clone(community1Animation)
 community2Animation.finalX= self.images.community[2].position.x
 community2Animation.finalY=self.images.community[2].position.y
 community2Animation.item=self.images.community[2]
      self.animateImage(community1Animation)    
-     self.animateImage(community1Animation)      
+     self.animateImage(community2Animation)      
     }   
     ])
     
