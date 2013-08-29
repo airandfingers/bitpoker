@@ -967,7 +967,10 @@ console.log('changing userseat view')
             messageInfo.cancel = true
  messageInfo.okayEvent = function(){
   self.hideMessageBox()
-  self.sessionPreferences.changeUserSeatViewTo.value = self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber
+
+  if(self.sessionPreferences.changeUserSeatViewTo.value ===  self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber){ 
+  self.sessionPreferences.changeUserSeatViewTo.value = self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber}
+
 self.saveSessionPreferences()
 }
  messageInfo.cancelEvent = function (){
@@ -975,7 +978,8 @@ self.saveSessionPreferences()
 
   if(self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber  !== self.gameState.userSeatNumber ){
     self.changeUserSeatView(self.gameState.userSeatNumber )}
-    else{self.changeUserSeatView(self.sessionPreferences.changeUserSeatViewTo.value)}
+    else{self.changeUserSeatView()}
+   // else{self.changeUserSeatView(self.sessionPreferences.changeUserSeatViewTo.value)}
 
 
 //self.hideMessageBox()
@@ -992,10 +996,7 @@ self.saveSessionPreferences()
        messageInfo.title = 'Leave Table?'
        messageInfo.cancel = true
        messageInfo.okayEvent = function(){
-       // self.events.exit()
- socket.emit('stand')
-        window.location.href = '/lobby'
-        self.hideMessageBox()
+      self.events.exit()
       }
         self.displayMessageBox("Are you sure you want to leave?",messageInfo)
 
@@ -1011,8 +1012,16 @@ self.saveSessionPreferences()
 
     this.events.exit = function(event){
         socket.emit('stand')
+        self.hideMessageBox()
+        if (_.isObject(parent.iframes)) {
+          console.log('Close iframe');
+          parent.iframes.closeIframe($('#server_values').data('table_name'))
+        }
+        else {
+          console.log('Close window instead');
           var win = window.open('', '_self')
           win.close()
+        }
     }
 
      //===============START BET SLIDER===================
@@ -3512,7 +3521,7 @@ self.setDisplayObjectLocationsInItemAEqualToOnesInItemB(this.images.seats[i][ind
 }//end iteration through this.images.seats
 
 
-this.updateStages(this.images.seats[0].seat.position.z.stage)
+this.updateStages(this.images.seats[0].seat.position.z.stage, {forceUpdate:true})
 
 }
 
@@ -6896,7 +6905,7 @@ if(stageArray.length == 0){
 var sortfunction = function(x, y){return (x - y) }//causes an array to be sorted numerically and ascending
 //sort array to make sure we display objects in the right order of Z
 stageArray.sort(sortfunction)
- console.log(stageArray)
+ //console.log(stageArray)
 
 var canvasesCleared = []
 var stagesUpdated = []
@@ -6922,7 +6931,7 @@ stagesUpdated.push(stageArray[i])
 
 }//iterate through array
 
-if(canvasesCleared.length + stagesUpdated.length >0 && self.performance.numCanvasClears %50 === 0){
+if(canvasesCleared.length + stagesUpdated.length >0/* && self.performance.numCanvasClears %10 === 0*/){
 var logString = 'canvases cleared: '+canvasesCleared.toString()+', total cleared: '+self.performance.numCanvasClears+ ', stages updated: '+stagesUpdated.toString()
  console.log(logString)
 }
@@ -6961,7 +6970,7 @@ for(var i = 0;i<stageNumberLeaveBlankForAll.length;i++){
   //here we get the family of stages for each member of the stage array, then concat + uniquize with our array
 
   //check if update == true
-  if(self.arrayOfParentsOfStageAndOfContainerArray[stageNumberLeaveBlankForAll[i]].upToDate !== true || options.update === true ){
+  if(self.arrayOfParentsOfStageAndOfContainerArray[stageNumberLeaveBlankForAll[i]].upToDate !== true || options.forceUpdate === true ){
 wantToUpdate.push (getStageFamilyArray(stageNumberLeaveBlankForAll[i]))
 }
 
@@ -7674,7 +7683,7 @@ self.jQueryObjects.tableChatFullDiv.mCustomScrollbar()
    holdemCanvas.initialize()
 
       console.log(document)
-      holdemCanvas.activateTicker(2)
+      holdemCanvas.activateTicker(8)
 //console.log(holdemCanvas.images.seats)
     })
  

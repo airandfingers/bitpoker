@@ -992,7 +992,10 @@ self.saveSessionPreferences()
        messageInfo.title = 'Leave Table?'
        messageInfo.cancel = true
        messageInfo.okayEvent = function(){
-      self.events.exit()
+       // self.events.exit()
+ socket.emit('stand')
+        window.location.href = '/lobby'
+        self.hideMessageBox()
       }
         self.displayMessageBox("Are you sure you want to leave?",messageInfo)
 
@@ -1008,16 +1011,8 @@ self.saveSessionPreferences()
 
     this.events.exit = function(event){
         socket.emit('stand')
-        self.hideMessageBox()
-        if (_.isObject(parent.iframes)) {
-          console.log('Close iframe');
-          parent.iframes.closeIframe($('#server_values').data('table_name'))
-        }
-        else {
-          console.log('Close window instead');
           var win = window.open('', '_self')
           win.close()
-        }
     }
 
      //===============START BET SLIDER===================
