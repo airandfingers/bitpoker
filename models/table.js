@@ -3,6 +3,7 @@ module.exports = (function () {
     , Schema = mongoose.Schema // Mongoose Schema constructor
     , ObjectId = Schema.ObjectId // Mongoose ObjectId type
 
+    , async = require('async') // flow control utility library
     , _ = require('underscore') // list utility library
     
     , io = require('../sockets') // configured and listening Socket.IO
@@ -279,37 +280,36 @@ module.exports = (function () {
   };
 
   TableSchema.methods.getTableState = function(user, hand_include, cb) {
-    var self = this
-      , username = user.username
-      , table_state = self.getCurrentHand().serialize(username, hand_include)
-      , player = self.players[username];
-    //console.log('user is', user, ', checkBalance is', user.checkBalance);
-    table_state.table_name = self.name;
-    if (player instanceof Player) {
-      table_state.num_chips = player.num_chips;
-    }
-    else {
-      console.error('No player currently exists for username', username);
-    }
-    //Call Message.getMessagesByHandNum to retrieve messages for current game
-    Message.getMessagesByHandNum(self.getCurrentHand().hand_num, function (fetch_err, messages){
-      if (fetch_err) {
-          console.error('Error while running getMessagesByHandNum', fetch_err);
-          return cb(fetch_err);
+    var self = this;
+    async.parallel({
+      messages: function(acb) {
+        Message.getMessagesByHandNum(self.getCurrentHand().hand_num, acb);
+      }
+    , balance: function(acb) {
+        user.checkBalance('funbucks', acb);
+      }
+    }, function(err, results) {
+      if (err) { 
+        console.error('Error while looking up messages or balanced:', err);
+        return cb(err);
+      }
+      var username = user.username
+        , table_state = self.getCurrentHand().serialize(username, hand_include)
+        , player = self.players[username];
+      //console.log('user is', user, ', checkBalance is', user.checkBalance);
+      table_state.table_name = self.name;
+      if (player instanceof Player) {
+        table_state.num_chips = player.num_chips;
+      }
+      else {
+        console.error('No player currently exists for username', username);
       }
       //Add messages field to table_state object
-      table_state.messages = messages;
-
-      user.checkBalance('funbucks', function(check_err, funbucks) {
-        if (check_err) {
-          console.error('Error while looking up number of funbucks:', check_err);
-          return cb(check_err);
-        }
-        table_state.balance = funbucks;
-        if (_.isFunction(cb)) cb(null, table_state);
-      });
+      table_state.messages = results.messages;
+      // Add balance field to table_state object
+      table_state.balance = results.balance;
+      if (_.isFunction(cb)) cb(null, table_state);
     });
-
   };
 
   static_properties.player_events['message:get_add_chips_info'] = 'sendAddChipsInfo';
