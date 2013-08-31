@@ -26,6 +26,11 @@ self  = this
 
  this.sessionPreferences = {
 
+displaySize:{value:'desktop', updateValue:function(newValue){
+this.value = newValue
+//redraw table//update card sizes here
+}//change value function
+},
       changeUserSeatViewTo:{value:false, updateValue: function(newValue){
 this.value  = newValue
 self.changeUserSeatView(this.value)
@@ -217,12 +222,13 @@ this.jQueryObjects.cashierForm = $('#cashier')
 this.arrayOfParentsOfStageAndOfContainerArray = []
         this.images = {}
 
+this.images.sourceObjects = {}
 
           this.images.sources = {
        //     call: 'img/call.jpg',
        //     check: 'img/check.jpg',
        //     raise: 'img/raise.jpg',
-            hiddenCardFileName: 'back.png',
+            cardBackFileNameWithoutExtension: 'back',
        //     seat: 'img/empty_seat.jpg',
       //      blankSeat : 'img/blank_seat.jpg',
        //     bet: 'img/bet.jpg',
@@ -259,15 +265,26 @@ this.arrayOfParentsOfStageAndOfContainerArray = []
             foldSound: 'sound/fold.wav',
 
 moveChipsSound: 'sound/move_chips.wav',
-
-            chips: {
+chips:{
                 red:'img/chips/red_chip.png',
                 black: 'img/chips/black_chip.png',
                 10: 'img/chips/10.png'
+              },//chips
+mobileCardFolder: 'img/fourcolordeck/resize/',
+desktopCardFolder: 'img/fourcolordeck/'
+
             }
+
+            if(self.sessionPreferences.displaySize == 'mobile'){
+              this.images.sources.cardImageFolder = this.images.sources.mobileCardFolder
+
             }
-            if(this.gameState.displaySize == 'mobile'){this.images.sources.cardImageFolder = 'img/fourcolordeck/resize/'}
-            else {this.images.sources.cardImageFolder = 'img/fourcolordeck/'}
+            else {
+              this.images.sources.cardImageFolder = this.images.sources.desktopCardFolder
+
+            }
+
+
 
             this.images.background = {}
             this.images.pots = []
@@ -375,27 +392,67 @@ this.image.graphics.beginFill(fillColor).drawRoundRect(0, 0, this.size.x, this.s
 
 }
 
- this.images.itemAsBitmap = function (item,imageSource){
+ this.images.itemAsBitmap = function (item,source, options){
+  //console.log(this.itemAsBitmap.caller)
+if(!options){var options = {}}
+  var stagesToUpdate = []
+
+  if(_.isString(source)){
     var tempImage= new Image()
-    tempImage.src = imageSource
-    item.image = new createjs.Bitmap(tempImage)
-     self.positionItemImage(   item, {update:false})
+    tempImage.src = source
+ item.image = new createjs.Bitmap(tempImage)
+  }
+else{
+  console.log(source)
+//if already an Image instance, just use it
+if(source instanceof Image){
+//creating new createJS bitmap based on Image object
+  item.image = new createjs.Bitmap(source)}
+
+   }
+  stagesToUpdate.push(   self.positionItemImage(   item, {update:false}) )
 
     item.image.parentOfImageObject = item
-    item.bitmapSource = imageSource
+    item.bitmapSource = source
     if(item.messages){
         item.image.onClick = self.events.onButtonClick
     }
+
+    if(options.update !== false){self.updateStages(stagesToUpdate)}
+      else{return stagesToUpdate}
+
             }
 
-            this.images.cardAsBitmap = function(item,cardText){
-                 var cardImage = new Image()
+            this.images.cardAsBitmap = function(item,card, options){
+             /*   var cardImage = new Image()
+                 
                  if(_.isString(cardText)){
          var imageSource = this.sources.cardImageFolder+cardText+'.png'}
-         else{var imageSource = this.sources.cardImageFolder+hiddenCardFileName+'.png'}
+         else{var imageSource = this.sources.cardImageFolder+cardBackFileNameWithoutExtension+'.png'}
 
-      this.itemAsBitmap(item,imageSource)
+*/
+console.log('calling card as bitmap')
 
+if(!options){var options = {}}
+  var stagesToUpdate = []
+
+ if(self.sessionPreferences.displaySize.value !== 'mobile'){var sourceParent = this.sourceObjects.desktopCards   }
+      else{var sourceParent = this.sourceObjects.mobileCards }
+
+        if(card instanceof Image){var source = card}
+ else if(_.isString(card)){
+   
+var source  = sourceParent[card]}
+else{
+  var source = sourceParent.cardBack
+}
+console.log(source)
+  //else{throw 'invalid parameter passed to create a card'}
+
+    stagesToUpdate.push(  this.itemAsBitmap(item,source, options))
+
+    if(options.update !== false){self.updateStages(stagesToUpdate)}
+      else{return stagesToUpdate}
             }
     
             //actually a rectangle with rounded edges
@@ -744,7 +801,7 @@ self.hideTableChatFull()
 }
 
 this.moveTableChatFullMessageText = function(movementObject){
-console.log('moveTableChatFullMessageText called')
+//console.log('moveTableChatFullMessageText called')
 var velocityTo0InMiliseconds = 1000
 
 
@@ -769,7 +826,7 @@ self.jQueryObjects.tableChatFullDiv.mCustomScrollbar('update')
 }//if mCustomScrollbar is used
 
 else{//if not mcustomscrollbar
-  console.log('scrolling to bottom with nicescroll')
+ // console.log('scrolling to bottom with nicescroll')
   var scroll = self.jQueryObjects.tableChatFullDiv.getNiceScroll()
 if(scroll[0].getContentSize().h != self.jQueryObjects.tableChatFullDiv.height()){
  self.jQueryObjects.tableChatFullDiv.scrollTop(scroll[0].getContentSize().h*1.5)
@@ -956,9 +1013,13 @@ this.events.rotateSeatsIfNeededAndConfirm = function(){
 if(self.permanentPreferences.alwaysRotate === true){}
 //  console.log(self.sessionPreferences)
 //console.log(self.images.seats[self.gameState.userSeatNumber])
-   if(self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber  !== self.sessionPreferences.changeUserSeatViewTo.value && self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber !== 0){ // if user is seated at normal seat there is no need for popup
-      
-console.log('changing userseat view')
+
+//check if preference is to sit at "absolute steat" or 0
+var preferenceSeat = self.sessionPreferences.changeUserSeatViewTo.value
+if( _.isNumber(preferenceSeat) && ( preferenceSeat === 0 || preferenceSeat === self.gameState.userSeatNumber)){
+  self.changeUserSeatView(self.sessionPreferences.changeUserSeatViewTo.value)}
+  else{  //confirm user choice    
+//console.log('changing userseat view')
       
             var messageInfo = {}    
               messageInfo.title = 'Seat Viewpoint Changed'
@@ -968,14 +1029,11 @@ console.log('changing userseat view')
  messageInfo.okayEvent = function(){
   self.hideMessageBox()
 
-  if(self.sessionPreferences.changeUserSeatViewTo.value ===  self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber){ 
-  self.sessionPreferences.changeUserSeatViewTo.value = self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber}
+  self.sessionPreferences.changeUserSeatViewTo.value = self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber
 
 self.saveSessionPreferences()
 }
  messageInfo.cancelEvent = function (){
-  console.log('cancel event called')
-
   if(self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber  !== self.gameState.userSeatNumber ){
     self.changeUserSeatView(self.gameState.userSeatNumber )}
     else{self.changeUserSeatView()}
@@ -987,7 +1045,7 @@ self.saveSessionPreferences()
  var messageString = 'Your table viewpoint has been changed so that you appear at the bottom middle.  Your position relative to other players remains the same. Click '+messageInfo.cancelText+ ' to change your view back.'  
      self.displayMessageBox(messageString, messageInfo)
 
-         }//message box popup
+         }//message box popup //if we want to rotate
 }
 
     this.events.exitTableClick = function(event){
@@ -1276,31 +1334,43 @@ if(sourceEnding == '.SWF'){return true}
        if(_.isString(this.images.sources[i])){
 
         if(isImageSource(this.images.sources[i])){
-           imageSourceArray.push({src: this.images.sources[i], id:resourceID})
+
+           imageSourceArray.push({src: this.images.sources[i], id:resourceID, name: i, sourceObjectParent: this.images.sourceObjects})
            resourceID++
     }//end check if this.images.sources[i] = image
 
     else if(isFlashSoundSource(this.images.sources[i])){
-           flashSoundSourceArray.push({src: this.images.sources[i], id:resourceID})
+           flashSoundSourceArray.push({src: this.images.sources[i], id:resourceID, name: i})
            resourceID++
     }//end check if this.images.sources[i] = flashSound
 
     else if(isSoundSource(this.images.sources[i])){
-           soundSourceArray.push({src: this.images.sources[i], id:resourceID})
+           soundSourceArray.push({src: this.images.sources[i], id:resourceID, name: i})
            resourceID++
     }//end check if this.images.sources[i] = sound
 
   }//end check if this.images.sources[i] = string
     else if (_.isObject(this.images.sources[i])){
+      this.images.sourceObjects[i] = {}
         for(var n in this.images.sources[i]){
             if(_.isString(this.images.sources[i][n])){
-                imageSourceArray.push({src: this.images.sources[i][n], id:resourceID})
+                imageSourceArray.push({src: this.images.sources[i][n], id:resourceID, name: n, sourceObjectParent: this.images.sourceObjects[i]})
                 resourceID++
             }
         }//end iteration through this.images.sources[i]
       }//end check if this.images.sources[i] is object
       
     }//end iteration through this.images.sources
+
+//define object for card image to stay
+this.images.sourceObjects.desktopCards = {}
+this.images.sourceObjects.mobileCards = {}
+var desktopCards = this.images.sourceObjects.desktopCards
+var mobileCards = this.images.sourceObjects.mobileCards
+
+ //push card back mobile and desktop
+imageSourceArray.push({src:this.images.sources.desktopCardFolder+this.images.sources.cardBackFileNameWithoutExtension+'.png', id: resourceID, name: 'cardBack', sourceObjectParent: desktopCards})
+imageSourceArray.push({src:this.images.sources.mobileCardFolder+this.images.sources.cardBackFileNameWithoutExtension+'.png', id: resourceID, name: 'cardBack', sourceObjectParent: mobileCards})
 
 //push individual cards
     for(var i = 2;i<=14;i++){
@@ -1311,20 +1381,27 @@ if(sourceEnding == '.SWF'){return true}
 else if(i==13){cardRank = 'k'}
     else    if(i==14){cardRank = 'a'}
     else{cardRank = i}
-        imageSourceArray.push({src: this.images.sources.cardImageFolder+cardRank+'c.png', id: resourceID})
+        imageSourceArray.push({src: this.images.sources.desktopCardFolder+cardRank+'c.png', id: resourceID, name: cardRank+'c', sourceObjectParent: desktopCards})
       resourceID++
-        imageSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'d.png', id: resourceID})
+        imageSourceArray.push({src:this.images.sources.desktopCardFolder+cardRank+'d.png', id: resourceID, name: cardRank+'d', sourceObjectParent: desktopCards})
         resourceID++
-        imageSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'h.png', id: resourceID})
+        imageSourceArray.push({src:this.images.sources.desktopCardFolder+cardRank+'h.png', id: resourceID, name: cardRank+'h', sourceObjectParent: desktopCards})
         resourceID++
-        imageSourceArray.push({src:this.images.sources.cardImageFolder+cardRank+'s.png', id: resourceID})
+        imageSourceArray.push({src:this.images.sources.desktopCardFolder+cardRank+'s.png', id: resourceID, name: cardRank+'s', sourceObjectParent: desktopCards})
+        resourceID++
+       imageSourceArray.push({src: this.images.sources.mobileCardFolder+cardRank+'c.png', id: resourceID, name: cardRank+'c', sourceObjectParent: mobileCards})
+      resourceID++
+        imageSourceArray.push({src:this.images.sources.mobileCardFolder+cardRank+'d.png', id: resourceID, name: cardRank+'d', sourceObjectParent: mobileCards})
+        resourceID++
+        imageSourceArray.push({src:this.images.sources.mobileCardFolder+cardRank+'h.png', id: resourceID, name: cardRank+'h', sourceObjectParent: mobileCards})
+        resourceID++
+        imageSourceArray.push({src:this.images.sources.mobileCardFolder+cardRank+'s.png', id: resourceID, name: cardRank+'s', sourceObjectParent: mobileCards})
         resourceID++
     }
 
-    //push card back
-imageSourceArray.push({src:this.images.sources.cardImageFolder+this.images.sources.hiddenCardFileName, id: resourceID})
+   
 
-
+console.log(imageSourceArray)
 
     //console.log(imageSourceArray)
     //define dimensions of preloading screen
@@ -1490,9 +1567,23 @@ console.log(errorSrcArray)
     loadedImages++
 console.log('loaded '+ loadedImages+' images out of a total of '+imageArray.length + ' images')
   }
-    var newImages=[]
+ //   var newImages=[]
     //iterate through imageArray to preload images
     _.each(_.range(imageArray.length), function(i){
+      console.log(imageArray[i].sourceObjectParent)
+    //  if(!_.isObject(imageArray[i].sourceObjectParent)){imageArray[i].sourceObjectParent = self.images.sourceObjects}
+      imageArray[i].sourceObjectParent[imageArray[i].name] = new Image()
+      var newImageObject = imageArray[i].sourceObjectParent[imageArray[i].name]
+
+  if(typeof imageArray[i] == 'string'){newImageObject.src=imageArray[i]}
+        else if (typeof imageArray[i] == 'object'){newImageObject.src=imageArray[i].src}
+        
+       newImageObject.onload=function(){handleLoad(newImageObject.src, imageArray[i].id, increaseCounter)}
+        newImageObject.onerror=function(){handleLoadError(newImageObject.src, imageArray[i].id, increaseCounter) }
+
+        //on last iteration call onComplete function
+
+      /*
         newImages[i]=new Image()
         if(typeof imageArray[i] == 'string'){newImages[i].src=imageArray[i]}
         else if (typeof imageArray[i] == 'object'){newImages[i].src=imageArray[i].src}
@@ -1501,6 +1592,8 @@ console.log('loaded '+ loadedImages+' images out of a total of '+imageArray.leng
         newImages[i].onerror=function(){handleLoadError(newImages[i].src, imageArray[i].id, increaseCounter) }
 
         //on last iteration call onComplete function
+        */
+
 
     })
 //periodicaly checkto see if its completed
@@ -1781,7 +1874,7 @@ var currencyDisplayColor = 'white'
               var totalPotWidth = (this.pots[0].secondColumnChip.position.x-this.pots[0].firstChip.position.x)*(self.imageData.maxChipColumns-1)+chipDiameter
 
             this.pots[0].potSize = new this.Item(this.pots[0].firstChip.position.x, this.pots[0].firstChip.position.y+potHeight,potWidth,potHeight,self.gameState.zPositionData.chips)
-             this.addItemText(this.pots[0].potSize, '',potSizeAndFont, potTextColor)
+             this.addItemText(this.pots[0].potSize, 0,potSizeAndFont, potTextColor)
                        
               var distanceBetweenPots = (this.pots[0].secondColumnChip.position.x-this.pots[0].firstChip.position.x)*(self.imageData.maxChipColumns)
            var distanceBetweenChipsInColumn =  this.pots[0].firstChip.position.y - this.pots[0].secondChip.position.y
@@ -1799,7 +1892,7 @@ var currencyDisplayColor = 'white'
               this.pots[i].secondColumnChip = new this.Item(this.pots[0].secondColumnChip.position.x+i*distanceBetweenPots,this.pots[0].secondColumnChip.position.y,chipDiameter,chipDiameter,self.gameState.zPositionData.chips)
 
                    this.pots[i].potSize = new this.Item(this.pots[0].potSize.position.x+i*distanceBetweenPots,this.pots[0].potSize.position.y,potWidth,potHeight,self.gameState.zPositionData.chips)
-             this.addItemText(this.pots[i].potSize, '',potSizeAndFont, potTextColor)
+             this.addItemText(this.pots[i].potSize, 0,potSizeAndFont, potTextColor)
               }
 
               //---------------------player chat input---------------
@@ -2009,8 +2102,8 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
          */
 
             //hole cards
-             this.itemAsBitmap(this.seats[i].hiddenCard0, this.sources.cardImageFolder+this.sources.hiddenCardFileName)
-            this.itemAsBitmap(this.seats[i].hiddenCard1, this.sources.cardImageFolder+this.sources.hiddenCardFileName)
+             this.itemAsBitmap(this.seats[i].hiddenCard0, this.sources.cardImageFolder+this.sources.cardBackFileNameWithoutExtension+'.png')
+            this.itemAsBitmap(this.seats[i].hiddenCard1, this.sources.cardImageFolder+this.sources.cardBackFileNameWithoutExtension+'.png')
 
 
          //   this.itemAsRectangle(this.seats[i].shownCard0, "#00FFFF")
@@ -2279,7 +2372,7 @@ $('#betSize').css({
 
   //------------------card spawn location---------------------------------
 
-           this.startingCard = new this.Item(canvasWidth/2-this.community[0].size.x/2, this.community[0].position.y+this.community[0].size.y+40 , cardWidth, cardHeight, self.gameState.zPositionData.cardAnimation)
+           this.startingCard = new this.Item(canvasWidth, canvasHeight, cardWidth, cardHeight, self.gameState.zPositionData.cardAnimation)
 
 
        
@@ -3302,19 +3395,36 @@ if(betSize>self.gameState.maxBet){return self.gameState.maxBet}
 }
 
     //does not update a player's stack size
-    this.playerPutsChipsInPot =function(seatNumber,betSize, stackSize){
+    this.playerPutsChipsInPot =function(seatNumber,betSize, stackSize, options){
+        if(!options){var options = {}}
+          var update = options.update
+        options.update = false
+        var stagesToUpdate = []
+  var chipStackReturn =  this.displayChipStack(betSize, this.images.seats[seatNumber], this.images.seats[seatNumber].firstChip.position.x,this.images.seats[seatNumber].firstChip.position.y, options )
         
+        //if number, its a stage number and we can dpate it later, if not we need to hide array
+           if(_.isNumber(chipStackReturn) ){stagesToUpdate.push(chipStackReturn)}
+
+else{stagesToUpdate.push(this.hideChildren(chipStackReturn, options))}
+
+  stagesToUpdate.push(this.displayChildren(this.images.seats[seatNumber].chips))
+
+
         if(betSize>0){
          this.images.seats[seatNumber].bet.text.text = betSize
- this.displayChildren(this.images.seats[seatNumber].bet)
+stagesToUpdate.push( this.displayChildren(this.images.seats[seatNumber].bet, options))
        }
          else{this.images.seats[seatNumber].bet.text.text = ''
- this.hideChildren(this.images.seats[seatNumber].bet)
+ stagesToUpdate.push(this.hideChildren(this.images.seats[seatNumber].bet, options))
        }
          if(!_.isNull(stackSize) && !_.isUndefined(stackSize) && stackSize <=0 ){stackSize = 'All In'}
          this.images.seats[seatNumber].status.text.text = stackSize
 
-          
+          if(update !== false){ 
+this.updateStages(stagesToUpdate)
+options.update = update
+          }
+else{ return stagesToUpdate}
 
     }
 
@@ -3355,8 +3465,9 @@ createjs.Ticker.setFPS(FPS)
      if(onTick){onTick()}
    //  console.log(event)
      if (!event.paused) {
-         // Actions carried out when the Ticker is not paused.
-         self.updateStages()
+         // Actions carried out when the Ticker is not pfaused.
+       //  self.updateStages(null, {forceUpdate:true})
+       self.updateStages()
      }
  }
 
@@ -3383,21 +3494,21 @@ createjs.Ticker.setFPS(12)
 
 
     this.positionItemImage = function (item, options) {
+if(!options){var options = {}}
+  var stagesToUpdate = []
 
 if(_.isObject(item.image)){
   item.image.x = item.position.x
   item.image.y = item.position.y
 }
-/*
-if(_.isObject(item.text)){
-  item.text.x = item.position.x
-  item.text.y = item.position.y
-}
-*/
 
-if(!_.isObject(options)){return}
-if(options.update !== false){this.updateStages(item.position.z.stage)}
-   
+
+
+stagesToUpdate.push(this.itemChanged(item))
+
+if(options.update !== false){this.updateStages(stagesToUpdate)}
+  else{return stagesToUpdate}
+
     }
 
   //define function to get width of string
@@ -3462,14 +3573,14 @@ itemA.size.y = itemB.size.y
 }
 
 this.changeUserSeatView = function(seatNumberToRotateTo){
-  console.log('changing userseat view to seatNumberToRotateTo '+seatNumberToRotateTo)
+ // console.log('changing userseat view to seatNumberToRotateTo '+seatNumberToRotateTo)
 /*if(self.permanentPreferences.changeUserSeatViewTo.value == ['bottom','middle']){}
   else{return 'change view when seated setting is off'}*/
  if(!_.isNumber(seatNumberToRotateTo)){var seatNumberToRotateTo = 0}
 if(seatNumberToRotateTo > this.gameState.numSeats){ return 'seatNumber too high, invalid'}
 
-console.log('rotating to seat: '+seatNumberToRotateTo)
- console.log(this.images.seats)
+//console.log('rotating to seat: '+seatNumberToRotateTo)
+// console.log(this.images.seats)
 
 var clockWiseRotationNumberBasedOnUnRotatedPosition
 var temporaryArrayOfNonrotatedSeats = []
@@ -3772,7 +3883,7 @@ this.gameState.numSeats = numSeats
 this.imageData.numberOfPlayersSet = true
     }
 
-    this.displayShownCard = function (cardText,parentOfImageObject, options){
+    this.displayShownCard = function (cardText, parentOfImageObject, options){
         
       //  parentOfImageObject.text.text= cardText
       //sprite sheet order numerical first starting with 2, then the same order as bridge suits
@@ -3824,70 +3935,122 @@ this.imageData.numberOfPlayersSet = true
       parentOfImageObject.bitmapAnimation.gotoAndStop()
 
       */
-      this.images.cardAsBitmap(parentOfImageObject,cardText)
-     
-     return(       this.displayChildren(parentOfImageObject, options) )
+      if(!options){var options = {}}
+        var update = options.update
+      options.update = false
+var stagesToUpdate = []
+
+   stagesToUpdate.push(   this.images.cardAsBitmap(parentOfImageObject,cardText) )
+ stagesToUpdate.push( this.displayChildren(parentOfImageObject, options) )
+options.update = update
+      if(update!== false){self.updateStages(stagesToUpdate) }
+     else{ return stagesToUpdate}
+
     }
 
         this.displayHoleCards = function (hand,seatNumber, options){
           if(!options){var options = {}}
             var update  = options.update
           options.update = false
-
 var stagesToUpdate = []
-               //check for and remove face down card images
-         if(this.arrayOfParentsOfStageAndOfContainerArray[this.images.seats[seatNumber].hiddenCard0.position.z.stage].stage.contains(this.images.seats[seatNumber].hiddenCard0.image)){
-            this.hideChildren(this.images.seats[seatNumber].hiddenCard0, options)
-            this.hideChildren(this.images.seats[seatNumber].hiddenCard1, options)
-            }
 
-        this.displayShownCard(hand[0], this.images.seats[seatNumber].shownCard0, options)
-        this.displayShownCard(hand[1], this.images.seats[seatNumber].shownCard1, options)
+//remove any lingering images
+           stagesToUpdate.push(      this.hideChildren(this.images.seats[seatNumber].shownCard0, options))
+       stagesToUpdate.push(            this.hideChildren(this.images.seats[seatNumber].shownCard1, options))
 
+//display face up cards
+  stagesToUpdate.push(        this.displayShownCard(hand[0], this.images.seats[seatNumber].shownCard0, options))
+      stagesToUpdate.push(         this.displayShownCard(hand[1], this.images.seats[seatNumber].shownCard1, options))
+
+//remove any facedown images
+           stagesToUpdate.push(      this.hideChildren(this.images.seats[seatNumber].hiddenCard0, options))
+       stagesToUpdate.push(            this.hideChildren(this.images.seats[seatNumber].hiddenCard1, options))
+
+     
+
+options.update = update//reset options.update variable
 if(options.update !== false){this.updateStages(stagesToUpdate)}
-return stagesToUpdate
+else{return stagesToUpdate}
     }
 
     this.hideHoleCards = function (seatNumber, options){
-        
+
 var itemsToHide = []
 itemsToHide.push ( this.images.seats[seatNumber].hiddenCard0)
 itemsToHide.push ( this.images.seats[seatNumber].hiddenCard1)
 itemsToHide.push ( this.images.seats[seatNumber].shownCard0)
 itemsToHide.push ( this.images.seats[seatNumber].shownCard1)
 
+
      return  this.hideChildren(itemsToHide, options)
+
+
+    }
+
+    this.itemChanged = function(item){
+if(this.isItemAddedToStage(item)){
+
+this.arrayOfParentsOfStageAndOfContainerArray[item.position.z.stage].upToDate = false
+return item.position.z.stage
+}
 
 
     }
 
 //if potsize is number will not display chips
     this.updatePotSize = function (potSize, options){
+var stagesToUpdate = []
 var newTotalPotSize = false
+if(!options){var options = {}}
+var update = options.update
+options.update = false
 
-if(typeof potSize == 'object'){console.log(potSize.length)}
+//check if we should hide all pots
+if(!potSize||(_.isArray(potSize) && _.isEmpty(_.compact(potSize)))){
+  console.log('we are hiding all pots in teh updatePotSize function')
+  for(var i  = 0;i<this.images.pots.length;i++){
+    this.images.pots[i].potSize.text.text = 0
+   stagesToUpdate.push( this.itemChanged(this.images.pots[i].potSize) )
+ stagesToUpdate.push(  this.hideChildren(this.images.pots[i].potSize, options))
+ stagesToUpdate.push(    this.hideChildren(this.images.pots[i].chips, options))
+stagesToUpdate.push(     this.hideChildren(this.images.totalPotSize, options))
+
+  }
+
+}
+
       //if potNumber is specified, we only update that 1 potSize
-        if(options && _.isNumber(options.potNumber)){
-     //     console.log('updating pot size based on one specific pot number')
-          if(_.isArray[potSize]){var specificPotSize = potSize[options.potNumber]}
+     else   if(_.isNumber(options.potNumber)){
+        console.log('updating pot size based on one specific pot number')
+          if(_.isArray(potSize)){var specificPotSize = potSize[options.potNumber]}
             else{var specificPotSize = potSize}
-          this.images.pots[potNumber].text.text  = specificPotSize
- this.displayChipStack(parseFloat(specificPotSize), this.images.pots[options.potNumber], this.images.pots[options.potNumber].firstChip.position.x, this.images.pots[options.potNumber].firstChip.position.y,{update:false})
-    
+
+              if(parseFloat(specificPotSize) != parseFloat(this.images.pots[potNumber].potSize.text.text)){
+          this.images.pots[potNumber].potSize.text.text  = specificPotSize
+          stagesToUpdate.push(this.displayChildren(this.images.pots[potNumber].potSize, options))
+        stagesToUpdate.push(  this. itemChanged(this.images.pots[potNumber].potSize))
+stagesToUpdate.push(  this.displayChipStack(parseFloat(specificPotSize), this.images.pots[options.potNumber], this.images.pots[options.potNumber].firstChip.position.x, this.images.pots[options.potNumber].firstChip.position.y, options))
+    }
+   else {console.log('pot '+options.potNumber+'not redrawn because same value')}
             }//if potNumber is specified
 
-//if potSize is a number (representing total pot) or is a aray of length 1 (representing total pot)
 //we want to update and display only the total pot
         else if (_.isNumber(potSize)){
-console.log('updating only the total pot size text')
+//console.log('updating only the total pot size text')
           newTotalPotSize = potSize
-        }
+        }//if pot size is a number
+
+//update pot0 but not display it, and update total pot size
          else if(_.isArray(potSize) && potSize.length == 1){ 
    //       console.log('updating potsize based on array of length 1')
           newTotalPotSize = potSize[0]
+             if(parseFloat( this.images.pots[0].potSize.text.text) != newTotalPotSize){
 this.images.pots[0].potSize.text.text = newTotalPotSize
-self.displayChipStack(parseFloat(newTotalPotSize), self.images.pots[0], self.images.pots[0].firstChip.position.x, self.images.pots[0].firstChip.position.y, {update:false})
+ stagesToUpdate.push(  this. itemChanged( this.images.pots[0].potSize))
+stagesToUpdate.push( self.displayChipStack(parseFloat(newTotalPotSize), self.images.pots[0], self.images.pots[0].firstChip.position.x, self.images.pots[0].firstChip.position.y, options))
         }
+        else{  console.log('pot '+0+'not redrawn because same value')}
+        }//if parater is 1 length array
                        
 
        else  if(_.isArray(potSize)&&potSize.length>1){
@@ -3898,10 +4061,14 @@ self.displayChipStack(parseFloat(newTotalPotSize), self.images.pots[0], self.ima
 aggregatedPotSize = aggregatedPotSize + parseFloat(potSize[i])
 //redraw chipstack ONLY if value is different from before
 if(parseFloat(potSize[i]) != parseFloat(this.images.pots[i].potSize.text.text)){
-this.images.pots[i].potSize.text.text = potSize[i]
-self.displayChipStack(parseFloat(potSize[i]), self.images.pots[i], self.images.pots[i].firstChip.position.x, self.images.pots[i].firstChip.position.y, {update:false})
-  }
-   this.displayChildren(this.images.pots[i].potSize, options)
+  console.log('updating pot size '+i+'with value '+ potSize[i])
+ this.images.pots[i].potSize.text.text = potSize[i]
+    stagesToUpdate.push(  this.itemChanged(this.images.pots[i].potSize))
+stagesToUpdate.push( this.displayChipStack(parseFloat(potSize[i]), self.images.pots[i], self.images.pots[i].firstChip.position.x, self.images.pots[i].firstChip.position.y, options) )
+  }//check if value is different
+else {console.log('pot '+i+'not redrawn because same value')}
+
+  stagesToUpdate.push( this.displayChildren(this.images.pots[i].potSize, options) )
 //   this.displayChildren(this.images.pots[i].chips, options)
  }//end loop throuh potSize array
  //display total PotSize
@@ -3909,12 +4076,20 @@ self.displayChipStack(parseFloat(potSize[i]), self.images.pots[i], self.images.p
  }
 
  if(_.isNumber(newTotalPotSize)) {
+  if('Pot: '+newTotalPotSize != this.images.totalPotSize.text.text ){
   this.images.totalPotSize.text.text = 'Pot: '+newTotalPotSize
-         this.displayChildren(this.images.totalPotSize, options)
+  stagesToUpdate.push(this.itemChanged( this.images.totalPotSize))
+    }//if different
+          stagesToUpdate.push(   this.displayChildren(this.images.totalPotSize, options) )
        }
          
 
-if(!options || options.update !== false){this.updateStages(this.images.totalPotSize.position.z.stage)}
+if(update !== false){
+ // console.log('updating alot of stages'+stagesToUpdate)
+  options.update = update
+  this.updateStages(stagesToUpdate)}
+
+else {return stagesToUpdate}
     }
 
     this.playerSits = function(seatNumber, playerName, chips, options){
@@ -3964,11 +4139,21 @@ return stagesToUpdate
 
    //this.images.seats[i] is parent for players bets, this.images.pots[i] is parent for pots
     this.displayChipStack = function(chipAmount,parentOfChipArray, initialX, initialY, options){
-        //remove previous chips
-        this.hideChildren(parentOfChipArray.chips, {update:false})
+      chipAmount = parseFloat(chipAmount)
+      if(!options){var options = {}}
+        var update = options.update
+      options.update = false
+      var stagesToUpdate = []
+
         if(!_.isArray(parentOfChipArray.chips)){parentOfChipArray.chips = []}
-        //reset chip array from memory
-   else{ while(parentOfChipArray.chips.length>0) {parentOfChipArray.chips.pop()}}
+         
+        //reset chip array from memory, adding to oldArray
+   else{ //if parentOfChipArray.chips is an Array
+     var oldArray = []
+    while(parentOfChipArray.chips.length>0) {
+    oldArray.push(parentOfChipArray.chips.pop())
+  }//while loop 
+   }//if parentOfChipArray.chips is an Array
         var x = initialX
         var y = initialY
         var chipIncrementY = this.images.pots[0].secondChip.position.y-this.images.pots[0].firstChip.position.y
@@ -3992,53 +4177,53 @@ return stagesToUpdate
 
         while(chipAmount>=1){
             if(chipAmount>=10000){
-            this.displayChip('10k',x,y, parentOfChipArray, {update:false})
+     stagesToUpdate.push(       this.displayChip('10k',x,y, parentOfChipArray, options) )
             y =y+chipIncrementY
             chipAmount = chipAmount -10000
         }
            else if(chipAmount>=5000){
-            this.displayChip('5k',x,y, parentOfChipArray, {update:false})
+     stagesToUpdate.push(           this.displayChip('5k',x,y, parentOfChipArray, options))
             y =y+chipIncrementY
             chipAmount = chipAmount -5000
         }
         else     if(chipAmount>=1000){
             
-            this.displayChip('1k',x,y, parentOfChipArray, {update:false})
+      stagesToUpdate.push(          this.displayChip('1k',x,y, parentOfChipArray, options))
             y =y+chipIncrementY
             chipAmount = chipAmount -1000
         }
               else    if(chipAmount>=500){
             
-            this.displayChip(500,x,y, parentOfChipArray, {update:false})
+       stagesToUpdate.push(         this.displayChip(500,x,y, parentOfChipArray, options))
             y =y+chipIncrementY
             chipAmount = chipAmount -500
         }
            else    if(chipAmount>=100){
             
-            this.displayChip(100,x,y, parentOfChipArray, {update:false})
+         stagesToUpdate.push(       this.displayChip(100,x,y, parentOfChipArray, options))
             y =y+chipIncrementY
             chipAmount = chipAmount -100
         }
         else if(chipAmount>=50){
             
-            this.displayChip(50,x,y, parentOfChipArray, {update:false})
+          stagesToUpdate.push(      this.displayChip(50,x,y, parentOfChipArray, options))
             y =y+chipIncrementY
             chipAmount = chipAmount -50
         }
       else  if(chipAmount>=25){
             
-             this.displayChip(25,x,y, parentOfChipArray, {update:false})
+         stagesToUpdate.push(        this.displayChip(25,x,y, parentOfChipArray, options))
             y =y+chipIncrementY
             chipAmount = chipAmount -25
 
         }
       else   if(chipAmount >=5){
-             this.displayChip(5,x,y, parentOfChipArray, {update:false})
+           stagesToUpdate.push(      this.displayChip(5,x,y, parentOfChipArray, options))
             y =y+chipIncrementY
             chipAmount = chipAmount -5
         }
       else   if(chipAmount >=1){
-             this.displayChip(10,x,y, parentOfChipArray, {update:false})
+           stagesToUpdate.push(      this.displayChip(10,x,y, parentOfChipArray, options))
             y =y+chipIncrementY
             chipAmount = chipAmount -1
         }
@@ -4052,12 +4237,26 @@ return stagesToUpdate
             if(columnCounter>=this.imageData.maxChipColumns){chipAmount = 0}
         }
         }
-if(!options || (options.update !== false && options.hidden !== true)){
+
+   //     console.log('displayChipStack has finished')
+if(update !== false && options.hidden !== true){
   if(_.isArray(parentOfChipArray.chips)&&parentOfChipArray.chips.length>0 && parentOfChipArray.chips[0] instanceof this.images.Item){
-    this.updateStages(parentOfChipArray.chips[0].position.z.stage,options)}
+ this.updateStages(stagesToUpdate)
+this.hideChildren(  oldArray, options)
+  }
+    options.update = update
+}
+else if(options.hidden === true){
+  options.update = update
+   return oldArray
 }
 
-else {return parentOfChipArray.chips[0].position.z.stage}
+else if(update === false) {
+//console.log('returning'+stagesToUpdate)
+  stagesToUpdate.push(  this.hideChildren(  oldArray, options) )
+ options.update = update
+  return stagesToUpdate}
+
 
     }
 
@@ -4092,16 +4291,16 @@ else {return parentOfChipArray.chips[0].position.z.stage}
            chipColor = 'blue'
        }
 if( chipValue == 10){
-var chipImageSource = this.images.sources.chips['10']
+var chipImageSource = this.images.sourceObjects.chips['10']
 }
   else   if(chipColor == 'red'){
-           var chipImageSource = this.images.sources.chips.black
+           var chipImageSource = this.images.sourceObjects.chips.red
        }
        else if(chipColor == 'black'){
-            var chipImageSource = this.images.sources.chips.black
+            var chipImageSource = this.images.sourceObjects.chips.black
 
        }
-       else{ var chipImageSource = this.images.sources.chips.black}
+       else{ var chipImageSource = this.images.sourceObjects.chips.black}
        parentOfChipArray.chips.push(new this.images.Item(x,y,diameter,diameter,this.gameState.zPositionData.chips))
         this.images.itemAsBitmap(parentOfChipArray.chips[parentOfChipArray.chips.length-1], chipImageSource) 
  
@@ -4121,7 +4320,9 @@ for(var i   = 0; i<parentOfChipArray.chips.length-1;i++){
     }
 }
  if(options && options.hidden == true){}
-  else{this.displayChildren(parentOfChipArray.chips, {update:false})}
+  else{
+//console.log('displaying a chip')
+    return (this.displayChildren(parentOfChipArray.chips, options) )}
 
 
  }
@@ -4148,10 +4349,14 @@ defaults.onEnd = function(animationInfo, setIntervalFunction){
   self.hideChildren(animationInfo.item)
 //self.updateStages(animationInfo.item.position.z.stage)
 }
+defaults.onStart = function(animationInfo){
+self.displayChildren(animationInfo.item)
+}
+/*
 defaults.onTick = function(animationInfo, setIntervalFunction){
 self.updateStages(animationInfo.item.position.z.stage)
 }
-
+*/
 
 animationInfo = _.defaults(animationInfo, defaults)
 
@@ -4163,6 +4368,8 @@ animationInfo = _.defaults(animationInfo, defaults)
                      var totalDistanceY = animationInfo.finalY - animationInfo.initialY
                    var distancePerTickX =  totalDistanceX*fractionDistancePerTick
                    var distancePerTickY = totalDistanceY*fractionDistancePerTick
+
+if(!animationInfo.item instanceof self.images.Item){throw 'animate image function passed a non item parameter as item'}
 
       if( animationInfo.item.text && animationInfo.item.image)    {
            var textOffSetX = animationInfo.item.text.x - animationInfo.item.image.x
@@ -4186,7 +4393,9 @@ else if(animationInfo.item.text){
 animationInfo.item.text.y = animationInfo.initialY
 }
 
-self.displayChildren(animationInfo.item)
+if(animationInfo.onStart){
+(animationInfo.onStart(animationInfo))}
+
                    var tick = 0
 
        var imageAnimation =   setInterval(function() {
@@ -4201,7 +4410,9 @@ self.displayChildren(animationInfo.item)
         animationInfo.  item.text.y =animationInfo.item.text.y+distancePerTickY
           }
 
-          animationInfo.onTick(animationInfo, imageAnimation)  
+self.itemChanged(animationInfo.item)
+
+        if(animationInfo.onTick){animationInfo.onTick(animationInfo, imageAnimation) }
 
             if(tick >= lastTick){
    if(animationInfo.item.image)   {    
@@ -4252,17 +4463,18 @@ clearInterval(imageAnimation)
  this.dealCommunity = function (communityArray){
      //initialX, initialY, time, numTicks, item, finalX, finalY, onEnd, onTick, 
      
-     var animationTime = 250
+     var dealCardAnimationTime = 300
+var spreadFlopAnimationTime = 200
      fractionDistancePerTick = .05
      var lastTick = 1/fractionDistancePerTick -1 
-     var   interval = fractionDistancePerTick*animationTime
+     var   interval = fractionDistancePerTick*dealCardAnimationTime
 var initialX = this.images.startingCard.position.x
      var initialY = this.images.startingCard.position.y
 var stagesToUpdate = []
 
   //create TEMPORARY face down card to animate
     var animatedCard = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, this.gameState.zPositionData.cardAnimation)
-   this.images.itemAsBitmap(animatedCard, this.images.seats[0].hiddenCard0.bitmapSource)
+  stagesToUpdate.push( this.images.cardAsBitmap(animatedCard, null) )
 
      //play deal sound
      var communitySound = createjs.Sound.createInstance(this.images.sources.dealCommunity)
@@ -4273,7 +4485,13 @@ var initialAnimationInfo = {}
 initialAnimationInfo.numTicks = lastTick + 1
        initialAnimationInfo.item = animatedCard
        initialAnimationInfo.onTick = null
-        initialAnimationInfo.time = animationTime
+        initialAnimationInfo.time = dealCardAnimationTime
+          initialAnimationInfo.onStart = function(info){
+       stagesToUpdate.push(     self.displayChildren(info.item) )
+            self.updateStages(stagesToUpdate)
+            stagesToUpdate.length = 0
+
+          }
 //initialAnimationInfo.onEnd = function(){callback(null, 1)}
 
      //river animation
@@ -4288,6 +4506,7 @@ initialAnimationInfo.onEnd  = function(){
   stagesToUpdate.push(     self.displayShownCard(communityArray[4], self.images.community[4]) )
      stagesToUpdate.push(  self.hideChildren(animatedCard,{update:false}) )
      self.updateStages(stagesToUpdate)
+     stagesToUpdate.length = 0
 }
 
   self.animateImage(initialAnimationInfo)
@@ -4306,6 +4525,7 @@ initialAnimationInfo.onEnd  = function(){
     stagesToUpdate.push(    self.displayShownCard(communityArray[3],self.images.community[3]))
     stagesToUpdate.push(    self.hideChildren(animatedCard,{update:false}))
        self.updateStages(stagesToUpdate)
+       stagesToUpdate.length = 0
 }
      
         self.animateImage(initialAnimationInfo)
@@ -4326,6 +4546,7 @@ initialAnimationInfo.finalY = self.images.community[0].position.y
         function(callback){  
           //callback for async series
 initialAnimationInfo.onEnd = function(){callback(null, 1)}
+
         self.animateImage(initialAnimationInfo)
 
  },
@@ -4351,7 +4572,7 @@ initialAnimationInfo.onEnd = function(){callback(null, 1)}
  finalX: self.images.community[1].position.x,
  finalY: self.images.community[1].position.y,
  item: self.images.community[1],
-time: animationTime,
+time: spreadFlopAnimationTime,
 onEnd: function(){}
 }
 var community2Animation = _.clone(community1Animation)
@@ -4372,8 +4593,8 @@ community2Animation.item=self.images.community[2]
      
      var initialX = this.images.startingCard.position.x
      var initialY = this.images.startingCard.position.y
-     var animationTime = 100
-            var fractionDistancePerTick = .2
+     var animationTime = 250
+            var fractionDistancePerTick = .05
             var lastTick = 1/fractionDistancePerTick -1 
 
             var   interval = fractionDistancePerTick*animationTime
@@ -4387,18 +4608,18 @@ community2Animation.item=self.images.community[2]
 
 _.each(_.range(playerArray.length * 2), function(cardsDealt) {
     var playerArrayNumber = cardsDealt % playerArray.length
-    
     //push dealing facedown card to the player animation function into async array
 var dealHoleCardSound =  createjs.Sound.createInstance(self.images.sources.dealHoleCardSound)
-    asyncArray.push(function(callback){
-
-                 dealHoleCardSound.play() //play sound
 
         if(cardsDealt==playerArrayNumber){
-            
-                    animatedCards0[cardsDealt] = new self.images.Item(initialX, initialY, self.images.community[0].size.x, self.images.community[0].size.y, self.gameState.zPositionData.cardAnimation)
-          self.images.itemAsBitmap(animatedCards0[cardsDealt], self.images.seats[playerArray[playerArrayNumber]].hiddenCard0.bitmapSource)
-          var dealCard0AnimationInfo = {
+          //define temporary animated cardback
+            animatedCards0[cardsDealt] = new self.images.Item(initialX, initialY, self.images.community[0].size.x, self.images.community[0].size.y, self.gameState.zPositionData.cardAnimation)
+          self.images.cardAsBitmap(animatedCards0[cardsDealt], null)
+  
+
+    asyncArray.push(function(callback){
+  //animation data
+var dealCard0AnimationInfo = {
             time: animationTime,
             ticks: lastTick+1,
             item: animatedCards0[cardsDealt],
@@ -4406,14 +4627,20 @@ var dealHoleCardSound =  createjs.Sound.createInstance(self.images.sources.dealH
             finalY: self.images.seats[playerArray[playerArrayNumber]].hiddenCard0.position.y,
             onEnd: function(){callback(null, callBackNumber)},
             onTick:null
-          }
+        //    onStart:function(animationInfo){self.displayChildren(animationInfo.item)}
+          }//animation data
+                 dealHoleCardSound.play() //play sound
            self.animateImage(dealCard0AnimationInfo)
+         })//push to syncArray
           }//if dealing first hole card
 
           else if(cardsDealt>playerArrayNumber){
           animatedCards1[cardsDealt] = new self.images.Item(initialX, initialY, self.images.community[0].size.x, self.images.community[0].size.y, self.gameState.zPositionData.cardAnimation)
-          self.images.itemAsBitmap(animatedCards1[cardsDealt], self.images.seats[playerArray[playerArrayNumber]].hiddenCard0.bitmapSource) 
-               var dealCard1AnimationInfo = {
+          self.images.cardAsBitmap(animatedCards1[cardsDealt], null) 
+               
+   asyncArray.push(function(callback){
+    //animationdata
+     var dealCard1AnimationInfo = {
             time: animationTime,
             ticks: lastTick+1,
             item: animatedCards1[cardsDealt],
@@ -4421,17 +4648,16 @@ var dealHoleCardSound =  createjs.Sound.createInstance(self.images.sources.dealH
             finalY: self.images.seats[playerArray[playerArrayNumber]].hiddenCard1.position.y,
             onEnd: function(){callback(null, callBackNumber)},
             onTick:null
-          }
-
+          }//animation data
+      dealHoleCardSound.play() //play sound
                self.animateImage(dealCard1AnimationInfo)
+             } )//push to asyncArray
                    
                    }//if dealing second hole card
-              
- })
 
- 
                 
  callBackNumber ++
+
         asyncArray.push( function(callback){
 
                        if(_.isNumber(self.gameState.userSeatNumber) && playerArray[playerArrayNumber] == self.gameState.userSeatNumber && holeCardArray){  
@@ -4565,7 +4791,7 @@ var container = parentOfImageObject.position.z.container
 
         if(parentOfImageObject.image){
 //if html element
-         if(_.isString(parentOfImageObject.image.innerHTML)){$(parentOfImageObject.image).css('display','inline')}
+         if(_.isElement(parentOfImageObject.image)){$(parentOfImageObject.image).css('display','inline')}
         
          else if (this.arrayOfParentsOfStageAndOfContainerArray[optionsWithCondom.stageNumber].containers[container].contains(parentOfImageObject.image) !==true){
 this.addChildToContainer(parentOfImageObject.image, container, optionsWithCondom)
@@ -4580,6 +4806,7 @@ var changedWithoutUpdate = optionsWithCondom.stageNumber
         
         var changedWithoutUpdate = false
 }
+
 return changedWithoutUpdate   
     }
     
@@ -4862,11 +5089,9 @@ stagesToUpdate.push(this.images.seats[0].shownCard0.position.z.stage)
     stagesToUpdate.push(    self.hideAllBets(options) )
         //hide the pot
     stagesToUpdate.push(     self.hideChildren(self.images.totalPotSize, {update:false}) )//main pot
+   
         //side pots
-         for(var i=0; i<this.images.pots.length;i++){
-    stagesToUpdate.push(     self.hideChildren(self.images.pots[i].potSize, {update:false}) )
-   stagesToUpdate.push(      self.hideChildren(self.images.pots[i].chips, {update:false}))
- }
+ stagesToUpdate.push(    self.updatePotSize())
 
 options.update = update
 if(update !== false){this.updateStages(stagesToUpdate)}
@@ -5061,7 +5286,7 @@ if(i == players.length-1){next(null, errorNumber)}
 
 this.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText = function(){
 
-console.log('checking if messageText is at bottom' )
+//console.log('checking if messageText is at bottom' )
 
 
 //calculate total height of text
@@ -5081,10 +5306,10 @@ var isAtBottom = true//( scroll[0].getContentSize().h - scroll[0].getScrollTop()
 
 else{//if we don't want to use mCustomScrollbar
   var scroll = self.jQueryObjects.tableChatFullDiv.getNiceScroll()//grab niceScroll instance on the scroll div
-console.log('content size = '+scroll[0].getContentSize().h +' upper scroll value = '+scroll[0].getScrollTop()+' height of visible paragraph = '+(self.jQueryObjects.tableChatFullParagraph.outerHeight(true)+1))
+//console.log('content size = '+scroll[0].getContentSize().h +' upper scroll value = '+scroll[0].getScrollTop()+' height of visible paragraph = '+(self.jQueryObjects.tableChatFullParagraph.outerHeight(true)+1))
 var isAtBottom = ( scroll[0].getContentSize().h - scroll[0].getScrollTop() <=  parseFloat(self.jQueryObjects.tableChatFullParagraph.outerHeight(true))+1)
 }
-console.log('var isAtBottom = ' + isAtBottom)
+//console.log('var isAtBottom = ' + isAtBottom)
 return isAtBottom
 
 }
@@ -5301,7 +5526,7 @@ if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDe
 var needToUpdate = (isDisplayingDealerMessages !==  shouldDisplayDealerMessages) || (isDisplayingPlayerMessages !== shouldDisplayPlayerMessages) || (isDisplayingObserverMessages !== shouldDisplayObserverMessages)
 
 var scrollDownAtEnd = this.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText()
-console.log('needToUpdate = '+needToUpdate)
+//console.log('needToUpdate = '+needToUpdate)
 //update existing display
 if(needToUpdate === true || (options && options.update === true)){
 
@@ -5394,6 +5619,7 @@ stagesToUpdate.push(this.hideChildren(self.images.foldToAnyBetOn, options))
 
 stagesToUpdate.push(this.hideAllActionButtons(options))
 
+options.update = update
 if(update === false){return stagesToUpdate}
   else{this.updateStages(stagesToUpdate)}
     }
@@ -6513,19 +6739,319 @@ this.restoreActiveStages=function(activeStageArray){
         this.arrayOfParentsOfStageAndOfContainerArray[activeStageArray[i]].stage.mouseEnabled = true
     }
 }
-    
+
+
+this.isItemAddedToStage = function(item){
+if(!item){return false}
+ // console.log('checking if item is added to stage')
+//console.log(item)
+if(item.image){
+  if(_.isElement(item.image)){//if html element
+    if($(item.image).css('display') !== 'none')
+      return true
+  }
+  else if (this.arrayOfParentsOfStageAndOfContainerArray[item.position.z.stage].containers[item.position.z.container].contains(item.image)){
+    return true
+  }
+}
+
+else if(item.text){
+  if(_.isElement(item.text)){//if html element
+    if($(item.text).css('display') !== 'none')
+      return true
+  }
+  else if (this.arrayOfParentsOfStageAndOfContainerArray[item.position.z.stage].containers[item.position.z.container+1].contains(item.text)){
+    return true
+  }
+}
+
+else{
+return false}
+}
+
+this.getCurrentPotSizes = function(){
+ var potSizes = []
+var numPots = 1
+ //check how many pots are displayed
+for(var i =1;i<this.gameState.numSeats-1;i++){
+  var potSizeItem = this.images.pots[i].potSize
+  if(this.isItemAddedToStage(potSizeItem)){
+numPots++
+}//if potSize is displayed
+else{i=999}//if not exit loop
+
+}//iterate through pots
+
+/*
+ //get displayed pot values
+if(numPots === 1){
+   console.log(this.images.totalPotSize.text)
+  console.log(this.images.totalPotSize.text.text)
+  potSizes.push(parseFloat(this.images.totalPotSize.text.text.replace(/[^\d.-]/g, '')))
+
+}//if only main pots
+
+else {//if we have side pots
+*/
+for(var i =0;i<numPots;i++){
+  var size = this.images.pots[i].potSize.text.text
+  if(_.isNumber(size)){}
+   else if(_.isString(size)){ size =  parseFloat(size.replace(/[^\d.-]/g, ''))     }
+potSizes.push(size)
+}
+/*
+}//if we have side pots
+*/
+return potSizes
+}
+
+
+this.getCurrentBetSizes = function(){
+ var betSizes = []
+for(var i =0;i<this.gameState.numSeats;i++){
+  var betSizeItem = this.images.seats[i].bet
+
+  if(this.isItemAddedToStage(betSizeItem)){
+betSizes.push(parseFloat(betSizeItem.text.text))
+}//if betSize is displayed
+
+//if bet size is displaed check if player has cards in front of him
+
+else if(this.isItemAddedToStage(this.images.seats[i].hiddenCard0)||this.isItemAddedToStage(this.images.seats[i].shownCard0)) {
+betSizes.push(0)}//if not push 0
+
+else{betSizes.push(false)}//else we push null
+}
+return betSizes
+}
+
+    this.newStreetEnds = function(potSizes){
+ var animationTime = 350
+        var ticks = 30
+var chipMoveSound = createjs.Sound.createInstance(this.images.sources.moveChipsSound)
+
+//unbind scroll wheel events
+         $(this.arrayOfParentsOfStageAndOfContainerArray[this.images.betSlider.vertical.position.z.stage].stage.canvas).unbind('mousewheel')
+$('#betSizeDiv').unbind('mousewheel')
+
+//master async.series array:
+//CREATE ARRAYS FOR ASYNC FUNCTIONS:
+
+var masterSeriesArray = []
+var masterCallbackNumber = 0
+
+var asyncParallelChipIntoPotFunctionArray = []
+var chipIntoPotCallbackNumber = 0
+
+var updateDisplay = []
+
+//useful function variables:
+var stagesToUpdate = []
+var allTemporaryItems = []
+
+
+
+
+//end function for async parallel 
+var asyncParallelFinishedMasterSeriesCallbackNumber = masterCallbackNumber
+
+//add async parallel function to masterSeriesArray
+masterSeriesArray.push(function(masterCallback){
+  async.parallel(asyncParallelChipIntoPotFunctionArray, function(err, results){
+  if(results.length===chipIntoPotCallbackNumber){
+console.log('parallel chips to pot animations finished successfully')
+masterCallback(null, asyncParallelFinishedMasterSeriesCallbackNumber)
+}//if successfully completed
+else{
+  console.log('parallel chips to pot animations resulted in errors')
+  console.log(err)
+}//if not successful
+}
+)//async.parellel function call
+})//push into masterSeriesArray
+
+masterCallbackNumber++
+
+//add cleanup function to masterSeriesArray
+var cleanupCallbackNumber  = masterCallbackNumber
+masterSeriesArray.push(function(masterCallback){
+    cleanup()
+    masterCallback(null, cleanupCallbackNumber)
+  }
+  )
+
+masterCallbackNumber++
+
+//=================finished defining masterSeriesArray ===================================
+
+//get current betSize and potSize data
+var currentPots = this.getCurrentPotSizes()
+if(currentPots.length>potSizes.length){throw 'current potsizes exceed street_ends message potSize length'}
+var currentBets = this.getCurrentBetSizes()
+console.log('currentBets'+currentBets)
+console.log('currentPots '+currentPots)
+//calculate variables from data
+var currentBetsSortedWithoutSeats = _.without(currentBets, null, undefined, false, true, 0 ).sort(function(x, y){return (x - y) })
+var uniqueBets = _.uniq(currentBetsSortedWithoutSeats, true)
+console.log('unique bets:'+uniqueBets)
+
+var numPotsToFeed = uniqueBets.length
+var firstPotToFeed = potSizes.length - numPotsToFeed
+
+//determine CHANGE in pot sizes, we hae an array deltaPotSizes
+var deltaPotSizes = []
+for(var i = 0;i<potSizes.length;i++){
+if(_.isNumber(currentPots[i])){deltaPotSizes[i] = potSizes[i] - currentPots[i]}
+  else{deltaPotSizes[i] = potSizes[i]}
+}
+console.log('displaying changes in pot sizes')
+console.log(deltaPotSizes)
+console.log(_.compact(deltaPotSizes))
+if(_.compact(deltaPotSizes).length !== numPotsToFeed){throw 'numPotsToFeed not the same as delta pot size changed'}
+
+
+//create triplets of {seatNumber, numChips, potNumber} for user with animations
+var splitChipstacksData = []
+for(var i = 0;i<numPotsToFeed;i++){
+  if(i === 0){var chipStackContribution = uniqueBets[i]}
+    else{var chipStackContribution = uniqueBets[i] - uniqueBets[i-1]}
+console.log('chipstack cotribution is '+chipStackContribution)
+var potNum  = potSizes.length-numPotsToFeed + i
+for(var seat = 0;seat<currentBets.length;seat++){
+  console.log('seat'+i+'currentbet '+ currentBets[seat])
+  //check currentBet array value to see if it is equal or greater than the contribution amount
+  if(_.isNumber(currentBets[seat]) && currentBets[seat] >= chipStackContribution){
+    console.log('pushing to splitChipstacksData')
+    splitChipstacksData.push({seatNumber:seat, numChips:chipStackContribution, potNumber: potNum })
+  }//check to make sure value in current bets is higher than contribution and is a number
+}//iterate through currentBets
+
+
+}//iterate once for each number of pots to feed
+
+
+//stacks to animate to a certain potNumber
+var temporaryChipstacksToPotNumberIndexIsPotNumber  = []
+for(var i = 0;i<potSizes.length;i++){
+  temporaryChipstacksToPotNumberIndexIsPotNumber.push([])
+}
+
+//split each players stack
+console.log('displaying chipstackdata')
+console.log(splitChipstacksData)
+_.each(_.range(splitChipstacksData.length), function(i) {
+
+   var potNumber = splitChipstacksData[i].potNumber
+   temporaryChipstacksToPotNumberIndexIsPotNumber[potNumber].push({chips:[]})
+stagesToUpdate.push(self.displayChipStack(parseFloat(splitChipstacksData[i].numChips), temporaryChipstacksToPotNumberIndexIsPotNumber[potNumber][temporaryChipstacksToPotNumberIndexIsPotNumber[potNumber].length-1], self.images.seats[splitChipstacksData[i].seatNumber].firstChip.position.x, self.images.seats[splitChipstacksData[i].seatNumber].firstChip.position.y, {hidden:true, update:false}) )
+ 
+
+  })//iterate thorugh splitChipstacksData
+
+//add toStage and remove betSizes
+stagesToUpdate.push( this.hideAllBets({update:false}) )
+
+console.log('displaying array of array of chip parents')
+console.log(temporaryChipstacksToPotNumberIndexIsPotNumber)
+for(var i = 0;i<temporaryChipstacksToPotNumberIndexIsPotNumber.length;i++){
+  for(var n = 0;n<temporaryChipstacksToPotNumberIndexIsPotNumber[i].length;n++){
+    stagesToUpdate.push(self.displayChildren(temporaryChipstacksToPotNumberIndexIsPotNumber[i][n].chips,{update:false}))
+  }//iterate through temporaryChipstacksToPotNumberIndexIsPotNumber[i]
+}//iterate through temporaryChipstacksToPotNumberIndexIsPotNumber
+/*
+for(var i = 0;i<oldPlayerStacks.length;i++){
+stagesToUpdate.push(  this.hideChildren(oldPlayerStacks[i]), {update:false}   )
+}
+*/
+//updatePotSizes in advance (but do not add them to stage)
+//this.updatePotSize(potSizes,{hidden:true,update:false})
+
+//=========================create PARALLEL array: asyncParallelChipIntoPotFunctionArray===========================
+//animate temporary stacks to their target pots
+
+
+_.each(_.range(temporaryChipstacksToPotNumberIndexIsPotNumber.length), function(potNumber) {
+//iterate through temporaryChipstacksToPotNumberIndexIsPotNumber[potNumber]
+_.each(_.range(temporaryChipstacksToPotNumberIndexIsPotNumber[potNumber].length), function(stackNumber) {
+var chipArray = temporaryChipstacksToPotNumberIndexIsPotNumber[potNumber][stackNumber].chips
+  if(_.isArray(chipArray) && chipArray.length>0){
+  //define how far each chip is going to move
+var deltaX = self.images.pots[potNumber].firstChip.position.x - temporaryChipstacksToPotNumberIndexIsPotNumber[potNumber][stackNumber].chips[0].image.x
+var deltaY = self.images.pots[potNumber].firstChip.position.y - temporaryChipstacksToPotNumberIndexIsPotNumber[potNumber][stackNumber].chips[0].image.y
+
+//iterate through temporaryChipstacksToPotNumberIndexIsPotNumber[potNumber][stackNumber].chips
+_.each(_.range(temporaryChipstacksToPotNumberIndexIsPotNumber[potNumber][stackNumber].chips.length), function(n) {
+var item = temporaryChipstacksToPotNumberIndexIsPotNumber[potNumber][stackNumber].chips[n]
+allTemporaryItems.push(item)
+//push function into array
+
+asyncParallelChipIntoPotFunctionArray.push(function(callback){
+var animationData = {//define animation variables
+  time:animationTime,
+  numTicks:ticks,
+  item: item,
+  finalX :deltaX + item.image.x,
+finalY : deltaY+item.image.y,
+  onEnd:function(){
+//self.hideChildren(item,{update:false})
+    callback(null, chipIntoPotCallbackNumber)},
+    onStart:function(){}
+}
+
+self.animateImage(animationData)
+
+})//push function into array
+chipIntoPotCallbackNumber++
+ })//iterate through temporaryChipstacksToPotNumberIndexIsPotNumber[potNumber][stackNumber].chips
+
+}//check to make sure chip array exists
+  })//iterate through temporaryChipstacksToPotNumberIndexIsPotNumber[potNumber]
+
+  })//iterate thorugh temporaryChipstacksToPotNumberIndexIsPotNumber
+
+//push functino that removes betSize text and original chipStacks
+asyncParallelChipIntoPotFunctionArray.push(function(callback){
+  if(numPotsToFeed >0){chipMoveSound.play()}//play sound only if we are raking in chips
+  self.updateStages(stagesToUpdate)
+  stagesToUpdate.length = 0
+callback(null, chipIntoPotCallbackNumber)
+})
+chipIntoPotCallbackNumber++
+
+   //=====================asyncParallelChipIntoPotFunctionArray completed=====================================
+
+function cleanup(){
+  console.log('street ends cleanup function called')
+self.updatePotSize(potSizes)//we want to update this one because 
+stagesToUpdate.push(self.hideChildren(allTemporaryItems,{update:false}))
+
+self.updateStages(stagesToUpdate)
+}
+
+self.updateStages(stagesToUpdate)
+stagesToUpdate.length  = 0
+async.series(masterSeriesArray)
+
+    }
+
+
 this.streetEnds = function(potSizes){
 
 
-        //unbind scroll wheel events
+ //unbind scroll wheel events
          $(this.arrayOfParentsOfStageAndOfContainerArray[this.images.betSlider.vertical.position.z.stage].stage.canvas).unbind('mousewheel')
 $('#betSizeDiv').unbind('mousewheel')
-      var animationTime = 200
+
+ var animationTime = 200
         var ticks = 6
         var chipIntoPotAnimationArray = []
 var callBackNumber = 0
-
 var chipMoveSound = createjs.Sound.createInstance(this.images.sources.moveChipsSound)
+
+       
+     
+
+
 
         //push animateImages into an array
         _.each(_.range(self.images.seats.length), function(seatNumber) {
@@ -6938,7 +7464,7 @@ stagesUpdated.push(stageArray[i])
 
 if(canvasesCleared.length + stagesUpdated.length >0/* && self.performance.numCanvasClears %10 === 0*/){
 var logString = 'canvases cleared: '+canvasesCleared.toString()+', total cleared: '+self.performance.numCanvasClears+ ', stages updated: '+stagesUpdated.toString()
- console.log(logString)
+// console.log(logString)
 }
 
 }//updateStagesFromArray function
@@ -7172,8 +7698,8 @@ this.updateTableChatFullMessageTextFromCurrentOrAdditionalData(null, {update:tru
 }
 
 
-
-
+//TEST FOR POT SIZE
+ //self.updatePotSize([100,200,300,400,500])
     }
     
   //---------------------SOCKET CODE------------------------
@@ -7202,8 +7728,8 @@ if(self.gameState.seats[i].displayMessageType == 'action'||'seat'||'openSeat'||'
 self.gameState.seats[i].preActions.street = {}
         }
 
-
-       self.streetEnds(potSizes)
+ self.newStreetEnds(potSizes)
+ //      self.streetEnds(potSizes)
 
     })
 
@@ -7343,28 +7869,28 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
             case'bet':
             var betSound = createjs.Sound.createInstance(self.images.sources.betSound)
             betSound.play()
-            self.displayChipStack(player.current_bet, self.images.seats[player.seat], self.images.seats[player.seat].firstChip.position.x,self.images.seats[player.seat].firstChip.position.y )
+        //    self.displayChipStack(player.current_bet, self.images.seats[player.seat], self.images.seats[player.seat].firstChip.position.x,self.images.seats[player.seat].firstChip.position.y )
             self.playerPutsChipsInPot(player.seat, player.current_bet, player.chips)
             break;
 
             case'call':
               var betSound = createjs.Sound.createInstance(self.images.sources.betSound)
             betSound.play()
-             self.displayChipStack(player.current_bet, self.images.seats[player.seat], self.images.seats[player.seat].firstChip.position.x,self.images.seats[player.seat].firstChip.position.y )
+      //       self.displayChipStack(player.current_bet, self.images.seats[player.seat], self.images.seats[player.seat].firstChip.position.x,self.images.seats[player.seat].firstChip.position.y )
             self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
              break;
 
             case 'raise':
               var betSound = createjs.Sound.createInstance(self.images.sources.betSound)
             betSound.play()
-             self.displayChipStack(player.current_bet, self.images.seats[player.seat], self.images.seats[player.seat].firstChip.position.x,self.images.seats[player.seat].firstChip.position.y )
+       //      self.displayChipStack(player.current_bet, self.images.seats[player.seat], self.images.seats[player.seat].firstChip.position.x,self.images.seats[player.seat].firstChip.position.y )
             self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
             break;
 
             case'post_blind':
               var betSound = createjs.Sound.createInstance(self.images.sources.betSound)
             betSound.play()
-            self.displayChipStack(player.current_bet, self.images.seats[player.seat], self.images.seats[player.seat].firstChip.position.x,self.images.seats[player.seat].firstChip.position.y )
+      //      self.displayChipStack(player.current_bet, self.images.seats[player.seat], self.images.seats[player.seat].firstChip.position.x,self.images.seats[player.seat].firstChip.position.y )
             self.playerPutsChipsInPot(player.seat,player.current_bet, player.chips)
             break;
 
@@ -7689,6 +8215,8 @@ self.jQueryObjects.tableChatFullDiv.mCustomScrollbar()
 
       console.log(document)
       holdemCanvas.activateTicker(8)
+     console.log(holdemCanvas.images.sources)
+     console.log(holdemCanvas.images.sourceObjects)
 //console.log(holdemCanvas.images.seats)
     })
  
