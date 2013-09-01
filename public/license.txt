@@ -1,0 +1,1 @@
+unless otherwise specifically noted, or where specifically noted that the code is written by a third party, authors of the code contained here reserve to the maximum extent possible, all legal rights to the code
