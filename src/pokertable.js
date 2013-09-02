@@ -625,7 +625,7 @@ event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.text.
      }
       
   this.events.onButtonClick = function(event){
-console.log('button clicked')
+  // console.log('button clicked')
         if(event.target.parentOfImageObject.messages)(socket.emit.apply(socket, event.target.parentOfImageObject.messages))
         if(event.target.parentOfImageObject.otherMessages){socket.emit.apply(socket, event.target.parentOfImageObject.otherMessages)}
     }
@@ -1845,6 +1845,11 @@ var currencyDisplayColor = 'white'
             var cashierButtonWidth = 132
             var cashierButtonHeight = 52
 
+
+//distance between upper buttons
+var distanceBetweenUpperButtonHitAreasY = 3
+
+
             //define dimensions for upper right and upper left buttons
             var standUpWidth = 158
             var standUpHeight = 26
@@ -2479,6 +2484,8 @@ getChipsHit.graphics.beginFill('#000000').beginStroke(0)
    this.getChipsDisabledShape.image = getChipsHit
 this.getChipsDisabledShape.image.alpha = disabledButtonOverlayAlpha
    //--------------upper right exit Table--------------
+var exitTableOffsetY = distanceBetweenUpperButtonHitAreasY - exitTableHitAreaTopOffset - standUpHitAreaBottomOffset
+
  this.exitTable = new this.Item(canvasWidth - exitTableWidth, standUpHeight, exitTableWidth, exitTableHeight, self.gameState.zPositionData.button)
    this.itemAsBitmap(this.exitTable, this.sourceObjects.exitTable)
    //define shape of hit area
@@ -2807,12 +2814,12 @@ this.cashier[cashierItems[i].name].text.maxWidth = this.cashier[cashierItems[i].
 //showTableChatFull button
 var showTableChatFullWidth = 112
 var showTableChatFullHeight =  31
-var showTableChatFullOffsetY = -6
 var showTableChatFullHitAreaOffsetLeft= 1
 var showTableChatFullHitAreaOffsetTop = 1
 var showTableChatFullHitAreaOffsetBottom = 7
 var showTableChatFullHitAreaOffsetTopRight =5
 var showTableChatFullHitAreaOffsetBottomRight = 27
+var showTableChatFullOffsetY = distanceBetweenUpperButtonHitAreasY - showTableChatFullHitAreaOffsetTop - getChipsHitAreaBottomOffset
 
 this.showTableChatFull = new this.Item(this.getChips.position.x, this.getChips.position.y+this.getChips.size.y+showTableChatFullOffsetY, showTableChatFullWidth, showTableChatFullHeight, self.gameState.zPositionData.button )
 this.itemAsBitmap(this.showTableChatFull, this.sourceObjects.showTableChatFull)
@@ -6354,7 +6361,7 @@ var messageBoxStageNumber = self.images.messageBox[self.gameState.messageBox.mes
 
 
 
-console.log(self.gameState.messageBox.messageBoxImageContainerIndex)
+//console.log(self.gameState.messageBox.messageBoxImageContainerIndex)
         
         if(self.gameState.messageBox.messageBoxImageContainerIndex === self.gameState.zPositionData.initialMessageBox.container){     
 
@@ -6504,7 +6511,7 @@ if(_.isNull(messageInfo.sameSizeButtons)||_.isUndefined(messageInfo.sameSizeButt
     if(!_.isNumber(messageInfo.okayWidth)){
       //divide text width by ratio to get button width
      // console.log('calculating width of okay /cancel buttons')
-      console.log(messageInfo.okayText)
+ //     console.log(messageInfo.okayText)
       
       messageInfo.okayWidth = this.getStringWidth(messageInfo.okayText, messageInfo.buttonSizeAndFont)/messageInfo.ratioOfTextWidthToButtonWidth}
 if(messageInfo.okayWidth<messageInfo.minimumButtonWidth){messageInfo.okayWidth = messageInfo.minimumButtonWidth}
