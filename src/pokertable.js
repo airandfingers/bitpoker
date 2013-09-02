@@ -1846,31 +1846,31 @@ var currencyDisplayColor = 'white'
             var cashierButtonHeight = 52
 
             //define dimensions for upper right and upper left buttons
-            var standUpWidth = 169
+            var standUpWidth = 158
             var standUpHeight = 26
-            var standUpHitAreaUpperLeftOffsetX  = 10 //distance from left of standUp image and mouse events
+            var standUpHitAreaUpperLeftOffsetX  = 6 //distance from left of standUp image and mouse events
             var standUpHitAreaLowerLeftOffsetX = 37
-            var standUpHitAreaTopOffset  = 3 // distance from top of standUp image and mouse event clicks
-            var standUpHitAreaBottomOffset  = 3 
-            var standUpHitAreaRightOffset  = 2  // distance from rightside of image and hit area
+            var standUpHitAreaTopOffset  = 1 // distance from top of standUp image and mouse event clicks
+            var standUpHitAreaBottomOffset  = 2 
+            var standUpHitAreaRightOffset  = 1  // distance from rightside of image and hit area
 
-            var exitTableWidth = 150
+            var exitTableWidth = 135
             var exitTableHeight = 32
 
-             var exitTableHitAreaUpperLeftOffsetX  = 25 //distance from left of ExitTable image and mouse events
-            var exitTableHitAreaLowerLeftOffsetX = 52
-            var exitTableHitAreaTopOffset  = 2 // distance from top of ExitTable image and mouse event clicks
-             var exitTableHitAreaBottomOffset  = 8
-            var exitTableHitAreaRightOffset  = 2  // distance from ExitTable of image and hit area
+             var exitTableHitAreaUpperLeftOffsetX  = 18 //distance from left of ExitTable image and mouse events
+            var exitTableHitAreaLowerLeftOffsetX = 49
+            var exitTableHitAreaTopOffset  = 1 // distance from top of ExitTable image and mouse event clicks
+             var exitTableHitAreaBottomOffset  = 9
+            var exitTableHitAreaRightOffset  = 1  // distance from ExitTable of image and hit area
             
-            var getChipsWidth = 153
-            var getChipsHeight = 42
+            var getChipsWidth = 149
+            var getChipsHeight = 41
 
-             var getChipsHitAreaLeftOffset  = 2 //distance from left of getChips image and mouse events
-            var getChipsHitAreaTopOffset  = 2 // distance from top of getChips image and mouse event clicks
+             var getChipsHitAreaLeftOffset  = 1 //distance from left of getChips image and mouse events
+            var getChipsHitAreaTopOffset  = 1 // distance from top of getChips image and mouse event clicks
              var getChipsHitAreaBottomOffset  = 10
-            var getChipsHitAreaUpperRightOffset  = 12  
-            var getChipsHitAreaLowerRightOffset  = 41
+            var getChipsHitAreaUpperRightOffset  = 9
+            var getChipsHitAreaLowerRightOffset  = 38
 
             var openSeatOuterStrokeWidth = 2
 
@@ -2806,12 +2806,12 @@ this.cashier[cashierItems[i].name].text.maxWidth = this.cashier[cashierItems[i].
  
 //showTableChatFull button
 var showTableChatFullWidth = 112
-var showTableChatFullHeight =  34
+var showTableChatFullHeight =  31
 var showTableChatFullOffsetY = -6
 var showTableChatFullHitAreaOffsetLeft= 1
 var showTableChatFullHitAreaOffsetTop = 1
 var showTableChatFullHitAreaOffsetBottom = 7
-var showTableChatFullHitAreaOffsetTopRight =2
+var showTableChatFullHitAreaOffsetTopRight =5
 var showTableChatFullHitAreaOffsetBottomRight = 27
 
 this.showTableChatFull = new this.Item(this.getChips.position.x, this.getChips.position.y+this.getChips.size.y+showTableChatFullOffsetY, showTableChatFullWidth, showTableChatFullHeight, self.gameState.zPositionData.button )
