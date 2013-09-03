@@ -1856,7 +1856,7 @@ var distanceBetweenUpperButtonHitAreasY = 3
             var standUpHitAreaUpperLeftOffsetX  = 6 //distance from left of standUp image and mouse events
             var standUpHitAreaLowerLeftOffsetX = 37
             var standUpHitAreaTopOffset  = 1 // distance from top of standUp image and mouse event clicks
-            var standUpHitAreaBottomOffset  = 2 
+            var standUpHitAreaBottomOffset  = 3 
             var standUpHitAreaRightOffset  = 1  // distance from rightside of image and hit area
 
             var exitTableWidth = 135
@@ -1876,6 +1876,16 @@ var distanceBetweenUpperButtonHitAreasY = 3
              var getChipsHitAreaBottomOffset  = 10
             var getChipsHitAreaUpperRightOffset  = 9
             var getChipsHitAreaLowerRightOffset  = 38
+
+//show/hidde table chat full buttons
+var showTableChatFullWidth = 112
+var showTableChatFullHeight =  31
+var showTableChatFullHitAreaOffsetLeft= 1
+var showTableChatFullHitAreaOffsetTop = 1
+var showTableChatFullHitAreaOffsetBottom = 7
+var showTableChatFullHitAreaOffsetTopRight =5
+var showTableChatFullHitAreaOffsetBottomRight = 27
+
 
             var openSeatOuterStrokeWidth = 2
 
@@ -2812,13 +2822,6 @@ this.cashier[cashierItems[i].name].text.maxWidth = this.cashier[cashierItems[i].
    // =============================================SOUNDS========================================
  
 //showTableChatFull button
-var showTableChatFullWidth = 112
-var showTableChatFullHeight =  31
-var showTableChatFullHitAreaOffsetLeft= 1
-var showTableChatFullHitAreaOffsetTop = 1
-var showTableChatFullHitAreaOffsetBottom = 7
-var showTableChatFullHitAreaOffsetTopRight =5
-var showTableChatFullHitAreaOffsetBottomRight = 27
 var showTableChatFullOffsetY = distanceBetweenUpperButtonHitAreasY - showTableChatFullHitAreaOffsetTop - getChipsHitAreaBottomOffset
 
 this.showTableChatFull = new this.Item(this.getChips.position.x, this.getChips.position.y+this.getChips.size.y+showTableChatFullOffsetY, showTableChatFullWidth, showTableChatFullHeight, self.gameState.zPositionData.button )
@@ -3440,29 +3443,42 @@ if(betSize>self.gameState.maxBet){return self.gameState.maxBet}
           var update = options.update
         options.update = false
         var stagesToUpdate = []
-  var chipStackReturn =  this.displayChipStack(betSize, this.images.seats[seatNumber], this.images.seats[seatNumber].firstChip.position.x,this.images.seats[seatNumber].firstChip.position.y, options )
-        
-        //if number, its a stage number and we can dpate it later, if not we need to hide array
-           if(_.isNumber(chipStackReturn) ){stagesToUpdate.push(chipStackReturn)}
 
-else{stagesToUpdate.push(this.hideChildren(chipStackReturn, options))}
+stagesToUpdate.push(  this.displayChipStack(betSize, this.images.seats[seatNumber], this.images.seats[seatNumber].firstChip.position.x,this.images.seats[seatNumber].firstChip.position.y, options ) )
 
-  stagesToUpdate.push(this.displayChildren(this.images.seats[seatNumber].chips))
-
-
-        if(betSize>0){
+//ASSIGN BETSIZE
+        if(parseFloat(betSize)>0){
+          if(parseFloat(this.images.seats[seatNumber].bet.text.text) !== parseFloat(betSize)){//check to make sure changed
          this.images.seats[seatNumber].bet.text.text = betSize
-stagesToUpdate.push( this.displayChildren(this.images.seats[seatNumber].bet, options))
+      stagesToUpdate.push(   this.itemChanged(this.images.seats[seatNumber].bet) )
+}//check to make sure changed
        }
-         else{this.images.seats[seatNumber].bet.text.text = ''
+        else{
+betSize = ''
+          if(this.images.seats[seatNumber].bet.text.text !== ''){//check to make sure changed
+         this.images.seats[seatNumber].bet.text.text = betSize
+      stagesToUpdate.push(   this.itemChanged(this.images.seats[seatNumber].bet) )
+}//check to make sure changed
+          this.images.seats[seatNumber].bet.text.text = ''
  stagesToUpdate.push(this.hideChildren(this.images.seats[seatNumber].bet, options))
        }
-         if(!_.isNull(stackSize) && !_.isUndefined(stackSize) && stackSize <=0 ){stackSize = 'All In'}
-         this.images.seats[seatNumber].status.text.text = stackSize
 
+stagesToUpdate.push( this.displayChildren(this.images.seats[seatNumber].bet, options))
+
+
+
+        if(!_.isNull(stackSize) && !_.isUndefined(stackSize) && stackSize <=0 ){stackSize = 'All In'}
+        //change betsize graphic value
+          if(this.images.seats[seatNumber].status.text.text !== stackSize){//check to make sure changed
+         this.images.seats[seatNumber].status.text.text = stackSize
+   stagesToUpdate.push(      this.itemChanged(this.images.seats[seatNumber].bet) )
+}//check to make ure changed
+         
+
+
+options.update = update
           if(update !== false){ 
 this.updateStages(stagesToUpdate)
-options.update = update
           }
 else{ return stagesToUpdate}
 
@@ -4179,6 +4195,7 @@ return stagesToUpdate
 
    //this.images.seats[i] is parent for players bets, this.images.pots[i] is parent for pots
     this.displayChipStack = function(chipAmount,parentOfChipArray, initialX, initialY, options){
+   //   console.log('displaychipstack function called with chipamount = '+chipAmount)
       chipAmount = parseFloat(chipAmount)
       if(!options){var options = {}}
         var update = options.update
@@ -4257,13 +4274,18 @@ return stagesToUpdate
             chipAmount = chipAmount -25
 
         }
+      else   if(chipAmount >=10){
+           stagesToUpdate.push(      this.displayChip(10,x,y, parentOfChipArray, options))
+            y =y+chipIncrementY
+            chipAmount = chipAmount -1
+        }
       else   if(chipAmount >=5){
            stagesToUpdate.push(      this.displayChip(5,x,y, parentOfChipArray, options))
             y =y+chipIncrementY
             chipAmount = chipAmount -5
         }
       else   if(chipAmount >=1){
-           stagesToUpdate.push(      this.displayChip(10,x,y, parentOfChipArray, options))
+           stagesToUpdate.push(      this.displayChip(1,x,y, parentOfChipArray, options))
             y =y+chipIncrementY
             chipAmount = chipAmount -1
         }
@@ -4304,7 +4326,7 @@ else if(update === false) {
 
     //this.images.seats[i] is parent for players bets, this.images.pots[i] is parent for pots
     this.displayChip = function(chipValue, x, y, parentOfChipArray, options){
-
+// console.log('displayChip function called with chipvalue = '+chipValue)
        var diameter = this.images.pots[0].firstChip.size.x
        
        //different chip values have different colors
@@ -4324,13 +4346,18 @@ else if(update === false) {
        else if(chipValue == 25){
            chipColor = 'green'
        }
+      else  if(chipValue == 10){
+           chipColor = 'orange'
+       } 
       else  if(chipValue == 5){
            chipColor = '#F52887'
        }
      else {
            chipColor = 'blue'
        }
-if( chipValue == 10){
+
+
+if( chipColor == 'orange'){
 var chipImageSource = this.images.sourceObjects.chips['10']
 }
   else   if(chipColor == 'red'){
@@ -4341,6 +4368,8 @@ var chipImageSource = this.images.sourceObjects.chips['10']
 
        }
        else{ var chipImageSource = this.images.sourceObjects.chips.black}
+
+
        parentOfChipArray.chips.push(new this.images.Item(x,y,diameter,diameter,this.gameState.zPositionData.chips))
         this.images.itemAsBitmap(parentOfChipArray.chips[parentOfChipArray.chips.length-1], chipImageSource) 
  
@@ -4506,7 +4535,7 @@ clearInterval(imageAnimation)
      
      var dealCardAnimationTime = 300
 var spreadFlopAnimationTime = 200
-     fractionDistancePerTick = .05
+     fractionDistancePerTick = .02
      var lastTick = 1/fractionDistancePerTick -1 
      var   interval = fractionDistancePerTick*dealCardAnimationTime
 var initialX = this.images.startingCard.position.x
@@ -5156,10 +5185,10 @@ for(var i =0;i<potArrayLength;i++){
 }
 
      // player is array, so players[i].chips_won = array[amountWon, amountWon]
-      var chipAnimationTime = 1000
-      var timeBetweenAnimations = 3000
+      var chipAnimationTime = 700
+      var timeBetweenAnimations = 1500
       var timeAtEnd = 700
-        var ticks = 8
+        var ticks = 33
         var chipStacks = []
         for(var i = 0;i<players.length;i++){chipStacks.push([])}
         var callbackNumber = 0
@@ -7630,7 +7659,7 @@ function tick(event){
               console.log('loading canvas now')
                $(parentOfLoadingStage.stage.canvas).css('display','none')
 
-               self.activateTicker(15)
+               self.activateTicker(30)
        }
        console.log('increasing tick')
        numTicks ++
