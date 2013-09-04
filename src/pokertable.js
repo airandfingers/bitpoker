@@ -3351,8 +3351,8 @@ var newCanvasIDNumber = (previousCanvasIDNumber + nextCanvasIDNumber )/2//increm
 if(options.newCanvas === true || options.stage === 0){
 var newCanvasID = 'canvas'+newCanvasIDNumber
 //defaults
-var canvasWidth = 690
-var canvasHeight = 450
+var canvasWidth = $('#iframeSize')[0].width
+var canvasHeight = $('#iframeSize')[0].height
 var canvasClass = 'pokerCanvasClass'
 var zIndexesPerCanvas = 10
 var initialZIndex = 3
