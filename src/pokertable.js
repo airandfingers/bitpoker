@@ -490,7 +490,7 @@ if(item.messages){
           }
 
           if(options && options.outerStrokeWidth){var outerStrokeWidth = options.outerStrokeWidth}
-            else{var outerStrokeWidth = 4}
+            else{var outerStrokeWidth = 2}
 if(options && options.middleDividerStrokeWidth){var middleDividerStrokeWidth = options.middleDividerStrokeWidth}
             else{var middleDividerStrokeWidth = 1}
 
@@ -505,7 +505,7 @@ if(options && options.middleDividerStrokeWidth){var middleDividerStrokeWidth = o
    parent.image.snapToPixel = true
 
 //draw border
- parent.image.graphics.setStrokeStyle(outerStrokeWidth,'square').beginStroke(borderColor)
+ parent.image.graphics.setStrokeStyle(outerStrokeWidth,'round').beginStroke(borderColor)
  .beginFill(fillColor).drawRect(x, y, width, height)
 
 //draw filled area for countdown
@@ -655,6 +655,7 @@ this.events.cashierTextFieldFocused = function(event){
 
 this.events.cashierInputSelected = function(event){
 
+console.log(event)
 var min
 
 var allRadios = $(event.target.parentElement.parentElement).find("input[type='radio']")
@@ -702,7 +703,7 @@ var alreadySelected = false
            textField.select()
            alreadySelected = true
           }
-          console.log(textField)
+     //     console.log(textField)
           if($(event.target).is("input[type='text']")){}
             else if (alreadySelected != true){   textField.select()   }
 
@@ -1736,7 +1737,7 @@ console.log(e)
 
             var checkBoxButtonWidth = 100
             var checkBoxButtonHeight = 13
-            var checkBoxButtonDistanceFromChat = 20
+            var checkBoxButtonDistanceFromChat = 8
             var checkBoxButtonOffSetLeft = 2
            var  checkBoxButtonDistanceY = 3
            var checkBoxButtonCheckBoxWidth = checkBoxButtonHeight
@@ -1747,7 +1748,7 @@ console.log(e)
 
             var actionButtonWidth = 80
             var actionButtonHeight = 25
-            var actionButtonLeftX = 205
+            var actionButtonLeftX = 160
             var actionButtonY = 419
             var distanceBetweenActionButtons = 20
             var seatWidth = 90
@@ -1806,8 +1807,8 @@ var currencyDisplayColor = 'white'
             var betTextWidth =  20
             var absoluteDistanceBetweenBetTextAndChipImages = 5
 
-            var htmlTableChatBoxLeftOffset = 10
-            var htmlTableChatBoxBottomOffset = 10
+            var htmlTableChatBoxLeftOffset = 7
+            var htmlTableChatBoxBottomOffset = 8
             var htmlTableChatBoxWidth = 135
             var htmlTableChatBorderSize = self.jQueryObjects.chatBoxInput.css('border').substring(0,self.jQueryObjects.chatBoxInput.css('border').indexOf('p'))
             var htmlTableChatBoxHeight = 20
@@ -1815,7 +1816,7 @@ var currencyDisplayColor = 'white'
 
             var verticalBetSliderWidth = 6
             var verticalBetSliderHeight = 13            
-            var horizontalBetSliderWidth = 200
+            var horizontalBetSliderWidth = 125
             var horizontalBetSliderHeight = 7
       //      var horizontalBetSliderX = 215  X value is currently equal to the X value of the FOLD button
             var horizontalBetSliderOffsetBottom =  19
@@ -1887,7 +1888,7 @@ var showTableChatFullHitAreaOffsetTopRight =5
 var showTableChatFullHitAreaOffsetBottomRight = 27
 
 
-            var openSeatOuterStrokeWidth = 2
+            var openSeatOuterStrokeWidth = 1.5
 
             var tableX = 0
 
@@ -2329,12 +2330,23 @@ self.images.seats[seatNumber][index].parentOfItem = self.images.seats[seatNumber
  //============================END OF SEATS ARRAY DECLARATION===============
 
 
+var actionButtonOffsetBottom = 8
+var actionButtonY = canvasHeight-actionButtonOffsetBottom - actionButtonHeight
+var actionButtonHeight = 24
          //---------------action buttons------------------
+         /*
       this.fold = new this.Item(actionButtonLeftX,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.zPositionData.button, {messages:['act','fold']})
       this.call = new this.Item(actionButtonLeftX+actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.zPositionData.button, {messages:['act','call']})
       this.check = new this.Item(actionButtonLeftX+actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.zPositionData.button, {messages:['act','check']})
       this.raise = new this.Item(this.check.position.x +actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.zPositionData.button,{messages:['act','raise']})
       this.bet = new this.Item(this.check.position.x +actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.zPositionData.button,{messages: ['act','bet']})
+*/
+   this.fold = new this.Item(actionButtonLeftX,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.zPositionData.button, {messages:['act','fold']})
+      this.call = new this.Item(actionButtonLeftX+actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.zPositionData.button, {messages:['act','call']})
+      this.check = new this.Item(actionButtonLeftX+actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.zPositionData.button, {messages:['act','check']})
+      this.raise = new this.Item(this.check.position.x +actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.zPositionData.button,{messages:['act','raise']})
+      this.bet = new this.Item(this.check.position.x +actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.zPositionData.button,{messages: ['act','bet']})
+
 
         this.itemAsRectangle(this.fold,  'red')
         this.addItemText(this.fold, 'fold','12px Arial','#000000')
@@ -2352,14 +2364,27 @@ self.images.seats[seatNumber][index].parentOfItem = self.images.seats[seatNumber
         this.check.image.onClick = self.events.onButtonClick
          this.raise.image.onClick  = self.events.onButtonClick
          this.bet.image.onClick  = self.events.onButtonClick
+         
 
         //-----------------bet slider-----------------------------
+        /*
               this.betSlider.horizontal = new this.Item (this.fold.position.x,canvasHeight-horizontalBetSliderOffsetBottom-horizontalBetSliderHeight,horizontalBetSliderWidth,horizontalBetSliderHeight,self.gameState.zPositionData.button)
               var verticalY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.size.y/2-verticalBetSliderHeight/2
       this.betSlider.vertical = new this.Item(this.betSlider.horizontal.position.x,verticalY,verticalBetSliderWidth,verticalBetSliderHeight,self.gameState.zPositionData.button)
 var betSizeX = this.betSlider.horizontal.position.x+this.betSlider.horizontal.size.x + distanceBetweenBetSizeAndHorizontalSlider
 var betSizeY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.size.y/2-betSizeHeight/2
       this.betSlider.betSize = new this.Item(betSizeX,betSizeY,betSizeWidth,betSizeHeight,self.gameState.zPositionData.button)
+*/
+
+var betSliderX = this.bet.position.x + this.bet.size.x + distanceBetweenActionButtons
+var betSliderMiddleY = actionButtonY + actionButtonHeight/2
+   this.betSlider.horizontal = new this.Item (betSliderX,betSliderMiddleY-horizontalBetSliderHeight/2,horizontalBetSliderWidth,horizontalBetSliderHeight,self.gameState.zPositionData.button)
+              var verticalY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.size.y/2-verticalBetSliderHeight/2
+      this.betSlider.vertical = new this.Item(this.betSlider.horizontal.position.x,verticalY,verticalBetSliderWidth,verticalBetSliderHeight,self.gameState.zPositionData.button)
+var betSizeX = this.betSlider.horizontal.position.x+this.betSlider.horizontal.size.x + distanceBetweenBetSizeAndHorizontalSlider
+var betSizeY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.size.y/2-betSizeHeight/2
+      this.betSlider.betSize = new this.Item(betSizeX,betSizeY,betSizeWidth,betSizeHeight,self.gameState.zPositionData.button)
+
 
       this.itemAsBitmap(this.betSlider.horizontal, this.sourceObjects.horizontalSlider)
         this.itemAsBitmap(this.betSlider.vertical, this.sourceObjects.verticalSlider)
@@ -2631,8 +2656,10 @@ var cashierWindowContainer = 0
 
 
         var grayBoxOffsetSide = 11 //distance from gray box to end of gray background
-        var grayBoxOffsetTop = 150
-        var grayBoxOffsetBottom = 49
+        var grayBoxOffsetTop = 150 //from inner cashier
+        var grayBoxOffsetBottom = 49 //from inner cashier
+
+
         
         this.cashier.window = new this.Item(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight,{stage:cashierStageNumber,container:cashierWindowContainer})
         this.itemAsBitmap(this.cashier.window, this.sourceObjects.cashierBackground)
@@ -2778,6 +2805,23 @@ var cashierStageCanvasZIndex = parseInt($(cashierParentOfStage.stage.canvas).css
                 $('#autoRebuyAmount').css('left', textBoxX+'px')
         $('#autoRebuyAmount').css('top', autoRebuyTextBoxY+'px')
 
+//click events
+    $("#otherAmountDiv").children().mousedown(function(event) {
+      self.events.cashierInputSelected(event)
+        })
+
+            $("#autoRebuyDiv").children().mousedown(function(event) {
+                 self.events.cashierInputSelected(event)
+        })
+        
+          $("#maxDiv").children().mousedown(function(event) {
+self.events.cashierInputSelected(event)
+        })
+
+          $('#cashierDiv').find("input[type = 'text']").focus(function(event){
+            self.events.onCashierTextFieldFocus(event)
+          })
+
 
         //iterate through cashierItems to create all texts
         for(var i in cashierItems){
@@ -2802,21 +2846,48 @@ this.cashier[cashierItems[i].name].text.maxWidth = this.cashier[cashierItems[i].
         this.cashier.grayBox = new this.Item(grayBoxX, grayBoxY, grayBoxWidth, grayBoxHeight, {stage:cashierStageNumber, container:cashierImageContainerIndex})
 
 // location of html textboxes for adding chips
+
+var addChipsText = 'add chips'
+var cancelText = 'cancel'
+var cashierButtonTextSizeAndFont = '13px arial'
+var cashierButtonHeight = 21
+var cashierButtonTextColor = 'white'
+var cashierButtonColor = 'blue'
+var cashierRatioOfTextWidthToButtonWidth = 0.83
+//var cashierWindowYOffsetFromInnerCashier = 15 //calculated using middle of bottom of grayox and bottom of innercahiser
+var distanceBetweenCashierButtons = innerCashierWidth / 5.4
+
+//calculate button width
+var addChipsWidth = self.getStringWidth(addChipsText, cashierButtonTextSizeAndFont)/cashierRatioOfTextWidthToButtonWidth
+var cancelWidth = self.getStringWidth(cancelText, cashierButtonTextSizeAndFont)/cashierRatioOfTextWidthToButtonWidth
+if (addChipsWidth>=cancelWidth){
+var cashierButtonWidth= addChipsWidth}
+else{var cashierButtonWidth=cancelWidth} 
+
+var addChipsX =  cashierWindowX  + cashierWindowWidth/2 - distanceBetweenCashierButtons/2 - cashierButtonWidth
+var cancelX = cashierWindowX  + cashierWindowWidth/2 + distanceBetweenCashierButtons/2
+
+var innerCashierBottomY = innerCashierY + innerCashierHeight
+var cashierButtonY = innerCashierBottomY - grayBoxOffsetBottom/2 - cashierButtonHeight/2
+
+
      this.cashier.addChipsTextBox = new this.Item (textX,this.cashier.accountBalance.position.y +25, innerCashierWidth,25,{stage:cashierStageNumber, container:cashierImageContainerIndex})
 
-      this.cashier.addChips =  new this.Item (cashierWindowX + 10,cashierWindowY+cashierWindowHeight-40, 50,25,{stage:cashierStageNumber, container:cashierImageContainerIndex}) 
-        this.itemAsRectangle( this.cashier.addChips, '#0000FF')
-        this.addItemText( this.cashier.addChips, 'add chips', '13px arial', '#FFFFFF')
+      this.cashier.addChips =  new this.Item (addChipsX,cashierButtonY, cashierButtonWidth,cashierButtonHeight,{stage:cashierStageNumber, container:cashierImageContainerIndex}) 
+        this.itemAsRectangle( this.cashier.addChips, cashierButtonColor)
+        this.addItemText( this.cashier.addChips, addChipsText,cashierButtonTextSizeAndFont , cashierButtonTextColor)
         this.cashier.addChips.image.onClick = self.events.onAddChipsClick
 
-        this.cashier.cancel =  new this.Item (cashierWindowX + 100,cashierWindowY+cashierWindowHeight-40, 50,25,{stage:cashierStageNumber, container:cashierImageContainerIndex}) 
-        this.itemAsRectangle( this.cashier.cancel, '#0000FF')
-        this.addItemText( this.cashier.cancel, 'cancel', '13px arial', '#FFFFFF')
+        this.cashier.cancel =  new this.Item (cancelX,cashierButtonY, cashierButtonWidth,cashierButtonHeight,{stage:cashierStageNumber, container:cashierImageContainerIndex}) 
+        this.itemAsRectangle( this.cashier.cancel, cashierButtonColor)
+        this.addItemText( this.cashier.cancel, cancelText, cashierButtonTextSizeAndFont, cashierButtonTextColor)
         this.cashier.cancel.image.onClick = self.hideCashier
 
          this.cashier.closeWindow =  new this.Item (closeWindowX,closeWindowY, closeWindowWidth,closeWindowHeight,{stage:cashierStageNumber, container:cashierImageContainerIndex}) 
        this.itemAsBitmap(this.cashier.closeWindow, this.sourceObjects.cashierCloseX)
        this.cashier.closeWindow.image.onClick = self.hideCashier
+
+      
 
 
    // =============================================SOUNDS========================================
@@ -3281,7 +3352,7 @@ if(options.newCanvas === true || options.stage === 0){
 var newCanvasID = 'canvas'+newCanvasIDNumber
 //defaults
 var canvasWidth = 690
-var canvasHeight = 480
+var canvasHeight = 450
 var canvasClass = 'pokerCanvasClass'
 var zIndexesPerCanvas = 10
 var initialZIndex = 3
@@ -6727,39 +6798,22 @@ if(update !== false){this.updateStages(stagesToUpdate)}
 
        this.images.cashier.currency.text.text = info.currency+':'
 
-       //set initial values of text boxes
+       //clear all initial values of text boxes
+        $('#maxRadio').prop('checked', false)
+         $('#autoRebuyRadio').prop('checked', false)
+          $('#otherAmountRadio').prop('checked', false)
              $("#otherAmount").val('')
            $('#autoRebuyAmount').val('')
        $("#maxAmount").val(this.gameState.cashier.max)
         $("#maxAmount").attr("readonly", true)
 
-//check radio buttons when textbox is focused
-
-    $("#otherAmountDiv").children().mousedown(function(event) {
-      self.events.cashierInputSelected(event)
-        })
-
-            $("#autoRebuyDiv").children().mousedown(function(event) {
-                 self.events.cashierInputSelected(event)
-        })
-        
-          $("#maxDiv").children().mousedown(function(event) {
-self.events.cashierInputSelected(event)
-        })
-
-          $('#cashierDiv').find("input[type = 'text']").focus(function(event){
-            self.events.onCashierTextFieldFocus(event)
-          })
-
-
+//displayMin Amount as auto feature
+  $('#otherAmountRadio').prop('checked', true)
+  $("#otherAmount").val(self.gameState.cashier.min)
 
 //display textboxes for adding chips
           var htmlcashier = document.getElementById('cashier')
     htmlcashier.style.display = 'inline'
-
-      
-       this.images.cashier.addChips.text.text = 'add chips'
-       this.images.cashier.cancel.text.text = 'cancel'
 
 
 
