@@ -41,6 +41,8 @@
   , WAIT_POLL_INTERVAL: { type: Number, default: defaults.WAIT_POLL_INTERVAL }
     // how long (in ms) between last betting action and street_ends message
   , STREET_END_DELAY: { type: Number, default: defaults.STREET_END_DELAY }
+    // how long (in ms) between street_ends message and next round, when bets have been collected
+  , BET_COLLECTION_DELAY: { type: Number, default: defaults.BET_COLLECTION_DELAY }
     // how long (in ms) between street_ends and community_dealt messages
   , PRE_DEAL_DELAY: { type: Number, default: defaults.PRE_DEAL_DELAY }
     // how long (in ms) to wait before automatically skipping players who should be skipped

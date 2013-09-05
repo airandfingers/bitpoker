@@ -11,6 +11,8 @@ module.exports = (function() {
     , WAIT_POLL_INTERVAL: 5000
       // how long (in ms) between last betting action and street_ends message
     , STREET_END_DELAY: 1000
+      // how long (in ms) between street_ends message and next round, when bets have been collected
+    , BET_COLLECTION_DELAY: 500
       // how long (in ms) between street_ends and community_dealt messages
     , PRE_DEAL_DELAY: 1000
       // how long (in ms) to wait before automatically skipping players who should be skipped

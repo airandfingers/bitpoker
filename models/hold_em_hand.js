@@ -442,6 +442,7 @@ module.exports = (function () {
         }
         // construct an Object of the form { bet_amount : [usernames] }
         var bets_obj = {}
+          , pots_increased
           , bet;
         _.each(self.players, function(player) {
           bet = player.giveBet();
@@ -456,6 +457,8 @@ module.exports = (function () {
             console.log('Not adding', player.username, 'to bet_obj since bet is', bet);
           }
         });
+        pots_increased = ! _.isEmpty(bets_obj);
+        console.log('Calculated pots_increased:', pots_increased, bets_obj);
         // move bets from bets_obj into pots
         while (! _.isEmpty(bets_obj)) {
           console.log('Iterating over bets_obj, which is', bets_obj);
@@ -497,7 +500,10 @@ module.exports = (function () {
           console.log('Betting round completed!', self.pots, self.players);
           setTimeout(function() {
             self.broadcast('street_ends', self.getPotValues());
-            self.nextStage();
+            console.log('setting timeout', pots_increased, game.BET_COLLECTION_DELAY);
+            setTimeout(function() {
+              self.nextStage();
+            }, pots_increased ? game.BET_COLLECTION_DELAY : 0);
           }, game.STREET_END_DELAY);
         }
         else {
