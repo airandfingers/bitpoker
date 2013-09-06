@@ -442,6 +442,7 @@ module.exports = (function () {
         }
         // construct an Object of the form { bet_amount : [usernames] }
         var bets_obj = {}
+          , pots_increased
           , bet;
         _.each(self.players, function(player) {
           bet = player.giveBet();
@@ -456,9 +457,11 @@ module.exports = (function () {
             console.log('Not adding', player.username, 'to bet_obj since bet is', bet);
           }
         });
+        pots_increased = ! _.isEmpty(bets_obj);
+        //console.log('Calculated pots_increased:', pots_increased, bets_obj);
         // move bets from bets_obj into pots
         while (! _.isEmpty(bets_obj)) {
-          console.log('Iterating over bets_obj, which is', bets_obj);
+          //console.log('Iterating over bets_obj, which is', bets_obj);
           var min_bet = _.min(bets_obj)
             , usernames = []
             , pot_obj
@@ -472,7 +475,7 @@ module.exports = (function () {
               bets_obj[username] = bet_amount - min_bet;
             }
           });
-          console.log('Iterating over self.pots, which is', self.pots);
+          //console.log('Iterating over self.pots, which is', self.pots);
           pot_obj = _.find(self.pots, function(_pot_obj) {
             return _pot_obj.usernames.length === usernames.length &&
                    _.every(_pot_obj.usernames, function(_username) {
@@ -484,12 +487,12 @@ module.exports = (function () {
             self.pots.push(pot_obj);
           }
           pot_value = pot_obj.value;
-          console.log('usernames is', usernames, ', pot_obj is', pot_obj, ', pot_value is', pot_value);
+          //console.log('usernames is', usernames, ', pot_obj is', pot_obj, ', pot_value is', pot_value);
           pot_value += usernames.length * min_bet;
-          console.log('pot_value is', pot_value);
-          console.log('About to iterate over forfeited_bets, which is', self.forfeited_bets);
+          //console.log('pot_value is', pot_value);
+          //console.log('About to iterate over forfeited_bets, which is', self.forfeited_bets);
           pot_value += self.collectForfeitedBets(min_bet);
-          console.log('pot_value is', pot_value);
+          //console.log('pot_value is', pot_value);
           // save the new pot value
           pot_obj.value = pot_value;
         }
@@ -497,7 +500,9 @@ module.exports = (function () {
           console.log('Betting round completed!', self.pots, self.players);
           setTimeout(function() {
             self.broadcast('street_ends', self.getPotValues());
-            self.nextStage();
+            setTimeout(function() {
+              self.nextStage();
+            }, pots_increased ? game.BET_COLLECTION_DELAY : 0);
           }, game.STREET_END_DELAY);
         }
         else {
@@ -813,7 +818,7 @@ module.exports = (function () {
          first_round = false,
          seat_counter = (seat_counter + 1) % game.MAX_PLAYERS) {
       player = self.seats[seat_counter];
-      if (player instanceof Player && ! player.sitting_out) {
+      if (player instanceof Player && ! player.sitting_out && player.chips >= game.SMALL_BLIND) {
         self.players.push(player);
         player.handStart();
         if (_.isUndefined(calculated_dealer)) {
