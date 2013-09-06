@@ -3523,6 +3523,7 @@ stagesToUpdate.push(  this.displayChipStack(betSize, this.images.seats[seatNumbe
          this.images.seats[seatNumber].bet.text.text = betSize
       stagesToUpdate.push(   this.itemChanged(this.images.seats[seatNumber].bet) )
 }//check to make sure changed
+stagesToUpdate.push( this.displayChildren(this.images.seats[seatNumber].bet, options))
        }
         else{
 betSize = ''
@@ -3530,11 +3531,11 @@ betSize = ''
          this.images.seats[seatNumber].bet.text.text = betSize
       stagesToUpdate.push(   this.itemChanged(this.images.seats[seatNumber].bet) )
 }//check to make sure changed
-          this.images.seats[seatNumber].bet.text.text = ''
+
  stagesToUpdate.push(this.hideChildren(this.images.seats[seatNumber].bet, options))
        }
 
-stagesToUpdate.push( this.displayChildren(this.images.seats[seatNumber].bet, options))
+
 
 
 
@@ -4167,6 +4168,34 @@ stagesToUpdate.push(  this.displayChipStack(parseFloat(specificPotSize), this.im
           newTotalPotSize = potSize
         }//if pot size is a number
 
+     else  if(_.isArray(potSize)&&potSize.length>0){
+    //    console.log('updating potsize display and there are split pot')
+          var aggregatedPotSize = 0
+          for(var i = 0;i<potSize.length;i++){
+
+aggregatedPotSize = aggregatedPotSize + parseFloat(potSize[i])
+//redraw chipstack ONLY if value is different from before
+if(parseFloat(potSize[i]) != parseFloat(this.images.pots[i].potSize.text.text)){
+  console.log('updating pot size '+i+'with value '+ potSize[i])
+ this.images.pots[i].potSize.text.text = potSize[i]
+    stagesToUpdate.push(  this.itemChanged(this.images.pots[i].potSize))
+stagesToUpdate.push( this.displayChipStack(parseFloat(potSize[i]), self.images.pots[i], self.images.pots[i].firstChip.position.x, self.images.pots[i].firstChip.position.y, options) )
+  }//check if value is different
+else {console.log('pot '+i+'not redrawn because same value')}
+
+  stagesToUpdate.push( this.displayChildren(this.images.pots[i].potSize, options) )
+//   this.displayChildren(this.images.pots[i].chips, options)
+ }//end loop throuh potSize array
+ //display total PotSize
+              newTotalPotSize =   aggregatedPotSize
+ }//if potsize is arra longer than 1
+
+
+
+
+/*
+====================USE ThIS CODE IF WE WANT TO NOT SHOW ONLY 1 POT SIZE==================
+
 //update pot0 but not display it, and update total pot size
          else if(_.isArray(potSize) && potSize.length == 1){ 
    //       console.log('updating potsize based on array of length 1')
@@ -4200,20 +4229,22 @@ else {console.log('pot '+i+'not redrawn because same value')}
  }//end loop throuh potSize array
  //display total PotSize
               newTotalPotSize =   aggregatedPotSize
- }
+ }//if potsize is arra longer than 1
+ */
 
  if(_.isNumber(newTotalPotSize)) {
-  if('Pot: '+newTotalPotSize != this.images.totalPotSize.text.text ){
-  this.images.totalPotSize.text.text = 'Pot: '+newTotalPotSize
+  var newTotalPotSizeText = 'Total: '+newTotalPotSize
+  if(newTotalPotSizeText != this.images.totalPotSize.text.text ){
+  this.images.totalPotSize.text.text = newTotalPotSizeText
   stagesToUpdate.push(this.itemChanged( this.images.totalPotSize))
     }//if different
           stagesToUpdate.push(   this.displayChildren(this.images.totalPotSize, options) )
        }
          
-
+  options.update = update
 if(update !== false){
  // console.log('updating alot of stages'+stagesToUpdate)
-  options.update = update
+
   this.updateStages(stagesToUpdate)}
 
 else {return stagesToUpdate}
@@ -5121,11 +5152,12 @@ return changedWithoutUpdate
         }
 
  this.playerSitsOut =function(seatNumber, options){
-            
+            var stagesToUpdate = []
          if(this.images.seats[seatNumber].status.text.text !== "Sitting Out"){
           this.images.seats[seatNumber].status.text.text = "Sitting Out"
-        if (options && options.update === false){return this.images.seats[seatNumber].status.position.z.stage }
-  else(this.updateStages(this.images.seats[seatNumber].status.position.z.stage ))
+          stagesToUpdate.push(this.itemChanged(this.images.seats[seatNumber].status))
+        if (options && options.update === false){return stagesToUpdate }
+  else(this.updateStages(stagesToUpdate ))
          }
 
 
@@ -5309,16 +5341,17 @@ for(var i =0;i<potArrayLength;i++){
   //create each separate player's chip winnings in the pot, but do not display yet
 self.displayChipStack(potWinners[potNumber][i].amountWon, temporaryStacks[potWinners[potNumber][i].temporaryStackNumber], self.images.pots[potNumber].firstChip.position.x, self.images.pots[potNumber].firstChip.position.y, { hidden:true})
                
+               var tempNumber = callID
   potIntoChipAnimationArray[potNumber].push(function(callback){
                 self.displayChildren(temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips)
                 console.log('displaying the chips of player '+ potWinners[potNumber][i].seat)
-                callback(null, callID)
+                callback(null, tempNumber)
        })
   callID++
 
                 //iterate through chipstack to push animations of each chip into an array
                 _.each(_.range(temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips.length), function(n){
-
+var tempNumber = callID
 potIntoChipAnimationArray[potNumber].push(function(callback){
 
    //animate chipstacks to the players      
@@ -5327,7 +5360,7 @@ potIntoChipAnimationArray[potNumber].push(function(callback){
     finalX: temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n].position.x +animationDistanceX,
     finalY:temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips[n].position.y+ animationDistanceY,
     numTicks: ticks,
-    onEnd: function(){callback(null, callID)},
+    onEnd: function(){callback(null, tempNumber)},
     onTick:null,
    time: chipAnimationTime
    }
@@ -5347,20 +5380,32 @@ potIntoChipAnimationArray[potNumber].push(function(callback){
 
     var errorNumber = 0
     _.each(_.range(potIntoChipAnimationArray.length), function(potNumber){
+      var tempNumber = errorNumber
         if(!_.isEmpty(potIntoChipAnimationArray[potNumber])){
 
         finalArray.push(function(next){
                //remove chip images from pot
                self.hideChildren(self.images.pots[potNumber].chips)
                self.hideChildren(self.images.pots[potNumber].potSize)
-    async.parallel(potIntoChipAnimationArray[potNumber], function(err, results){next(null, errorNumber)})
+    async.parallel(potIntoChipAnimationArray[potNumber], function(err, results){
+      
+      console.log('pot into chip animation array finished with error then results')
+      console.log(err)
+console.log(results)
+next(null, tempNumber)
+    }//asyn paraellel end function
 
-})
+      )//push into async.parallel
+
+})//push into finalArray
 
 errorNumber++
+var tempASDF = errorNumber
 
  finalArray.push(function(next){
-
+  console.log('preparing to iterate through ')
+  console.log(potWinners[potNumber])
+var stagesWeWantToUpdateAfter = []
      _.each(_.range(potWinners[potNumber].length), function(i) {
          //define seatNumber
 
@@ -5371,46 +5416,63 @@ errorNumber++
 
           console.log('chips = ' + chipsInFrontOfPlayer[seatNumber]+  ' at '+ self.images.seats[seatNumber].firstChip.position.x+', '+ self.images.seats[seatNumber].firstChip.position.y)
           console.log(seatNumber)
-                     self.images.seats[seatNumber].bet.text.text =  chipsInFrontOfPlayer[seatNumber]
-    self.displayChipStack(chipsInFrontOfPlayer[seatNumber], self.images.seats[seatNumber], self.images.seats[seatNumber].firstChip.position.x, self.images.seats[seatNumber].firstChip.position.y)
+             //find end stack size (in case there is a staggered delay)
+var maxStackSize = false
+for(var z = 0;z<players.length;z++){
+  if(players[z].seat === seatNumber){maxStackSize = players[z].chips}
+}
+
+var currentStackSize = self.getCurrentStackSizes()[seatNumber]
+var newStackSize = currentStackSize + potWinners[potNumber][i].amountWon
+console.log('seatnumber is '+seatNumber)
+console.log('newstacksize is ' +newStackSize)
+console.log('currentStackSize is ' +currentStackSize)
+console.log('maxStackSize is ' +maxStackSize)
+//make sure new stacksize isnt higher than max
+if(newStackSize>maxStackSize){newStackSize = maxStackSize}
 
 
-  //  self.displayChildren(self.images.seats[seatNumber].chips)
-    self.displayChildren(self.images.seats[seatNumber].bet)
+        self.images.seats[seatNumber].bet.text.text =  chipsInFrontOfPlayer[seatNumber]
+stagesWeWantToUpdateAfter.push(self.itemChanged(self.images.seats[seatNumber].bet))
+   stagesWeWantToUpdateAfter.push(   self.playerPutsChipsInPot(seatNumber,chipsInFrontOfPlayer[seatNumber], newStackSize, {update:false}))
+
+  stagesWeWantToUpdateAfter.push(  self.displayChildren(self.images.seats[seatNumber].bet, {update:false}) )
 if(self.arrayOfParentsOfStageAndOfContainerArray[self.images.seats[seatNumber].chips[0].position.z.stage].stage.contains(self.images.seats[seatNumber].chips[0].image)) {
   console.log(self.images.seats[seatNumber].chips)
 }
         //remove temporary animated chipstack
-        self.hideChildren(temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips)
+     stagesWeWantToUpdateAfter.push(   self.hideChildren(temporaryStacks[potWinners[potNumber][i].temporaryStackNumber].chips,{update:false}) )
             console.log('finished hiding temporary stack number '+potWinners[potNumber][i].temporaryStackNumber)
 
-//self.stage.update()
-})
+})//loop through potWinners[potNumber]
 
+self.updateStages(stagesWeWantToUpdateAfter)
 console.log('start waiting after pot number '+potNumber)
 var wait = setTimeout(function(){
     console.log('callback function called')
-    next(null, errorNumber)
+    next(null, tempASDF)
 
 }, timeBetweenAnimations) //end timeout function
 
 
-})
+})//push into final array
 
     errorNumber++
 
  }// end check if pot is empty
 })
 
+var tempErrNumber = errorNumber
 //update player stack sizes
 finalArray.push(function(next){
 for(var i = 0;i<players.length;i++){
 
   self.images.seats[players[i].seat].status.text.text = players[i].chips
   console.log('setting player number '+players[i].seat)
-if(i == players.length-1){next(null, errorNumber)}
+if(i == players.length-1){next(null, tempErrNumber)}
 }
 
+errorNumber++
 }
 )//end push
 
@@ -5424,6 +5486,8 @@ if(i == players.length-1){next(null, errorNumber)}
  })
  
  }
+
+
 
 this.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText = function(){
 
@@ -6899,6 +6963,26 @@ else{
 return false}
 }
 
+this.getCurrentStackSizes = function(){
+var stackSizes = []
+
+for(var i = 0;i<this.gameState.numSeats;i++){
+  //fetch stack size
+var size = parseInt(this.images.seats[i].status.text.text)
+//check if stackSize is string format, if so stack size  = 0
+if( _.isNaN(size) ){size = 0} 
+  //if stack is number
+else if(_.isNumber(size) ){
+if(size<0){size = 0}//if stacksize is negative ,reset it to 0
+}//if stack size is a number
+
+//push stack size to array
+stackSizes.push(size)
+}
+
+return stackSizes
+}
+
 this.getCurrentPotSizes = function(){
  var potSizes = []
 var numPots = 1
@@ -7364,7 +7448,7 @@ stagesToUpdate.push( self.hideChildren(self.images.foldToAnyBet,options))
 
 //console.log('updateUserOptionsBasedOnFlagsAndPreactions stages to update: ')
 //console.log(stagesToUpdate)
-
+options.update = update
 if(update === false){return stagesToUpdate}
   else{this.updateStages(stagesToUpdate)}
 }
@@ -7713,7 +7797,7 @@ function tick(event){
               console.log('loading canvas now')
                $(parentOfLoadingStage.stage.canvas).css('display','none')
 
-               self.activateTicker(30)
+               self.activateTicker(50)
        }
        console.log('increasing tick')
        numTicks ++
@@ -7929,7 +8013,7 @@ socket.on('hands_dealt', function(players, tableInfo){
  //var userSeatIndex = self.getSeatImageIndex(self.gameState.userSeatNumber, 'rotatedSeatNumber')
    
            switch (flag){
-
+/*
 case 'pending_sit_out':
 self.gameState.seats[self.gameState.userSeatNumber].flags.pending_sit_out = value
 
@@ -7939,7 +8023,7 @@ self.gameState.seats[self.gameState.userSeatNumber].flags.pending_sit_out = valu
            self.gameState.seats[self.gameState.userSeatNumber].flags.post_blind = value
 
 break;
-
+*/
 case 'fold':
 self.gameState.seats[self.gameState.userSeatNumber].preActions.hand.fold = value
 
@@ -7951,7 +8035,7 @@ self.gameState.seats[self.gameState.userSeatNumber].preActions.hand.check = valu
 break;
 
 default:
-if(flag.indexOf('sessionPreferences') === 0){
+if(flag.indexOf('sessionPreferences') !== -1){
   console.log('session preference flag received')
 }
 else{
@@ -8192,13 +8276,20 @@ self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInte
 
 //player sits out
        socket.on('player_sits_out', function(player){
-           self.images.seats[player.seat].status.text.text = 'Sitting Out'
-   self.updateStages(self.images.seats[player.seat].status.position.z.stage)
+var stagesToUpdate = []
+
+     stagesToUpdate.push(    self.playerSitsOut(player.seat) )
+/*
+        if(self.images.seats[player.seat].status.text.text !== 'Sitting Out' ){
+      stagesToUpdate .push(    self.images.seats[player.seat].status.text.text = 'Sitting Out')
+     stagesToUpdate.push(     self.itemChanged( self.images.seats[player.seat].status.text) )
+       }
+*/
         if(player.seat == self.gameState.userSeatNumber){
-       self.updateLocalGameDataBasedOnServerPlayerObject(player) 
-self.updateUserOptionsBasedOnFlagsAndPreactions()
+     stagesToUpdate .push(    self.updateLocalGameDataBasedOnServerPlayerObject(player, {update:false}) )
+  stagesToUpdate .push(self.updateUserOptionsBasedOnFlagsAndPreactions({update:false}))
 }
-       
+          self.updateStages(self.images.seats[player.seat].status.position.z.stage)
 })
 
 
@@ -8235,13 +8326,6 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
 
 })
 
-//player stands, checks if player is the user
-       socket.on('player_sits_out', function(player){
-
-           self.playerSitsOut(player.seat)
-
-
-})
 
 //player receives server message to open cashier
        socket.on('add_chips_info', function(info){
