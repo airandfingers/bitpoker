@@ -112,6 +112,15 @@ module.exports = (function () {
     var users = Room.getRoom('').getUsernames()
       , table_games = Table.getTableGames()
       , room_state = { users: users };
+
+      if (_.isObject(req.user)) { 
+        console.log('req.user is an object');
+        if ( _.isString(req.query.joined_table_name) ) {
+          console.log('req.query.joined_table_name is a string');
+          req.user.current_table_names.push(req.query.joined_table_name);
+        }
+      }
+      
     //console.log('Got table_games:', table_games);
 
     res.render('index', {
@@ -138,7 +147,9 @@ module.exports = (function () {
       //console.log('Callback called. User.getLeaders is', leaders);
       User.getLeaders('satoshi', function (err, satoshi_leaders) {
         if (err) return (err);
+        var table_games = Table.getTableGames();
         res.render('leaderboard', {
+          table_games: table_games,
           title: 'Leaderboard',
           funbucks_leaders: funbucks_leaders,
           satoshi_leaders: satoshi_leaders

@@ -6,6 +6,34 @@
         before_slash = parseInt(before_slash);
         return before_slash;
     }
+    
+    //launch table game function.
+    function launchTableGame() {
+      var table_name = $(this).attr('id');
+      if (typeof req === 'undefined' || typeof req.user == 'undefined'){
+          console.log('req.user is undefined');
+          window.location.href = "/login?next=/" + "?joined_table_name=" + table_name;
+
+      }
+      else {
+        if (window.document.title =='Bitcoin Poker'){
+          console.log('page title is Bitcoin Poker. Launching launchTableGame' );
+          iframes.openNewIframe(table_name);
+          //window.location.href = '/' + table_name;
+          //return popup(table_name);
+          //remove 'active' class and hide lobby
+            $('#lobby')
+              .removeClass('active')
+              .hide('slide', { direction: 'up' }, 500);        
+        }
+        else {
+            //navigate to home page
+            console.log('redirected to landing page');
+            window.location.href = "/?joined_table_name=" + table_name;
+          }
+      }
+    }
+
     jQuery.fn.dataTableExt.oSort['fake-fraction-asc']  = function(a, b) {
         var first_num = getNumBeforeSlash(a)
           , second_num = getNumBeforeSlash(b);
@@ -56,16 +84,7 @@
     .on('click', function(e) { e.stopPropagation(); });
 
     // Add a click handler for the table rows
-    $('#table_list tbody').on('click', 'tr', function(e) {
-      var table_name = $(this).attr('id');
-      iframes.openNewIframe(table_name);
-      //window.location.href = '/' + table_name;
-      //return popup(table_name);
-      //remove 'active' class and hide lobby
-        $('#lobby')
-          .removeClass('active')
-          .hide('slide', { direction: 'up' }, 500);
-    });
+    $('#table_list tbody').on('click', 'tr', launchTableGame);
 
     // Adjust column sizes when window resizes
     $(window).bind('resize', function() {
