@@ -20,7 +20,10 @@ module.exports = (function () {
   //These app.get functions will display their respective ejs page.
   app.get('/account', auth.ensureAuthenticated, function(req, res) {
     console.log('req.user is ' + req.user);
+    var table_games = Table.getTableGames();
+
     res.render('account', {
+      table_games: table_games,
       title: 'Account',
       username: req.user.username,
       registration_date: req.user.registration_date,
@@ -34,7 +37,9 @@ module.exports = (function () {
   });
 
   app.get('/bitcoin_info', function(req, res) {
+    var table_games = Table.getTableGames();
     res.render('bitcoin_info', {
+      table_games: table_games,
       title: 'Bitcoin Information',
     });
   });

@@ -61,6 +61,10 @@
       iframes.openNewIframe(table_name);
       //window.location.href = '/' + table_name;
       //return popup(table_name);
+      //remove 'active' class and hide lobby
+        $('#lobby')
+          .removeClass('active')
+          .hide('slide', { direction: 'up' }, 500);
     });
 
     // Adjust column sizes when window resizes
