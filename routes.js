@@ -20,7 +20,10 @@ module.exports = (function () {
   //These app.get functions will display their respective ejs page.
   app.get('/account', auth.ensureAuthenticated, function(req, res) {
     console.log('req.user is ' + req.user);
+    var table_games = Table.getTableGames();
+
     res.render('account', {
+      table_games: table_games,
       title: 'Account',
       username: req.user.username,
       registration_date: req.user.registration_date,
@@ -34,7 +37,9 @@ module.exports = (function () {
   });
 
   app.get('/bitcoin_info', function(req, res) {
+    var table_games = Table.getTableGames();
     res.render('bitcoin_info', {
+      table_games: table_games,
       title: 'Bitcoin Information',
     });
   });
@@ -107,6 +112,15 @@ module.exports = (function () {
     var users = Room.getRoom('').getUsernames()
       , table_games = Table.getTableGames()
       , room_state = { users: users };
+
+      if (_.isObject(req.user)) { 
+        console.log('req.user is an object');
+        if ( _.isString(req.query.joined_table_name) ) {
+          console.log('req.query.joined_table_name is a string');
+          req.user.current_table_names.push(req.query.joined_table_name);
+        }
+      }
+      
     //console.log('Got table_games:', table_games);
 
     res.render('index', {
@@ -133,7 +147,9 @@ module.exports = (function () {
       //console.log('Callback called. User.getLeaders is', leaders);
       User.getLeaders('satoshi', function (err, satoshi_leaders) {
         if (err) return (err);
+        var table_games = Table.getTableGames();
         res.render('leaderboard', {
+          table_games: table_games,
           title: 'Leaderboard',
           funbucks_leaders: funbucks_leaders,
           satoshi_leaders: satoshi_leaders
