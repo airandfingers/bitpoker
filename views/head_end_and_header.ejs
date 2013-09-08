@@ -41,42 +41,27 @@
                             >
                               <%= page_name.toUpperCase() %>
                             </a>
-                           <!--write nested ul for dropdowns-->
-                            <% if (page_dropdown !== undefined ) { %>
-                              <ul>
-                              <% for (j=0, len2 = page_dropdown.length; j < len2; j++) {
-                                subpage_name = page_dropdown[j].name;
-                                subpage_href = page_dropdown[j].href;
-                                %>
-                                <li>
-                                  <a href="<%= subpage_href %>">
-                                      <%= subpage_name %>
-                                  </a>
-                                </li>
-                              <% } %>  
-                              </ul>
-                            <% } %>
                         </li>
                     <% } %>
 
                     <% if (typeof table_games !=='undefined') { %>
                       <div id="lobbyWrapperDiv">
-                      <li>
-                        <a href = "#" id="lobby_trigger">
-                        LOBBY
-                        </a>
-                      </li>
+                        <li>
+                          <a href = "#" id="lobby_trigger">
+                          LOBBY
+                          </a>
+                        </li>
 
-                      <!-- lobby dropdown -->
-                      <div id="lobby">
-                        <% include table_list %>
-                      </div>
+                        <!-- lobby dropdown -->
+                        <div id="lobby">
+                          <% include table_list %>
+                        </div>
                       </div> <!-- wrapperDiv: This is to help with hoverIntent -->
-                     <%  } %>
+                    <%  } %>
 
                     <li>
                         <a href="#" id="report_bug_trigger" title="Submit bugs or feedback">
-                          <img src="/img/bug.png" />
+                            <img src="/img/bug.png" />
                         </a>
                     </li>
                     <% include bug_report %>
@@ -134,11 +119,11 @@
                           <form action="/login" method="post">
                             <div class="username">
                               <label>Username:</label>
-                              <input type="text" name="username" placeholder="username" autofocus /><br/>
+                              <input type="text" name="username" placeholder="username" autofocus required /><br/>
                             </div>
                             <div class="password">
                               <label>Password:</label>
-                              <input type="password" name="password" placeholder="password" />
+                              <input type="password" name="password" placeholder="password" required />
                             </div>
                             <input type="submit" value="Login" class="btn btn-inverse" />
                           </form>
