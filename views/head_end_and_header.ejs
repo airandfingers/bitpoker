@@ -82,19 +82,19 @@
                         <form action="/register" method="post">
                             <div class="username">
                                 <label for="username">Username:</label>
-                                <input name="username" type="text" placeholder="username" required /><br/>
+                                <input id="username" name="username" type="text" placeholder="username" required />
                             </div>
                             <div class="password">
                                 <label>Password:</label>
-                                <input name="new_password" type="password"  placeholder="password" required />
+                                <input id="new_password" name="new_password" type="password"  placeholder="password" required />
                             </div>
                             <div class="password">
                                 <label>Confirm Password:</label>
-                                <input name="new_password_confirm" type="password" placeholder="password (again)" required />
+                                <input id="new_password_confirm" name="new_password_confirm" type="password" placeholder="password (again)" required />
                             </div>
                             <div class="email">
                                 <label>Email (optional):</label>
-                                <input name="email" type="email" placeholder="name@domain.com" />
+                                <input id="email" name="email" type="email" placeholder="name@domain.com" />
                             </div>
                             <input type="submit" value="Sign Up" class="btn btn-inverse"/>
                         </form>
@@ -119,11 +119,11 @@
                           <form action="/login" method="post">
                             <div class="username">
                               <label>Username:</label>
-                              <input type="text" name="username" placeholder="username" autofocus required /><br/>
+                              <input id="username" name="username" type="text" placeholder="username" autofocus required />
                             </div>
                             <div class="password">
                               <label>Password:</label>
-                              <input type="password" name="password" placeholder="password" required />
+                              <input id="password" name="password" type="password" placeholder="password" required />
                             </div>
                             <input type="submit" value="Login" class="btn btn-inverse" />
                           </form>

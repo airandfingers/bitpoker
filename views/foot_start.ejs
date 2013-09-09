@@ -251,7 +251,8 @@
         <!-- Hide/Show Register functionality -->
         <script>
           $(document).ready(function() {
-            $('#register form, #login form').validate();
+            $('#register form[action="/register"]').validate();
+            $('#login form[action="/login"]').validate();
           });
         </script>
       <% } %>
