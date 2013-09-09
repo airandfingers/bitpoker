@@ -82,7 +82,7 @@
                         <form action="/register" method="post">
                             <div class="username">
                                 <label for="register_username">Username:</label>
-                                <input id="register_username" name="username" type="text" placeholder="username" required />
+                                <input id="register_username" name="username" type="text" placeholder="username" required remote="/check_username" />
                             </div>
                             <div class="password">
                                 <label for="register_new_password">Password:</label>
@@ -90,7 +90,7 @@
                             </div>
                             <div class="password">
                                 <label for="register_new_password_confirm">Confirm Password:</label>
-                                <input id="register_new_password_confirm" name="new_password_confirm" type="password" placeholder="password (again)" required equalTo="#new_password" />
+                                <input id="register_new_password_confirm" name="new_password_confirm" type="password" placeholder="password (again)" required equalTo="#register_new_password" />
                             </div>
                             <div class="email">
                                 <label for="register_email">Email (optional):</label>

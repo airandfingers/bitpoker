@@ -543,15 +543,15 @@ module.exports = (function () {
       , email = req.body.email || undefined
       , target = req.body.next || base_page;
 
-    if (User.isGuest(username)) {
-      req.flash('error', 'You cannot create a username called guest');
+    if (_.isEmpty(username) || _.isEmpty(pt_password)) {
+      req.flash('error', 'Cannot register without both username and password!');
       res.redirect('/register?next=' + target);
       return;
     }
 
     if (pt_password !== password_confirm) {
-      console.log('password fields did not match!');
-      req.flash('error', 'password fields did not match!');
+      //console.log('password fields did not match!');
+      req.flash('error', 'Password fields did not match!');
       res.redirect('/register?next=' + target);
       return;
     }
@@ -725,6 +725,23 @@ module.exports = (function () {
     }
     req.user.onLeaveTable(table_name);
     res.json(table_name);
+  });
+
+  app.get('/check_username', function(req, res) {
+    var username = req.query.username;
+    if (User.isGuest(username)) {
+      return res.json('Your username may not begin with "guest".');
+    }
+    User.findOne({ username: username }, function(find_err, user) {
+      if (find_err) {
+        console.error('Error while trying to look up user named', username, find_err);
+        return res.json('Sorry, something went wrong. We\'ll look into it.');
+      }
+      if (user) {
+        return res.json('The name ' + username + ' is already taken.')
+      }
+      res.json(true);
+    });
   });
 
   //Handle all other cases with a 404

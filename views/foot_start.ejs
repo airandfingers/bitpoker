@@ -250,7 +250,14 @@
 
         <!-- Hide/Show Register functionality -->
         <script>
-          $(document).ready(function() {
+          $.validator.setDefaults({
+            messages: {
+              new_password_confirm: {
+                equalTo: 'Password fields must match.'
+              }
+            }
+          });
+          $(function() {
             $('#register form[action="/register"]').validate();
             $('#login form[action="/login"]').validate();
           });
