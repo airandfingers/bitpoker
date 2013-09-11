@@ -217,9 +217,8 @@ mouseDown:false
         this.gameState.messageBox.activeStages = []
 
         var staticItems=0
-        var holeCards=staticItems+1
-        var buttons=holeCards+1
-        var middleTableItemsAndAnimations=buttons+1
+        var holeCardsAndButtons=staticItems+1
+        var middleTableItemsAndAnimations=holeCardsAndButtons+1
         var playerBubbleChat = middleTableItemsAndAnimations+1
         var chatBox=playerBubbleChat+1
 
@@ -246,14 +245,14 @@ touchEnabled:false
             }//stage options
           }//background property,
             this.gameState.zPositionData.table={stage:staticItems,container:1}
-            this.gameState.zPositionData.holeCards={stage:holeCards,container:0, newCanvas:true, numContainers:2,stageOptions:this.gameState.zPositionData.background.stageOptions}
-            this.gameState.zPositionData.button={stage:buttons,container:0,numContainers:3,stageOptions:{
+            this.gameState.zPositionData.holeCards={stage:holeCardsAndButtons,container:0, newCanvas:true, numContainers:5,stageOptions:{
 mouseEnabled : true,
 enableDOMEvents : true,
 touchEnabled:true,
 mouseOverFrequency:30
 }
-            }//button
+}
+            this.gameState.zPositionData.button={stage:holeCardsAndButtons,container:2}//button
 
             this.gameState.zPositionData.playerBubbleChat={stage:playerBubbleChat, container:0, numContainers:2, stageOptions:this.gameState.zPositionData.background.stageOptions}
             this.gameState.zPositionData.communityCards={stage:middleTableItemsAndAnimations,container:0, numContainers:5,stageOptions:this.gameState.zPositionData.background.stageOptions}
@@ -819,13 +818,24 @@ this.events.onCashierTextFieldFocus = function(event){
     }
 
 
-this.events.seatMouseEvent = function(event){
-var animationTime = 600
+this.events.seatMouseEvent = function(event, options){
+
+//  console.log('seatmouse event called')
+  if(!options){var options = {}}
+    var defaults = {}
+  if(_.isObject(event.target.parentOfImageObject)&& _.isObject(event.target.parentOfImageObject.seatObjectAncestor)){
+    defaults.seatObject =  event.target.parentOfImageObject.seatObjectAncestor
+defaults.seatNum =  defaults.seatObject.nonRotatedSeatNumber
+defaults.animationTime = 600
+  }
+
+options = _.defaults(options, defaults)
 
 
 //console.log(event)
-var seatObject = event.target.parentOfImageObject.seatObjectAncestor
-var seatNum = seatObject.nonRotatedSeatNumber
+var animationTime = options.animationTime
+var seatObject =  options.seatObject //event.target.parentOfImageObject.seatObjectAncestor
+var seatNum =    options.seatNum   //seatObject.nonRotatedSeatNumber
 var getHoleCardAnimationArray  = function(){return self.gameState.seats[seatNum].preActions.hand.holeCardsPopupAnimation} //this will be an array of hole cards
 var animationBottomY = seatObject.seat.position.y
 var animationTopY = seatObject.hiddenCards[0].position.y
@@ -838,22 +848,70 @@ var displayedAnimationArray = false
 
 var getAnimationDirection = function(){return self.gameState.seats[seatNum].preActions.hand.holeCardAnimationDirection}
 var setAnimationDirection = function(direction){self.gameState.seats[seatNum].preActions.hand.holeCardAnimationDirection = direction}
-
-
-if(event.type === 'mouseover'){
-  console.log('mouseover event occured')
-    event.addEventListener("mousemove", handleMouseMove)
-
-function handleMouseMove(event) {
-  console.log('mousemove event called')
- animateUp()
+var killCheckingFunction= function(){
+  if(self.gameState.seats[seatNum].checkingForFoldedHoleCardAnimation){
+//    console.log('clearing intterval')
+  clearInterval( self.gameState.seats[seatNum].checkingForFoldedHoleCardAnimation )}
 }
+var getPreviousCheckingFunctionEvent = function(){
+return  self.gameState.seats[seatNum].preActions.hand.checkingForFoldedHoleCardAnimationEvent 
+}
+var storeEvent = function(){
+event.options = options
+  self.gameState.seats[seatNum].preActions.hand.checkingForFoldedHoleCardAnimationEvent = event}
+
+var setCorrectEventAndOptions = function(){
+//  console.log('determinging which event to use')
+//determine if we need to kill previous checking function
+var useCurrentEvent = false
+//check if mosue is over Seat
+var previousEvent = getPreviousCheckingFunctionEvent()
+//console.log(event)
+//console.log(previousEvent)
+if(!_.isObject(previousEvent)){return false}
+var isSeatMouseEvent = event.target.id === seatObject.seat.image.id
+//console.log('isSeatMouseEvent' + isSeatMouseEvent)
+var isPreviousEventSeatMouseEvent = previousEvent.target.id === previousEvent.options.seatObject.seat.image.id
+//console.log('isPreviousEventSeatMouseEvent' + isPreviousEventSeatMouseEvent)
+var areBothEventsSameTarget = event.target.id === previousEvent.target.id
+//console.log('areBothEventsSameTarget' + areBothEventsSameTarget)
+var areBothEventsRelatedToTheSameSeat = seatNum === previousEvent.options.seatNum
+//console.log('areBothEventsRelatedToTheSameSeat' + areBothEventsRelatedToTheSameSeat)
+
+
+if(areBothEventsSameTarget === true 
+  || event.type === previousEvent.type
+|| areBothEventsRelatedToTheSameSeat === false
+|| (event.type !== 'mouseover' && event.type !== 'mouseout')
+||(previousEvent.type !== 'mouseover' && previousEvent.type !== 'mouseout')
+||(isPreviousEventSeatMouseEvent === true && isSeatMouseEvent === true)
+  ){useCurrentEvent = true}
+else if(event.type === 'mouseover') {useCurrentEvent = true}
+  else{useCurrentEvent = false}
+
+
+if(useCurrentEvent === false){
+//console.log('using previous event')
+  event = previousEvent
+  options = previousEvent.options
+
+}
+}
+
+setCorrectEventAndOptions()
+//console.log('using event:')
+//console.log(event)
+
+  storeEvent()
+killCheckingFunction()
+if(event.type === 'mouseover'){
   animateUp()
+  keepChecking()//in case when player folds cursor is currently over
   }//if mouseover
 
   else if(event.type === 'mouseout'){
-console.log('mouseout occurred')
-  animateDown()}//if mouseout
+  animateDown()
+  }//if mouseout
 
 event.onMouseMove = function (event){
   console.log('onmousemove called')
@@ -872,35 +930,45 @@ event.onMouseDown = function(event){
 console.log('mouseout')
        }// event.onMouseOut
 
-//add tick events to hideChildren
-if(_.isArray(getHoleCardAnimationArray()) && getHoleCardAnimationArray()[0] instanceof self.images.Item){
-getHoleCardAnimationArray()[0].image.addEventListener('tick', function(){
-if(shouldAnimate() === false){endAnimations()}
-}//tick function
-)//addEventlistener
-}
-
 
 function keepChecking(){
-var interval = 50
+  killCheckingFunction()
+  //store current event
 
-var check = setInterval(function(){
 
-if(getAnimationDirection() !== ('bottom' || 'up')){
-console.log('cards are at top')
-if(shouldAnimate() !== true ){
-  console.log('shouldAnimate = false')
+var interval = 80
+
+var isSeatMouseEvent = event.target.id === seatObject.seat.image.id
+
+ self.gameState.seats[seatNum].checkingForFoldedHoleCardAnimation = setInterval(function(){
+console.log('animation direction is: '+getAnimationDirection())
+  //if animation is at top or round has been ended
+if(getAnimationDirection() ===('bottom' || 'up' || 'down') ){killCheckingFunction()}
+else{
+console.log('checking to see if we should animate')
+if(shouldAnimate() === true){//if we want to animate
+  //check if target is card or seat
+  if(isSeatMouseEvent === true){
+      console.log('shouldanimate = true, eventtype is: '+event.type+' isseatmouseevent = '+isSeatMouseEvent)
+    killCheckingFunction()
+self.events.seatMouseEvent(event, options)
+}
+
+}
+
+else{//if shouldAnimate() != true
+  console.log('shouldAnimate = false, ending hole card popup animations')
+  console.log('eventtype is: '+event.type+' isseatmouseevent = '+isSeatMouseEvent)
 endAnimations()
-  clearInterval(check)
-}//if we want to end animations
+//if event type is NOT mouseover of seat object, then we want to cancel the interval
+if( (event.type !== 'mouseover') || (isSeatMouseEvent !== true) ){killCheckingFunction()}
+}//if shouldAnimate() != true
 
-}//if animation is at top
-
-else{clearInterval(check)}
+}
 
 }, interval);
 
-}
+}//keep checking function
 
 /*
 for(var i = 0;i< getHoleCardAnimationArray().length;i++){
@@ -913,9 +981,12 @@ if(shouldAnimate() === false){endAnimations()}
        function animateUp(){
 var animationInfoArray = []
 //prepare animation information
-if(getAnimationDirection() === ('up' || 'top')){return false}
-  if(!_.isArray(getHoleCardAnimationArray())){return false}
+if(getAnimationDirection() === 'top'){return false}
+  if(getAnimationDirection() === 'up'){return false}
+  if(!_.isArray(getHoleCardAnimationArray())){console.log('animateup stopped cuz no cards');return false}
+      console.log('animating up '+ getAnimationDirection())
     setAnimationDirection('up')
+
   var holeCardAnimationArray = getHoleCardAnimationArray()
 _.each(_.range(holeCardAnimationArray.length),function(cardNumber){
 
@@ -945,10 +1016,11 @@ self.animateImage(animationInfoArray[cardNumber])
 function animateDown(){
 
 var animationInfoArray = []
-if(getAnimationDirection() === ('down' || 'bottom')){return false}
+if(getAnimationDirection() !== 'top' && getAnimationDirection() !== 'up'){return false}
   if(!_.isArray(getHoleCardAnimationArray())){return false}
   //prepare animation information
 setAnimationDirection('down')
+console.log('animating down')
   var holeCardAnimationArray = getHoleCardAnimationArray()
 _.each(_.range(holeCardAnimationArray.length),function(cardNumber){
 
@@ -1009,7 +1081,7 @@ return true
 function onAnimationTick (animationInfo, imageTween, textTween){
 
 if(shouldAnimate()=== false){
-tweenInstance.removeTweens(imageTween.target)
+imageTween.removeTweens(imageTween.target)
 textTween.removeTweens(textTween.target)
   endAnimations()
 }//if we DONT want to animate
@@ -3906,8 +3978,8 @@ shouldCopyHoleCards = true
 holeCardSources = self.gameState.holeCards
 }//if user
 
-else{//if not user
-console.log('checking to see if we should create hole card copy for non-user')
+else if (shouldCopyHoleCards === false) {//if not user
+console.log('checking to see if we should create hole card copy for non-user, or user that loaded late')
 //check whether we should create hole cards or not
 
 for(var i = 0;i<holeCardArray.length;i++){//iterate through hole cards check if visible
@@ -3931,10 +4003,25 @@ for(var i = 0;i<holeCardArray.length;i++){
 animationArray[i] = new this.images.Item(0,0,0,0,{stage:0,container:0})
 self.images.cardAsBitmap( animationArray[i], holeCardSources[i])
 self.setItemLocationsInItemAEqualToOnesInItemB(animationArray[i], holeCardArray[i])
-animationArray[i].image.y = this.images.seats[playerNumber].seat.position.y
-if(animationArray[i].image){
-animationArray[i].image.alpha = popupAlpha}
+
+  animationArray[i].image.y  = this.images.seats[playerNumber].seat.position.y
+animationArray[i].image.alpha = popupAlpha
+
+var options = {
+  seatNum:playerNumber,
+  seatObject:self.images.seats[playerNumber]
+}
+  animationArray[i].image.onMouseOver =function(event){
+    console.log('animatedCard moused OVER')
+  //  self.events.seatMouseEvent(event, options)
+   self.images.seats[playerNumber].seat.image.onMouseOver(event, options)}
+    animationArray[i].image.onMouseOut = function(event){
+  console.log('animatedCard moused OUT')
+      self.images.seats[playerNumber].seat.image.onMouseOut(event, options)
+}
+
 if(animationArray[i].text){
+  animationArray[i].text.y  =( this.images.seats[playerNumber].seat.text.y - this.images.seats[playerNumber].seat.image.y) + this.images.seats[playerNumber].seat.position.y
 animationArray[i].text.alpha  = popupAlpha }
 
 }
