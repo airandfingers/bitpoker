@@ -1,13 +1,14 @@
 <% include head %>
   <div id="container">
     <div class="span6 offset5 inverse"> 
-      <h1>login</h1>
+      <h1>Log into your account.</h1>
       <% if (message) { %>
         <p><%= message %></p>
       <% } %>
 
       <div>
-        <a href="/register"> Don't have a login? Register here</a>
+        <a href="/register"> Don't have a login? Sign up here</a>
+        <br />
         or
         <div id="play_as_guest">
           <form action="/guest_login" method="post">
@@ -19,17 +20,17 @@
         </div>
       </div>
 
-      <form action="/login" method="post">
+      <form id="login_form" action="/login" method="post">
         <div class="username">
           <label>Username:</label>
-          <input type="text" name="username" placeholder="username" autofocus /><br/>
+          <input id="username" name="username" type="text" placeholder="username" autofocus required />
         </div>
         <div class="password">
           <label>Password:</label>
-          <input type="password" name="password" placeholder="password" />
+          <input id="password" name="password" type="password" placeholder="password" required />
         </div>
         <div class="submit_button">
-          <input type="submit" value="Boomcat!" class="button btn btn-inverse" />
+          <input type="submit" value="Login" class="button btn btn-inverse" />
         </div>
         <% if (next) { %>
           <input type="hidden" name="next" value="<%= next %>" />
@@ -40,5 +41,12 @@
   </div>  <!--container-->  
 
 
-  <% include plugins %>
-<% include foot %>
+<% include plugins %>
+
+<% include foot_start %>
+    <script>
+    $(function() {
+      $('#login_form').validate();
+    });
+    </script>
+<% include foot_end %>

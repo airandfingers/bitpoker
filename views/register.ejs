@@ -1,35 +1,41 @@
 <% include head %>
-
-    <div role="main" class="main" id="registration_main">
+    <div id="container">
         <h1>
             Pick your username and password.
         </h1>
-        <% if (message) { %>
-            <p><%= message %></p>
-        <% } %>
-        <% if (mode === 'register') { %>
-            <div>
-                <a href="/login"> Already have an account? Login here</a>
-                </br>
-            </div>
-        <% } %>
-        <div class="uglyregistration">
-            <form action="/register" method="post">
+        <div class="span6 offset5 inverse"> 
+            <% if (message) { %>
+                <p><%= message %></p>
+            <% } %>
+        
+            <% if (message) { %>
+                <p><%= message %></p>
+            <% } %>
+            <% if (mode === 'register') { %>
+                <div>
+                    <a href="/login"> Already have an account? Login here</a>
+                    </br>
+                </div>
+            <% } %>
+            <form id="register_form" action="/register" method="post">
                 <div class="username">
-                    <label>Username:</label>
-                    <input type="text" name="username" placeholder="username" autofocus />
-                    <br />
+                    <label for="username">Username:</label>
+                    <input id="username" name="username" type="text" placeholder="username" required remote="/check_username" />
                 </div>
                 <div class="password">
-                    <label>Password:</label>
-                    <input type="password" name="new_password" placeholder="password" />
+                    <label for="new_password">Password:</label>
+                    <input id="new_password" name="new_password" type="password"  placeholder="password" required />
                 </div>
                 <div class="password">
-                    <label>Confirm Password:</label>
-                    <input type="password" name="new_password_confirm" placeholder="re-type password" />
+                    <label for="new_password_confirm">Confirm Password:</label>
+                    <input id="new_password_confirm" name="new_password_confirm" type="password" placeholder="password (again)" required equalTo="#new_password" />
+                </div>
+                <div class="email">
+                    <label for="email">Email (optional):</label>
+                    <input id="email" name="email" type="email" placeholder="name@domain.com" />
                 </div>
                 <div class="submit_button">
-                    <input type="submit" value="Register" class="button"/>
+                    <input type="submit" value="Register" class="button btn btn-inverse"/>
                 </div>
                 <% if (next) { %>
                     <input type="hidden" name="next" value="<%= next %>" />
@@ -37,6 +43,12 @@
             </form>
         </div>
     </div>
-    <% include plugins %>
+<% include plugins %>
 
-<% include foot %>
+<% include foot_start %>
+    <script>
+    $(function() {
+      $('#register_form').validate();
+    });
+    </script>
+<% include foot_end %>
