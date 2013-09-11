@@ -8418,6 +8418,28 @@ for(var i = 0;i<this.arrayOfParentsOfStageAndOfContainerArray.length;i++){allSta
 
 }
 
+this.animateDealerButton = function(seatNumber, time){
+
+if(!_.isNumber(seatNumber)){
+var finalX = self.images.pots[0].firstChip.position.x
+var finalY =self.images.pots[0].firstChip.position.y
+}
+else{
+  var finalX =self.images.seats[seatNumber].dealerButton.position.x
+var finalY =self.images.seats[seatNumber].dealerButton.position.y
+}
+
+var animationInfo = {
+item:self.images.dealerButton,
+finalX:finalX,
+finalY:finalY,
+time:time
+}
+           
+           self.animateImage(animationInfo)
+
+}
+
    this.displayInitialTableState=function(table_state){
 
  //set up animation variables
@@ -8561,6 +8583,10 @@ if(!_.isNumber(this.gameState.userSeatNumber)){this.displayChildren(this.images.
         //pot
         if(table_state.pot&&table_state.pot>0){this.updatePotSize(table_state.pot)}
 
+//dealer_button
+if(table_state.stage_name === 'waiting'){var dealerPosition = null}
+else{var dealerPosition = table_state.dealer}
+self.animateDealerButton(dealerPosition,  1)
          //current bets
          for (var i=0;i<table_state.players.length;i=i+1) { 
          this.playerPutsChipsInPot(table_state.players[i].seat,table_state.players[i].current_bet, table_state.players[i].chips)
@@ -8582,7 +8608,7 @@ if(!_.isNumber(this.gameState.userSeatNumber)){this.displayChildren(this.images.
      self.gameState.cashier.currency = table_state.currency
      self.gameState.cashier.currency_per_chip =  table_state.currency_per_chip
 
-//display buttons/table stuf
+//display buttons/table stuff
 this.updateUserOptionsBasedOnFlagsAndPreactions()
 
 //update message log for table chat popup
@@ -8671,13 +8697,20 @@ self.gameState.seats[i].preActions.street = {}
                 
 })
 
+        //dealer_chip is moved
+       socket.on('dealer_chip', function(seatNumber){
+
+self.animateDealerButton(seatNumber, 350)
+
+})
+
 socket.on('hands_dealt', function(players, tableInfo){
 //show hand number
     
 
     //show dealer button
-    self.images.dealerButton.image.x = self.images.seats[tableInfo.dealer].dealerButton.position.x
-     self.images.dealerButton.image.y = self.images.seats[tableInfo.dealer].dealerButton.position.y
+  //  self.images.dealerButton.image.x = self.images.seats[tableInfo.dealer].dealerButton.position.x
+   //  self.images.dealerButton.image.y = self.images.seats[tableInfo.dealer].dealerButton.position.y
      self.displayChildren(self.images.dealerButton)
 
     //deal cards
@@ -9091,10 +9124,8 @@ var stagesToUpdate = []
  for(var i = 0;i<self.images.seats.length;i++){
   self.gameState.seats[i].preActions.street = {}
    self.gameState.seats[i].preActions.hand = {}
-stagesToUpdate.push(    self.hideChildren(self.images.seats[i].hiddenCards[0],options))
- stagesToUpdate.push(  self.hideChildren(self.images.seats[i].hiddenCards[1],options))
- stagesToUpdate.push(  self.hideChildren(self.images.seats[i].shownCards[0],options))
- stagesToUpdate.push(  self.hideChildren(self.images.seats[i].shownCards[1],options))
+stagesToUpdate.push(    self.hideChildren(self.images.seats[i].hiddenCards,options))
+ stagesToUpdate.push(  self.hideChildren(self.images.seats[i].shownCards,options))
 }
 stagesToUpdate.push(self.hideChildren(self.images.community,options))
 stagesToUpdate.push( self.updateUserOptionsBasedOnFlagsAndPreactions(options))

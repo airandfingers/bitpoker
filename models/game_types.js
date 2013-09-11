@@ -12,7 +12,7 @@ module.exports = (function() {
       // how long (in ms) between notifying about dealer change and posting small blind
     , DEALER_CHANGE_DELAY: 1000
       // how long (in ms) between posting blinds and next action (next blind or dealing)
-    , POST_BLIND_DELAY: 100
+    , POST_BLIND_DELAY: 300
       // how long (in ms) between last betting action and street_ends message
     , STREET_END_DELAY: 1000
       // how long (in ms) between street_ends message and next round, when bets have been collected
@@ -30,7 +30,7 @@ module.exports = (function() {
       // how long (in ms) players are forced to wait before buying with less than they stood up with
     , MIN_BUYIN_TIME_ENFORCED: 30000 // 30 seconds (for testing)
     // how often (in ms) to update the active player's time_to_act
-    , TO_ACT_UPDATE_INTERVAL: 1000
+    , TO_ACT_UPDATE_INTERVAL: 3000
     }
   // which values are enumerated below for each game type
   , set_per_game: ['SMALL_BLIND', 'MIN_CHIPS', 'MAX_CHIPS', 'MAX_PLAYERS'] 
