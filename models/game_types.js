@@ -9,6 +9,10 @@ module.exports = (function() {
 
       // how many ms to wait between polling to see how many players are ready
     , WAIT_POLL_INTERVAL: 5000
+      // how long (in ms) between notifying about dealer change and posting small blind
+    , DEALER_CHANGE_DELAY: 1000
+      // how long (in ms) between posting blinds and next action (next blind or dealing)
+    , POST_BLIND_DELAY: 100
       // how long (in ms) between last betting action and street_ends message
     , STREET_END_DELAY: 1000
       // how long (in ms) between street_ends message and next round, when bets have been collected
