@@ -152,7 +152,8 @@ module.exports = (function () {
 
   static_properties.stage_handlers.waiting = function() {
     var self = this
-      , game = self.game;
+      , game = self.game
+      , waiting = false;
     (function pollSeats() {
       //console.log('Checking if # ready players > ', game.MIN_PLAYERS);
       var num_ready = 0;
@@ -200,9 +201,14 @@ module.exports = (function () {
           setTimeout(function() {
             self.nextStage();
           }, game.DEALER_CHANGE_DELAY)
+          waiting = false;
         });
       }
       else {
+        if (waiting === false) {
+          self.broadcast('dealer_chip', null);
+          waiting = true;
+        }
         setTimeout(pollSeats, game.WAIT_POLL_INTERVAL);
       }
     })();
