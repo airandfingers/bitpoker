@@ -703,7 +703,7 @@ this.events.cashierTextFieldFocused = function(event){
 
 this.events.cashierInputSelected = function(event){
 
-console.log(event)
+//console.log(event)
 var min
 
 var allRadios = $(event.target.parentElement.parentElement).find("input[type='radio']")
@@ -4129,7 +4129,7 @@ itemCopyWithOnlyLocationData.text={}
   itemCopyWithOnlyLocationData.text.x = item.text.x
   itemCopyWithOnlyLocationData.text.y = item.text.y
 }
-
+/*
 if(item instanceof self.images.Item){
   itemCopyWithOnlyLocationData.position = {}
   itemCopyWithOnlyLocationData.size = {}
@@ -4141,6 +4141,29 @@ itemCopyWithOnlyLocationData.position.z.container  = item.position.z.container
 itemCopyWithOnlyLocationData.size.x = item.size.x
 itemCopyWithOnlyLocationData.size.y = item.size.y
 }
+*/
+
+if(item.size){
+itemCopyWithOnlyLocationData.size={}
+itemCopyWithOnlyLocationData.size.x = item.size.x
+itemCopyWithOnlyLocationData.size.y = item.size.y
+}
+
+if(item.position){
+itemCopyWithOnlyLocationData.position={}
+  itemCopyWithOnlyLocationData.position.x = item.position.x
+  itemCopyWithOnlyLocationData.position.y = item.position.y
+
+if(item.position.z){
+itemCopyWithOnlyLocationData.position.z={}
+itemCopyWithOnlyLocationData.position.z.stage = item.position.z.stage
+itemCopyWithOnlyLocationData.position.z.container  = item.position.z.container
+}//if item.position.z
+
+}//if item.position
+
+
+
 
 return itemCopyWithOnlyLocationData
 
@@ -4164,7 +4187,7 @@ if(_.isObject(itemB.position.z)){
   }//z position
 }//position
 if(_.isObject(itemB.size)){
-  if(!_.isObject(itemA.soze)){itemA.size = {}}//make empty object if doesnt exist in itemA
+  if(!_.isObject(itemA.size)){itemA.size = {}}//make empty object if doesnt exist in itemA
 itemA.size.x = itemB.size.x
 itemA.size.y = itemB.size.y
 }//size
@@ -4172,9 +4195,24 @@ itemA.size.y = itemB.size.y
 
 
 this.copySeatObjectItemLocationData = function(seatObject){
-var seatObjectCopy =  {}
+ var seatObjectCopy =  {}
+this.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray(seatObject, function(value, indexes){
 
+//if array do nothing
+if(_.isArray(value)){seatObjectCopy[indexes[0]] = [];return}
+else{
+if (indexes.length === 1){
+seatObjectCopy[indexes[0]] = self.copyItemLocationData(value)
+}
+else if (indexes.length === 2){
+  seatObjectCopy[indexes[0]][indexes[1]] = self.copyItemLocationData(value)
+}
+}
 
+}//performIfObject 
+)
+
+/*
   _.each(seatObject, function(value,index,list) {
 
     if(value instanceof self.images.Item){
@@ -4193,12 +4231,23 @@ _.each(_.range(value.length),function(arrayIndex){//iterate through array
 }//if is array
 
   })//end iteration through this.images.seats[i]
-
+   */
 return seatObjectCopy
 }
 
 this.setSeatObjectLocationsInSeatObjectAEqualToOnesInSeatObjectB = function(seatObjectA, seatObjectB){
+this.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray(seatObjectB, function(value, indexes){
+//if array do nothing
+if(_.isArray(value)){return}
 
+if (indexes.length === 1){
+self.setItemLocationsInItemAEqualToOnesInItemB(seatObjectA[indexes[0]], value)
+}
+else if (indexes.length === 2){self.setItemLocationsInItemAEqualToOnesInItemB(seatObjectA[indexes[0]][indexes[1]], value)}
+
+}//performIfObject 
+)
+/*
  _.each(seatObjectB, function(value,index,list) {
  // for (var item in this.images.seats[i]) {
 
@@ -4219,16 +4268,41 @@ self.setItemLocationsInItemAEqualToOnesInItemB(seatObjectA[index], value)
 
 
   })//end iteration through this.images.seats[i]
+*/
+}
+
+//performIfObject will be passed parmeters [value, index]
+this.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray = function(seatObject, performIfObject){
+
+_.each(seatObject, function(value,index,list) {
+ // for (var item in this.images.seats[i]) {
+
+if (_.isArray(value)){
+performIfObject(value, [index])
+_.each(_.range(value.length),function(arrayIndex){//iterate through array
+  if(_.isObject(value[arrayIndex])){//make sure its item
+performIfObject(value, [index, arrayIndex])
+  }//check to make sure its object
+})//iterate through value
+
+}//if is array
+
+  else  if(_.isObject(value)){
+performIfObject(value, [index])
+}
+
+
+  })//end iteration through this.images.seats[i]
 
 }
 
 
 this.changeUserSeatView = function(seatNumberToRotateTo){
- // console.log('changing userseat view to seatNumberToRotateTo '+seatNumberToRotateTo)
+ //console.log('current displayed as seat # '+ this.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber +'changing userseat view to '+seatNumberToRotateTo)
 /*if(self.permanentPreferences.changeUserSeatViewTo.value == ['bottom','middle']){}
   else{return 'change view when seated setting is off'}*/
  if(!_.isNumber(seatNumberToRotateTo)){var seatNumberToRotateTo = 0}
-if(seatNumberToRotateTo > this.gameState.numSeats){ return 'seatNumber too high, invalid'}
+if(seatNumberToRotateTo > this.gameState.numSeats){ throw 'seatNumber too high, invalid'}
 
 //console.log('rotating to seat: '+seatNumberToRotateTo)
 // console.log(this.images.seats)
@@ -4239,13 +4313,23 @@ var temporaryArrayOfNonrotatedSeats = []
 for(var i = 0;i<this.gameState.numSeats;i++){temporaryArrayOfNonrotatedSeats.push({})}
 //determine where to seat the user (if seats have been previously rotated)
 if(!_.isNumber(self.gameState.userSeatNumber)){clockWiseRotationNumberBasedOnUnRotatedPosition = this.gameState.numSeats - this.images.seats[0].rotatedSeatNumber}
-  else if(seatNumberToRotateTo>=self.gameState.userSeatNumber){clockWiseRotationNumberBasedOnUnRotatedPosition = seatNumberToRotateTo-self.gameState.userSeatNumber}
-    else{clockWiseRotationNumberBasedOnUnRotatedPosition = this.gameState.numSeats - self.gameState.userSeatNumber + seatNumberToRotateTo }
+  else if(seatNumberToRotateTo >= self.gameState.userSeatNumber){clockWiseRotationNumberBasedOnUnRotatedPosition = seatNumberToRotateTo-self.gameState.userSeatNumber}
+    else{clockWiseRotationNumberBasedOnUnRotatedPosition = this.gameState.numSeats  + seatNumberToRotateTo - self.gameState.userSeatNumber}
 
 if(clockWiseRotationNumberBasedOnUnRotatedPosition === this.images.seats[0].rotatedSeatNumber){
-//console.log('no rotation')
+console.log('no rotation')
   return 'no rotation'}
 
+console.log('rotate to: '+clockWiseRotationNumberBasedOnUnRotatedPosition)
+ var rotatedSeatNumberArray = []
+ var nonRotatedSeatNumberArray = []
+for(var i = 0;i<this.gameState.numSeats;i++){
+
+rotatedSeatNumberArray.push (self.images.seats[i].rotatedSeatNumber)
+nonRotatedSeatNumberArray.push (self.images.seats[i].nonRotatedSeatNumber)
+}//end iteration through this.images.seats
+console.log(rotatedSeatNumberArray)
+console.log(nonRotatedSeatNumberArray)
 //iterate through seats to get and copy image location data
 for(var i = 0;i<this.gameState.numSeats;i++){
 temporaryArrayOfNonrotatedSeats[self.images.seats[i].rotatedSeatNumber] = self.copySeatObjectItemLocationData(this.images.seats[i])
@@ -4259,20 +4343,20 @@ temporaryArrayOfNonrotatedSeats[self.images.seats[i].rotatedSeatNumber] = self.c
  // console.log('beginning iteration through this.images.seats')
 for(var i = 0;i<this.gameState.numSeats;i++){
 
-
 this.images.seats[i].rotatedSeatNumber = (i+clockWiseRotationNumberBasedOnUnRotatedPosition)%this.gameState.numSeats
 
 self.setSeatObjectLocationsInSeatObjectAEqualToOnesInSeatObjectB(this.images.seats[i],   temporaryArrayOfNonrotatedSeats[(i+clockWiseRotationNumberBasedOnUnRotatedPosition)%this.gameState.numSeats] )
 
 }//end iteration through this.images.seats
 
-
+self.itemChanged(this.images.seats[0].seat)
 this.updateStages(this.images.seats[0].seat.position.z.stage, {forceUpdate:true})
 
 }
 
     this.setNumberOfSeats = function (numSeats){
 
+//console.log('setting number of seats to '+numSeats)
     //    if(this.images.seats.length != 10){return 'seat number already fixed'}
 //if(this.gameState.numSeats == numSeats){return 'seat number already fixed'}
 
@@ -4296,8 +4380,8 @@ self.images.seats[seatArrayIndex].rotatedSeatNumber = false
 self.images.seats[seatArrayIndex].nonRotatedSeatNumber = false
 
 //push to end of Array
-//self.images.seats.push( self.images.seats.splice( self.images.seats[seatArrayIndex],1)[0])
-self.images.seats.move(seatArrayIndex, 1, self.images.seats.length-1)
+self.images.seats.push( self.images.seats.splice( seatArrayIndex,1)[0])
+//self.images.seats.move(seatArrayIndex, 1, self.images.seats.length-1)
 /*
 console.log(self.images.seats[self.images.seats.length-1].rotatedSeatNumber)
 console.log(self.images.seats[self.images.seats.length-1].nonRotatedSeatNumber)
@@ -4308,7 +4392,12 @@ console.log(self.images.seats[self.images.seats.length-1].nonRotatedSeatNumber)
             var totalLength = self.images.seats[0].seat.size.x*3+(self.images.seats[0].seat.position.x - self.images.seats[1].seat.position.x - self.images.seats[1].seat.size.x)*2
             var absoluteDistanceX = (totalLength - self.images.seats[0].seat.size.x*2)/6
 
-            
+self.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray(self.images.seats[1], addAbsoluteDistanceX)
+self.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray(self.images.seats[4], addAbsoluteDistanceX)
+absoluteDistanceX = absoluteDistanceX*-1
+self.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray(self.images.seats[6], addAbsoluteDistanceX)
+self.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray(self.images.seats[9], addAbsoluteDistanceX)
+       /*     
                           //adjust seat 1
              for(var i in self.images.seats[1]){
                  if(self.images.seats[1][i] instanceof self.images.Item){
@@ -4348,37 +4437,37 @@ console.log(self.images.seats[self.images.seats.length-1].nonRotatedSeatNumber)
                }
               }
 
+*/
+function addAbsoluteDistanceX (value, indexes){
+ if(value instanceof self.images.Item){
+                   value.position.x =  value.position.x + absoluteDistanceX
+                   if(value.image){value.image.x = value.image.x + absoluteDistanceX}
+               if(value.text){value.text.x = value.text.x + absoluteDistanceX}
+             }
+}
+
+
+
+
         }//center topAndBottomSeats function
 
         var centerSeat2And8 = function(){
-          console.log('centering seat 2 and 8')
                           var sideYDistance = (self.images.seats[2].seat.position.y - self.images.seats[3].seat.position.y)/2 
 
+self.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray(self.images.seats[2], performIfObject)
+self.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray(self.images.seats[8], performIfObject)
 
-                          //adjust seat 2
-             for(var i in self.images.seats[2]){
-                 if(self.images.seats[2][i] instanceof self.images.Item){
-                   self.images.seats[2][i].position.y =  self.images.seats[2][i].position.y - sideYDistance
-                   if(self.images.seats[2][i].image){self.images.seats[2][i].image.y = self.images.seats[2][i].position.y }
-               if(self.images.seats[2][i].text){self.images.seats[2][i].text.y = self.images.seats[2][i].position.y}
+ function performIfObject (value, indexes){
 
+if(value instanceof self.images.Item){
 
-                self.setItemLocationsInItemAEqualToOnesInItemB(self.images.seats[8][i], self.images.seats[2][i])
+                   value.position.y =  value.position.y - sideYDistance
+                   if(value.image){value.image.y = value.position.y }
+               if(value.text){value.text.y = value.position.y}
+             }//if value insance of Item
 
+ }
 
-               }//iterate through self.images.seats[2][index]
-              }//iterate through self.images.seats[2]
-              //adjust seat 8
-         /*           for(var i in self.images.seats[8]){
-                    if(self.images.seats[8][i] instanceof self.images.Item){
-                        
-   self.images.seats[8][i].position.y =  self.images.seats[8][i].position.y - sideYDistance
-                   if(self.images.seats[8][i].image){
-                      self.images.seats[8][i].image.y = self.images.seats[8][i].image.y - sideYDistance
-                   }
-              if(self.images.seats[8][i].text){self.images.seats[8][i].text.y = self.images.seats[8][i].text.y - sideYDistance}
-       }//iterate through self.images.seats[8][index]
-               }//iterate through self.images.seats[8] */
                }  //center seat 2 and 8 function
 
 //================================ACTION PART OF FUNCTION======================================
@@ -4429,7 +4518,7 @@ this.gameState.numSeats = numSeats
             } // remove top middle seat
     else    if(numSeats == 8){
        centerBottomAndTopSeats()
-       disableSeat(5)
+      disableSeat(5)
        disableSeat(0)
                }
      else   if(numSeats == 7){
@@ -5463,7 +5552,7 @@ callback(null, callBackNumber)
           this.gameState.userSeatNumber = null
         
         }
-        for (var i=0;i<this.images.seats.length;i++){
+        for (var i=0;i<this.gameState.numSeats;i++){
             
         this.displayCorrectSeatMessage(i)
         }
@@ -5899,13 +5988,15 @@ stagesToUpdate.push(this.images.seats[0].shownCards[0].position.z.stage)
         //side pots
  stagesToUpdate.push(    self.updatePotSize())
 
+        //unbind scroll wheel events
+         $(this.arrayOfParentsOfStageAndOfContainerArray[this.images.betSlider.vertical.position.z.stage].stage.canvas, '#betSize').unbind('mousewheel')
+        $('#betSizeDiv').unbind('mousewheel')
+
 options.update = update
 if(update !== false){this.updateStages(stagesToUpdate)}
   else{return stagesToUpdate}
 
-        //unbind scroll wheel events
-         $(this.arrayOfParentsOfStageAndOfContainerArray[this.images.betSlider.vertical.position.z.stage].stage.canvas, '#betSize').unbind('mousewheel')
-        $('#betSizeDiv').unbind('mousewheel')
+
  }
 
 
@@ -6325,19 +6416,11 @@ self.images.seats[chatInfo.seat].chat.text.y = self.images.seats[chatInfo.seat].
     .to({alpha:0}, 10000)
     .call(self.hideText,[self.images.seats[chatInfo.seat].chat], self)
     .to({alpha:1})
-
 //unpause
 imageTween.setPaused(false)
 textTween.setPaused(false)
 
-
-
-
     }
-
-
-
-
 
 
   }//playerChats function
@@ -6516,12 +6599,15 @@ self.events.wheelScroll(wheelScrolls)
 
 
     this.displayCorrectSeatMessage = function(seatNumber, options){
+
+if(!_.isNumber(this.images.seats[seatNumber].nonRotatedSeatNumber)){
+  console.log('correct seat message not displaying of seat # '+seatNumber)
+   return}
+
       if(!options){var options = {}}
         var update = options.update
       options.update = false
 var stagesToUpdate = []
-
-
 
 
         switch (this.gameState.seats[seatNumber].displayMessageType){
@@ -6684,7 +6770,6 @@ if(update === false){return stagesToUpdate}
 
          self.images.seats[seatNumber].winner.text.text = ''
           //hide other messages on the seat box
-
 
          var interval = 100
          var alpha
@@ -7058,11 +7143,6 @@ console.log('calling hideTableChatFull')
    positionValue  = scroll[0].getScrollTop()
 }
   this.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value = positionValue
-
-
-
-
-
 
 
  stagesToUpdate.push(this.displayChildren(this.images.showTableChatFull,options))
@@ -8442,6 +8522,7 @@ time:time
 
    this.displayInitialTableState=function(table_state){
 
+var showTable = false
  //set up animation variables
  var tickerInterval = 5
 var ticksPerAnimation = 1
@@ -8486,7 +8567,8 @@ function tick(event){
        updateLoadedSeats()
 
        // check if all seats are loaded
-       if(checkSeatsLoaded() ==true){
+     //  if(checkSeatsLoaded() ==true){
+      if(showTable === true){
       //  createjs.Ticker.setPaused(true)
                       createjs.Ticker.removeEventListener("tick", tick)
                       //remove all loadingContainers from the stage and remove all children from them
@@ -8628,7 +8710,7 @@ this.updateTableChatFullMessageTextFromCurrentOrAdditionalData(null, {update:tru
  //self.images.showTableChatFull.image.sourceRect = new createjs.Rectangle(0,0,30,30)
  //self.updateStages(0, {forceUpdate:true})
 
-
+showTable = true
     }
     
   //---------------------SOCKET CODE------------------------
@@ -8756,13 +8838,13 @@ break;
 
 default:
 if(flag.indexOf('sessionPreferences') !== -1){
-  console.log('session preference flag received')
+ // console.log('session preference flag received')
  self.updatePreference(self.sessionPreferences, value)
 }
 else{
-console.log('display flags of player number '+self.gameState.userSeatNumber)
-console.log((flag.indexOf('sessionPreferences') === 0))
-console.log(self.gameState.seats[self.gameState.userSeatNumber].flags)
+//console.log('display flags of player number '+self.gameState.userSeatNumber)
+//console.log((flag.indexOf('sessionPreferences') === 0))
+//console.log(self.gameState.seats[self.gameState.userSeatNumber].flags)
 
 self.gameState.seats[self.gameState.userSeatNumber].flags[flag] = value
 }//if not session preference
