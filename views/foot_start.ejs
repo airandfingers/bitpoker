@@ -163,7 +163,9 @@
                         left: $('#lobby_trigger').position().left - $('#lobby_trigger').width() - 20
                       , top: $('#lobby_trigger').position().top + $('#lobby_trigger').height()
                       })
-                      .show('slide', { direction: 'up' }, 500)                  }                  
+                      .show('slide', { direction: 'up' }, 500)
+                      .find('#table_list').dataTable().fnAdjustColumnSizing();
+                  }
 
                 }, function() {
                   console.log('hover off trigger fired!');
@@ -191,6 +193,7 @@
                       , top: $(this).position().top + $(this).height()
                       })
                       .show('slide', { direction: 'up' }, 500)
+                      .find('#table_list').dataTable().fnAdjustColumnSizing();
                   }
                   else {
                     // remove active class
