@@ -52,14 +52,22 @@ module.exports = (function () {
     return req.isAuthenticated();
   }
 
-  function ensureAuthenticated(req, res, next) {
+  function ensureAuthenticated(req, res, next, message) {
     //console.log("ensureAuthenticated called!");
     if (isAuthenticated(req)) {
       return next();
     }
     else {
-      res.redirect('/login?next=' + req.url);
+      req.flash('error', message);
+      var redirect_url = '/login?next=' + req.url;
+      res.redirect(redirect_url);
     }
+  }
+
+  function ensureAuthenticatedWithMessage(message) {
+    return function(req, res, next) {
+      ensureAuthenticated(req, res, next, message);
+    };
   }
 
   // Simple route middleware to ensure user is authenticated.
@@ -69,6 +77,7 @@ module.exports = (function () {
   //   login page.
   return {
     isAuthenticated: isAuthenticated,
-    ensureAuthenticated: ensureAuthenticated
+    ensureAuthenticated: ensureAuthenticated,
+    ensureAuthenticatedWithMessage: ensureAuthenticatedWithMessage
   };
 })();

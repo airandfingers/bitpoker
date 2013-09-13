@@ -611,7 +611,9 @@ module.exports = (function () {
     res.redirect(base_page);
   });
 
-  app.get('/' + Table.TABLE_PREFIX + ':id', auth.ensureAuthenticated, function(req, res, next) {
+  app.get('/' + Table.TABLE_PREFIX + ':id',
+          auth.ensureAuthenticatedWithMessage('You must log in before you can play!'),
+          function(req, res, next) {
     var table_id = req.params.id
       , table = Table.getTable(table_id)
       , table_name = table.name
