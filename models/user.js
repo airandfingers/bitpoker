@@ -10,7 +10,9 @@ module.exports = (function() {
 
     , GuestCounter = require('./guest_counter')
     
-    , db = require('./db'); // make sure db is connected
+    , db = require('./db') // make sure db is connected
+
+    , mailer = require('../mailer'); // used to send emails
 
   /* the schema - defines the "shape" of the documents:
    *   gets compiled into one or more models */
@@ -36,24 +38,43 @@ module.exports = (function() {
 
   // static methods - Model.method()
   UserSchema.statics.createUser = function(spec, cb) {
+    var pt_password = spec.pt_password
+      , error;
     console.log('createUser called for', spec);
-    var pt_password = spec.pt_password;
     if (User.isGuest(spec.username)) {
-      console.error('createUser called with guest username!', spec);
-      return cb(null);
+      error = 'createUser called with guest username! ' + spec.username;
+      console.error(error);
+      return cb(error);
     }
-    if (_.isString(pt_password)) {
-      spec.password = User.encryptPassword(pt_password);
-      delete spec.pt_password;
+    if (! _.isString(pt_password)) {
+      error = 'User.createUser called without pt_password!';
+      console.error(error);
+      return cb(error);
     }
-    else {
-      console.error('User.createUser called on user without pt_password!');
-      return cb(null);
-    }
+    spec.password = User.encryptPassword(pt_password);
+    delete spec.pt_password;
+
     console.log('creating user with', spec);
     var user = new User(spec);
     user.generateDepositAddress(function() {
-      cb(user);
+      user.save(function(save_err, result) {
+        if (save_err) {
+          error = 'Error during save: ' + save_err;
+          return cb(error);
+        }
+        if (! _.isEmpty(spec.email)) {
+          user.sendConfirmationEmail(spec.email, function(email_err) {
+            if (email_err) {
+              error = 'Error while sending email: ' + email_err;
+              return cb(error);
+            }
+            cb(null, result);
+          })
+        }
+        else {
+          cb(null, result);
+        }
+      });
     });
   };
 
@@ -107,15 +128,41 @@ module.exports = (function() {
   };
 
   // instance methods - document.method()
-  // example method
-  UserSchema.methods.sayName = function() {
-    console.log(this.username);
-  };
-
-  UserSchema.methods.convertFromGuest = function(username, pt_password, cb) {
+  UserSchema.methods.sendConfirmationEmail = function(email, cb) {
     var self = this
       , error = null
-      , spec = { username: username };
+      , valid = true; //this is a stub to hold the place for a email validator functionality. 
+    //if email is valid, save it to MongoDB
+    if (valid) {
+      //attach e-mail to user
+      User.generateConfirmationCode(function(err, confirmation_code) {
+        if (err) {
+          error = 'Error while generating confirmation code:' + err;
+          console.error(error);
+          cb(error);
+        }
+        else {
+          self.update({ $set: { email: email, confirmation_code: confirmation_code } },
+                      function(err) {
+            if (err) {
+              error = 'Error when saving email to database:' + err;
+              console.error(error);
+            }
+            else {
+              console.log('Email saved to ' + self.username + '\'s account.');
+              mailer.sendConfirmationEmail(email, confirmation_code, self.username);
+            }
+            cb(error);
+          });
+        }
+      });
+    }
+  };
+
+  UserSchema.methods.convertFromGuest = function(spec, cb) {
+    var self = this
+      , keys = _.keys(spec)
+      , error;
     console.log('convertFromGuest called for', self.username);
     
     if (! User.isGuest(self.username)) {
@@ -124,31 +171,56 @@ module.exports = (function() {
       return cb(error);
     }
 
-    if (! _.isString(username)) {
+    if (! _.isString(spec.username)) {
       error = 'User.convertFromGuest called without username!';
       console.error(error);
       return cb(error);
     }
 
-    if (! _.isString(pt_password)) {
+    if (! _.isString(spec.pt_password)) {
       error = 'User.convertFromGuest called without pt_password!';
       console.error(error);
       return cb(error);
     }
 
+    if (! (keys.length === 2 || (keys.length === 3 && _.contains(keys, 'email')))) {
+      error = 'User.convertFromGuest called with invalid spec keys:' + keys;
+      console.error(error);
+      return cb(error);
+    }
+
     // encrypt pt_password and save it as password
-    spec.password = User.encryptPassword(pt_password);
+    spec.password = User.encryptPassword(spec.pt_password);
     
     console.log('updating user with', spec);
-    self.update(spec, function(err, result) {
-      console.log('update callback called with', err, result);
-      if (err) {
-        error = 'Error in User.convertFromGuest: ' + err.message;
+    _.extend(self, spec);
+    self.save(function(update_err, result) {
+      console.log('update callback called with', update_err, result);
+      if (update_err) {
+        error = 'Error in User.convertFromGuest: ' + update_err.message;
         console.error(error);
         return cb(error);
       }
-      self.generateDepositAddress(function(generate_err) {
-        self.save(cb);
+
+      self.generateDepositAddress(function() {
+        self.save(function(save_err, result) {
+          if (save_err) {
+            error = 'Error during save: ' + save_err;
+            return cb(error);
+          }
+          if (_.isString(spec.email)) {
+            self.sendConfirmationEmail(spec.email, function(email_err) {
+              if (email_err) {
+                error = 'Error while sending email: ' + email_err;
+                return cb(error);
+              }
+              cb(null, result);
+            })
+          }
+          else {
+            cb(null, result);
+          }
+        });
       });
     });
   };

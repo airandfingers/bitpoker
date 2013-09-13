@@ -41,42 +41,27 @@
                             >
                               <%= page_name.toUpperCase() %>
                             </a>
-                           <!--write nested ul for dropdowns-->
-                            <% if (page_dropdown !== undefined ) { %>
-                              <ul>
-                              <% for (j=0, len2 = page_dropdown.length; j < len2; j++) {
-                                subpage_name = page_dropdown[j].name;
-                                subpage_href = page_dropdown[j].href;
-                                %>
-                                <li>
-                                  <a href="<%= subpage_href %>">
-                                      <%= subpage_name %>
-                                  </a>
-                                </li>
-                              <% } %>  
-                              </ul>
-                            <% } %>
                         </li>
                     <% } %>
 
                     <% if (typeof table_games !=='undefined') { %>
                       <div id="lobbyWrapperDiv">
-                      <li>
-                        <a href = "#" id="lobby_trigger">
-                        LOBBY
-                        </a>
-                      </li>
+                        <li>
+                          <a href = "#" id="lobby_trigger">
+                          LOBBY
+                          </a>
+                        </li>
 
-                      <!-- lobby dropdown -->
-                      <div id="lobby">
-                        <% include table_list %>
-                      </div>
+                        <!-- lobby dropdown -->
+                        <div id="lobby">
+                          <% include table_list %>
+                        </div>
                       </div> <!-- wrapperDiv: This is to help with hoverIntent -->
-                     <%  } %>
+                    <%  } %>
 
                     <li>
                         <a href="#" id="report_bug_trigger" title="Submit bugs or feedback">
-                          <img src="/img/bug.png" />
+                            <img src="/img/bug.png" />
                         </a>
                     </li>
                     <% include bug_report %>
@@ -96,16 +81,20 @@
                     <div id="register" class="dropdown_form">
                         <form action="/register" method="post">
                             <div class="username">
-                                <label>Username:</label>
-                                <input type="text" name="username" placeholder="username" autofocus /><br/>
+                                <label for="register_username">Username:</label>
+                                <input id="register_username" name="username" type="text" placeholder="username" required remote="/check_username" />
                             </div>
                             <div class="password">
-                                <label>Password:</label>
-                                <input type="password" name="new_password" placeholder="password" />
+                                <label for="register_new_password">Password:</label>
+                                <input id="register_new_password" name="new_password" type="password"  placeholder="password" required />
                             </div>
                             <div class="password">
-                                <label>Confirm Password:</label>
-                                <input type="password" name="new_password_confirm" placeholder="re-type password" />
+                                <label for="register_new_password_confirm">Confirm Password:</label>
+                                <input id="register_new_password_confirm" name="new_password_confirm" type="password" placeholder="password (again)" required equalTo="#register_new_password" />
+                            </div>
+                            <div class="email">
+                                <label for="register_email">Email (optional):</label>
+                                <input id="register_email" name="email" type="email" placeholder="name@domain.com" />
                             </div>
                             <input type="submit" value="Sign Up" class="btn btn-inverse"/>
                         </form>
@@ -129,12 +118,12 @@
                         <div id="login" class="dropdown_form">
                           <form action="/login" method="post">
                             <div class="username">
-                              <label>Username:</label>
-                              <input type="text" name="username" placeholder="username" autofocus /><br/>
+                              <label for="login_username">Username:</label>
+                              <input id="login_username" name="username" type="text" placeholder="username" autofocus required />
                             </div>
                             <div class="password">
-                              <label>Password:</label>
-                              <input type="password" name="password" placeholder="password" />
+                              <label for="login_password">Password:</label>
+                              <input id="login_password" name="password" type="password" placeholder="password" required />
                             </div>
                             <input type="submit" value="Login" class="btn btn-inverse" />
                           </form>

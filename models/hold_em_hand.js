@@ -152,7 +152,8 @@ module.exports = (function () {
 
   static_properties.stage_handlers.waiting = function() {
     var self = this
-      , game = self.game;
+      , game = self.game
+      , waiting = false;
     (function pollSeats() {
       //console.log('Checking if # ready players > ', game.MIN_PLAYERS);
       var num_ready = 0;
@@ -195,10 +196,19 @@ module.exports = (function () {
           , broadcastAndSave: self.broadcastAndSave
           });
           // start the game
-          self.nextStage();
+          self.calculatePlayers();
+          self.broadcast('dealer_chip', self.dealer)
+          setTimeout(function() {
+            self.nextStage();
+          }, game.DEALER_CHANGE_DELAY)
+          waiting = false;
         });
       }
       else {
+        if (waiting === false) {
+          self.broadcast('dealer_chip', null);
+          waiting = true;
+        }
         setTimeout(pollSeats, game.WAIT_POLL_INTERVAL);
       }
     })();
@@ -209,15 +219,15 @@ module.exports = (function () {
       , game = self.game
       , SMALL_BLIND_PAID = false
       , BIG_BLIND_PAID = false
-      , player;
+      , player
+      , big_blind_player;
 
-    self.calculatePlayers();
     self.initial_usernames = _.pluck(self.players, 'username');
     self.pots.push({ usernames: self.initial_usernames, value: self.initial_pot });
 
     self.hand_history.logStart();
 
-    while (SMALL_BLIND_PAID === false && 
+    while (SMALL_BLIND_PAID === false &&
            self.players.length >= game.MIN_PLAYERS) {
       player = self.players[self.to_act];
       //console.log('this.to_act is', this.to_act, 'player is', player, 'players is', self.players);
@@ -250,16 +260,24 @@ module.exports = (function () {
       else {
         //console.log('player will post big blind:', player, game.BIG_BLIND);
         player.makeBet(game.BIG_BLIND);
-        self.broadcast('player_acts', player.serialize(), 'post_blind', self.calculatePotTotal());
-        self.hand_history.logAction(player, 'post_blind', game.BIG_BLIND);
+        // moved below to implement delay
+        //self.broadcast('player_acts', player.serialize(), 'post_blind', self.calculatePotTotal());
+        //self.hand_history.logAction(player, 'post_blind', game.BIG_BLIND);
         self.big_blind_seat = player.seat;
+        big_blind_player = player;
         BIG_BLIND_PAID = true;
       }
       self.nextPlayer();
     }
 
     if (SMALL_BLIND_PAID && BIG_BLIND_PAID) {
-      self.nextStage();
+      setTimeout(function() {
+        self.broadcast('player_acts', big_blind_player.serialize(), 'post_blind', self.calculatePotTotal());
+        self.hand_history.logAction(player, 'post_blind', game.BIG_BLIND);
+        setTimeout(function() {
+          self.nextStage();
+        }, game.POST_BLIND_DELAY);
+      }, game.POST_BLIND_DELAY);
     }
     else {
       console.log('Blinds not paid!', SMALL_BLIND_PAID, BIG_BLIND_PAID, self.players);
@@ -280,8 +298,7 @@ module.exports = (function () {
       player.sendMessage('hole_cards_dealt', player.hand);
     });
     self.broadcast('hands_dealt', player_objs, {
-      dealer: self.dealer
-    , small_blind_seat: self.small_blind_seat
+      small_blind_seat: self.small_blind_seat
     , big_blind_seat: self.big_blind_seat
     , table_name: self.table_name
     , hand_num: self.hand_num

@@ -9,6 +9,10 @@ module.exports = (function() {
 
       // how many ms to wait between polling to see how many players are ready
     , WAIT_POLL_INTERVAL: 5000
+      // how long (in ms) between notifying about dealer change and posting small blind
+    , DEALER_CHANGE_DELAY: 1000
+      // how long (in ms) between posting blinds and next action (next blind or dealing)
+    , POST_BLIND_DELAY: 300
       // how long (in ms) between last betting action and street_ends message
     , STREET_END_DELAY: 1000
       // how long (in ms) between street_ends message and next round, when bets have been collected
@@ -26,7 +30,7 @@ module.exports = (function() {
       // how long (in ms) players are forced to wait before buying with less than they stood up with
     , MIN_BUYIN_TIME_ENFORCED: 30000 // 30 seconds (for testing)
     // how often (in ms) to update the active player's time_to_act
-    , TO_ACT_UPDATE_INTERVAL: 1000
+    , TO_ACT_UPDATE_INTERVAL: 3000
     }
   // which values are enumerated below for each game type
   , set_per_game: ['SMALL_BLIND', 'MIN_CHIPS', 'MAX_CHIPS', 'MAX_PLAYERS'] 
@@ -36,28 +40,25 @@ module.exports = (function() {
     // small blind  max stack
     //      min stack    max players
     //  SB    MIN    MAX    MAXP
-      [   1,    5,   100,    10]
-    , [   5,   25,   500,    10]
-    , [  25,  100,  2500,    10]
-    , [ 100,  500,   1E4,    10]
-    , [ 500, 2500,   5E4,    10]
-    , [2500,  1E4,  25E4,    10]
-    , [ 1E4,  5E4,   1E6,    10]
-    , [ 5E4, 25E4,   5E6,    10]
-    , [25E4,  1E5,  25E6,    10]
-    , [ 1E5,  5E5,   1E7,    10]
-    , [ 5E5, 25E5,   5E7,    10]
-    , [25E5,  1E6,  25E7,    10]
-    , [ 1E6,  5E6,   1E8,    10]
-    , [ 5E6, 25E6,   5E8,    10]
+      [   1,   40,   100,    8]
+    , [   1,  100,   200,    4]
+    , [   1,   25,  200,    2]
+    , [   2,    80,   200,     8]
+    , [   2,    50,   200,     2]
+    , [   2,    200,   400,    4]
+    , [ 100,  500,   1E4,    6]
+    , [ 500, 2500,   5E4,    6]
+    , [2500,  1E4,  25E4,    6]
+    , [ 1E4,  5E4,   1E6,    6]
+    , [ 5E4, 25E4,   5E6,    6]
+    , [25E4,  1E5,  25E6,    6]
+    , [ 1E5,  5E5,   1E7,    6]
+    , [ 5E5, 25E5,   5E7,    6]
+    , [25E5,  1E6,  25E7,    6]
+    , [ 1E6,  5E6,   1E8,    6]
+    , [ 5E6, 25E6,   5E8,    6]
     , [25E6,100E6,  25E8,     2]
-    , [1,5,  100,     3]
-    , [1,5,  100,     4]
-    , [1,5,  100,     5]
-    , [1,5,  100,     6]
-    , [1,5,  100,     7]
-    , [1,5,  100,     8]
-    , [1,5,  100,     9]
+
     ]
 
   // which values are enumerated below for each currency type

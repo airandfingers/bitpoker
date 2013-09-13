@@ -267,41 +267,34 @@ module.exports = (function () {
       else if (_.isEmpty(user)) {
         req.flash('error', 'Sorry, there was something wrong with your email confirmation link.');
       }
+      else {
+        req.flash('error', 'Your email address has been successfully confirmed.');
+      }
       res.redirect('/account');
     });
   });
 
   // validate e-mail address & save to MongoDB & send an e-mail confirmation.
   app.post('/set_email', function (req, res) {
-    var email = req.body.email
-      , valid = true; //this is a stub to hold the place for a email validator functionality. 
-      console.log('POST /set_email called ' + req.body.email +'req.user is ', req.user);
-    //if email is valid, save it to MondoDB
-    if (valid) {
-      //attach e-mail to user
-      User.generateConfirmationCode(function(err, confirmation_code) {
-        if (err) {
-          console.error('Error while generating confirmation code:', err);
-        }
-        else {
-          User.update({ _id: req.user._id },
-                      { $set: { email: email, confirmation_code: confirmation_code } },
-                      function(err, num_updated) {
-            if (err) {
-              console.error('Error when saving email to database:', err);
-            }
-            else if (num_updated <= 0) {
-              console.error('Failed to update any users with', req.user._id);
-            }
-            else {
-              console.log('Email saved to ' + req.user.username + '\'s account.');
-              mailer.sendConfirmationEmail(email, confirmation_code, req.user.username);
-            }
-          });
-        }
-      });
+    var username = req.user.username
+      , email = req.body.email;
+
+    // don't let guest users set an email address (they can't log in anyway)
+    if (User.isGuest(username)) {
+      req.flash('error', 'You cannot register an email address to a guest account.');
+      res.redirect('/account');
+      return;
     }
-    res.redirect('/account'); 
+    console.log('POST /set_email called ' + req.body.email +'req.user is ', req.user);
+    //if email is valid, save it to MondoDB
+    req.user.sendConfirmationEmail(email, function(err) {
+      if (err) {
+        res.json({ error : err });
+      }
+      else {
+        res.redirect('/account');
+      }
+    });
   });
 
   //delete account
@@ -311,12 +304,12 @@ module.exports = (function () {
         if (_.isEmpty(err)) {
           console.log('Account deleted!');
           req.flash('error', 'Account deleted. Play again soon!');
-          res.redirect('/index');
+          res.redirect(base_page);
         }
         else {
           console.error('Error when attempting to delete account:', err);
           req.flash('error', 'Error when attempting to delete account:' + err);
-          res.redirect()
+          res.redirect(base_page)
         }
     });
   });
@@ -547,17 +540,18 @@ module.exports = (function () {
     var username = req.body.username
       , pt_password = req.body.new_password
       , password_confirm = req.body.new_password_confirm
+      , email = req.body.email || undefined
       , target = req.body.next || base_page;
 
-    if (User.isGuest(username)) {
-      req.flash('error', 'You cannot create a username called guest');
+    if (_.isEmpty(username) || _.isEmpty(pt_password)) {
+      req.flash('error', 'Cannot register without both username and password!');
       res.redirect('/register?next=' + target);
       return;
     }
 
     if (pt_password !== password_confirm) {
-      console.log('password fields did not match!');
-      req.flash('error', 'password fields did not match!');
+      //console.log('password fields did not match!');
+      req.flash('error', 'Password fields did not match!');
       res.redirect('/register?next=' + target);
       return;
     }
@@ -566,14 +560,16 @@ module.exports = (function () {
       if (User.isGuest(req.user.username)) {
         console.log('augmenting', req.user.username, 'with spec:',
                     { username: username, pt_password: pt_password });
-        req.user.convertFromGuest(username, pt_password, function(err, user) {
+        req.user.convertFromGuest({
+          username: username, pt_password: pt_password, email: email
+        }, function(err, user) {
           if (err) {
             req.flash('error', err.message);
             res.redirect('/register?next=' + target);
           }
           else {
             req.login(user, function(err) {
-              console.log('error is', err, '\n req.user is', req.user);
+              //console.log('error is', err, '\n req.user is', req.user);
               if (err) {
                 req.flash('error', err.message);
                 return res.redirect('/login?next=' + target);
@@ -587,25 +583,23 @@ module.exports = (function () {
     else {
       console.log('creating user with spec:',
                   { username: username, pt_password: pt_password });
-      User.createUser({ username: username, pt_password: pt_password}, 
-        function(user) {
-        user.save(function(err, result) {
-          if (err) {
-            req.flash('error', err.message);
-            res.redirect('/register?next=' + target);
-          }
-          else {
-            // Registration successful. Log in.
-            req.login(user, function(err) {
-              console.log('error is', err, '\n req.user is', req.user);
-              if (err) {
-                req.flash('error', err.message);
-                return res.redirect('/login?next=' + target);
-              }
-             res.redirect(target);
-            });
-          }
-        });
+      User.createUser({ username: username, pt_password: pt_password, email: email }, function(create_err, user) {
+        console.log('createUser returns', create_err, user);
+        if (create_err) {
+          req.flash('error', create_err);
+          res.redirect('/register?next=' + target);
+        }
+        else {
+          // Registration successful. Log in.
+          req.login(user, function(login_err) {
+            console.log('error is', login_err, '\n req.user is', req.user);
+            if (login_err) {
+              req.flash('error', login_err.message);
+              return res.redirect('/login?next=' + target);
+            }
+           res.redirect(target);
+          });
+        }
       });
     }
   });
@@ -731,6 +725,23 @@ module.exports = (function () {
     }
     req.user.onLeaveTable(table_name);
     res.json(table_name);
+  });
+
+  app.get('/check_username', function(req, res) {
+    var username = req.query.username;
+    if (User.isGuest(username)) {
+      return res.json('Your username may not begin with "guest".');
+    }
+    User.findOne({ username: username }, function(find_err, user) {
+      if (find_err) {
+        console.error('Error while trying to look up user named', username, find_err);
+        return res.json('Sorry, something went wrong. We\'ll look into it.');
+      }
+      if (user) {
+        return res.json('The name ' + username + ' is already taken.')
+      }
+      res.json(true);
+    });
   });
 
   //Handle all other cases with a 404
