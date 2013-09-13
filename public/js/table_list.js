@@ -51,14 +51,14 @@
         bJQueryUI: true,
         sDom: 't',
         bPaginate: false,
-        iDisplayLength: 15,
-        sScrollY: '421px',
+        iDisplayLength: 18,
+        sScrollY: '475px',
         aaSorting: [[3,'desc'], [0, 'asc']],
         aoColumns: [
             null,
             null,
-            null,
-            { 'sType': 'fake-fraction' },
+            { sWidth: '235px' },
+            { sWidth: '115px', sType: 'fake-fraction' },
         ]
     });
     $table_list.fnFilter('funbucks', 2);
