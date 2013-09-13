@@ -29,7 +29,7 @@
         else {
             //navigate to home page
             console.log('redirected to landing page');
-            window.location.href = "/?joined_table_name=" + table_name;
+            window.location.href = "/login?next=/" + "?joined_table_name=" + table_name;
           }
       }
     }
