@@ -3,24 +3,22 @@
         <h1>
             Pick your username and password.
         </h1>
-        <div class="span6 offset5 inverse"> 
-            <% if (message) { %>
-                <p><%= message %></p>
-            <% } %>
-        
+        <div class="span8 center inverse"> 
             <% if (message) { %>
                 <p><%= message %></p>
             <% } %>
             <% if (mode === 'register') { %>
                 <div>
-                    <a href="/login"> Already have an account? Login here</a>
+                    <a href="/login<%= next ? '?next=' + next : '' %>">
+                        Already have an account? Login here.
+                    </a>
                     </br>
                 </div>
             <% } %>
             <form id="register_form" action="/register" method="post">
                 <div class="username">
                     <label for="username">Username:</label>
-                    <input id="username" name="username" type="text" placeholder="username" required remote="/check_username" />
+                    <input id="username" name="username" type="text" placeholder="username" autofocus required remote="/check_username" />
                 </div>
                 <div class="password">
                     <label for="new_password">Password:</label>
