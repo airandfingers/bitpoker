@@ -53,6 +53,14 @@
                         </li>
 
                         <!-- lobby dropdown -->
+                        <% if (locals.username) { %>
+
+                        <!-- include values to expose to scripts -->
+                        <input type="hidden" id="user_server_values"
+                            data-username="<%= locals.username %>"
+                        />
+                        <% } %>
+
                         <div id="lobby">
                           <% include table_list %>
                         </div>

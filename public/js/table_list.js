@@ -10,7 +10,7 @@
     //launch table game function.
     function launchTableGame() {
       var table_name = $(this).attr('id');
-      if (typeof req === 'undefined' || typeof req.user == 'undefined'){
+      if (jQuery('#user_server_values').data('username') === null){
           console.log('req.user is undefined');
           window.location.href = "/login?next=/" + "?joined_table_name=" + table_name;
 
