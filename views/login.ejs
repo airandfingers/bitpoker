@@ -1,13 +1,18 @@
 <% include head %>
   <div id="container">
-    <div class="span6 offset5 inverse"> 
+    <div class="span8 center inverse"> 
       <h1>Log into your account.</h1>
       <% if (message) { %>
         <p><%= message %></p>
       <% } %>
 
       <div>
-        <a href="/register"> Don't have a login? Sign up here</a>
+        <% if (next) { %>
+          <input type="hidden" name="next" value="<%= next %>" />
+        <% } %>
+        <a href="/register<%= next ? '?next=' + next : '' %>">
+          Don't have an account yet? Sign up here.
+        </a>
         <br />
         or
         <div id="play_as_guest">
