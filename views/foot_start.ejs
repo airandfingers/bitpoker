@@ -28,7 +28,7 @@
         <!-- Hide/Show Login functionality -->
         <script>
           var $login = $('#login');
-          $(document).ready(function() {
+          $(function() {
             $login.hide();
             $('#login_trigger').click(function(e) {
               $login.stop(true, true);
@@ -74,7 +74,7 @@
         <!-- Hide/Show Register functionality -->
         <script>
           var $register = $('#register');
-          $(document).ready(function() {
+          $(function() {
             $register.hide();
             $('#register_trigger').click(function() {
               $register.stop(true, true);
@@ -148,26 +148,33 @@
             });
            
             <!-- Hide/Show Lobby functionality -->
-              var $lobby = $('#lobby');
-              $(document).ready(function() {
+              var $lobby = $('#lobby')
+                , $lobby_trigger = $('#lobby_trigger');
+              $(function() {
                 $lobby.hide();
+                var columns_resized = false;
 
                 $('#lobbyWrapperDiv').hoverIntent(function() {
                   console.log('hover trigger fired!');
-                  if ($('#lobbytrigger').hasClass('active')) {
+                  if ($lobby_trigger.hasClass('active')) {
                     return;
                   }
                   else {
                     $lobby
                       .css({
-                        left: $('#lobby_trigger').position().left - $('#lobby_trigger').width() - 20
-                      , top: $('#lobby_trigger').position().top + $('#lobby_trigger').height()
+                        left: calculateLeft()
+                      , top: calculateTop()
                       })
-                      .show('slide', { direction: 'up' }, 500)                  }                  
+                      .show('slide', { direction: 'up' }, 500);
+                    if (! columns_resized) {
+                      $lobby.find('#table_list').dataTable().fnAdjustColumnSizing();
+                      columns_resized = true;
+                    }
+                  }
 
                 }, function() {
                   console.log('hover off trigger fired!');
-                  if ($('#lobby_trigger').hasClass('active')) {
+                  if ($lobby_trigger.hasClass('active')) {
                     return;
                   }
                   else {
@@ -176,31 +183,51 @@
 
                 });
 
-                $('#lobby_trigger').click(function() {
+                $lobby_trigger.click(function() {
                   console.log('lobby trigger fired!');
                   $lobby.stop(true, true);
-                  if (! $(this).hasClass('active')) {
+                  if (! $lobby_trigger.hasClass('active')) {
 
                     // add active class
-                    $(this)
+                    $lobby_trigger
                       .addClass('active');
                     // hide lobby form
                     $lobby
                       .css({
-                        left: $(this).position().left - $(this).width() - 20
-                      , top: $(this).position().top + $(this).height()
+                        left: calculateLeft()
+                      , top: calculateTop()
                       })
-                      .show('slide', { direction: 'up' }, 500)
+                      .show('slide', { direction: 'up' }, 500);
+                    if (! columns_resized) {
+                      $lobby.find('#table_list').dataTable().fnAdjustColumnSizing();
+                      columns_resized = true;
+                    }
                   }
                   else {
                     // remove active class
-                    $(this)
+                    $lobby_trigger
                       .removeClass('active');
                     // hide lobby form
                     $lobby
                       .hide('slide', { direction: 'up' }, 500);
                   }
                 });
+
+                function calculateLeft() {
+                  var trigger_left = $lobby_trigger.position().left - $lobby_trigger.width() - 20
+                    , max_left = $(window).width() - $lobby.width()
+                    , left = trigger_left < max_left ? trigger_left : max_left;
+                  return left;
+                }
+
+                function calculateTop() {
+                  return $lobby_trigger.position().top + $lobby_trigger.height();
+                }
+
+                if ($('#iframe_container').length > 0 &&
+                    $('#iframe_container').find('.iframe').length === 0) {
+                  $lobby_trigger.click();
+                }
               });
 
             // ajax form submission

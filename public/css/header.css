@@ -89,11 +89,11 @@ h3 {
 
 #lobby {
     background-color: rgba(0,0,0,0);
-    min-width: 200px;
+    min-width: 650px;
     position: absolute;
     display: none;
     font-size: .8em;
-    padding: 1em;
+    padding: 0 1em 1em 1em;
     text-align: center;
 }
 

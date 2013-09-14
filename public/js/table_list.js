@@ -35,30 +35,30 @@
     }
 
     jQuery.fn.dataTableExt.oSort['fake-fraction-asc']  = function(a, b) {
-        var first_num = getNumBeforeSlash(a)
-          , second_num = getNumBeforeSlash(b);
-        return ((first_num < second_num) ? -1 :
-               ((first_num > second_num) ?  1 : 0));
+      var first_num = getNumBeforeSlash(a)
+        , second_num = getNumBeforeSlash(b);
+      return ((first_num < second_num) ? -1 :
+             ((first_num > second_num) ?  1 : 0));
     };
     jQuery.fn.dataTableExt.oSort['fake-fraction-desc'] = function(a,b) {
-        var first_num = getNumBeforeSlash(a)
-          , second_num = getNumBeforeSlash(b);
-        return ((first_num < second_num) ?  1 :
-               ((first_num > second_num) ? -1 : 0));
+      var first_num = getNumBeforeSlash(a)
+        , second_num = getNumBeforeSlash(b);
+      return ((first_num < second_num) ?  1 :
+             ((first_num > second_num) ? -1 : 0));
     };
 
     var $table_list = $('#table_list').dataTable({
         bJQueryUI: true,
         sDom: 't',
         bPaginate: false,
-        iDisplayLength: 15,
-        sScrollY: '421px',
+        iDisplayLength: 18,
+        sScrollY: '475px',
         aaSorting: [[3,'desc'], [0, 'asc']],
         aoColumns: [
             null,
             null,
-            { 'sType': 'fake-fraction' },
-            null
+            { sWidth: '235px' },
+            { sWidth: '115px', sType: 'fake-fraction' },
         ]
     });
     $table_list.fnFilter('funbucks', 2);
