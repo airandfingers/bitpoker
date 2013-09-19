@@ -446,6 +446,7 @@ module.exports = (function () {
     else {
       console.log('sitIn called when', this.username, 'is not sitting out');
       delete this.pending_actions.sitOut;
+      this.sendMessage('pending_sit_out', false);
     }
   };
 
@@ -712,6 +713,9 @@ module.exports = (function () {
       else if (method_name === 'vacateSeat') {
         this.sendMessage('notification',
                          'You will stand as soon as the hand is over.');
+      }
+      else {
+        this.sendMessage('pending_sit_out', true);
       }
     }
     else {
