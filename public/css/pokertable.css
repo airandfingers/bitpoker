@@ -11,6 +11,7 @@
           margin:0px 0px 0px 0px;
            word-wrap: break-word;
           word-break: normal;
+
 }
 .niceScroll-rails{
   /*
@@ -43,6 +44,9 @@ user-select: none;
 user-select: none;
 
 }
+#cashierDiv{
+   pointer-events: none;
+  display:none;}
 #cashier{
     display:none;
 }
