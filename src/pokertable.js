@@ -8909,8 +8909,8 @@ var currentBetsSortedWithoutSeats = _.without(currentBets, null, undefined, fals
 var uniqueBets = _.uniq(currentBetsSortedWithoutSeats, true)
 //console.log('unique bets:'+uniqueBets)
 
-var numPotsToFeed = uniqueBets.length
-var firstPotToFeed = potSizes.length - numPotsToFeed
+
+
 
 //determine CHANGE in pot sizes, we hae an array deltaPotSizes
 var deltaPotSizes = []
@@ -8918,25 +8918,32 @@ for(var i = 0;i<potSizes.length;i++){
 if(_.isNumber(currentPots[i])){deltaPotSizes[i] = potSizes[i] - currentPots[i]}
   else{deltaPotSizes[i] = potSizes[i]}
 }
+
+var numPotsToFeed = _.compact(deltaPotSizes).length
+var numUniqueBets = _.compact(uniqueBets).length
+var firstPotToFeed = potSizes.length - numPotsToFeed
 //console.log('displaying changes in pot sizes')
 //console.log(deltaPotSizes)
 //console.log(_.compact(deltaPotSizes))
 //console.log('numpots to feed = '+numPotsToFeed)
-if(_.compact(deltaPotSizes).length !== numPotsToFeed){
+if(_.compact(deltaPotSizes).length !== numUniqueBets){
 console.log('potSizes = ');console.log(potSizes)
 console.log('current pots = ');console.log(currentPots)
 console.log('unique bets = ');console.log(uniqueBets)
 console.log('deltaPotSizes = ');console.log(deltaPotSizes)
-  throw 'numPotsToFeed not the same as delta pot size changed'}
+  console.log( 'numUniqueBets not the same as number of pot sizes changed')}
 
 
 //create triplets of {seatNumber, numChips, potNumber} for user with animations
 var splitChipstacksData = []
-for(var i = 0;i<numPotsToFeed;i++){
+for(var i = uniqueBets.length - 1 ;i>=0;i--){
   if(i === 0){var chipStackContribution = uniqueBets[i]}
     else{var chipStackContribution = uniqueBets[i] - uniqueBets[i-1]}
+
+//DETERMINE potNumber
+    if (i < numUniqueBets - numPotsToFeed){var potNum = potSizes.length - numPotsToFeed}
 //console.log('chipstack cotribution is '+chipStackContribution)
-var potNum  = potSizes.length-numPotsToFeed + i
+else{ var potNum  = potSizes.length - numPotsToFeed + i - numUniqueBets + numPotsToFeed}
 for(var seat = 0;seat<currentBets.length;seat++){
  // console.log('seat'+i+'currentbet '+ currentBets[seat])
   //check currentBet array value to see if it is equal or greater than the contribution amount

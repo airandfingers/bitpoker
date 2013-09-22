@@ -49,6 +49,7 @@ user-select: none;
   display:none;}
 #cashier{
     display:none;
+       pointer-events: auto;
 }
 
 #pokerCanvasDiv {
