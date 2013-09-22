@@ -8492,7 +8492,13 @@ if(messageInfo.sameSizeButtons === true){
         self.images.messageBox[messageBoxImageContainerIndex].window.size.x = messageBoxWindowWidth
         self.images.messageBox[messageBoxImageContainerIndex].window.size.y = messageBoxWindowHeight
    self.positionItemImage(     self.images.messageBox[messageBoxImageContainerIndex].window, {update:false})
-        
+
+   //MAKE WINDOW DRAGGABLE
+                  self.images.messageBox[messageBoxImageContainerIndex].window.image.addEventListener('mousedown',function(e){
+          var options = {animationTarget:self.images.messageBox[messageBoxImageContainerIndex]}
+                  self.events.mouseDownClickAndDrag(e,options)
+                }
+                )
 
     //add closeX Image
             var closeX =messageBoxWindowX+messageBoxWindowWidth- closeXRightOffset- closeXWidth
