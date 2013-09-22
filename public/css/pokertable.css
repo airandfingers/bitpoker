@@ -13,6 +13,25 @@
           word-break: normal;
 
 }
+
+#pokerTableWrapper {
+    width: 690;
+    height:450;
+        margin-left:0px;
+        margin-top: 0px;
+       margin-bottom:0px;
+           margin-right:0px;
+           padding:0px;
+           text-align:left;
+           border-width:0px;
+          margin:0px 0px 0px 0px;
+           word-wrap: break-word;
+          word-break: normal;
+          overflow:hidden;
+
+}
+
+
 .niceScroll-rails{
   /*
             -webkit-touch-callout: none;
@@ -45,11 +64,13 @@ user-select: none;
 
 }
 #cashierDiv{
-   pointer-events: none;
-  display:none;}
+  overflow:hidden;
+   pointer-events: none; 
+  display:none;
+}
 #cashier{
     display:none;
-       pointer-events: auto;
+      pointer-events: auto; 
 }
 
 #pokerCanvasDiv {

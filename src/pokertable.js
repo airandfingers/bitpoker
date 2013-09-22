@@ -3218,7 +3218,7 @@ var cashierStageCanvasZIndex = parseInt($(cashierParentOfStage.stage.canvas).css
      'left':0,
      'top':0,
   //   'visibility':'hidden',
-     'overflow':'none'
+  //   'overflow':'hidden'
        })//cashierDiv css
 
     //  $('#cashierDiv').prop('pointer-events','none')
