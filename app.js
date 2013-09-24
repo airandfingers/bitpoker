@@ -35,7 +35,7 @@ var express = require('express')
   };
 
 function start() {
-  console.log('starting up.. version is', process.versions.node);
+  console.log('starting up.. node version is', process.versions.node);
 
   module.exports = {
     app: app
@@ -100,8 +100,7 @@ function start() {
   server.listen(EXPRESS_PORT);
 
   //this is printed after the server is up
-  console.log(server, server.address())
-  console.log("server listening on port %d in %s mode", server.address().port, app.settings.env);
+  console.log('server listening on port %d in %s mode', server.address().port, app.settings.env);
 }
 
 if(! fs.existsSync('./node_modules/poker-evaluator/HandRanks.dat')) {

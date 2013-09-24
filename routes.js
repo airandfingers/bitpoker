@@ -12,8 +12,8 @@ module.exports = (function () {
     , mailer = require('./mailer')
     , request = require('request');
 
-  var version_file = require('./package.json');
-  console.log('version_file package is ' + version_file.version);
+  var package_file = require('./package.json');
+  console.log('package.json version is ' + package_file.version);
 
   var base_page = '/';
   

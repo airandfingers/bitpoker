@@ -94,6 +94,9 @@ module.exports = (function () {
   , initial_pot     : Number
     // the number of chips to carry over to next hand
   , pot_remainder   : { type: Number, default: 0 }
+
+    // whether this hand is the first one of the table (and shouldn't send an initial dealer_chip message)
+  , first_hand     : Boolean
   });
 
   // static methods - Model.method()
@@ -153,7 +156,7 @@ module.exports = (function () {
   static_properties.stage_handlers.waiting = function() {
     var self = this
       , game = self.game
-      , waiting = false;
+      , waiting = (self.first_hand === true);
     (function pollSeats() {
       //console.log('Checking if # ready players > ', game.MIN_PLAYERS);
       var num_ready = 0;
@@ -201,13 +204,13 @@ module.exports = (function () {
           setTimeout(function() {
             self.nextStage();
           }, game.DEALER_CHANGE_DELAY)
-          waiting = false;
+          waiting = false; // not necessary
         });
       }
       else {
         if (waiting === false) {
           self.broadcast('dealer_chip', null);
-          waiting = true;
+          waiting = true; // don't send null dealer_chip message again
         }
         setTimeout(pollSeats, game.WAIT_POLL_INTERVAL);
       }

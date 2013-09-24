@@ -112,7 +112,7 @@ module.exports = (function () {
     , room: room
     });
 
-    self.newHand();
+    self.newHand(true);
 
     _.each(Table.room_events, function(handler_name, event_name) {
       var handler = self[handler_name];
@@ -130,7 +130,7 @@ module.exports = (function () {
     Table.tables[name] = self;
   };
 
-  TableSchema.methods.newHand = function() {
+  TableSchema.methods.newHand = function(first_hand) {
     var self = this
       , hand = HoldEmHand.createHoldEmHand({
           table_name: self.name
@@ -140,6 +140,7 @@ module.exports = (function () {
         , broadcastAndSave: function() { self.room.broadcastAndSave.apply(self.room, arguments); }
         , dealer: self.dealer
         , initial_pot: self.initial_pot || 0
+        , first_hand: first_hand
     });
     //console.log('Pushing new hand onto hands: ', hand.table_name);
     self.hands.push(hand);
