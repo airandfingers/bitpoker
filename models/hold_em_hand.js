@@ -381,8 +381,7 @@ module.exports = (function () {
         if (player.chips === 0) {
           console.log('player is out of chips, so skipping!', player);
           setTimeout(function() {
-            actions = [{ skip: true}];
-            performAction('skip', undefined);
+            performAction('skip');
             cb();
           }, game.SKIP_PLAYER_DELAY);
           return;
@@ -394,8 +393,7 @@ module.exports = (function () {
         if (high_stack === 0) {
           console.log('all other players are out of chips, so skipping!', player);
           setTimeout(function() {
-            actions = [{ skip: true}];
-            performAction('skip', undefined);
+            performAction('skip');
             cb();
           }, game.SKIP_PLAYER_DELAY);
           return;
@@ -435,22 +433,14 @@ module.exports = (function () {
         free_action_obj = {};
         free_action_obj[free_action] = true;
         actions.push(free_action_obj);
-      //   console.log(to_call
-      // , last_raise
-      // , min_bet
-      // , max_bet
-      // , actions
-      // , free_action
-      // , free_action_obj
-      // , bet_action
-      // , bet_action_obj);
+
+        // notify everyone that this player is being waited on to act
+        self.broadcast('player_to_act', player.serialize(), game.ACT_TIMEOUT);
         player.prompt(actions, game.ACT_TIMEOUT, free_action,
                       _.once(function(action_choice, num_chips_choice) {
           performAction(action_choice, num_chips_choice);
           cb();
         }));
-        // notify everyone that this player is being waited on to act
-        self.broadcast('player_to_act', player.serialize(), game.ACT_TIMEOUT);
       },
       function loopComplete() {
         // send hands_shown message if only one player has chips
@@ -537,45 +527,17 @@ module.exports = (function () {
         }
       }
     );
-    // describes how to handle each action
+    // describes how to handle each action (values pre-validated in Player.prompt)
     function performAction(action, num_chips) {
-      if (_.all(actions, function(action_obj) { return (action_obj[action] === undefined); })) {
-        console.error('*~*Player chose invalid action', action, ', so treating it as', free_action);
-        action = free_action; // act as if the player timed out (in less than game.TIMEOUT)
-        num_chips = undefined;
-      }
-      else if (_.isNumber(num_chips)) {
-        var rounded_num_chips = game.roundNumChips(num_chips);
-        if (rounded_num_chips !== num_chips) {
-          console.error('Received unrounded num_chips value:', num_chips, ', so rounding to', rounded_num_chips);
-          num_chips = rounded_num_chips;
-        }
-      }
       switch(action) {
       case 'check':
       case 'skip':
         break;
       case 'call':
-        if (num_chips > player.chips) {
-          console.error('Player tried to call with a value higher than his/r chip count!', num_chips, player.chips);
-          return performAction(free_action, undefined);
-        }
-        if (num_chips !== to_call) {
-          console.error('Player tried to call with a value other than to_call!', num_chips, to_call);
-          return performAction(free_action, undefined);
-        }
         player.makeBet(num_chips);
         break;
       case 'bet':
       case 'raise':
-        if (num_chips < min_bet) {
-          console.error('Player raised with less than min_bet!', num_chips, min_bet);
-          return performAction(free_action, undefined);
-        }
-        else if (num_chips > max_bet) {
-          console.error('Player raised with more than max_bet!', num_chips, max_bet);
-          return performAction(free_action, undefined);
-        }
         var bet = num_chips - player.current_bet // how much the player bet
           , raise = bet - to_call; // how much the player RAISED
         player.makeBet(bet);

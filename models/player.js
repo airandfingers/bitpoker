@@ -130,55 +130,120 @@ module.exports = (function () {
 
   PlayerSchema.methods.prompt = function(actions, timeout, default_action, cb) {
     var self = this
-      , possible_actions = _.map(actions, function(action_obj) { return _.keys(action_obj)[0]; })
+      , actions_obj = {}
+      , auto_action_amount
       , auto_action
+      , game = self.game
       , act_timeout
       , update_interval;
 
+    _.each(actions, function(action_obj) {
+      _.extend(actions_obj, action_obj);
+    });
+
     //console.log('Comparing', possible_actions, 'to', self.flags);
-    _.all(possible_actions, function(action) {
-      if (self.isFlagSet(action)) {
+    _.all(actions_obj, function(action_arg, action) {
+      auto_action_amount = self.flags[action];
+      if (auto_action_amount) {
         auto_action = action;
         return false; //break
       }
       return true; //continue
     });
 
+    // define validation and callback function
+    function respondToPrompt(action, num_chips) {
+      var action_arg = actions_obj[action];
+      if (_.isUndefined(action_arg)) {
+        if (action === 'raise' && ! _.isUndefined(action_arg = actions_obj.bet)) {
+          // switch from raise to bet
+          action = 'bet';
+        }
+        else if (action === 'bet' && ! _.isUndefined(action_arg = actions_obj.raise)) {
+          // switch from bet to raise
+          action = 'raise';
+        }
+        else {
+          // invalid action; ignore it
+          console.error('Player chose invalid action!', action, actions_obj);
+          return;
+        }
+      }
+
+      if (_.isNumber(num_chips)) {
+        var rounded_num_chips = game.roundNumChips(num_chips);
+        if (rounded_num_chips !== num_chips) {
+          console.error('Player sent unrounded num_chips value!', num_chips, rounded_num_chips);
+          num_chips = rounded_num_chips;
+        }
+      }
+      else if (action_arg !== true) {
+        console.error('Player sent non-Number num_chips value when a Number is required!', num_chips, action, action_arg);
+      }
+
+      if (_.isArray(action_arg)) {
+        // bet or raise
+        var min_bet = action_arg[0]
+          , max_bet = action_arg[1];
+        if (num_chips < min_bet) {
+          // value is too low; ignore it
+          console.error('Player raised with less than min_bet!', num_chips, min_bet);
+          return;
+        }
+        else if (num_chips > max_bet) {
+          //value is too high; set to max
+          console.error('Player raised with more than max_bet!', num_chips, max_bet);
+          num_chips = max_bet;
+        }
+      }
+      else if (_.isNumber(action_arg)) {
+        // call
+        if (num_chips !== action_arg) {
+          // value is incorrect; ignore it
+          console.error('Player tried to call with a value other than to_call!', num_chips, action_arg);
+          return;
+        }
+      }
+
+      self.current_prompt = undefined;
+      clearTimeout(act_timeout);
+      clearInterval(update_interval);
+      cb(action, num_chips);
+    }
+
     if (_.isString(auto_action)) {
-      console.log(auto_action, 'flag was set, so responding immediately!');
-      cb(auto_action);
+      console.log(auto_action, 'flag was set to', auto_action_amount, ', so responding immediately!');
+      respondToPrompt(auto_action, auto_action_amount);
     }
     else {
       console.log('prompting', self.username, 'for next action', actions, timeout);
       self.sendMessage('act_prompt', actions, timeout);
+
       self.socket.once('act', function(action, num_chips) {
         console.log(self.username, 'responds with', action, num_chips);
-        self.current_prompt = undefined;
         self.idle = false;
-        clearTimeout(act_timeout);
-        clearInterval(update_interval);
-        cb(action, num_chips);
+        respondToPrompt(action, num_chips);
       });
+
       act_timeout = setTimeout(function() {
         console.log(self.username, 'fails to respond within', timeout, 'ms');
-        self.current_prompt = undefined;
         self.idle = true;
         self.socket.removeAllListeners('act');
-        clearInterval(update_interval);
-        cb(default_action);
+        
+        respondToPrompt(default_action);
       }, timeout);
+
       update_interval = setInterval(function() {
         timeout -= self.game.TO_ACT_UPDATE_INTERVAL;
         self.sendMessage('update_time_to_act', self.seat, timeout);
       }, self.game.TO_ACT_UPDATE_INTERVAL);
+
       self.current_prompt = {
         actions: actions
-      , possible_actions: possible_actions
+      , actions_obj: actions_obj
       , timeout: timeout
       , prompt_sent: new Date()
-      , callback: cb
-      , act_timeout: act_timeout
-      , update_interval: update_interval
+      , callback: respondToPrompt
       };
     }
   };
@@ -195,8 +260,14 @@ module.exports = (function () {
 
   PlayerSchema.methods.handStart = function() {
     var self = this
+      , action_flags = ['check', 'call', 'bet', 'raise', 'fold']
       , hand_default_value;
     self.in_hand = true;
+
+    // clear any auto-action flags that may have been set
+    _.each(action_flags, function(action) {
+      delete self.flags[action];
+    });
 
     // set values for fields that have declared a hand_default value
     _.each(PlayerSchema.tree, function(field_obj, field_name) {
@@ -211,13 +282,6 @@ module.exports = (function () {
       }
       else {
         //console.log('No hand_default, so skipping', field_name);
-      }
-    });
-
-    // clear any action flags (shouldn't persist between hands)
-    _.each(['check', 'fold'], function(flag) {
-      if (self.isFlagSet(flag)) {
-        self.setFlag(flag, false);
       }
     });
   };
@@ -597,29 +661,6 @@ module.exports = (function () {
     console.log(this.username, 'setting', name, 'to', value);
     this.flags[name] = value;
     this.sendMessage('flag_set', name, value);
-
-    if (value && _.isObject(this.current_prompt)) {
-      var current_prompt = this.current_prompt
-        , possible_actions = current_prompt.possible_actions
-        , act_timeout = current_prompt.act_timeout
-        , update_interval = current_prompt.update_interval
-        , cb = current_prompt.callback;
-
-      if (_.contains(possible_actions, name)) {
-        console.log(name, 'set, so immediately performing!');
-        this.current_prompt = undefined;
-        this.idle = false;
-        clearTimeout(act_timeout);
-        clearInterval(update_interval);
-        cb(name);
-      }
-      else {
-        //console.log('Not immediately performing', name, ', possible_actions is', possible_actions);
-      }
-    }
-    else {
-      //console.log('Not checking', name, ', value is', value, ', current_prompt is', current_prompt);
-    }
   };
 
   static_properties.messages.set_flags = 'setFlags';
@@ -662,30 +703,26 @@ module.exports = (function () {
   };
 
   PlayerSchema.methods.sendCurrentPromptIfAny = function() {
-    if (_.isObject(this.current_prompt)) {
-      var current_prompt = this.current_prompt
+    var self = this;
+    if (_.isObject(self.current_prompt)) {
+      var current_prompt = self.current_prompt
         , actions = current_prompt.actions
         , elapsed_timeout = new Date() - current_prompt.prompt_sent
         , remaining_timeout = current_prompt.timeout - elapsed_timeout
-        , act_timeout = current_prompt.act_timeout
-        , update_interval = current_prompt.update_interval
-        , cb = current_prompt.callback;
+        , respondToPrompt = current_prompt.callback;
 
       if (remaining_timeout > 0) {
-        this.sendMessage('act_prompt', actions, remaining_timeout);
+        self.sendMessage('act_prompt', actions, remaining_timeout);
 
-        this.socket.once('act', function(action, num_chips) {
-          console.log(this.username, 'responds with', action, num_chips);
-          this.current_prompt = undefined;
-          this.idle = false;
-          clearTimeout(act_timeout);
-          clearInterval(update_interval);
-          cb(action, num_chips);
+        self.socket.once('act', function(action, num_chips) {
+          console.log(self.username, 'responds with', action, num_chips);
+          self.idle = false;
+          respondToPrompt(action, num_chips);
         });
       }
       else {
         console.error('expired current_prompt found!', current_prompt);
-        this.current_prompt = undefined;
+        self.current_prompt = undefined;
       }
     }
     else {
