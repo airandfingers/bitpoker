@@ -53,7 +53,7 @@ module.exports = (function () {
   HandHistorySchema.statics.createHandHistory = function(spec) {
     /* our "constructor" function. Usage: HandHistory.createHandHistory({prop: 'val'})
        (see Schema definition for list of properties)*/
-    console.log('HandHistory.createHandHistory called!', spec);
+    //console.log('HandHistory.createHandHistory called!', spec);
     var hand_history = new HandHistory(spec);
     return hand_history;
   };

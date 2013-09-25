@@ -133,6 +133,7 @@ module.exports = (function () {
       , actions_obj = {}
       , auto_action_amount
       , auto_action
+      , auto_responded
       , game = self.game
       , act_timeout
       , update_interval;
@@ -166,7 +167,7 @@ module.exports = (function () {
         else {
           // invalid action; ignore it
           console.error('Player chose invalid action!', action, actions_obj);
-          return;
+          return false;
         }
       }
 
@@ -188,7 +189,7 @@ module.exports = (function () {
         if (num_chips < min_bet) {
           // value is too low; ignore it
           console.error('Player raised with less than min_bet!', num_chips, min_bet);
-          return;
+          return false;
         }
         else if (num_chips > max_bet) {
           //value is too high; set to max
@@ -198,10 +199,14 @@ module.exports = (function () {
       }
       else if (_.isNumber(action_arg)) {
         // call
-        if (num_chips !== action_arg) {
+        if (num_chips === true) {
+          // call any
+          num_chips = action_arg;
+        }
+        else if (num_chips !== action_arg) {
           // value is incorrect; ignore it
           console.error('Player tried to call with a value other than to_call!', num_chips, action_arg);
-          return;
+          return false;
         }
       }
 
@@ -209,13 +214,14 @@ module.exports = (function () {
       clearTimeout(act_timeout);
       clearInterval(update_interval);
       cb(action, num_chips);
+      return true;
     }
 
     if (_.isString(auto_action)) {
       console.log(auto_action, 'flag was set to', auto_action_amount, ', so responding immediately!');
-      respondToPrompt(auto_action, auto_action_amount);
+      auto_responded = respondToPrompt(auto_action, auto_action_amount);
     }
-    else {
+    if (! auto_responded) {
       console.log('prompting', self.username, 'for next action', actions, timeout);
       self.sendMessage('act_prompt', actions, timeout);
 

@@ -456,10 +456,10 @@ module.exports = (function () {
           , bet;
         _.each(self.players, function(player) {
           bet = player.giveBet();
-          if (bet !== game.roundNumChips(bet)) {
+          /*if (bet !== game.roundNumChips(bet)) {
             console.error('Invalid bet returned by giveBet:', bet, game.MIN_INCREMENT);
             bet = game.roundNumChips(bet);
-          }
+          }*/
           if (bet > 0) {
             bets_obj[player.username] = bet;
           }
@@ -469,6 +469,23 @@ module.exports = (function () {
         });
         pots_increased = ! _.isEmpty(bets_obj);
         //console.log('Calculated pots_increased:', pots_increased, bets_obj);
+        // collect forfeited bets if bets_obj loop wouldn't do it
+        if (_.isEmpty(bets_obj)) {
+          //console.log('Collecting forfeited bets');
+          var usernames = _.pluck(self.players, 'username')
+            , pot_obj;
+          pot_obj = _.find(self.pots, function(_pot_obj) {
+            return _pot_obj.usernames.length === usernames.length &&
+                   _.every(_pot_obj.usernames, function(_username) {
+                    return usernames.indexOf(_username) !== -1;
+                   });
+          });
+          if (_.isEmpty(pot_obj)) {
+            pot_obj = { usernames: usernames, value: 0 };
+            self.pots.push(pot_obj);
+          }
+          pot_obj.value += self.collectForfeitedBets(min_bet);
+        }
         // move bets from bets_obj into pots
         while (! _.isEmpty(bets_obj)) {
           //console.log('Iterating over bets_obj, which is', bets_obj);
@@ -489,8 +506,8 @@ module.exports = (function () {
           pot_obj = _.find(self.pots, function(_pot_obj) {
             return _pot_obj.usernames.length === usernames.length &&
                    _.every(_pot_obj.usernames, function(_username) {
-              return usernames.indexOf(_username) !== -1;
-            });
+                    return usernames.indexOf(_username) !== -1;
+                   });
           });
           if (_.isEmpty(pot_obj)) {
             pot_obj = { usernames: usernames, value: 0 };
