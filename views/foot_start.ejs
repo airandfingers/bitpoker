@@ -261,7 +261,7 @@
                 setInterval(function() {
                   delay--;
                   if (delay === 0) {
-                    $report_bug.hide('explode', { pieces: 100 }, 500, function() {
+                    $report_bug.effect('explode', { pieces: 16 }, 500, function() {
                       $(this).find('form').html(empty_form);
                     });
                   }
