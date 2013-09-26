@@ -10,6 +10,8 @@ lib-cov
 *.sublime-project
 *.sublime-workspace
 
+.sass-cache
+
 pids
 logs
 results
