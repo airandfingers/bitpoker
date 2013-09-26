@@ -9,29 +9,29 @@
     
     //launch table game function.
     function launchTableGame() {
-      var table_name = $(this).attr('id');
-      if (jQuery('#user_server_values').data('username') === null){
-          console.log('req.user is undefined');
-          window.location.href = "/login?next=/" + "?joined_table_name=" + table_name;
+      var table_name = $(this).attr('id')
+        , username = $('#user_server_values').data('username');
+      if (username !== null &&
+          window.document.title =='Bitcoin Poker') {
+        console.log('logged in as', username, 'and on landing page. Launching iframe: ', table_name );
+        iframes.openNewIframe(table_name);
 
+        //redirect to table
+        //window.location.href = '/' + table_name;
+
+        //open new window at table
+        //return popup(table_name);
+
+        //remove 'active' class from lobby_trigger and hide lobby
+        $('#lobby_trigger').removeClass('active')
+        $('#lobby').hide('slide', { direction: 'up' }, 500);        
       }
       else {
-        if (window.document.title =='Bitcoin Poker'){
-          console.log('page title is Bitcoin Poker. Launching launchTableGame' );
-          iframes.openNewIframe(table_name);
-          //window.location.href = '/' + table_name;
-          //return popup(table_name);
-          //remove 'active' class and hide lobby
-            $('#lobby')
-              .removeClass('active')
-              .hide('slide', { direction: 'up' }, 500);        
+          //navigate to home page
+          console.log('redirected to landing page');
+          window.location.href = "/login?next=/?joined_table_name=" + table_name;
         }
-        else {
-            //navigate to home page
-            console.log('redirected to landing page');
-            window.location.href = "/login?next=/" + "?joined_table_name=" + table_name;
-          }
-      }
+      //}
     }
 
     jQuery.fn.dataTableExt.oSort['fake-fraction-asc']  = function(a, b) {

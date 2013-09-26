@@ -64,12 +64,6 @@ module.exports = (function () {
     }
   }
 
-  function ensureAuthenticatedWithMessage(message) {
-    return function(req, res, next) {
-      ensureAuthenticated(req, res, next, message);
-    };
-  }
-
   // Simple route middleware to ensure user is authenticated.
   //   Use this route middleware on any resource that needs to be protected.  If
   //   the request is authenticated (typically via a persistent login session),
@@ -77,7 +71,6 @@ module.exports = (function () {
   //   login page.
   return {
     isAuthenticated: isAuthenticated,
-    ensureAuthenticated: ensureAuthenticated,
-    ensureAuthenticatedWithMessage: ensureAuthenticatedWithMessage
+    ensureAuthenticated: ensureAuthenticated
   };
 })();

@@ -1,29 +1,8 @@
       <% if (! locals.hide_navbar) { %>
-      <script src="/js/table_list.js"></script>
+        <script src="/js/table_list.js"></script>
 
-      <script src="/js/vendor/jquery.validate.min.js"></script>
-      <script src="/js/vendor/jquery.hoverIntent.min.js"></script>
-
-        <!-- Navbar script (for dropdown animation) -->
-        <script>
-          $('.navbar li ul').css({
-            display: 'none',
-            left: 'auto'
-          });
-
-          $('.navbar li').hoverIntent(function() {
-            $(this)
-              .find('ul')
-              .stop(true, true)
-              .slideDown('fast');
-
-          }, function() {
-            $(this)
-              .find('ul')
-              .stop(true, true)
-              .fadeOut('fast');
-          });
-        </script>
+        <script src="/js/vendor/jquery.validate.min.js"></script>
+        <script src="/js/vendor/jquery.hoverIntent.min.js"></script>
 
         <!-- Hide/Show Login functionality -->
         <script>
@@ -165,6 +144,7 @@
                         left: calculateLeft()
                       , top: calculateTop()
                       })
+                      .stop(true, true)
                       .show('slide', { direction: 'up' }, 500);
                     if (! columns_resized) {
                       $lobby.find('#table_list').dataTable().fnAdjustColumnSizing();
@@ -178,14 +158,14 @@
                     return;
                   }
                   else {
-                    $lobby.hide('slide', {direction: 'up' }, 500);
+                    $lobby.stop(true, true)
+                          .hide('slide', {direction: 'up' }, 500);
                   }
 
                 });
 
                 $lobby_trigger.click(function() {
                   console.log('lobby trigger fired!');
-                  $lobby.stop(true, true);
                   if (! $lobby_trigger.hasClass('active')) {
 
                     // add active class
@@ -197,6 +177,7 @@
                         left: calculateLeft()
                       , top: calculateTop()
                       })
+                      .stop(true, true)
                       .show('slide', { direction: 'up' }, 500);
                     if (! columns_resized) {
                       $lobby.find('#table_list').dataTable().fnAdjustColumnSizing();
@@ -209,6 +190,7 @@
                       .removeClass('active');
                     // hide lobby form
                     $lobby
+                      .stop(true, true)
                       .hide('slide', { direction: 'up' }, 500);
                   }
                 });

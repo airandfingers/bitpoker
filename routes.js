@@ -315,24 +315,24 @@ module.exports = (function () {
   });
 
   //Guest Login Route
-  app.post('/guest_login', function (req, res, next) {
+  function createGuestUser(req, res) {
     console.log('guest_login route fired!');
 
-    var target = req.body.next || base_page;
+    var target = req.body.next || req.query.next || base_page;
     User.createGuestUser(function(user) {
-      user.save(function(err, result) {
-        if (err) {
-          req.flash('error', err.message);
+      user.save(function(save_err, result) {
+        if (save_err) {
+          req.flash('save_err is', save_err.message);
           res.redirect('/login?next=' + target);
         }
         else {
           // Guest_Registration successful. Redirect.
           console.log('Guest registration successful!');
           //req.flash('error', 'Welcome ' + username);
-          req.login(user, function(err) {
-            console.log('error is', err, '\n req.user is', req.user);
-            if (err) {
-              req.flash('error', err.message);
+          req.login(user, function(login_err) {
+            console.log('login_err is', login_err, ', req.user is', req.user);
+            if (login_err) {
+              req.flash('error', login_err.message);
               return res.redirect('/login?next=' + target);
             }
            res.redirect(target);
@@ -340,7 +340,9 @@ module.exports = (function () {
         }
       });
     });
-  });
+  }
+  app.post('/guest_login', createGuestUser);
+  app.get('/guest_login', createGuestUser);
   
   //submit password recovery to user's e-mail address route.
   app.post('/password_recovery', function (req, res) {
@@ -611,8 +613,20 @@ module.exports = (function () {
     res.redirect(base_page);
   });
 
+  // helper middlewarefor table_:id routes
+  function redirectIfUnauthenticated(req, res, next) {
+    if (auth.isAuthenticated(req)) {
+      next();
+    }
+    else if (req.query.play_as_guest) {
+      res.redirect('/guest_login?next=' + req.originalUrl);
+    }
+    else {
+      auth.ensureAuthenticated(req, res, next, 'You must log in before you can play!');
+    }
+  }
   app.get('/' + Table.TABLE_PREFIX + ':id',
-          auth.ensureAuthenticatedWithMessage('You must log in before you can play!'),
+          redirectIfUnauthenticated,
           function(req, res, next) {
     var table_id = req.params.id
       , table = Table.getTable(table_id)
