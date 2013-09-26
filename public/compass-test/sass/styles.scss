@@ -1,9 +1,16 @@
-// I gather this file is a starting point for the project.
+// This file is a starting point for the project.
+
+// Set some paths to prevent a 404 error
+$iconSpritePath: "../images/glyphicons-halflings.png";
+$iconWhiteSpritePath: "../images/glyphicons-halflings-white.png";
+
+// Import Sass version of bootstrap (https://github.com/thomas-mcdonald/bootstrap-sass)
 @import "bootstrap";
 
 // Include responsive Bootstrap styles
 @import "bootstrap-responsive";
 
+// Custom styles?
 html {
 	height: 100%;
 	min-height: 100%;
@@ -20,4 +27,4 @@ body {
     min-height: -webkit-calc(100% - 26px);
     min-height: -o-calc(100% - 26px);
     min-height: calc(100% - 26px);
-  }
+}
