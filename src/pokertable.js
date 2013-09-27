@@ -123,13 +123,13 @@ self.updateTableChatFullDisplay(options)}
   this.permanentPreferences = {
 
         sourceObjects:{value:parent.sourceObjects, updateValue:function(newValue){
-
+var newerValue = newValue
 if(!_.isObject(newValue)){
   console.log('permanent preferences creating new parent.sourceObjects = {}')
   if(!_.isObject(parent.sourceObjects)){parent.sourceObjects = {}}
-var newValue = parent.sourceObjects
+var newerValue = parent.sourceObjects
 }
-  this.value = newValue
+  this.value = newerValue
         }//updateValue function
       },//sourceObjects
 
@@ -486,15 +486,20 @@ if(!options){var options = {}}
     var tempImage= new Image()
     tempImage.src = source
  item.image = new createjs.Bitmap(tempImage)
-  }
-else{
+  }//if source is string
+
+else if(_.isObject(source)){
  // console.log(source)
 //if already an Image instance, just use it
-if(source instanceof Image){
-//creating new createJS bitmap based on Image object
-  item.image = new createjs.Bitmap(source)}
 
-   }
+//creating new createJS bitmap based on Image object
+  item.image = new createjs.Bitmap(source)
+}//if image source is an Image object
+
+else{
+console.log('itemAsBitmap passed non source paramater');console.log(source instanceof parent.window.Image);console.log(source);throw '';
+
+}
   self.positionItemImage(   item, {update:false}) 
 
     item.image.parentOfImageObject = item
@@ -2174,6 +2179,8 @@ if(sourceEnding == '.SWF'){return true}
   var mobileCards 
 
 var createPreloadArray = function(){  
+
+
 //push items to preload into arrays
       for(var i in self.images.sources){
          if(_.isString(self.images.sources[i])){
@@ -2218,6 +2225,7 @@ var createPreloadArray = function(){
   imageSourceArray.push({src:self.images.sources.desktopCardFolder+self.images.sources.cardBackFileNameWithoutExtension+'.png', id: resourceID, name: 'cardBack', sourceObjectParent: desktopCards})
   imageSourceArray.push({src:self.images.sources.mobileCardFolder+self.images.sources.cardBackFileNameWithoutExtension+'.png', id: resourceID, name: 'cardBack', sourceObjectParent: mobileCards})
   
+
   //push individual cards
       for(var i = 2;i<=14;i++){
           var cardRank
@@ -2466,7 +2474,7 @@ function checkIfCompleted(e){
 //CHECK IF COMPLETED
 //if(loadedImages >= imageArray.length){
   if(parent.loadingScreen.progressRatio >= 1 || parent.loaded === true){
-    console.log('loading has been completed');console.log(self.permanentPreferences.sourceObjects.value);console.log(parent.sourceObjects)
+    console.log('loading has been completed');console.log(parent);console.log(self.permanentPreferences.sourceObjects.value);console.log(parent.sourceObjects)
   onComplete()
 createjs.Ticker.removeEventListener(e.type, checkIfCompleted)
 }
@@ -2513,10 +2521,10 @@ for(var i =0;i<flashArray.length;i++){
 //ACTION
 
 console.log('we are going to check whether to perform load from this page, or use other page load');console.log(parent)
-if(parent.loaded === true || parent.loading === true){console.log('other frame to load our images');console.log(self.permanentPreferences.sourceObjects.value);console.log(parent)}
+if(parent.loaded === true || parent.loading === true){console.log('other frame to load our images');console.log(self.permanentPreferences.sourceObjects.value);console.log(parent.sourceObjects)}
   else{
     console.log('loading from this page')
-    parent.sourceObjects = {}
+  //  parent.sourceObjects = {}
     parent.loading = true
 parent.loadingScreen = {}
 parent.loadingScreen.progressRatio = 0
@@ -6649,7 +6657,7 @@ if(raiseValid === true && betValid === true){displayLastCheckedItem()}
 
 if(preactionOptions.call_any === true){
 //console.log('displaying call_any preaction option')
-stagesToUpdate.push (    addPreactionText(this.images.preactions.callAnyUnchecked, this.images.preactions.callAnyChecked, 'Call ANy'))
+stagesToUpdate.push (    addPreactionText(this.images.preactions.callAnyUnchecked, this.images.preactions.callAnyChecked, 'Call Any'))
 
   var checkIfCallAnyIsValid = function(value){if(value===true){return true}}
 if(this.getPreactionData('call_any', checkIfCallAnyIsValid)){displayLastCheckedItem()}
