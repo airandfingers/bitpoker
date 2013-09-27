@@ -8,6 +8,7 @@ table.dataTable {
 	clear: both;
 	width: 100%;
 	border-collapse: collapse;
+	color: #eee;
 }
 
 table.dataTable thead th {
@@ -22,6 +23,7 @@ table.dataTable tfoot th {
 
 table.dataTable td {
 	padding: 3px 10px;
+	font-family: 'Helvetica Neue', helvetica, sans-serif;
 }
 
 table.dataTable td.center,
@@ -30,34 +32,39 @@ table.dataTable td.dataTables_empty {
 }
 
 table.dataTable tr.odd {
-	background-color: #E2E4FF;
+	background-color: rgba(0,0,0,.75);
 	border: none !important;
 }
 table.dataTable tr.even {
-	background-color: #eeeeee;
+	background-color: rgba(0,0,0,.75);
 	border: none !important;
 }
-
-table.dataTable tr.odd td.sorting_1 { background-color: #D3D6FF; }
-table.dataTable tr.odd td.sorting_2 { background-color: #DADCFF; }
-table.dataTable tr.odd td.sorting_3 { background-color: #E0E2FF; }
-table.dataTable tr.even td.sorting_1 { background-color: #EAEBFF; }
-table.dataTable tr.even td.sorting_2 { background-color: #F2F3FF; }
-table.dataTable tr.even td.sorting_3 { background-color: #F9F9FF; }
-
+/*
+table.dataTable tr.odd td.sorting_1 { background-color: rgba(0,0,0,.5); }
+table.dataTable tr.odd td.sorting_2 { background-color: rgba(0,0,0,.5); }
+table.dataTable tr.odd td.sorting_3 { background-color: rgba(0,0,0,.5); }
+table.dataTable tr.even td.sorting_1 { background-color: rgba(0,0,0,.5); }
+table.dataTable tr.even td.sorting_2 { background-color: rgba(0,0,0,.5); }
+table.dataTable tr.even td.sorting_3 { background-color: rgba(0,0,0,.5); }
+*/
+/*
 table.dataTable tr.odd:hover {
 	border: 1px solid black;
 }
 table.dataTable tr.odd:hover td {
-	background-color: #C7CBFF;
-}
+	background-color: rgba(0,0,0,1)}
 
 table.dataTable tr.even:hover {
 	border: 1px solid black;
 }
+
 table.dataTable tr.even:hover td {
-	background-color: #dddddd;
+	background-color: rgba(0,0,0,1)}
+*/
+table.dataTable tr:hover td {
+	background-color: rgba(256, 256, 256, .5);	
 }
+
 
 /*
  * Table wrapper
