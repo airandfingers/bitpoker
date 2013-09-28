@@ -122,6 +122,8 @@ self.updateTableChatFullDisplay(options)}
 
   this.permanentPreferences = {
 
+defaultFontType :{value:'Lucida Sans'},
+
         sourceObjects:{value:parent.sourceObjects, updateValue:function(newValue){
 var newerValue = newValue
 if(!_.isObject(newValue)){
@@ -669,7 +671,7 @@ distanceToFill = 0
 return stage
       }
 
-            //for example: (parentOfImageObject, fold, "13px Lucida Sans", "#100D08")
+            //for example: (parentOfImageObject, fold, "13px " + self.permanentPreferences.defaultFontType.value, "#100D08")
             this.images.addItemText = function(parentOfImageObject,text,sizeAndFont,color, options){
                 if(!options){var options = {}}
                 parentOfImageObject.text = new createjs.Text(text, sizeAndFont, color)
@@ -689,6 +691,11 @@ parentOfImageObject.text.baseline = 'top'
 
 parentOfImageObject.text.maxWidth = parentOfImageObject.size.x*.9
 parentOfImageObject.textColor = color
+
+//assign option variables to text
+_.each(options, function(value, index, list){
+if(!_.isObject(value) && !_.isUndefined(value) && !_.isFunction(parentOfImageObject.text[index])){parentOfImageObject.text[index] = value}
+})//iterate through options
 
 
 
@@ -1870,12 +1877,12 @@ console.log(imageSourceArray)
    // console.log(this.arrayOfParentsOfStageAndOfContainerArray)
     var canvasWidth = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.width
     var canvasHeight = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.height
-    var titleSizeAndFont = '20px Lucida Sans'
+    var titleSizeAndFont = '20px ' + self.permanentPreferences.defaultFontType.value
      var titleHeight = 35
      var titleAndPreloadBarDistanceY = 50
      var titleText = 'Loading resources...'
      var titleColor = '#000000'
-     var statusSizeAndFont = '15px Lucida Sans'
+     var statusSizeAndFont = '15px ' + self.permanentPreferences.defaultFontType.value
      var statusHeight = 20
      var statusColor = '#000000'
     var preloadBarY  = canvasHeight/2
@@ -1957,7 +1964,7 @@ return stage
 
 this.images.imageLoading = {}
 var titleHeight = 30
-var titleSizeAndFont = '30px Lucida Sans'
+var titleSizeAndFont = '30px ' + self.permanentPreferences.defaultFontType.value
 var titleColor = 'blue'
 var titleText = 'Displaying Images ...'
 var titleX = canvasWidth*.25
@@ -2279,12 +2286,12 @@ console.log(imageSourceArray)
    // console.log(this.arrayOfParentsOfStageAndOfContainerArray)
     var canvasWidth = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.width
     var canvasHeight = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.height
-    var titleSizeAndFont = '20px Lucida Sans'
+    var titleSizeAndFont = '20px ' + self.permanentPreferences.defaultFontType.value
      var titleHeight = 35
      var titleAndPreloadBarDistanceY = 50
      var titleText = 'Loading resources...'
      var titleColor = '#000000'
-     var statusSizeAndFont = '15px Lucida Sans'
+     var statusSizeAndFont = '15px ' + self.permanentPreferences.defaultFontType.value
      var statusHeight = 20
      var statusColor = '#000000'
     var preloadBarY  = canvasHeight/2
@@ -2365,7 +2372,7 @@ return self.itemChanged(introScreen.preloadBar)
 
 this.images.imageLoading = {}
 var titleHeight = 30
-var titleSizeAndFont = '30px Lucida Sans'
+var titleSizeAndFont = '30px ' + self.permanentPreferences.defaultFontType.value
 var titleColor = 'blue'
 var titleText = 'Displaying Images ...'
 var titleX = canvasWidth*.25
@@ -2593,7 +2600,7 @@ console.log(e)
            var checkBoxButtonCheckBoxWidth = checkBoxButtonHeight
            var checkBoxButtonDistanceFromBoxToText = 5
            var checkBoxButtonDistanceFromEdgeToInteriorHitAreaY = 1
-           var checkBoxButtonSizeAndFont = '10px Lucida Sans'
+           var checkBoxButtonSizeAndFont = '10px ' + self.permanentPreferences.defaultFontType.value
            var checkBoxButtonTextColor = '#FFFFFF'
 
             var actionButtonWidth = 80
@@ -2621,7 +2628,7 @@ console.log(e)
 var currencyDisplayWidth = canvasWidth
 var currencyDisplayHeight = 15
 var currencyDisplayTopOffset = 1
-var currencyDisplaySizeAndFont = '16px Lucida Sans'
+var currencyDisplaySizeAndFont = '16px ' + self.permanentPreferences.defaultFontType.value
 var currencyDisplayColor = 'white'
 
 
@@ -2644,9 +2651,9 @@ var currencyDisplayColor = 'white'
             var rightColumnSeatDealerButtonX = -dealerButtonWidth*1.1
             var rightColumnSeatDealerButtonY = 0
 
-            var potHeight = 9
-            var potWidth = 20
-            var potSizeAndFont = '14px Lucida Sans'
+            var potHeight = 14
+            var potWidth = 85
+            var potSizeAndFont = '14px ' + self.permanentPreferences.defaultFontType.value
             var potTextColor = '#FFFFFF'
 
             var potDistanceToCommunity = -25
@@ -2768,14 +2775,21 @@ var createPotItems = function(potNumber, firstChipX, firstChipY, options){
   if(!options){var options = {}}
 var distanceY = distanceBetweenChipsY
  var maxPotWidth = (distanceX)*(self.imageData.maxChipColumns-1)+chipDiameter
-var distanceX = self.imageData.distanceBetweenChipColumns;if(options.columnDirection === 'left'){distanceX = distanceX*-1}
+var distanceX = self.imageData.distanceBetweenChipColumns + chipDiameter;
+if(options.columnDirection === 'left'){distanceX = distanceX*-1}
 
 
   self.images.pots[potNumber].firstChip = new self.images.Item(firstChipX, firstChipY ,chipDiameter,chipDiameter,self.gameState.zPositionData.chips)
               self.images.pots[potNumber].secondChip = new self.images.Item(firstChipX,firstChipY - distanceY,chipDiameter,chipDiameter,self.gameState.zPositionData.chips)
-              self.images.pots[potNumber].secondColumnChip = new self.images.Item(firstChipX+distanceX+chipDiameter,firstChipY,chipDiameter,chipDiameter,self.gameState.zPositionData.chips)
+              self.images.pots[potNumber].secondColumnChip = new self.images.Item(firstChipX+distanceX,firstChipY,chipDiameter,chipDiameter,self.gameState.zPositionData.chips)
 
-                   self.images.pots[potNumber].potSize = new self.images.Item(firstChipX,firstChipY+chipDiameter+1,potWidth,potHeight,self.gameState.zPositionData.chips)
+if(options.columnDirection !== 'left'){
+                   self.images.pots[potNumber].potSize = new self.images.Item(firstChipX,firstChipY+chipDiameter,betSizeWidth,potHeight,self.gameState.zPositionData.chips)
+                 }
+
+                   else{
+                    self.images.pots[potNumber].potSize = new self.images.Item(firstChipX + chipDiameter - betSizeWidth,firstChipY+chipDiameter,betSizeWidth,potHeight,self.gameState.zPositionData.chips) 
+                  }//if we want to go left
              self.images.addItemText(self.images.pots[potNumber].potSize, '' ,potSizeAndFont, potTextColor, {textAlign:'left'})
 self.images.pots[potNumber].potSize.text.maxWidth = 999999
 console.log('created pot items for pot number: '+potNumber);console.log(self.images.pots[potNumber])
@@ -2783,7 +2797,7 @@ console.log('created pot items for pot number: '+potNumber);console.log(self.ima
 
 
             //---------pots-------------------
-    var pot0X = canvasWidth/2-cardWidth/2-cardWidth; var pot0Y = communityY+potDistanceToCommunity
+    var pot0X = canvasWidth/2-cardWidth/2-cardWidth; var pot0Y = communityY - potHeight - chipDiameter
 
 createPotItems(0, pot0X, pot0Y)
 
@@ -2825,11 +2839,11 @@ createPotItems(4, pot4X, pot4Y)
 var pot5X = pot0X; var pot5Y = pot4Y
 createPotItems(5, pot5X, pot5Y)
 
-var pot6X =  self.images.community[0].position.x  - totalPotWidth; var pot6Y = pot3Y
-createPotItems(6, pot6X, pot6Y)
+var pot6X =  self.images.community[0].position.x  - chipDiameter; var pot6Y = pot3Y
+createPotItems(6, pot6X, pot6Y, {columnDirection:'left'})
 
 var pot7X = pot6X; var pot7Y = pot2Y
-createPotItems(7, pot7X, pot7Y)
+createPotItems(7, pot7X, pot7Y, {columnDirection:'left'})
 
 var pot8X = canvasWidth/2 - totalPotWidth/2; var pot8Y =  this.totalPotSize.position.y - maxTotalPotHeight
 createPotItems(8, pot8X, pot8Y)
@@ -3067,7 +3081,7 @@ this.seats[i].seat.image.onMouseOut = self.events.seatMouseEvent
 self.images.drawSeat(this.seats[i].openSeat, openSeatBorder, openSeatFill, openSeatMiddle, {outerStrokeWidth: openSeatOuterStrokeWidth})
 this.seats[i].openSeat.image.parentOfImageObject = this.seats[i].openSeat  
 
-                this.seats[i].openSeat.text = new createjs.Text('Open Seat', '15px Lucida Sans', "#FFFFFF")
+                this.seats[i].openSeat.text = new createjs.Text('Open Seat', '15px ' + self.permanentPreferences.defaultFontType.value, "#FFFFFF")
 this.seats[i].openSeat.text.x=this.seats[i].openSeat.position.x + this.seats[i].openSeat.size.x/2 
 this.seats[i].openSeat.text.y=this.seats[i].openSeat.position.y + 4
 this.seats[i].openSeat.text.baseline = 'top'
@@ -3104,18 +3118,18 @@ this.cardAsBitmap(this.seats[i].hiddenCards[1],  null)
 
          //   this.itemAsRectangle(this.seats[i].shownCards[0], "#00FFFF")
           //  this.itemAsRectangle(this.seats[i].shownCards[1], "#00FFFF")
-            this.addItemText(this.seats[i].shownCards[0],'','12px Lucida Sans','#000000')
-            this.addItemText(this.seats[i].shownCards[1],'','12px Lucida Sans','#000000')
+            this.addItemText(this.seats[i].shownCards[0],'','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
+            this.addItemText(this.seats[i].shownCards[1],'','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
             //player name
-            this.addItemText(this.seats[i].playerName,'','11px Lucida Sans','#FFFFFF' )
+            this.addItemText(this.seats[i].playerName,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF' )
             //player's status
-            this.addItemText(this.seats[i].status,'','11px Lucida Sans','#FFFFFF' )
+            this.addItemText(this.seats[i].status,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF' )
             //action
-            this.addItemText(this.seats[i].action,'','11px Lucida Sans','#FFFFFF')
+            this.addItemText(this.seats[i].action,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF')
             //countdown
-            this.addItemText(this.seats[i].countdown,'','11px Lucida Sans','#FFFFFF')
+            this.addItemText(this.seats[i].countdown,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF')
             //winner
-             this.addItemText(this.seats[i].winner,'','11px Lucida Sans','#FFFFFF')
+             this.addItemText(this.seats[i].winner,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF')
         
 
        //----------------------dealer button----Player's bets----------------------------------
@@ -3138,6 +3152,7 @@ var seatLocationMarginOfError = 1.1
         var distanceBetweenChipsY = this.pots[0].secondChip.position.y-this.pots[0].firstChip.position.y
         var upperRightChipX = this.seats[i].firstChip.position.x
         var upperRightChipY = this.seats[i].firstChip.position.y+distanceBetweenChipsY*(self.imageData.maxChipsPerColumn-1)
+
         var betX = upperRightChipX+absoluteDistanceBetweenBetTextAndChipImages
         var betY = upperRightChipY
         //bet size
@@ -3158,6 +3173,7 @@ var seatLocationMarginOfError = 1.1
         var distanceBetweenChipsY = this.pots[0].secondChip.position.y - this.pots[0].firstChip.position.y
         var upperLeftChipX = this.seats[i].firstChip.position.x
         var upperLeftChipY = this.seats[i].firstChip.position.y - distanceBetweenChipsY*(self.imageData.maxChipsPerColumn-1)
+
         var betX = upperLeftChipX - betTextWidth - absoluteDistanceBetweenBetTextAndChipImages
         var betY = upperLeftChipY - betTextHeight - absoluteDistanceBetweenBetTextAndChipImages
         //bet size
@@ -3212,7 +3228,7 @@ var seatLocationMarginOfError = 1.1
     this.seats[i].secondChip = new this.Item(this.seats[i].firstChip.position.x, this.seats[i].firstChip.position.y+distanceBetweenChipsY,chipDiameter,chipDiameter,self.gameState.zPositionData.chips)
     
     // bet size text
-     this.addItemText(this.seats[i].bet,'', "12px Lucida Sans", "#FFFFFF", {textAlign:'left'})
+     this.addItemText(this.seats[i].bet,'', "12px " + self.permanentPreferences.defaultFontType.value, "#FFFFFF", {textAlign:'left'})
      this.seats[i].bet.text.maxWidth = null
    
     if(this.seats[i].dealerButton instanceof this.Item){
@@ -3257,7 +3273,7 @@ self.images.seats[i].chat.image.alpha = self.imageData.chatBoxAlpha
 }//end drawchat function
 
 //player chat text
- self.images.seats[i].chat.text = new createjs.Text('', chatBoxFontSize+ 'px Lucida Sans', self.permanentPreferences.chatTextColor.value)
+ self.images.seats[i].chat.text = new createjs.Text('', chatBoxFontSize+ 'px ' + self.permanentPreferences.defaultFontType.value, self.permanentPreferences.chatTextColor.value)
 self.images.seats[i].chat.text.x=self.images.seats[i].chat.position.x +  self.images.seats[i].chat.size.x/2 
  self.images.seats[i].chat.text.y= self.images.seats[i].chat.position.y
  self.images.seats[i].chat.text.baseline = 'top'
@@ -3314,15 +3330,15 @@ var actionButtonHeight = 24
 
 
         this.itemAsRectangle(this.fold,  'red')
-        this.addItemText(this.fold, 'fold','12px Lucida Sans','#000000')
+        this.addItemText(this.fold, 'fold','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
         this.itemAsRectangle(this.call, 'red')
-        this.addItemText(this.call, 'call','12px Lucida Sans','#000000')
+        this.addItemText(this.call, 'call','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
         this.itemAsRectangle(this.check, 'red')
-        this.addItemText(this.check, 'check','12px Lucida Sans','#000000')
+        this.addItemText(this.check, 'check','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
         this.itemAsRectangle(this.raise, 'red')
-        this.addItemText(this.raise, 'raise', '12px Lucida Sans','#000000')
+        this.addItemText(this.raise, 'raise', '12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
         this.itemAsRectangle(this.bet, 'red')
-        this.addItemText(this.bet, 'bet','12px Lucida Sans','#000000')
+        this.addItemText(this.bet, 'bet','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
 
         this.fold.image.onClick = self.events.onButtonClick
         this.call.image.onClick  = self.events.onButtonClick
@@ -3502,10 +3518,10 @@ this.exitTable.image.onClick = self.events.exitTableClick
         this.rebuy = new this.Item(actionButtonLeftX,actionButtonY,actionButtonWidth,actionButtonHeight,self.gameState.zPositionData.button, {messages:['get_add_chips_info']})
 
          this.itemAsRectangle(this.sitIn,'black')
-this.addItemText(this.sitIn,'Deal Me In','10px Lucida Sans','white')
+this.addItemText(this.sitIn,'Deal Me In','10px ' + self.permanentPreferences.defaultFontType.value,'white')
 
  this.itemAsRectangle(this.rebuy,'black')
-this.addItemText(this.rebuy,'Get Chips','10px Lucida Sans','white')
+this.addItemText(this.rebuy,'Get Chips','10px ' + self.permanentPreferences.defaultFontType.value,'white')
 this.sitIn.image.onClick = self.events.onButtonClick
 this.rebuy.image.onClick  = self.events.onButtonClick
 
@@ -3572,7 +3588,7 @@ var cashierWindowContainer = 0
 
         var textHeight = 13
         var distanceBetweenTextY = 5
-        var sizeAndFont = '12px Lucida Sans'
+        var sizeAndFont = '12px ' + self.permanentPreferences.defaultFontType.value
         var textColor = '#000000'
 
          var outerTopHeight = 31
@@ -3869,7 +3885,7 @@ this.cashier[cashierItems[i].name].text.maxWidth = this.cashier[cashierItems[i].
 
 var addChipsText = 'add chips'
 var cancelText = 'cancel'
-var cashierButtonTextSizeAndFont = '13px Lucida Sans'
+var cashierButtonTextSizeAndFont = '13px ' + self.permanentPreferences.defaultFontType.value
 var cashierButtonHeight = 21
 var cashierButtonTextColor = 'white'
 var cashierButtonColor = 'blue'
@@ -4246,7 +4262,7 @@ console.log(this.tableChatFull.chatMessageText)
 this.reportBug = new this.Item(0, this.getChips.size.y, 165,30,self.gameState.zPositionData.holeCards)
 
 
-   this.reportBug.text = new createjs.Text('click to report bugs via email to: CryptoPoker@gmail.com', '13px Lucida Sans' ,'white')
+   this.reportBug.text = new createjs.Text('click to report bugs via email to: CryptoPoker@gmail.com', '13px ' + self.permanentPreferences.defaultFontType.value ,'white')
 this.reportBug.text.x=this.reportBug.position.x
 this.reportBug.text.y=this.reportBug.position.y
 this.reportBug.text.baseline = 'top'
@@ -5693,15 +5709,23 @@ var measuredSizeHeight = sizeItem.text.getMeasuredHeight()
 var chipDiameter = self.images.pots[0].firstChip.size.x
 
 //we are going to get the maximum bounding box for the chip stack
-var chipStackMaxWidth = options.distanceBetweenColumns*(self.imageData.maxChipColumns-1)+chipDiameter
+var chipStackMaxWidth = Math.abs(options.distanceBetweenColumns*(self.imageData.maxChipColumns-1))+chipDiameter
 var chipStackMaxHeight = (self.imageData.maxChipsPerColumn-1)*(self.images.pots[0].secondChip.position.x - self.images.pots[0].firstChip.position.x) + chipDiameter
 
 var maxLeftX; var maxRightX ; var actualLeftX; var actualRightX;
 var maxTopY = options.initialY + chipDiameter - chipStackMaxHeight;var maxBottomY = options.initialY + chipDiameter;
 
+
+
 //determine whether we are building chip colums left or right
 if(distanceBetweenColumns > 0){var chipDirection = 'right'}
   else{ var chipDirection = 'left'}
+
+var actualTopY = options.initialY
+//get actualTopY value
+for(var i = 0;i<chipArray.length;i++){
+if( chipArray[i].position.y  <  actualTopY){ actualTopY = chipArray[i].position.y }
+}
 
 if(chipDirection === 'right'){
 maxLeftX = options.initialX
@@ -5711,6 +5735,8 @@ maxLeftX = options.initialX
 }//if chips building to right
 
 else{
+ // console.log('chip direction is ' + chipDirection)
+  //console.log('chipstack max width = '+ chipStackMaxWidth)
  maxRightX = options.initialX + chipDiameter
  maxLeftX  = maxRightX- chipStackMaxWidth
     actualRightX = maxRightX 
@@ -5720,10 +5746,10 @@ else{
 
 //determine intended positioning of size item
 if(sizeItem.position.x >= maxRightX ){ var sizeLatitudePositioning = 'right'}
-else if( sizeItem.position.x + sizeItem.size.x <= maxLeftX){ var sizeLatitudePositioning = 'left'}
+else if( sizeItem.position.x + sizeItem.size.x <= maxLeftX){ console.log('maxLEfftX = '+maxLeftX);var sizeLatitudePositioning = 'left'}
 
 if(sizeItem.position.y >= maxBottomY ){ var sizeLongitudePositioning = 'bottom'}
-else if( sizeItem.position.y + sizeItem.size.y <= maxTopY){ var sizeLongitudePositioning = 'top'}
+else if( sizeItem.position.y + measuredSizeHeight <= actualTopY){ var sizeLongitudePositioning = 'top'}
 
 
 //if positioning is right we position X directly to the right of our item ad keep y the same
@@ -5742,25 +5768,22 @@ else {//if not left or right
  var sizeItemX = sizePositionToItemPositionRatio*(actualRightX - actualLeftX) + actualLeftX 
  }
    else{
+    console.log('adjusting betSize text based on chipDirection left'); 
  var sizePositionToItemPositionRatio =  (actualRightX - sizeItem.position.x - sizeItem.size.x)/chipStackMaxWidth
  var sizeItemX = actualRightX - sizePositionToItemPositionRatio*(actualRightX - actualLeftX) - measuredSizeWidth
+
+ console.log ('ratio = '+sizePositionToItemPositionRatio)
    }//chip columns go from right to left
 
 
   if(sizeLongitudePositioning === 'bottom'){//--------------check if bottom-----------------------
-stagesToUpdate.push (self.setImageItemPositionAndTextBasedOnImageChange(sizeItem, sizeItemX, sizeItem.position.y, options))
+stagesToUpdate.push (self.setImageItemPositionAndTextBasedOnImageChange(sizeItem, sizeItemX, maxBottomY, options))
 }//if bottom
 
 //adjust if top
 else if(sizeLongitudePositioning === 'top'){//--------------check if top-----------------------
 
-var highestChip = options.initialY+chipDiameter
-//get highest chip
-for(var i = 0;i<chipArray.length;i++){
-if( chipArray[i].position.y + chipDiameter >  highestChip){ highestChip = chipArray[i].position.y + chipDiameter}
-}
-
-stagesToUpdate.push (self.setImageItemPositionAndTextBasedOnImageChange(sizeItem, sizeItemX, highestChip - sizeItem.size.y, options))
+stagesToUpdate.push (self.setImageItemPositionAndTextBasedOnImageChange(sizeItem, sizeItemX, actualTopY - measuredSizeHeight, options))
 }//if top
 
 else{stagesToUpdate.push (self.setImageItemPositionAndTextBasedOnImageChange(sizeItem, sizeItemX, sizeItem.position.y, options))}
@@ -5846,7 +5869,7 @@ var chipImageSource = self.permanentPreferences.sourceObjects.value.chips['10']
        parentOfChipArray[options.chipArrayName].push(new this.images.Item(x,y,diameter,diameter,this.gameState.zPositionData.chips))
         this.images.itemAsBitmap(parentOfChipArray[options.chipArrayName][parentOfChipArray[options.chipArrayName].length-1], chipImageSource) 
  
-parentOfChipArray[options.chipArrayName][parentOfChipArray[options.chipArrayName].length-1].text =  new createjs.Text(chipValue, '7px Lucida Sans', 'white')
+parentOfChipArray[options.chipArrayName][parentOfChipArray[options.chipArrayName].length-1].text =  new createjs.Text(chipValue, '7px ' + self.permanentPreferences.defaultFontType.value, 'white')
 parentOfChipArray[options.chipArrayName][parentOfChipArray[options.chipArrayName].length-1].text.x = parentOfChipArray[options.chipArrayName][parentOfChipArray[options.chipArrayName].length-1].position.x + parentOfChipArray[options.chipArrayName][parentOfChipArray[options.chipArrayName].length-1].size.x/2
 parentOfChipArray[options.chipArrayName][parentOfChipArray[options.chipArrayName].length-1].text.y = parentOfChipArray[options.chipArrayName][parentOfChipArray[options.chipArrayName].length-1].position.y+4.5
 parentOfChipArray[options.chipArrayName][parentOfChipArray[options.chipArrayName].length-1].text.baseline = 'top'
@@ -9074,11 +9097,11 @@ var buttonContainer = 2
          if(_.isNull(messageInfo)||_.isUndefined(messageInfo)){messageInfo = {}}
          //set default font sizes and colors
        if(_.isNull(messageInfo.title)||_.isUndefined(messageInfo.title)||!(_.isString(messageInfo.title)||!_.isNumber(messageInfo.title))){messageInfo.title = ''}
-       if(_.isNull(messageInfo.titleSizeAndFont)||_.isUndefined(messageInfo.titleSizeAndFont)){messageInfo.titleSizeAndFont = '18px Lucida Sans'}
+       if(_.isNull(messageInfo.titleSizeAndFont)||_.isUndefined(messageInfo.titleSizeAndFont)){messageInfo.titleSizeAndFont = '18px ' + self.permanentPreferences.defaultFontType.value}
        if(_.isNull(messageInfo.titleColor)||_.isUndefined(messageInfo.titleColor)){ messageInfo.titleColor = '#000000'}
-       if(_.isNull(messageInfo.sizeAndFont)||_.isUndefined(messageInfo.sizeAndFont)){messageInfo.messageSizeAndFont = '13px Lucida Sans'}
+       if(_.isNull(messageInfo.sizeAndFont)||_.isUndefined(messageInfo.sizeAndFont)){messageInfo.messageSizeAndFont = '13px ' + self.permanentPreferences.defaultFontType.value}
     if(_.isNull(messageInfo.messageColor)||_.isUndefined(messageInfo.messageColor)){ messageInfo.messageColor = '#000000'}
-    if(_.isNull(messageInfo.buttonSizeAndFont)||_.isUndefined(messageInfo.buttonSizeAndFont)){messageInfo.buttonSizeAndFont = '13px Lucida Sans'}
+    if(_.isNull(messageInfo.buttonSizeAndFont)||_.isUndefined(messageInfo.buttonSizeAndFont)){messageInfo.buttonSizeAndFont = '13px ' + self.permanentPreferences.defaultFontType.value}
      if(_.isNull(messageInfo.buttonTextColor)||_.isUndefined(messageInfo.buttonTextColor)){ messageInfo.buttonTextColor = '#FFFFFF'}
     if(_.isNull(messageInfo.buttonBackgroundColor)||_.isUndefined(messageInfo.buttonBackgroundColor)){ messageInfo.buttonBackgroundColor = '#0000FF'}
     if(_.isNull(messageInfo.okayText)||_.isUndefined(messageInfo.okayText)){ messageInfo.okayText = 'OK'}
@@ -10477,7 +10500,7 @@ self.animateDealerButton(dealerPosition,  24)
 //TEST FOR POT SIZE
 //self.playerPutsChipsInPot(6, 799, 500)
 //self.updatePotSize([1,2,3,4,5,6, 7, 8, 9])
- //self.updatePotSize([1,100,200,300,400,500, 600, 700, 800])
+ self.updatePotSize([1,10000,20000,30000,40000,50000, 60000, 70000, 80000])
 // console.log('dealer button item = ')
  //console.log(self.images.dealerButton)
  //console.log(self.isItemAddedToStage(self.images.showTableChatFull))
