@@ -10500,7 +10500,7 @@ self.animateDealerButton(dealerPosition,  24)
 //TEST FOR POT SIZE
 //self.playerPutsChipsInPot(6, 799, 500)
 //self.updatePotSize([1,2,3,4,5,6, 7, 8, 9])
- self.updatePotSize([1,10000,20000,30000,40000,50000, 60000, 70000, 80000])
+ //self.updatePotSize([1,10000,20000,30000,40000,50000, 60000, 70000, 80000])
 // console.log('dealer button item = ')
  //console.log(self.images.dealerButton)
  //console.log(self.isItemAddedToStage(self.images.showTableChatFull))
