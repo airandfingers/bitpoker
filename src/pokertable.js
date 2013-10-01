@@ -1,14 +1,12 @@
-   $("#chat_table").css('display','none')
-   $("#chat_table").css('top','1000px')
-      function onKeyDown(event) {
+ //  $("#chat_table").css('display','none')
+//   $("#chat_table").css('top','1000px')
+     /* function onKeyDown(event) {
 event.preventDefault() } 
 
 window.onKeydown = onKeyDown
+*/
 
 
-/*function (dtnode, event) { 
-        return false; 
-    }*/
    
     //default canvas size is 690x480
     //all numbers are in base 0, including variable names and documentation
@@ -121,6 +119,8 @@ self.updateTableChatFullDisplay(options)}
 
 
   this.permanentPreferences = {
+
+      confirmSeatRotation:{value:true},
 
 defaultFontType :{value:'Lucida Sans'},
 
@@ -276,6 +276,7 @@ mouseEnabled : true,
 enableDOMEvents : true,
 touchEnabled:true,
 mouseOverFrequency:30
+//,disableContextMenu:true
 }
 }
             this.gameState.zPositionData.button={stage:holeCardsAndButtons,container:2}//button
@@ -496,6 +497,10 @@ else if(_.isObject(source)){
 
 //creating new createJS bitmap based on Image object
   item.image = new createjs.Bitmap(source)
+
+  //update width and height of parent if necessary
+ if(source.width > item.size.x){item.size.x = source.width}
+  if(source.height > item.size.y){item.size.y = source.height}
 }//if image source is an Image object
 
 else{
@@ -562,11 +567,11 @@ if(item.messages){
 
             //draws a seat
                   this.images.drawSeat = function (parent, borderColor, fillColor, middleDividerColor, options){
-          if(parent.image instanceof createjs.Shape){}
-          else{
-              parent.image = new createjs.Shape()
+          if(parent.image instanceof createjs.Shape === false){
+                   parent.image = new createjs.Shape()
               parent.image.parentOfImageObject = parent
           }
+
 
           if(options && options.outerStrokeWidth){var outerStrokeWidth = options.outerStrokeWidth}
             else{var outerStrokeWidth = 2}
@@ -874,8 +879,8 @@ this.events.onCashierTextFieldFocus = function(event){
 this.events.mouseDownClickAndDrag = function(event, options){
  // if(event.type !== 'mousedown'){return}
 
-console.log('mousedownclick and drag called')
-console.log(event)
+//console.log('mousedownclick and drag called')
+//console.log(event)
 
 if(!options){var options = {}}
 //var update = options.update
@@ -889,7 +894,7 @@ _.defaults(options, defaultOptions)//assign defaults
 var initialX = event.stageX;var initialY = event.stageY
 
 event.onMouseMove = function(e){
-  console.log(e)
+ // console.log(e)
   var moveX = e.stageX - initialX; var moveY = e.stageY -initialY
    initialX = initialX + moveX; initialY = initialY + moveY
 
@@ -1470,37 +1475,46 @@ if(self.permanentPreferences.alwaysRotate === true){}
 //check if preference is to sit at "absolute steat" or 0
 var preferenceSeat = self.sessionPreferences.changeUserSeatViewTo.value
 if( _.isNumber(preferenceSeat) && ( preferenceSeat === 0 || preferenceSeat === self.gameState.userSeatNumber)){
-  self.changeUserSeatView(preferenceSeat)}
-  else{  //confirm user choice    
+  console.log('rotating without confirming due to current preference:');console.log(self.sessionPreferences.changeUserSeatViewTo)
+  self.changeUserSeatView(preferenceSeat)
+}//if user has a specific seat we rotate to
+  else if( self.gameState.userSeatNumber !== 0){  //rotate to seat 0
 //console.log('changing userseat view')
 
       self.changeUserSeatView() //rotate seats first
 
-            var messageInfo = {}    
-              messageInfo.title = 'Seat Viewpoint Changed'
-            messageInfo.okayText = 'OK, this is fine'
-            messageInfo.cancelText = 'Change view'
-            messageInfo.cancel = true
- messageInfo.okayEvent = function(){
-  self.hideMessageBox()
+//confirm the choice if the preference requires it
+        if(self.permanentPreferences.confirmSeatRotation.value === true) {   
+          var messageInfo = {}    
+                       messageInfo.title = 'Seat Viewpoint Changed'
+                     messageInfo.okayText = 'OK, this is fine'
+                     messageInfo.cancelText = 'Change view'
+                     messageInfo.cancel = true
+                     messageInfo.checkBox = true
+          messageInfo.okayEvent = function(e, checkBoxStatus){
+     
+           if(checkBoxStatus === 'checked'){
+            self.permanentPreferences.confirmSeatRotation.value = false}
+            else if(checkBoxStatus === 'unchecked'){
+            self.permanentPreferences.confirmSeatRotation.value = true}
 
-  self.sessionPreferences.changeUserSeatViewTo.value = self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber
-console.log('setting seat view preference to '+ self.sessionPreferences.changeUserSeatViewTo.value)
-self.saveSessionPreferences()
-}
- messageInfo.cancelEvent = function (){
-  if(self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber  !== self.gameState.userSeatNumber ){
-    self.changeUserSeatView(self.gameState.userSeatNumber )}
-    else{self.changeUserSeatView()}
-   // else{self.changeUserSeatView(self.sessionPreferences.changeUserSeatViewTo.value)}
-
-
-//self.hideMessageBox()
-}
- var messageString = 'Your table viewpoint has been changed so that you appear at the bottom middle.  Your position relative to other players remains the same. Click '+messageInfo.cancelText+ ' to change your view back.'  
-     self.displayMessageBox(messageString, messageInfo)
-
-         }//message box popup //if we want to rotate
+               self.hideMessageBox()//hide message box
+           self.sessionPreferences.changeUserSeatViewTo.value = self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber
+         console.log('setting seat view preference to '+ self.sessionPreferences.changeUserSeatViewTo.value)
+         self.saveSessionPreferences()
+         }
+          messageInfo.cancelEvent = function (){
+           if(self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber !== self.gameState.userSeatNumber ){
+             self.changeUserSeatView(self.gameState.userSeatNumber )}
+             else{self.changeUserSeatView()}
+            // else{self.changeUserSeatView(self.sessionPreferences.changeUserSeatViewTo.value)}
+         
+         //self.hideMessageBox()
+         }
+          var messageString = 'Your table viewpoint has been changed so that you appear at the bottom middle.  Your position relative to other players remains the same. Click '+messageInfo.cancelText+ ' to change your view back.'  
+              self.displayMessageBox(messageString, messageInfo)
+         }//if we want to display popup, display it
+         }//rotate seat to display user as seat 0, then check if we need to confirm the change with the user
 }
 
 this.events.userStands = function(){
@@ -1514,6 +1528,7 @@ socket.emit('stand')
 
     this.events.exitTableClick = function(event){
       console.log('exittable clicked')
+      console.log(event)
        var  messageInfo = {}
        messageInfo.title = 'Leave Table?'
        messageInfo.cancel = true
@@ -1544,6 +1559,70 @@ self.events.userStands()
           var win = window.open('', '_self')
           win.close()
         }
+    }
+
+    this.events.onDisabledSeatClick = function(e){
+       console.log(e)
+  
+      //if right click
+if(e.nativeEvent.button !== 2){return}//make sure its a right click
+//e.nativeEvent.preventDefault()
+   
+
+      var seatObject = e.target.parentOfImageObject.seatObjectAncestor
+var rotatedSeatNumber = seatObject.rotatedSeatNumber
+var nonRotatedSeatNumber  = seatObject.nonRotatedSeatNumber
+var seatStageNumber = seatObject.seat.position.z.stage
+var seatStage = self.arrayOfParentsOfStageAndOfContainerArray[seatStageNumber]
+var buttonContainer = seatStage.containers.length-2
+var buttonStageNumber = seatStageNumber
+var buttonContainer = buttonContainer
+
+var buttonWidth = self.images.seats[0].seat.size.x*0.85
+var buttonHeight = 16
+var buttonFontSize = 10
+var buttonFont = self.permanentPreferences.defaultFontType.value
+
+//------------------------CREATE SHOW ME HERE OPTION--------------------------
+var showMeHere = new self.images.Item(0,0,buttonWidth, buttonHeight, {stage:buttonStageNumber, container: buttonContainer})
+ showMeHere.image = new createjs.Shape()
+ showMeHere.image.graphics.setStrokeStyle(1,'round').beginStroke('black')
+ .beginFill('#C8C8C8').drawRect(0, 0, buttonWidth, buttonHeight)
+
+ self.images.addItemText(showMeHere, 'Show Me Here', buttonFontSize+'px '+ buttonFont, 'black' )
+
+showMeHere.image.onClick = function(e){
+self.hideChildren(showMeHere)
+self.changeUserSeatView(rotatedSeatNumber)
+}
+
+var displayShowMeHere = function(){
+  var stagesToUpdate = []
+stagesToUpdate.push(self.setImageItemPositionAndTextBasedOnImageChange(showMeHere, e.stageX, e.stageY))
+stagesToUpdate.push(self.displayChildren(showMeHere,{update:false}))
+self.updateStages(stagesToUpdate)
+console.log('displayshowmehere finished')
+}
+
+var hideShowMeHere = function(){self.hideChildren(showMeHere)}
+
+
+
+displayShowMeHere()
+
+$(window).one('contextmenu.hideShowMeHere click.hideShowMeHere', function(event){
+  event.preventDefault()
+$(window).on(
+  'contextmenu.hideShowMeHere click.hideShowMeHere', function(event) { 
+ //   if(triggered === false){triggered = true;return}
+  console.log('click.hideShowMeHere event fired')
+  hideShowMeHere()
+  $(window).off( 'click.hideShowMeHere contextmenu.hideShowMeHere') 
+}//click.hideShowMeHereFunction contextmenu.hideShowMeHereFunction
+)
+} )
+
+
     }
 
      //===============START BET SLIDER===================
@@ -2592,8 +2671,11 @@ console.log(e)
             //percentage of vertical card to show
             var shownCardY = 0.92
 
+            //-----------------checkbox buttons---------------
+var checkBoxButtonSource = self.permanentPreferences.sourceObjects.value.checkBox
+var checkBoxButtonCheckedSource = self.permanentPreferences.sourceObjects.value.checkBoxChecked
             var checkBoxButtonWidth = 100
-            var checkBoxButtonHeight = 13
+      checkBoxButtonHeight = checkBoxButtonSource.height    //  var checkBoxButtonHeight = 13
             var checkBoxButtonDistanceFromChat = 8
             var checkBoxButtonOffSetLeft = 2
            var  checkBoxButtonDistanceY = 3
@@ -2627,10 +2709,9 @@ console.log(e)
 
 var currencyDisplayWidth = canvasWidth
 var currencyDisplayHeight = 15
-var currencyDisplayTopOffset = 1
+var currencyDisplayTopOffset = 0
 var currencyDisplaySizeAndFont = '16px ' + self.permanentPreferences.defaultFontType.value
 var currencyDisplayColor = 'white'
-
 
 
             var communityY = 220
@@ -2657,7 +2738,10 @@ var currencyDisplayColor = 'white'
             var potTextColor = '#FFFFFF'
 
             var potDistanceToCommunity = -25
-            var chipDiameter = 20
+
+           var chipSource = self.permanentPreferences.sourceObjects.value.chips['10']
+         var chipDiameter = chipSource.width  // var chipDiameter = 20
+       // var chipDiameter = 20
             var distanceBetweenChipsY = 3
 
             var betTextHeight = 11
@@ -2700,8 +2784,10 @@ var currencyDisplayColor = 'white'
             var rightChipOffsetY = seatHeight - chipDiameter/2
 
             //cashier Button width and height
-            var cashierButtonWidth = 132
-            var cashierButtonHeight = 52
+
+            var cashierButtonSource =  self.permanentPreferences.sourceObjects.value.cashierButton
+           var cashierButtonWidth = 132
+           var cashierButtonHeight = 52
 
 
 //distance between upper buttons
@@ -2709,16 +2795,21 @@ var distanceBetweenUpperButtonHitAreasY = 3
 
 
             //define dimensions for upper right and upper left buttons
-            var standUpWidth = 158
-            var standUpHeight = 26
+
+                   //---------------stand up----------
+            var standUpSource = self.permanentPreferences.sourceObjects.value.standUp
+          var standUpWidth =   standUpSource.width          //   var standUpWidth = 158
+               var standUpHeight = standUpSource.height            //   var standUpHeight = 26
             var standUpHitAreaUpperLeftOffsetX  = 6 //distance from left of standUp image and mouse events
             var standUpHitAreaLowerLeftOffsetX = 37
             var standUpHitAreaTopOffset  = 1 // distance from top of standUp image and mouse event clicks
             var standUpHitAreaBottomOffset  = 3 
             var standUpHitAreaRightOffset  = 1  // distance from rightside of image and hit area
 
-            var exitTableWidth = 135
-            var exitTableHeight = 32
+       //---------------exit table----------
+     var exitTableSource = self.permanentPreferences.sourceObjects.value.exitTable 
+                var exitTableWidth =   exitTableSource.width                  //  var exitTableWidth = 135
+               var exitTableHeight = exitTableSource.height                     //  var exitTableHeight = 32
 
              var exitTableHitAreaUpperLeftOffsetX  = 18 //distance from left of ExitTable image and mouse events
             var exitTableHitAreaLowerLeftOffsetX = 49
@@ -2726,8 +2817,10 @@ var distanceBetweenUpperButtonHitAreasY = 3
              var exitTableHitAreaBottomOffset  = 9
             var exitTableHitAreaRightOffset  = 1  // distance from ExitTable of image and hit area
             
-            var getChipsWidth = 149
-            var getChipsHeight = 41
+            //---------------get chips----------
+             var getChipsSource = self.permanentPreferences.sourceObjects.value.getChips 
+                var getChipsWidth =   getChipsSource.width                  //   var getChipsWidth = 149
+               var getChipsHeight = getChipsSource.height                     //  var getChipsHeight = 41
 
              var getChipsHitAreaLeftOffset  = 1 //distance from left of getChips image and mouse events
             var getChipsHitAreaTopOffset  = 1 // distance from top of getChips image and mouse event clicks
@@ -2736,8 +2829,10 @@ var distanceBetweenUpperButtonHitAreasY = 3
             var getChipsHitAreaLowerRightOffset  = 38
 
 //show/hidde table chat full buttons
-var showTableChatFullWidth = 112
-var showTableChatFullHeight =  31
+     var showTableChatFullSource = self.permanentPreferences.sourceObjects.value.showTableChatFull 
+                var showTableChatFullWidth =   showTableChatFullSource.width                  //   var showTableChatFullWidth = 112
+               var showTableChatFullHeight = showTableChatFullSource.height                     //  var var showTableChatFullHeight =  31
+                  
 var showTableChatFullHitAreaOffsetLeft= 1
 var showTableChatFullHitAreaOffsetTop = 1
 var showTableChatFullHitAreaOffsetBottom = 7
@@ -2748,7 +2843,6 @@ var showTableChatFullHitAreaOffsetBottomRight = 27
             var openSeatOuterStrokeWidth = 1.5
 
             var tableX = 0
-
             var tableY = 15
 
             var disabledButtonOverlayAlpha = 0.43
@@ -2921,8 +3015,7 @@ self.jQueryObjects.chatBoxInput.css({
                
                
                 //define on versions
-                  this.foldToAnyBetOn =  new this.Item(this.foldToAnyBet.position.x,this.foldToAnyBet.position.y, this.foldToAnyBet.size.x,this.foldToAnyBet.size.y,self.gameState.zPositionData.button, {messages:['set_flag','fold',false], otherMessages :['set_flag','check',false]})
-                   
+                  this.foldToAnyBetOn =  new this.Item(this.foldToAnyBet.position.x,this.foldToAnyBet.position.y, this.foldToAnyBet.size.x,this.foldToAnyBet.size.y,self.gameState.zPositionData.button, {messages:['set_flag','fold',false], otherMessages :['set_flag','check',false]})     
           this.sitOutNextHandOn = new  this.Item(this.sitOutNextHand.position.x,this.sitOutNextHand.position.y, this.sitOutNextHand.size.x,this.sitOutNextHand.size.y,self.gameState.zPositionData.button,{messages: ['sit_in']})
         this.sitOutNextBlindOn = new  this.Item(this.sitOutNextBlind.position.x,this.sitOutNextBlind.position.y, this.sitOutNextBlind.size.x,this.sitOutNextBlind.size.y,self.gameState.zPositionData.button, {messages:['set_flag', 'post_blind', true]})
         
@@ -2936,11 +3029,16 @@ this.itemAsBitmap(this.sitOutNextBlindOn, self.permanentPreferences.sourceObject
 
   //hitAreas for buttons
       
+
       self.images.drawCheckBoxButtonHitSquareAndAdjustItemWidth = function(item){
           //get width of text
         var textWidth =   self.getTextWidthAndFontSize(item)[0]
         var totalWidth = checkBoxButtonCheckBoxWidth + checkBoxButtonDistanceFromBoxToText + textWidth
         item.size.x = totalWidth
+        var textHeight = item.text.getMeasuredHeight()
+        if(textHeight > checkBoxButtonHeight){var height = textHeight}
+          else{var height = checkBoxButtonHeight}
+            item.size.y = textHeight
         //draw rectangular shape
         var hitSquare = new createjs.Shape()
         hitSquare.graphics.beginFill('#FFFFFF').beginStroke(0)
@@ -2988,6 +3086,15 @@ options.update = update
 if(update !== false){self.updateStages(stagesToUpdate)}
 else{return stagesToUpdate}
 }
+
+self.images.itemsAsCheckBoxes = function(uncheckedItem,checkedItem, text, options){
+  self.images.itemAsBitmap(uncheckedItem, checkBoxButtonSource)
+self.images.addCheckBoxButtonText(uncheckedItem, text, options)
+
+  self.images.itemAsBitmap(checkedItem, checkBoxButtonCheckedSource)
+self.images.addCheckBoxButtonText(checkedItem, text, options)
+}
+
 //off state
       self.images.addCheckBoxButtonText( this.foldToAnyBet, 'Auto check/fold' )
       self.images.addCheckBoxButtonText(this.sitOutNextHand, 'Sit out next hand')
@@ -3035,6 +3142,7 @@ else{return stagesToUpdate}
           self.images.seats[i].seat.image = new createjs.Shape()
  self.images.seats[i].seat.image.parentOfImageObject = self.images.seats[i].seat
 
+
 })
 
 
@@ -3043,9 +3151,11 @@ for(var i =0;i<this.seats.length;i++){
 
 //draw seated seat image
 self.images.drawSeat(this.seats[i].seat, '#000000','#000000', '#7d7d7d')
-//mouse events
+
+//mouseover events
 this.seats[i].seat.image.onMouseOver = self.events.seatMouseEvent
 this.seats[i].seat.image.onMouseOut = self.events.seatMouseEvent
+
 
     //--------------------empty seats and text----------------- 
          this.seats[i].openSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,self.gameState.zPositionData.button)
@@ -3089,12 +3199,21 @@ this.seats[i].openSeat.text.textAlign = 'center'
 this.seats[i].openSeat.text.maxWidth = this.seats[i].openSeat.size.x*.9
 this.seats[i].openSeat.textColor = "#FFFFFF"       
 
+
+
+
             //disabled Seats
             var disabledBorder = "#544E4F"
             var disabledFill = 'black'
             var disabledMiddle = disabledFill
             self.images.drawSeat (this.seats[i].disabledSeat, disabledBorder, disabledFill, disabledMiddle, {outerStrokeWidth: openSeatOuterStrokeWidth})
    this.seats[i].disabledSeat.image.parentOfImageObject = this.seats[i].disabledSeat     
+
+//openSeat onclick event
+
+self.images.seats[i].disabledSeat.image.addEventListener('click', self.events.onDisabledSeatClick)
+
+
 /*
             this.seats[i].disabledSeat.image = new createjs.Shape()
 this.seats[i].disabledSeat.image.snapToPixel = true
@@ -3471,7 +3590,7 @@ this.standUpDisabledShape.image.alpha = disabledButtonOverlayAlpha
 
 //-------------------------upper left Get Chips-------
  this.getChips = new this.Item(0, 0, getChipsWidth, getChipsHeight, self.gameState.zPositionData.button, {messages:['get_add_chips_info']})
- this.itemAsBitmap(this.getChips, self.permanentPreferences.sourceObjects.value.getChips)
+ this.itemAsBitmap(this.getChips, getChipsSource)
 
 
   //define shape of hit area
@@ -3579,8 +3698,12 @@ self.images.createCashier = function(){
 var cashierStageNumber = self.gameState.zPositionData.cashier.stage
 var cashierWindowContainer = 0
  //declare size variables
-        var cashierWindowWidth = 298
-        var cashierWindowHeight = 360
+
+    var cashierWindowSource = self.permanentPreferences.sourceObjects.value.cashierBackground
+            var cashierWindowWidth = cashierWindowSource.width //    var cashierWindowWidth = 298
+             var cashierWindowHeight = cashierWindowSource.height     //         var cashierWindowHeight = 360
+    
+  
         
         var textLeftOffset = 13  //distance from left of first column of text of gray cashier area
         var textTopOffset = 4   // distance from top of gray area to first row of text
@@ -3601,9 +3724,10 @@ var cashierWindowContainer = 0
         var cashierWindowX = canvasWidth/2 - cashierWindowWidth/2
         var cashierWindowY = canvasHeight/2 - cashierWindowHeight/2
         
-        
-        var closeWindowWidth = 31
-        var closeWindowHeight = 20
+   var closeWindowSource = self.permanentPreferences.sourceObjects.value.cashierCloseX
+          var closeWindowWidth = closeWindowSource.width //var closeWindowWidth = 31
+        var closeWindowHeight = closeWindowSource.height     //   var closeWindowHeight = 20
+
         var closeWindowY = cashierWindowY +1 
         var closeWindowX = cashierWindowX + cashierWindowWidth - closeWindowWidth- 7
 
@@ -3934,7 +4058,7 @@ var cashierButtonY = innerCashierBottomY - grayBoxOffsetBottom/2 - cashierButton
 var showTableChatFullOffsetY = distanceBetweenUpperButtonHitAreasY - showTableChatFullHitAreaOffsetTop - getChipsHitAreaBottomOffset
 
 this.showTableChatFull = new this.Item(this.getChips.position.x, this.getChips.position.y+this.getChips.size.y+showTableChatFullOffsetY, showTableChatFullWidth, showTableChatFullHeight, self.gameState.zPositionData.button )
-this.itemAsBitmap(this.showTableChatFull, self.permanentPreferences.sourceObjects.value.showTableChatFull)
+this.itemAsBitmap(this.showTableChatFull, showTableChatFullSource)
 this.showTableChatFull.image.onClick = self.events.showTableChatFullOnClick
 
 this.hideTableChatFull = new this.Item(this.getChips.position.x, this.getChips.position.y+this.getChips.size.y+showTableChatFullOffsetY, showTableChatFullWidth, showTableChatFullHeight, self.gameState.zPositionData.button )
@@ -4336,7 +4460,11 @@ if(stageOptions){
         self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.enableDOMEvents(stageOptions.enableDOMEvents)
       }
 
+if(stageOptions.disableContextMenu = true){
 
+$(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.canvas).on('contextmenu', function(e){e.preventDefault()})
+
+}
 }//if stageOptions
 
 if(options.canvasHidden === true){
@@ -4992,15 +5120,16 @@ performIfObject(value, [index])
 
 }
 
-
+//this functions sets the target number to be displayed as if it were seat 0, if no parameter it will default to display user as seat 0
 this.changeUserSeatView = function(seatNumberToRotateTo){
  //console.log('current displayed as seat # '+ this.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber +'changing userseat view to '+seatNumberToRotateTo)
 /*if(self.permanentPreferences.changeUserSeatViewTo.value == ['bottom','middle']){}
   else{return 'change view when seated setting is off'}*/
- if(!_.isNumber(seatNumberToRotateTo)){var seatNumberToRotateTo = 0}
-if(seatNumberToRotateTo > this.gameState.numSeats){ throw 'seatNumber too high, invalid'}
 
-//console.log('rotating to seat: '+seatNumberToRotateTo)
+ if(!_.isNumber(seatNumberToRotateTo)){var seatNumberToRotateTo = 0}
+if(seatNumberToRotateTo > this.gameState.numSeats){ console.log( 'seatNumber too high to rotate to, invalid');return}
+
+console.log('userseatnumber = '+ self.gameState.userSeatNumber+ ' rotating to seat: '+seatNumberToRotateTo + ' current rotatedSeatNumber of seat0 = ' + self.images.seats[0].rotatedSeatNumber)
 // console.log(this.images.seats)
 
 var clockWiseRotationNumberBasedOnUnRotatedPosition
@@ -5008,29 +5137,31 @@ var temporaryArrayOfNonrotatedSeats = []
 //make remporary array equal to seats.length
 for(var i = 0;i<this.gameState.numSeats;i++){temporaryArrayOfNonrotatedSeats.push({})}
 //determine where to seat the user (if seats have been previously rotated)
-if(!_.isNumber(self.gameState.userSeatNumber)){clockWiseRotationNumberBasedOnUnRotatedPosition = this.gameState.numSeats - this.images.seats[0].rotatedSeatNumber}
-  else if(seatNumberToRotateTo >= self.gameState.userSeatNumber){clockWiseRotationNumberBasedOnUnRotatedPosition = seatNumberToRotateTo-self.gameState.userSeatNumber}
-    else{clockWiseRotationNumberBasedOnUnRotatedPosition = this.gameState.numSeats  + seatNumberToRotateTo - self.gameState.userSeatNumber}
+if(!_.isNumber(self.gameState.userSeatNumber)){clockWiseRotationNumberBasedOnUnRotatedPosition = 0}
+     else{clockWiseRotationNumberBasedOnUnRotatedPosition = (this.gameState.numSeats  + seatNumberToRotateTo - self.gameState.userSeatNumber)%this.gameState.numSeats}
 
-if(clockWiseRotationNumberBasedOnUnRotatedPosition === this.images.seats[0].rotatedSeatNumber){
-console.log('no rotation')
+//else{clockWiseRotationNumberBasedOnUnRotatedPosition = seatNumberToRotateTo}
+
+if(clockWiseRotationNumberBasedOnUnRotatedPosition === (this.images.seats[0].rotatedSeatNumber + this.gameState.numSeats)%this.gameState.numSeats){
+console.log('no rotation, clockWiseRotationNumberBasedOnUnRotatedPosition = '+ clockWiseRotationNumberBasedOnUnRotatedPosition)
   return 'no rotation'}
 
-console.log('rotating to: '+clockWiseRotationNumberBasedOnUnRotatedPosition)
+console.log('clockwise rotation based on unrotated position = '+ clockWiseRotationNumberBasedOnUnRotatedPosition)
  var rotatedSeatNumberArray = []
  var nonRotatedSeatNumberArray = []
-for(var i = 0;i<this.gameState.numSeats;i++){
 
+for(var i = 0;i<this.gameState.numSeats;i++){
 rotatedSeatNumberArray.push (self.images.seats[i].rotatedSeatNumber)
 nonRotatedSeatNumberArray.push (self.images.seats[i].nonRotatedSeatNumber)
 }//end iteration through this.images.seats
+console.log('displaying pre-rotation rotatedSeatNumbers, followed by nonRotatedSeatNumbers')
 console.log(rotatedSeatNumberArray)
 console.log(nonRotatedSeatNumberArray)
+rotatedSeatNumberArray.length = 0
+nonRotatedSeatNumberArray.length  = 0
 //iterate through seats to get and copy image location data
 for(var i = 0;i<this.gameState.numSeats;i++){
 temporaryArrayOfNonrotatedSeats[self.images.seats[i].rotatedSeatNumber] = self.copySeatObjectItemLocationData(this.images.seats[i])
-
-
 }//end iteration through this.images.seats
 
 
@@ -5043,11 +5174,19 @@ this.images.seats[i].rotatedSeatNumber = (i+clockWiseRotationNumberBasedOnUnRota
 
 self.setSeatObjectLocationsInSeatObjectAEqualToOnesInSeatObjectB(this.images.seats[i],   temporaryArrayOfNonrotatedSeats[(i+clockWiseRotationNumberBasedOnUnRotatedPosition)%this.gameState.numSeats] )
 
+rotatedSeatNumberArray.push (self.images.seats[i].rotatedSeatNumber)
+nonRotatedSeatNumberArray.push (self.images.seats[i].nonRotatedSeatNumber)
 }//end iteration through this.images.seats
+console.log('current rotatedSeatNumber of seat0 = ' + self.images.seats[0].rotatedSeatNumber)
+
+console.log('displaying post-rotation rotatedSeatNumbers, followed by nonRotatedSeatNumbers')
+console.log(rotatedSeatNumberArray)
+console.log(nonRotatedSeatNumberArray)
 
 
 this.updateStages([self.itemChanged(this.images.seats[0].seat)], {forceUpdate:true})
-
+self.hideChildren(self.images.seats[0].seat)
+self.displayChildren(self.images.seats[0].seat)
 }
 
     this.setNumberOfSeats = function (numSeats){
@@ -9020,7 +9159,7 @@ var incrementOfContainersPerMessageBox = this.gameState.zPositionData.containers
                 messageBoxImageContainerIndex = i
                 i=this.arrayOfParentsOfStageAndOfContainerArray[messageBoxStageNumber].containers.length
            }
-        }
+        } //loop through this.arrayOfParentsOfStageAndOfContainerArray[messageBoxStageNumber].containers
 //console.log(messageBoxImageContainerIndex)
 
 
@@ -9049,12 +9188,17 @@ var incrementOfContainersPerMessageBox = this.gameState.zPositionData.containers
 
         //store active containers for retreival later
         self.gameState.messageBox.activeStages[messageBoxImageContainerIndex] = self.storeActiveStages()
-        var messageBoxWindowWidth = 516
-        var messageBoxWindowHeight = 199
+
+        var messageBoxWindowSource = self.permanentPreferences.sourceObjects.value.messageBoxBackground
+     var messageBoxWindowWidth = messageBoxWindowSource.width  //  var messageBoxWindowWidth = 516
+  var messageBoxWindowHeight = messageBoxWindowSource.height   //   var messageBoxWindowHeight = 199
         //declare size variables
   
-        var closeXWidth = 31
-        var closeXHeight = 20
+
+   var closeXSource = self.permanentPreferences.sourceObjects.value.messageBoxCloseX
+ var closeXWidth = closeXSource.width // var closeXWidth = 31
+   var closeXHeight = closeXSource.height   //  var closeXHeight = 20
+       
         var closeXTopOffset = 1
         var closeXRightOffset = 7
 
@@ -9089,9 +9233,22 @@ var incrementOfContainersPerMessageBox = this.gameState.zPositionData.containers
         var buttonButtomOffset = 15 //distance from end of gray area to bottom of button
         var buttonY = messageBoxWindowY + messageBoxWindowHeight - outerBottomHeight - buttonButtomOffset - buttonHeight
 
+var maxDistanceFromButtonsToCheckOption = 10
+
 var backgroundContainer = 0
 var textContainer = 1
 var buttonContainer = 2
+
+
+//SET MORE DEFAULTS
+
+var defaults = {}
+defaults.checkBox = false
+defaults.checkBoxText = 'Dont show this message again.'
+//defaults.checkBoxCheckedEvent = function(){}
+//defaults.checkBoxUncheckedEvent = function(){}
+
+_.defaults(messageInfo, defaults)
 
          //-------------------set defaults---------------------------
          if(_.isNull(messageInfo)||_.isUndefined(messageInfo)){messageInfo = {}}
@@ -9136,14 +9293,15 @@ if(messageInfo.sameSizeButtons === true){
   if(!_.isNumber(messageInfo.distanceBetweenButtons)){messageInfo.distanceBetweenButtons = defaultDistanceBetweenButtons }    
 
        //set button locations
-    if(messageInfo.cancel !== true){
-        var okayX = stageWidth/2 - messageInfo.okayWidth/2
-        }
-        else{
+    if(messageInfo.cancel !== true){ var okayX = stageWidth/2 - messageInfo.okayWidth/2}//ok in middle if no cancel button
+        else{//if cancel button, then we want to center the two buttons
      var okayX =    stageWidth/2 - messageInfo.distanceBetweenButtons/2 - messageInfo.okayWidth    
      var cancelX =  stageWidth/2 + messageInfo.distanceBetweenButtons/2 
         }
   
+
+
+
         //background bitmap and closeX image are in the this.setDefaults() function
         //set proper x, y, width, and height of background and closeX image
 
@@ -9161,13 +9319,13 @@ if(messageInfo.sameSizeButtons === true){
                 )
 
     //add closeX Image
-            var closeX =messageBoxWindowX+messageBoxWindowWidth- closeXRightOffset- closeXWidth
+            var closeX =messageBoxWindowX+messageBoxWindowWidth - closeXRightOffset - closeXWidth
         var closeY =  messageBoxWindowY+ closeXTopOffset 
     self.images.messageBox[messageBoxImageContainerIndex].closeWindow.position.x = closeX
       self.images.messageBox[messageBoxImageContainerIndex].closeWindow.position.y = closeY
         self.images.messageBox[messageBoxImageContainerIndex].closeWindow.size.x = closeXWidth
         self.images.messageBox[messageBoxImageContainerIndex].closeWindow.size.y = closeXHeight
-        self.positionItemImage(    self.images.messageBox[messageBoxImageContainerIndex].closeWindow, {update:false})
+        self.positionItemImage( self.images.messageBox[messageBoxImageContainerIndex].closeWindow, {update:false})
 
 if(messageInfo.closeWindowMessages){
   self.images.messageBox[messageBoxImageContainerIndex].closeWindow.messages = messageInfo.closeWindowMessages
@@ -9201,28 +9359,35 @@ if(messageInfo.closeWindowMessages){
         self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].okay, messageInfo.buttonBackgroundColor )
         self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].okay, messageInfo.okayText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
             //asign messages if okaymessages exists
-            if(messageInfo.okayMessages){    
-            self.images.messageBox[messageBoxImageContainerIndex].okay.messages = messageInfo.okayMessages}
+            if(messageInfo.okayMessages){  self.images.messageBox[messageBoxImageContainerIndex].okay.messages = messageInfo.okayMessages}
                 //assign event if assigned
 
        if(messageInfo.okayEvent){
         //check if is a string submitted via server
-
-          if(_.isString(messageInfo.okayEvent) ){
-
-            self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = eval(messageInfo.okayEvent)
-          }
-          else{self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = messageInfo.okayEvent}
-         
+          if(_.isString(messageInfo.okayEvent) ){ var okayEvent = eval(messageInfo.okayEvent) }
+            // or if its a function
+          else if (_.isFunction(messageInfo.okayEvent)){ var okayEvent =   messageInfo.okayEvent }
            }//end check if messageInfo.okayEvent exists
-      else{
-            self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = function(event){
-              self.events.onButtonClick(event)
-      self.hideMessageBox()
-        }
-      }
+
+         //set default okayEvent
+      if(!_.isFunction(okayEvent)){ var  okayEvent = function(e) { self.events.onButtonClick(e);  self.hideMessageBox()} }
+
+      //assign okay.image.onClick
+                    self.images.messageBox[messageBoxImageContainerIndex].okay.image.onClick = function(e){
+
+if(self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked && self.isItemAddedToStage(self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked))
+{
+  var checkBoxStatus = 'unchecked'
+}
+  else if(self.images.messageBox[messageBoxImageContainerIndex].checkBoxChecked && self.isItemAddedToStage(self.images.messageBox[messageBoxImageContainerIndex].checkBoxChecked) )
+  {
+  var checkBoxStatus = 'checked'
+}
+                      okayEvent(e, checkBoxStatus)
+                    }//okay.image.onClick
+  
 //cancel button
-        if(messageInfo.cancel && messageInfo.cancel == true){
+        if(messageInfo.cancel){
         self.images.messageBox[messageBoxImageContainerIndex].cancel =  new self.images.Item (cancelX,buttonY, messageInfo.cancelWidth,buttonHeight,{stage:messageBoxStageNumber, container: messageBoxImageContainerIndex+buttonContainer}) 
         self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].cancel, messageInfo.buttonBackgroundColor )
         self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].cancel, messageInfo.cancelText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
@@ -9252,11 +9417,84 @@ if(messageInfo.closeWindowMessages){
             self.arrayOfParentsOfStageAndOfContainerArray[messageBoxStageNumber].containers[i].mouseEnabled = false
         }
 
-           stagesToUpdate.push(   self.displayChildren(self.images.messageBox[messageBoxImageContainerIndex], hideOrDisplayChildrenOptions))
+
+//--------------------checkbox option------------------------------
+if(messageInfo.checkBox){
+
+   self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked = new self.images.Item(0,0,0,0,{stage:messageBoxStageNumber,container:messageBoxImageContainerIndex + buttonContainer})
+ self.images.messageBox[messageBoxImageContainerIndex].checkBoxChecked = new self.images.Item(0,0,0,0,{stage:messageBoxStageNumber,container:messageBoxImageContainerIndex + buttonContainer})
+self.images.itemsAsCheckBoxes(   self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked,  self.images.messageBox[messageBoxImageContainerIndex].checkBoxChecked, messageInfo.checkBoxText)
+
+
+//center the checkbox button (X)
+var checkBoxWidth = self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked.size.x
+var checkBoxX = messageBoxWindowX + messageBoxWindowWidth/2 - checkBoxWidth/2
+
+//get checkBoxY function
+var getCheckBoxY = function(){
+  //first check for the bottom of the messageBoxText
+var messageBoxMessage = self.images.messageBox[messageBoxImageContainerIndex].message
+var messageBoxTextBottom = getDisplayObjectPosition(messageBoxMessage.text)  + messageBoxMessage.text.getMeasuredHeight()
+
+var defaultCheckBoxY = self.images.messageBox[messageBoxImageContainerIndex].okay.position.y - maxDistanceFromButtonsToCheckOption -  self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked.size.y
+
+//in this case everything is fine and we do nothing
+if(defaultCheckBoxY - messageBoxTextBottom >= maxDistanceFromButtonsToCheckOption){}
+
+//in this case we dont need to resize our message but we ned to move the checkbox closer to the ok/cancel buttons
+else if(defaultCheckBoxY - messageBoxTextBottom >= maxDistanceFromButtonsToCheckOption * -1 ){
+  var distanceFromButtonsToMessageBottom = self.images.messageBox[messageBoxImageContainerIndex].okay.position.y - messageBoxTextBottom
+ var distanceFromCheckBoxToMessageBottomAndButtons =   (distanceFromButtonsToMessageBottom - self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked.size.y)/2
+var checkBoxY = self.images.messageBox[messageBoxImageContainerIndex].okay.position.y - distanceFromCheckBoxToMessageBottomAndButtons
+}//if message is a bit long and we need to tweak
+//in this case message runs too long to display the check box, we must reduce the height of the message
+else if(defaultCheckBoxY - messageBoxTextBottom < maxDistanceFromButtonsToCheckOption * -1 ){
+//function to reduce size of messageBoxText
+//var checkBoxY = getCheckBoxY()
+}//if message is too long and we need to resize
+
+if(_.isNumber(checkBoxY) && !_.isNaN(checkBoxY)){return checkBoxY}
+  else{return defaultCheckBoxY}
+
+}//getCheckBoxY function
+
+var checkBoxY = getCheckBoxY()
+  self.setImageItemPositionAndTextBasedOnImageChange(  self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked, checkBoxX, checkBoxY )
+  self.setImageItemPositionAndTextBasedOnImageChange(  self.images.messageBox[messageBoxImageContainerIndex].checkBoxChecked,  checkBoxX, checkBoxY)
+
+//assign onClick functions
+ self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked.image.onClick = function(e){
+if(_.isFunction(messageInfo.checkBoxUncheckedEvent)){messageInfo.checkBoxUncheckedEvent(e)}
+   else if(_.isString(messageInfo.checkBoxUncheckedEvent) ){   eval(messageInfo.checkBoxUncheckedEvent)(e)}
+console.log('unchecked mesagebox checkbox clicked')
+ var stagesToUpdate = [] 
+ stagesToUpdate.push (self.hideChildren(self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked, {update:false} ) )
+ stagesToUpdate.push (self.displayChildren(self.images.messageBox[messageBoxImageContainerIndex].checkBoxChecked, {update:false}) )
+ self.updateStages(stagesToUpdate)
+
+ }//unchecked.image.onClick
+self.images.messageBox[messageBoxImageContainerIndex].checkBoxChecked.image.onClick = function(e){
+if(_.isFunction(messageInfo.checkBoxCheckedEvent)){messageInfo.checkBoxCheckedEvent(e)}
+  else if(_.isString(messageInfo.checkBoxCheckedEvent) ){  eval(messageInfo.checkBoxCheckedEvent)(e)}
+
+ var stagesToUpdate = [ self.hideChildren(self.images.messageBox[messageBoxImageContainerIndex].checkBoxChecked, {update:false}), self.displayChildren(self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked, {update:false})]
+ self.updateStages(stagesToUpdate)
+}//checked.image.onClick
+
+}//if we want to display check Box
+
+//if we not displaying textBox
+else{
+  self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked = null
+    self.images.messageBox[messageBoxImageContainerIndex].checkBoxChecked = null
+}
+
+           stagesToUpdate.push(self.displayChildren(self.images.messageBox[messageBoxImageContainerIndex], hideOrDisplayChildrenOptions))
+stagesToUpdate.push(self.hideChildren(  self.images.messageBox[messageBoxImageContainerIndex].checkBoxChecked, hideOrDisplayChildrenOptions))
 
 
 //display messageBoxCanvas
-$(this.arrayOfParentsOfStageAndOfContainerArray[ messageBoxStageNumber].stage.canvas).css('display','inline')
+$(this.arrayOfParentsOfStageAndOfContainerArray[messageBoxStageNumber].stage.canvas).css('display','inline')
 
 if(update !== false){this.updateStages(stagesToUpdate)}
       else{return stagesToUpdate}
@@ -9987,8 +10225,8 @@ $//('#server_values')[0].dataset.table_state_url
 }
 
 this.saveSessionPreferences = function(){
-console.log('user seat preference view is:')
-console.log(self.sessionPreferences.changeUserSeatViewTo.value)
+//console.log('user seat preference view is:')
+//console.log(self.sessionPreferences.changeUserSeatViewTo.value)
     socket.emit('set_flag', 'sessionPreferences', this.sessionPreferences)
 console.log(this.sessionPreferences)
 }
@@ -10437,6 +10675,8 @@ self.playerSitsOut(table_state.seats[i].seat)
 
 }
 if(!_.isNumber(this.gameState.userSeatNumber)){this.displayChildren(this.images.getChipsDisabledShape)}
+
+    if(table_state.stage_name !==  'waiting' && table_state.stage_name !== 'blinding'){
         //display player's cards
          for(var i=0;i<table_state.players.length;i=i+1){
                if(!table_state.players[i].hand || table_state.players[i].hand.length == 0){this.displayHiddenCards(table_state.players[i].seat) }
@@ -10445,6 +10685,8 @@ if(!_.isNumber(this.gameState.userSeatNumber)){this.displayChildren(this.images.
                     this.displayHoleCards(table_state.players[i].hand, table_state.players[i].seat)
         }
         }//iteration through table_state.players
+
+}//check stage is appropriate to give people hole cards
 
         //pot
 
@@ -10754,6 +10996,7 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
    //  self.startCountdown(self.gameState.userSeatNumber,Math.round(timeout/1000))
 
 
+/*
 
 //check for valid preactions
 for (var i = 0; i < actions.length; i++){
@@ -10780,7 +11023,7 @@ if(betPreactionData){socket.emit('act', 'bet',betPreactionData.value);return}
          }
          }
 
-
+*/
 
 //display bet slider
      for (var i = 0; i < actions.length; i++){
@@ -11085,7 +11328,8 @@ stagesToUpdate.push( self.updateUserOptionsBasedOnFlagsAndPreactions(options))
 
 self.updateStages(stagesToUpdate)
 })
-    }
+
+    }//this.activateSockets
 
    }
 
