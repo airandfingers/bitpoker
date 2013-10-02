@@ -179,7 +179,7 @@ self.jQueryObjects.tableChatFullParagraph.css('color', this.value)
         windowAlpha:{value: 0.4 , updateValue: function(newValue){
 
 this.value = newValue
-if(self.gameState.itemsCreated === true){
+if(self.gameState.itemsCreated === true ){
 self.updateStages  (self.itemChanged (self.images.tableChatFull.window.alpha = this.value))
 }
          }//windowAlpha.updateValue
@@ -418,7 +418,6 @@ desktopCardFolder: 'img/fourcolordeck/'
         this.images.seats[i].originalSeatNumber = i
         this.images.seats[i].rotatedSeatNumber = i
         this.images.seats[i].seat = {}
-        this.images.seats[i].text = {}
         this.images.seats[i].bet={}
         this.images.seats[i].chips = []
         this.images.seats[i].firstChip = {}
@@ -908,6 +907,7 @@ event.onMouseMove = function(e){
 
 this.events.seatMouseEvent = function(event, options){
 
+
 //  console.log('seatmouse event called')
   if(!options){var options = {}}
     var defaults = {}
@@ -917,6 +917,7 @@ defaults.seatNum =  defaults.seatObject.nonRotatedSeatNumber
 defaults.animationTime = 600
   }
 
+console.log('seat mouse over event called for seat ' + defaults.seatNum)
 options = _.defaults(options, defaults)
 
 
@@ -1071,11 +1072,11 @@ var animationInfoArray = []
 //prepare animation information
 if(getAnimationDirection() === 'top'){return false}
   if(getAnimationDirection() === 'up'){return false}
-  if(!_.isArray(getHoleCardAnimationArray())){console.log('animateup stopped cuz no cards');return false}
+        var holeCardAnimationArray = getHoleCardAnimationArray()
+  if(!_.isArray(holeCardAnimationArray)){console.log('animateup stopped cuz no cards');return false}
       console.log('animating up '+ getAnimationDirection())
     setAnimationDirection('up')
 
-  var holeCardAnimationArray = getHoleCardAnimationArray()
 _.each(_.range(holeCardAnimationArray.length),function(cardNumber){
 
 animationInfoArray[cardNumber] = { //animation info
@@ -1105,11 +1106,12 @@ function animateDown(){
 
 var animationInfoArray = []
 if(getAnimationDirection() !== 'top' && getAnimationDirection() !== 'up'){return false}
-  if(!_.isArray(getHoleCardAnimationArray())){return false}
+    var holeCardAnimationArray = getHoleCardAnimationArray()
+  if(!_.isArray(holeCardAnimationArray)){return false}
   //prepare animation information
 setAnimationDirection('down')
 console.log('animating down')
-  var holeCardAnimationArray = getHoleCardAnimationArray()
+
 _.each(_.range(holeCardAnimationArray.length),function(cardNumber){
 
 animationInfoArray[cardNumber] = { //animation info
@@ -1161,7 +1163,8 @@ else if(!_.isObject(seatObject.shownCards[0].image)
  || self.isItemAddedToStage(seatObject.hiddenCards[1])
  ){return false}//if not user
 
-if (!_.isArray(getHoleCardAnimationArray() || getHoleCardAnimationArray().length===0 ) ){return false}
+var animationArray = getHoleCardAnimationArray()
+if (!_.isArray(animationArray) || animationArray.length === 0 ){return false}
 
 return true
 }//shouldAnimate function
@@ -2618,7 +2621,8 @@ for(var i =0;i<flashArray.length;i++){
 
 //ACTION
 
-console.log('we are going to check whether to perform load from this page, or use other page load');console.log(parent)
+//console.log('we are going to check whether to perform load from this page, or use other page load');
+//console.log(parent)
 if(parent.loaded === true || parent.loading === true){console.log('other frame to load our images');console.log(self.permanentPreferences.sourceObjects.value);console.log(parent.sourceObjects)}
   else{
     console.log('loading from this page')
@@ -2886,7 +2890,7 @@ if(options.columnDirection !== 'left'){
                   }//if we want to go left
              self.images.addItemText(self.images.pots[potNumber].potSize, '' ,potSizeAndFont, potTextColor, {textAlign:'left'})
 self.images.pots[potNumber].potSize.text.maxWidth = 999999
-console.log('created pot items for pot number: '+potNumber);console.log(self.images.pots[potNumber])
+//console.log('created pot items for pot number: '+potNumber);console.log(self.images.pots[potNumber])
 }
 
 
@@ -3172,8 +3176,8 @@ this.seats[i].seat.image.onMouseOut = self.events.seatMouseEvent
 
      //------------------hole cards-----------------------------
             var middleOfSeat = this.seats[i].seat.position.x +this.seats[i].seat.size.x/2
-            var card0X = middleOfSeat - cardWidth - spaceBetweenHoleCards/2
             var cardY = this.seats[i].seat.position.y - cardHeight*shownCardY
+             var card0X = middleOfSeat - cardWidth - spaceBetweenHoleCards/2
             var card1X = middleOfSeat  + spaceBetweenHoleCards/2
              
              this.seats[i].hiddenCards = []
@@ -4773,19 +4777,19 @@ var holeCardSources = []
 if(self.gameState.userSeatNumber === playerNumber
  && _.isArray(self.gameState.holeCards)
  && self.gameState.holeCards.length>0){
-  console.log('creating user hole card copy')
+ // console.log('creating user hole card copy')
 shouldCopyHoleCards = true
 holeCardSources = self.gameState.holeCards
 }//if user
 
 else if (shouldCopyHoleCards === false) {//if not user
-console.log('checking to see if we should create hole card copy for non-user, or user that loaded late')
+//console.log('checking to see if we should create hole card copy for non-user, or user that loaded late')
 //check whether we should create hole cards or not
 
 for(var i = 0;i<holeCardArray.length;i++){//iterate through hole cards check if visible
 
  if(self.isItemAddedToStage(holeCardArray[i]) !== true){
-console.log('card '+i+'is not added to stage')
+//console.log('card '+i+'is not added to stage')
   shouldCopyHoleCards = false}
   else{
       holeCardSources[i] = holeCardArray[i].image.imageSource
@@ -4793,7 +4797,7 @@ console.log('card '+i+'is not added to stage')
 }//iterate through hole cards check if visible
 }//if not user
 
-console.log('copy hole cards is '+ shouldCopyHoleCards)
+//console.log('copy hole cards is '+ shouldCopyHoleCards)
 //if not displaying then return false
 if(shouldCopyHoleCards !== true){return false}
 
@@ -4969,13 +4973,20 @@ return itemCopyWithOnlyLocationData
 
 }
 
-this.setItemLocationsInItemAEqualToOnesInItemB = function(itemA, itemB){
+this.setItemLocationsInItemAEqualToOnesInItemBOld = function(itemA, itemB){
 
 if(!_.isObject(itemA) || !_.isObject(itemB)){return}
 
 if(itemA.image&&itemB.image){ itemA.image.x = itemB.image.x;itemA.image.y = itemB.image.y}
-
 if(itemA.text&&itemB.text){itemA.text.x = itemB.text.x; itemA.text.y = itemB.text.y}
+
+if((_.isObject(itemA.image) && !_.isObject(itemB.image))||(_.isObject(itemA.text)&&!_.isObject(itemB.text))){
+ var deltaX = itemB.position.x - itemA.position.x; var deltaY = itemB.position.y - itemA.position.y
+ var options = {}
+ options.movementType = 'relative'
+  self.setImageItemPositionAndTextBasedOnImageChange(itemA, deltaX, deltaY, options)
+  return
+}
 
 if(_.isObject(itemB.position)){
   if(!_.isObject(itemA.position)){itemA.position = {}}//make empty object if doesnt exist in itemA
@@ -4995,104 +5006,187 @@ itemA.size.y = itemB.size.y
 }//size
 }
 
+this.setItemLocationsInItemAEqualToOnesInItemB = function(itemA, itemB, options){
+if(!options){var options = {}}
+  var movementType = options.movementType
+options.movementType = 'relative'
+var permanent = options.permanent
+options.permanent = true
+
+if(!_.isObject(itemA) || !_.isObject(itemB)){console.log('setItemLocationsInItemAEqualToOnesInItemB not objects');return}
+else if(_.isEmpty(itemB)){console.log('setItemLocationsInItemAEqualToOnesInItemB empty itemB');return}
+  else if(itemA instanceof self.images.Item !== true){console.log('setItemLocationsInItemAEqualToOnesInItemB itemA not an Item');console.log(itemA)}
+var changed = false
+
+if(_.isUndefined(itemB.position)){console.log('itemB position undefined');console.log(itemB)}
+if(_.isUndefined(itemA.position)){console.log('itemA position undefined');console.log(itemA)}
+
+
+
+if(!itemA.image && !itemB.image && itemA.text && itemB.text && !_.isNaN(parseInt(itemA.text.text) )  ){
+
+
+}
+
+//if adjusting only text, we adjust the position values separately from the text location values
+if(!itemA.image && !itemB.image && itemA.text && itemB.text){
+// if(!_.isNaN(parseInt(itemA.text.text)) ){ console.log('setitemlocations changing location of text: '+itemA.text.text)}
+  //  console.log(itemA);console.log(itemB)
+   itemA.position.x = itemB.position.x
+itemA.position.y = itemB.position.y
+ var deltaX = itemB.text.x - itemA.text.x; var deltaY = itemB.text.y - itemA.text.y
+ options.permanent = false //not goint to adjust position values with setitem function
+
+}
+else {//if adjusting not only text
+  var deltaX = itemB.position.x - itemA.position.x; var deltaY = itemB.position.y - itemA.position.y
+}
+//move our object and all data to the new location
+  self.setImageItemPositionAndTextBasedOnImageChange(itemA, deltaX, deltaY, options)
+
+/*
+if((_.isObject(itemA.image) && !_.isObject(itemB.image))||(_.isObject(itemA.text)&&!_.isObject(itemB.text))){
+ var deltaX = itemB.position.x - itemA.position.x; var deltaY = itemB.position.y - itemA.position.y
+  self.setImageItemPositionAndTextBasedOnImageChange(itemA, deltaX, deltaY, options)
+}
+*/
+
+/*
+else{
+if(itemA.image&&itemB.image){ changed = true; itemA.image.x = itemB.image.x;itemA.image.y = itemB.image.y}
+if(itemA.text&&itemB.text){changed = true; itemA.text.x = itemB.text.x; itemA.text.y = itemB.text.y}
+}
+
+if(_.isObject(itemB.position)){
+
+//position
+  if(!_.isObject(itemA.position)){
+  itemA.position = {}//make empty object if doesnt exist in itemA
+itemA.position.x = itemB.position.x
+itemA.position.y = itemB.position.y
+}
+
+
+//z position
+if(_.isObject(itemB.position.z)){
+  if(!_.isObject(itemA.position.z)){itemA.position.z = {}}//make empty object if doesnt exist in itemA
+    itemA.position.z.stage =  itemB.position.z.stage
+   itemA.position.z.container =  itemB.position.z.container
+  }//z position
+}//position
+
+if(_.isObject(itemB.size)){
+  if(!_.isObject(itemA.size)){itemA.size = {}}//make empty object if doesnt exist in itemA
+itemA.size.x = itemB.size.x
+itemA.size.y = itemB.size.y
+}//size
+
+*/
+
+ options.permanent = permanent 
+   options.movementType = movementType 
+if(options.updateStageStatus === true){
+if(options && options.update === true){self.updateStages(self.itemChanged(itemA))}
+else{return self.itemChanged(itemA)}
+}
+
+}
+
 
 this.copySeatObjectItemLocationData = function(seatObject){
  var seatObjectCopy =  {}
 this.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray(seatObject, function(value, indexes){
 
-//if array do nothing
-if(_.isArray(value)){seatObjectCopy[indexes[0]] = [];return}
-else{
+
+
+
 if (indexes.length === 1){
-seatObjectCopy[indexes[0]] = self.copyItemLocationData(value)
+  //if array make blank array on copy object
+  if(_.isArray(value)){seatObjectCopy[indexes[0]] = [];return}
+else{seatObjectCopy[indexes[0]] = self.copyItemLocationData(value)}
 }
 else if (indexes.length === 2){
   seatObjectCopy[indexes[0]][indexes[1]] = self.copyItemLocationData(value)
 }
-}
+
 
 }//performIfObject 
 )
 
-/*
-  _.each(seatObject, function(value,index,list) {
-
-    if(value instanceof self.images.Item){
-seatObjectCopy[index] =  self.copyItemLocationData(value)
-}//check if this.images.seats[i][item] is  item
-
-else if (_.isArray(value)){
-  //create matching array in temporary stack
-seatObjectCopy[index] = []
-_.each(_.range(value.length),function(arrayIndex){//iterate through array
-  if(value[arrayIndex] instanceof self.images.Item){//make sure its item
-  seatObjectCopy[index][arrayIndex] = self.copyItemLocationData(value[arrayIndex])
-  }//check to make sure value[arrayIndex] is item
-})//iterate through value
-
-}//if is array
-
-  })//end iteration through this.images.seats[i]
-   */
 return seatObjectCopy
 }
 
-this.setSeatObjectLocationsInSeatObjectAEqualToOnesInSeatObjectB = function(seatObjectA, seatObjectB){
+this.setSeatObjectLocationsInSeatObjectAEqualToOnesInSeatObjectB = function(seatObjectA, seatObjectB, options){
+if(!options){var options = {}}
+  var movementType = options.movementType
+options.movementType = 'relative'
+var permanent = options.permanent
+options.permanent = true
+var stagesToUpdate = []
+
+console.log('setSeatObjectLocationsInSeatObjectAEqualToOnesInSeatObjectB called')
+console.log(seatObjectA)
+console.log(seatObjectB)
+
 this.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray(seatObjectB, function(value, indexes){
-//if array do nothing
+
+//if empty object do nothing
+if(!_.isArray(value)&&_.isEmpty(value)){return}
+
+if(!_.isArray(value)){
+if(!value.position){console.log('objectB without position value whose indexes =');console.log(indexes);console.log(seatObjectB)}
+}
+
+
+
+//if array make blank array in objectA
 if(_.isArray(value)){
   //make array if it isnt an array already
 if(!_.isArray(seatObjectA[indexes[0]]) ){
-console.log('seatObjectA with following indexes is not an array');console.log(indexes)
-console.log('seatObjectA.index0 value = ');console.log(seatObjectA[indexes[0]])
+//console.log('seatObjectA with following indexes is not an array');console.log(indexes)
+//console.log('seatObjectA.index0 value = ');console.log(seatObjectA[indexes[0]])
  seatObjectA[indexes[0]] = [];console.log('created an array in seatObjectA named '+indexes[0]) }
 }
 
 
-
 else if (indexes.length === 1){
-self.setItemLocationsInItemAEqualToOnesInItemB(seatObjectA[indexes[0]], value)
+  if(!seatObjectA[indexes[0]].position){console.log('seatObjectA value without position =');console.log(indexes);console.log(seatObjectA)}
+if(indexes[0] === 'bet'){'changing bet text location'} 
+stagesToUpdate.push(self.setItemLocationsInItemAEqualToOnesInItemB(seatObjectA[indexes[0]], value, options))
 }//if indexes.length == 1
 else if (indexes.length === 2){
 
-if(_.isUndefined(seatObjectA[indexes[0]][indexes[1]])){console.log(seatObjectA);console.log(indexes);console.log(value)}
+if(indexes[0] === 'chips'){return} //don't copy actual chip image locations, we only use the reference
+
+if( _.isUndefined(seatObjectA[indexes[0]][indexes[1]])){console.log('setseatobjectlocationA value undefined');console.log(seatObjectA);console.log(indexes);console.log(value)}
+else if(!seatObjectA[indexes[0]][indexes[1]].position){console.log('seatObjectA value without position =');console.log(indexes);console.log(seatObjectA)}
+
 
 //move the chips to the appropriate point useing our referenceChips array
-if(indexes[0] === 'chipReference'){
+if(indexes[0] === 'referenceChips' && _.isObject(seatObjectA['chips'][indexes[1]])){
 //if we are copying chip (premade) locations, we want to copy them to actual chip stack in addition to reference
-self.setItemLocationsInItemAEqualToOnesInItemB(seatObjectA['chips'][indexes[1]],value )
-}//if copying from chipReference arrat
+console.log('changing chips locations from chipReference array: ');console.log(value)
+console.log('pre change position: '+seatObjectA['chips'][indexes[1]].position.x+', '+seatObjectA['chips'][indexes[1]].position.y)
+stagesToUpdate.push (self.setItemLocationsInItemAEqualToOnesInItemB(seatObjectA['chips'][indexes[1]], value, options ))
+console.log('post change position: '+seatObjectA['chips'][indexes[1]].position.x+', '+seatObjectA['chips'][indexes[1]].position.y)
+}//if copying from chipReference array
 
-else if(indexes[0] === 'chips'){return} //don't copy actual chip image locations
 
 //"perform normal copy"
-   self.setItemLocationsInItemAEqualToOnesInItemB(seatObjectA[indexes[0]][indexes[1]], value)
+ stagesToUpdate.push  (self.setItemLocationsInItemAEqualToOnesInItemB(seatObjectA[indexes[0]][indexes[1]], value, options))
 
 }//if indexes.length == 2
 }//performIfObject 
 )
-/*
- _.each(seatObjectB, function(value,index,list) {
- // for (var item in this.images.seats[i]) {
 
-if (_.isArray(value)){
-
-_.each(_.range(value.length),function(arrayIndex){//iterate through array
-  if(_.isObject(value[arrayIndex])){//make sure its item
-self.setItemLocationsInItemAEqualToOnesInItemB(seatObjectA[index][arrayIndex], value[arrayIndex])
-  }//check to make sure its item
-})//iterate through value
-
-}//if is array
-
-  else  if(_.isObject(value)){
-//console.log('coping index of '+i+' which has a rotatedSeatNumber of '+self.images.seats[i].rotatedSeatNumber)
-self.setItemLocationsInItemAEqualToOnesInItemB(seatObjectA[index], value)
-}//check if this.images.seats[i][item] is really item
+ options.permanent = permanent 
+   options.movementType = movementType 
+if(options.updateStageStatus === true){
+if(options && options.update === true){self.updateStages(stagesToUpdate)}
+else{return stagesToUpdate}
+}
 
 
-  })//end iteration through this.images.seats[i]
-*/
 }
 
 //performIfObject will be passed parmeters [value, index]
@@ -5104,7 +5198,7 @@ _.each(seatObject, function(value,index,list) {
 if (_.isArray(value)){
 performIfObject(value, [index])
 _.each(_.range(value.length),function(arrayIndex){//iterate through array
-  if(_.isObject(value[arrayIndex])){//make sure its item
+  if(_.isObject(value[arrayIndex]) && !_.isArray(value[arrayIndex])){//make sure its item
 performIfObject(value[arrayIndex], [index, arrayIndex])
   }//check to make sure its object
 })//iterate through value
@@ -5122,12 +5216,16 @@ performIfObject(value, [index])
 
 //this functions sets the target number to be displayed as if it were seat 0, if no parameter it will default to display user as seat 0
 this.changeUserSeatView = function(seatNumberToRotateTo){
+if(!options){var options = {}}
+
  //console.log('current displayed as seat # '+ this.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber +'changing userseat view to '+seatNumberToRotateTo)
 /*if(self.permanentPreferences.changeUserSeatViewTo.value == ['bottom','middle']){}
   else{return 'change view when seated setting is off'}*/
 
  if(!_.isNumber(seatNumberToRotateTo)){var seatNumberToRotateTo = 0}
 if(seatNumberToRotateTo > this.gameState.numSeats){ console.log( 'seatNumber too high to rotate to, invalid');return}
+
+var stagesToUpdate = []
 
 console.log('userseatnumber = '+ self.gameState.userSeatNumber+ ' rotating to seat: '+seatNumberToRotateTo + ' current rotatedSeatNumber of seat0 = ' + self.images.seats[0].rotatedSeatNumber)
 // console.log(this.images.seats)
@@ -5146,7 +5244,7 @@ if(clockWiseRotationNumberBasedOnUnRotatedPosition === (this.images.seats[0].rot
 console.log('no rotation, clockWiseRotationNumberBasedOnUnRotatedPosition = '+ clockWiseRotationNumberBasedOnUnRotatedPosition)
   return 'no rotation'}
 
-console.log('clockwise rotation based on unrotated position = '+ clockWiseRotationNumberBasedOnUnRotatedPosition)
+//console.log('clockwise rotation based on unrotated position = '+ clockWiseRotationNumberBasedOnUnRotatedPosition)
  var rotatedSeatNumberArray = []
  var nonRotatedSeatNumberArray = []
 
@@ -5154,9 +5252,9 @@ for(var i = 0;i<this.gameState.numSeats;i++){
 rotatedSeatNumberArray.push (self.images.seats[i].rotatedSeatNumber)
 nonRotatedSeatNumberArray.push (self.images.seats[i].nonRotatedSeatNumber)
 }//end iteration through this.images.seats
-console.log('displaying pre-rotation rotatedSeatNumbers, followed by nonRotatedSeatNumbers')
-console.log(rotatedSeatNumberArray)
-console.log(nonRotatedSeatNumberArray)
+//console.log('displaying pre-rotation rotatedSeatNumbers, followed by nonRotatedSeatNumbers')
+//console.log(rotatedSeatNumberArray)
+//console.log(nonRotatedSeatNumberArray)
 rotatedSeatNumberArray.length = 0
 nonRotatedSeatNumberArray.length  = 0
 //iterate through seats to get and copy image location data
@@ -5164,7 +5262,7 @@ for(var i = 0;i<this.gameState.numSeats;i++){
 temporaryArrayOfNonrotatedSeats[self.images.seats[i].rotatedSeatNumber] = self.copySeatObjectItemLocationData(this.images.seats[i])
 }//end iteration through this.images.seats
 
-
+var seatMessages = []
 //console.log(temporaryArrayOfNonrotatedSeats)
 //iterate through seats to swap image location data
  // console.log('beginning iteration through this.images.seats')
@@ -5172,19 +5270,82 @@ for(var i = 0;i<this.gameState.numSeats;i++){
 
 this.images.seats[i].rotatedSeatNumber = (i+clockWiseRotationNumberBasedOnUnRotatedPosition)%this.gameState.numSeats
 
-self.setSeatObjectLocationsInSeatObjectAEqualToOnesInSeatObjectB(this.images.seats[i],   temporaryArrayOfNonrotatedSeats[(i+clockWiseRotationNumberBasedOnUnRotatedPosition)%this.gameState.numSeats] )
+self.setSeatObjectLocationsInSeatObjectAEqualToOnesInSeatObjectB(this.images.seats[i],   temporaryArrayOfNonrotatedSeats[(i+clockWiseRotationNumberBasedOnUnRotatedPosition)%this.gameState.numSeats], {updateStageStatus:false} )
+compareSeatObjectAToSeatObjectB(this.images.seats[i], temporaryArrayOfNonrotatedSeats[(i+clockWiseRotationNumberBasedOnUnRotatedPosition)%this.gameState.numSeats])
 
 rotatedSeatNumberArray.push (self.images.seats[i].rotatedSeatNumber)
 nonRotatedSeatNumberArray.push (self.images.seats[i].nonRotatedSeatNumber)
+
+seatMessages.push (self.gameState.seats[i].displayMessageType)
 }//end iteration through this.images.seats
+
+//perform check to make sure that the change has been succesfful
+
+function compareSeatObjectAToSeatObjectB (seatObjectA, seatObjectB){
+
+var errorIndex = []
+self.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray(seatObjectA, function(value, indexes){
+
+if(_.isArray(value) || _.isEmpty(value) ){return}
+if(indexes[0] === 'chips'){indexes[0] = 'referenceChips'}
+
+  if (indexes.length === 1){
+
+if(value.position.x !== seatObjectB[indexes[0]].position.x){errorIndex.push(indexes)}
+else if(value.position.y !== seatObjectB[indexes[0]].position.y){errorIndex.push(indexes)}
+
+  }
+else if(indexes.length === 2){
+
+  if(value.position.x !== seatObjectB[indexes[0]][indexes[1]].position.x){errorIndex.push(indexes)}
+else if(value.position.y !== seatObjectB[indexes[0]][indexes[1]].position.y){errorIndex.push(indexes)}
+}
+
+})
+
+if(errorIndex.length >0){
+console.log('compared seat objects')
+console.log(seatObjectA)
+console.log(seatObjectB)
+  console.log('the following are not equal');console.log(_.flatten(errorIndex))}
+}
+
+
+var seatVisible = []
+for(var i = 0;i<this.gameState.numSeats;i++){
+seatVisible.push(self.isItemAddedToStage(self.images.seats[i].seat))
+}//end iteration through this.images.seats
+console.log('check which seats have the seat displayed ' + seatMessages)
+console.log(seatVisible)
+/*
 console.log('current rotatedSeatNumber of seat0 = ' + self.images.seats[0].rotatedSeatNumber)
 
 console.log('displaying post-rotation rotatedSeatNumbers, followed by nonRotatedSeatNumbers')
 console.log(rotatedSeatNumberArray)
 console.log(nonRotatedSeatNumberArray)
 
+*/
 
-this.updateStages([self.itemChanged(this.images.seats[0].seat)], {forceUpdate:true})
+ //self.displayCorrectSeatMessage(null, {update:false})
+ //correct we want to redisplay all chip stacks
+
+ var currentBets = self.getCurrentBetSizes()
+ _.each(currentBets, function(value, index, list){
+
+if(self.isItemAddedToStage(self.images.seats[index].bet)){var displayBetSize = true}
+  else{var displayBetSize = false}
+
+if(displayBetSize){
+stagesToUpdate.push(self.displayChipStack(value, self.images.seats[index], {displayChipStackSize:true, update:false} ) )
+}
+
+
+ })//iterate through currentbets
+
+
+ if(_.isNumber(self.gameState.dealer)){self.animateDealerButton(self.gameState.dealer, 4)}
+this.updateStages(null, {forceUpdate:true})
+
 self.hideChildren(self.images.seats[0].seat)
 self.displayChildren(self.images.seats[0].seat)
 }
@@ -5479,18 +5640,14 @@ options.update = update
 var stagesToUpdate = []
 
 //remove any lingering images
-           stagesToUpdate.push(      this.hideChildren(this.images.seats[seatNumber].shownCards[0], options))
-       stagesToUpdate.push(            this.hideChildren(this.images.seats[seatNumber].shownCards[1], options))
+           stagesToUpdate.push(      this.hideChildren(this.images.seats[seatNumber].shownCards, options))
 
 //display face up cards
   stagesToUpdate.push(        this.displayShownCard(hand[0], this.images.seats[seatNumber].shownCards[0], options))
       stagesToUpdate.push(         this.displayShownCard(hand[1], this.images.seats[seatNumber].shownCards[1], options))
 
 //remove any facedown images
-           stagesToUpdate.push(      this.hideChildren(this.images.seats[seatNumber].hiddenCards[0], options))
-       stagesToUpdate.push(            this.hideChildren(this.images.seats[seatNumber].hiddenCards[1], options))
-
-     
+           stagesToUpdate.push(      this.hideChildren(this.images.seats[seatNumber].hiddenCards, options))     
 
 options.update = update//reset options.update variable
 if(options.update !== false){this.updateStages(stagesToUpdate)}
@@ -5510,13 +5667,12 @@ itemsToHide = _.flatten(itemsToHide)
 
     }
 
-    this.itemChanged = function(item){
+    this.itemChanged = function(item, options){
+      if(!options){var options  = {}}
 if(this.isItemAddedToStage(item)){
-
-this.arrayOfParentsOfStageAndOfContainerArray[item.position.z.stage].upToDate = false
+if(options.updateStageStatus !== false){this.arrayOfParentsOfStageAndOfContainerArray[item.position.z.stage].upToDate = false}
 return item.position.z.stage
 }
-
 
     }
 
@@ -5697,7 +5853,7 @@ return stagesToUpdate
 
 
    //this.images.seats[i] is parent for players bets, this.images.pots[i] is parent for pots
-    this.displayChipStack = function(chipAmount,parentOfChipArray, originalOptions){
+    this.displayChipStack = function(chipAmount, parentOfChipArray, originalOptions){
       var totalChipAmount = chipAmount
    //   console.log('displaychipstack function called with chipamount = '+chipAmount)
       chipAmount = parseFloat(chipAmount)
@@ -5712,7 +5868,7 @@ else{var options = _.clone(originalOptions)}
         var defaultOptions = {}
       defaultOptions.chipArrayName = 'chips'
 
-console.log('displaychipStack called, parentOfChipArray is:');console.log(parentOfChipArray)
+//console.log('displaychipStack called, parentOfChipArray is:');console.log(parentOfChipArray)
 
 //default initial x and y
       if(parentOfChipArray.firstChip instanceof this.images.Item){
@@ -5727,8 +5883,7 @@ console.log('displaychipStack called, parentOfChipArray is:');console.log(parent
                        defaultOptions.distanceBetweenColumns = this.images.pots[0].secondColumnChip.position.x - this.images.pots[0].firstChip.position.x 
                     }
 
-  //get item to displaychipstacksize
-
+  //get default item to display size of chip stack
 if(parentOfChipArray.potSize instanceof this.images.Item){defaultOptions.chipStackSizeItem = parentOfChipArray.potSize }
   else if(parentOfChipArray.bet instanceof this.images.Item){defaultOptions.chipStackSizeItem = parentOfChipArray.bet }
 
@@ -5736,7 +5891,7 @@ if(parentOfChipArray.potSize instanceof this.images.Item){defaultOptions.chipSta
 //assign defaults
       _.defaults(options, defaultOptions) 
 
-console.log('options =');console.log(options)
+//console.log('options =');console.log(options)
 
 var initialX = options.initialX; var initialY = options.initialY
 var distanceBetweenColumns = options.distanceBetweenColumns 
@@ -5882,6 +6037,8 @@ else{
     actualLeftX = chipArray[chipArray.length-1].position.x
 }//if chips going to left
 
+//position the text to its position
+self.setImageItemPositionAndTextBasedOnImageChange(sizeItem)
 
 //determine intended positioning of size item
 if(sizeItem.position.x >= maxRightX ){ var sizeLatitudePositioning = 'right'}
@@ -5911,7 +6068,7 @@ else {//if not left or right
  var sizePositionToItemPositionRatio =  (actualRightX - sizeItem.position.x - sizeItem.size.x)/chipStackMaxWidth
  var sizeItemX = actualRightX - sizePositionToItemPositionRatio*(actualRightX - actualLeftX) - measuredSizeWidth
 
- console.log ('ratio = '+sizePositionToItemPositionRatio)
+ //console.log ('ratio = '+sizePositionToItemPositionRatio)
    }//chip columns go from right to left
 
 
@@ -5931,7 +6088,7 @@ else{stagesToUpdate.push (self.setImageItemPositionAndTextBasedOnImageChange(siz
 }//if neither left nor right justification
 stagesToUpdate.push (self.displayChildren(sizeItem, options))
 
-console.log('adjusted size item based on '+ sizeLatitudePositioning + ' '+sizeLongitudePositioning)
+//console.log('adjusted size item based on '+ sizeLatitudePositioning + ' '+sizeLongitudePositioning)
 }//if we want to display chipStackSizeItem
 
 
@@ -6059,7 +6216,6 @@ animationInfo.movementType = 'relative'
 animationInfo.maxDepth = animationInfo.maxDepth  - 1
 
 //iterate through parameter and move all images within the array/object
-
 var animationAsyncParallelArray = []
 _.each(items, function(value, index, list){
 animationInfo.item = value
@@ -6071,7 +6227,7 @@ animationAsyncParallelArray.push(animateOneItem(info, animationID))
 
 })//iterate through item
 
-animationInfo.maxDepth = animationInfo.maxDepth+1
+animationInfo.maxDepth = animationInfo.maxDepth + 1
 animationInfo.movementType  = movementType
 }//if array or collection of items
 
@@ -6312,7 +6468,7 @@ var defaultPositions  =  {}
      return [textData.width, fontSize]
  }
 
-this.setImageItemPositionAndTextBasedOnImageChange = function(item, imageX, imageY, options){
+this.setImageItemPositionAndTextBasedOnImageChange = function(item, newX, newY, options){
 
   if (!options){var options = {}}
 var update = options.update
@@ -6337,81 +6493,114 @@ options.maxDepth = options.maxDepth  - 1
 _.each(item, function(value, index, list){
  // console.log(value)
  // console.log(index)
-moveItem(value, imageX, imageY)
+moveItem(value, newX, newY)
 })//iterate through item
 
 options.maxDepth = options.maxDepth+1
 options.movementType  = movementType
 }//if array or collection of items
 
-else {moveItem(item, imageX, imageY)}
+else {moveItem(item, newX, newY)}
 
-function moveItem (item, imageX, imageY){
+function moveItem (item, newX, newY){
 
 if(item instanceof self.images.Item){//if NOT an array or collection of Items
+var hasImage = false; var hasText = false;
 
-if(item.image ){
-  var previousImageLocation = getDisplayObjectPosition(item.image)
-if(_.isUndefined(previousImageLocation)){console.log(item)}
-}//if image
-if(item.text ){
-var previousTextLocation = getDisplayObjectPosition(item.text)
-
-}//if text
+if(options.movementType === 'relative' && _.isObject(item.text) && !item.image && !_.isNaN(parseFloat(item.text.text)))
+{
+  console.log(item.text.text + 'going to be moved ' + newX +' to the right and '+ newY + ' down')
+}
 
 
-if(!_.isNumber(imageX)){imageX = item.position.x}
-  else if( options.movementType === 'relative'){
-    if(item.image){imageX = previousImageLocation.x + imageX}
-      else if (item.text){imageX = previousTextLocation.x+imageX}
-  }//if relative position
-
-  if(!_.isNumber(imageY)){imageY = item.position.y}
-  else if( options.movementType === 'relative'){
-
-     if(item.image){imageY = previousImageLocation.y + imageY}
-       else if (item.text){imageY = previousTextLocation.y+imageY}
-   }//if relative position
+if(_.isObject(item.image) ){var hasImage = true;  var previousImageLocation = getDisplayObjectPosition(item.image)}
+  if(_.isObject(item.text) ){var hasText = true;var previousTextLocation = getDisplayObjectPosition(item.text)}
 
 
-    var textX = imageX
-  var textY = imageY
+if(!_.isNumber(newX)){
+if(hasImage){var deltaX = item.position.x - previousImageLocation.x}
+  else if (hasText){var deltaX = item.position.x - previousTextLocation.x}
+    else{var deltaX = 0}
+}//if no X is given
+else{var deltaX = newX}//if parameter is a number
+
+  if(!_.isNumber(newY)){
+if(hasImage){var deltaY = item.position.y - previousImageLocation.y}
+  else if (hasText){var deltaY = item.position.y - previousTextLocation.y}
+    else{var deltaY = 0}
+}//if no X is given
+else{var deltaY = newY}//if parameter is a number
+
+if( options.movementType === 'relative'){
+  if(_.isNumber(newX)){ var  deltaX = newX  }
+ if(_.isNumber(newY)){ var deltaY = newY}
+}//if relative movement
+
+else{//absolute movement
+
+   if(_.isNumber(newX)){ 
+if(hasImage){var deltaX = newX - previousImageLocation.x}
+  else if (hasText){var deltaX = newX - previousTextLocation.x}
+    else{var deltaX = newX - item.position.x}
+     }//if newX is given
+
+  if(_.isNumber(newY)){ 
+if(hasImage){var deltaY = newY - previousImageLocation.y}
+  else if (hasText){var deltaY = newY - previousTextLocation.y}
+    else{var deltaY = newY - item.position.y}
+}//if newY is gven
+}//if absolute movement
 
 //change position data if permanet is true
-if(options.permanent === true){item.position.x = imageX;item.position.y = imageY}
+if(options.permanent === true){
+  if(_.isNumber(newX) && options.movementType !== 'relative'){ item.position.x = newX}
+    else{item.position.x = item.position.x + deltaX}
+      if(_.isNumber(newY) && options.movementType !== 'relative'){ item.position.y = newY}
+    else{item.position.y = item.position.y + deltaY}
+}
 
-//console.log('settin image position to '+imageX+', '+imageY)
+//check to make sure we are actually changing image. if not return
+if(deltaX === 0 && deltaY === 0){return}
+
+
+
 
 //IMAGE
-if(item.image ){
-  setDisplayObjectPosition(item.image, imageX, imageY)
+if(hasImage ){
+var newImageX = previousImageLocation.x + deltaX
+var newImageY = previousImageLocation.y + deltaY
 
-var imageDeltaX = imageX - previousImageLocation.x
-var imageDeltaY = imageY - previousImageLocation.y
+  setDisplayObjectPosition(item.image, newImageX, newImageY)
 
-if(imageDeltaX !== 0 || imageDeltaY !== 0){stagesToUpdate.push(self.itemChanged(item))}
+if(options.updateStageStatus !== false){stagesToUpdate.push(self.itemChanged(item))}
 
 }
 
 //TEXT
-if(item.text ){
-//check if image was moved
-if(_.isNumber(imageDeltaX) || _.isNumber(imageDeltaY)){
-  textX = previousTextLocation.x + imageDeltaX
-textY = previousTextLocation.y + imageDeltaY
-}
-     setDisplayObjectPosition(item.text, textX, textY)
+if(hasText){
 
-var textDeltaX = textX - previousTextLocation.x
-var textDeltaY = textY - previousTextLocation.y
-if(textDeltaX !== 0 || textDeltaY !== 0){stagesToUpdate.push(self.itemChanged(item))}
+//check if image was moved
+  newTextX = previousTextLocation.x + deltaX
+newTextY = previousTextLocation.y + deltaY
+
+     setDisplayObjectPosition(item.text, newTextX, newTextY)
+
+if(!hasImage && options.updateStageStatus !== false){stagesToUpdate.push(self.itemChanged(item))}
 
 }
 
 
 }//if NOT array/object of items
+/*
+if(hasTExt && !hasIm && !_.isNaN(parseFloat(item.text.text))){
+if(!previousTextLocation){console.log(item.text)}
+  console.log(item.text.text + ' moved from: '+previousTextLocation.x +', '+ previousTextLocation.y+' moved to: '+textX+', ' + textY)
+}*/
 
 }//function move Items
+
+
+
 
 options.update = update
 if(options.update !== false){this.updateStages(stagesToUpdate)}
@@ -6422,15 +6611,25 @@ if(options.update !== false){this.updateStages(stagesToUpdate)}
 }
 
 
-var setDisplayObjectPosition = function(imageOrText, x,y){
+var setDisplayObjectPosition = function(imageOrText, x, y, options){
+  if(!options){var options  = {}}
+
 if(!_.isElement(imageOrText)){
+  //return if no change
+  if(imageOrText.x === x && imageOrText.y === y){return}
+
   imageOrText.x = x
-  imageOrText.y  = y
-}
-else{
+  imageOrText.y = y
+
+//if(options.updateStageStatus !== false){return self.itemChanged()}
+
+}//if easeljs
+
+
+else{//if html element
     $(imageOrText).css('left',x )
  $(imageOrText).css('top', y)
-}
+}//if html element
 }//function to set displayobject position
 
 var getDisplayObjectPosition = function(imageOrText){
@@ -6442,6 +6641,8 @@ else{ var location = {x:  parseFloat($(imageOrText).css('left')), y: parseFloat(
 //console.log(imageOrText);console.log(location)
 
 if(_.isNaN(location.x) || _.isNaN(location.y)){console.log(imageOrText);throw 'nan of get displayobecjt position '}
+
+if(!_.isObject(location)){console.log('getDisplayObjectPosition error');console.log(imageOrText)}
 return location
 
 }//get display object position function
@@ -7448,7 +7649,7 @@ var    changedWithoutUpdate  = optionsWithCondom.stageNumber
 
   if((optionsWithCondom.update !== false && this.arrayOfParentsOfStageAndOfContainerArray[optionsWithCondom.stageNumber].upToDate  !== true)||optionsWithCondom.update===true){
         this.updateStages(optionsWithCondom.stageNumber)   
-   var    changedWithoutUpdate  =false
+   var    changedWithoutUpdate  = false
 }
 return changedWithoutUpdate   
     }
@@ -7510,8 +7711,8 @@ else {return stagesToUpdateArray}
   stagesToUpdate.push(    this.displayChildren(this.images.seats[seatNumber].hiddenCards[1], options) )
 
   return stagesToUpdate
-
  }
+
     this.hideText = function(parentOfTextObject, options){
  if(!_.isObject(options)){var optionsWithCondom = {}}
     else{var optionsWithCondom = _.clone(options)}
@@ -7694,8 +7895,8 @@ stagesToUpdate.push(this.hideChildren(this.images.community[i]))
         this.hideChildren(this.images.seats[i].hiddenCards, {update:false})
         this.hideChildren(this.images.seats[i].shownCards, {update:false})
         //reset data
-               this.images.seats[i].shownCards[0].image = null
-       this.images.seats[i].shownCards[1].image = null
+   //            this.images.seats[i].shownCards[0].image = null
+    //   this.images.seats[i].shownCards[1].image = null
         this.gameState.seats[i].inHand = false
      }
 stagesToUpdate.push(this.images.seats[0].hiddenCards[0].position.z.stage)
@@ -7713,10 +7914,10 @@ stagesToUpdate.push(this.images.seats[0].shownCards[0].position.z.stage)
          $(this.arrayOfParentsOfStageAndOfContainerArray[this.images.betSlider.vertical.position.z.stage].stage.canvas, '#betSize').unbind('mousewheel')
         $('#betSizeDiv').unbind('mousewheel')
 
+
 options.update = update
 if(update !== false){this.updateStages(stagesToUpdate)}
   else{return stagesToUpdate}
-
 
  }
 
@@ -7877,6 +8078,7 @@ async.parallel (asyncLoserToWinnerParallelAnimationArray, asyncLoserToWinnerPara
     initialY:self.images.pots[potNumber].firstChip.position.y,
     hidden:true
   }
+
 self.displayChipStack(potWinners[potNumber][i].amountWon, temporaryStacks[potWinners[potNumber][i].temporaryStackNumber],splitPotIntoChipWinningsDisplayChipstackInfo)
                
                var tempNumber = callID
@@ -8358,7 +8560,6 @@ if(scrollDownAtEnd === true){this.moveTableChatFullMessageText({resize:true})}
 
 }
 
-
     this.displayInHandOptions = function(options){
               if(!options){var options = {}}
         var update = options.update
@@ -8440,15 +8641,24 @@ self.events.wheelScroll(wheelScrolls)
 
     this.displayCorrectSeatMessage = function(seatNumber, options){
 
-if(!_.isNumber(this.images.seats[seatNumber].nonRotatedSeatNumber)){
-  console.log('correct seat message not displaying of seat # '+seatNumber)
-   return}
+var stagesToUpdate = []
 
+if(!_.isNumber(seatNumber) || _.isNaN(seatNumber)){
+
+for(var i = 0;i<this.gameState.numSeats;i++){
+ stagesToUpdate.push (this.displayCorrectSeatMessage(i, options))
+}
+
+//console.log(stagesToUpdate)
+}
+
+else{
       if(!options){var options = {}}
         var update = options.update
       options.update = false
-var stagesToUpdate = []
 
+ // console.log('updating displayCorrectSeatMessage of seat '+ seatNumber + ' as '+ this.gameState.seats[seatNumber].displayMessageType)
+//console.log(self.images.seats[seatNumber].seat.image)
 
         switch (this.gameState.seats[seatNumber].displayMessageType){
 
@@ -8507,14 +8717,14 @@ var stagesToUpdate = []
             break;
 
             case 'openSeat':
-            
-                     if(_.isNumber(this.gameState.userSeatNumber)) {
-                
+       //     console.log('updating seatNumber '+seatNumber+ ' as openSeat')
+                     if(_.isNumber(this.gameState.userSeatNumber) && !_.isNaN(this.gameState.userSeatNumber)) {
+              
       stagesToUpdate.push(               this.hideChildren(this.images.seats[seatNumber].openSeat, options))
       stagesToUpdate.push(               this.displayChildren(this.images.seats[seatNumber].disabledSeat, options))
             }
 
-         else     if((this.gameState.userSeatNumber == false) || _.isNull(this.gameState.userSeatNumber)||_.isUndefined(this.gameState.userSeatNumber)){
+         else   {
      
       stagesToUpdate.push(               this.hideChildren(this.images.seats[seatNumber].disabledSeat, options))
        stagesToUpdate.push(          this.displayChildren(this.images.seats[seatNumber].openSeat, options))
@@ -8555,6 +8765,9 @@ var stagesToUpdate = []
        
         }
 
+//console.log('is seat added to stage:');console.log(self.isItemAddedToStage(this.images.seats[seatNumber].seat))
+
+}//if a number parameter is given
 
 
 options.update = update
@@ -9719,7 +9932,7 @@ potSizes.push(size)
 /*
 }//if we have side pots
 */
-console.log('get current potsizes called = ');console.log(potSizes)
+//console.log('get current potsizes called = ');console.log(potSizes)
 return potSizes
 }
 
@@ -10517,16 +10730,16 @@ for(var i = 0;i<this.arrayOfParentsOfStageAndOfContainerArray.length;i++){allSta
 }
 
 this.animateDealerButton = function(seatNumber, time){
-console.log('animatedealerbuton called')
+//console.log('animatedealerbuton called')
 if(!_.isNumber(seatNumber) || _.isNaN(seatNumber)){
-  console.log('dealer button first chip item')
-console.log(self.images.pots[0].firstChip)
+//  console.log('dealer button first chip item')
+//console.log(self.images.pots[0].firstChip)
 var finalX = self.images.pots[0].firstChip.position.x
 var finalY =self.images.pots[0].firstChip.position.y
 }
 else{
-  console.log('setanumber '+seatNumber+' dealer button item')
-  console.log( self.images.seats[seatNumber].dealerButton)
+ // console.log('setanumber '+seatNumber+' dealer button item')
+ // console.log( self.images.seats[seatNumber].dealerButton)
   var finalX = self.images.seats[seatNumber].dealerButton.position.x
 var finalY = self.images.seats[seatNumber].dealerButton.position.y
 }
@@ -10736,10 +10949,16 @@ this.updateTableChatFullMessageTextFromCurrentOrAdditionalData(null, {update:tru
 
 if(table_state.stage_name === 'waiting'){var dealerPosition = null}
 else{var dealerPosition = table_state.dealer}
+  self.gameState.dealer = dealerPosition
 self.animateDealerButton(dealerPosition,  24)
 
 
 //TEST FOR POT SIZE
+for(var i = 0;i<self.gameState.numSeats;i++){
+
+ // self.displayChildren(self.images.seats[i].referenceChips)
+//  self.displayChipStack(9999, self.images.seats[i])
+}
 //self.playerPutsChipsInPot(6, 799, 500)
 //self.updatePotSize([1,2,3,4,5,6, 7, 8, 9])
  //self.updatePotSize([1,10000,20000,30000,40000,50000, 60000, 70000, 80000])
@@ -10824,7 +11043,7 @@ var stagesToUpdate = []
 
         //dealer_chip is moved
        socket.on('dealer_chip', function(seatNumber){
-
+self.gameState.dealer = seatNumber
 self.animateDealerButton(seatNumber, 350)
 
 })

@@ -40,7 +40,8 @@ module.exports = (function() {
     // small blind  max stack
     //      min stack    max players
     //  SB    MIN    MAX    MAXP
-      [   1,   40,   100,    8]
+     [   1,   40,   100,   10]
+    ,  [   1,   40,   100,    8]
     , [   1,  100,   200,    4]
     , [   1,   25,  200,    2]
     , [   2,    80,   200,     8]
