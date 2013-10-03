@@ -2,7 +2,7 @@
   function resizeWindowJazz(e) {
     var height = $(window).height()
       , width = $(window).width()
-      , scale_ratio = _.min([width / 690, height / 495, 1])
+      , scale_ratio = _.min([width / 690, height / 465, 1])
       , scale_string = 'scale(' + scale_ratio + ', ' + scale_ratio + ')'
       , distance_to_shift = (1 - scale_ratio) / 2
       , translate_ratio = distance_to_shift / scale_ratio * 100
@@ -24,7 +24,7 @@
     , iframe_template =
   '<div id="iframe_<%= table_name %>" class="iframe">' +
     '<div class="iframe_header"></div>' +
-    '<iframe src="/<%= table_name %>" width="690" height="480">' +
+    '<iframe src="/<%= table_name %>" width="690" height="450">' +
         '<p>Your browser does not support iframes.</p>' +
         '<p><a href="http://www.smashingmagazine.com/2012/07/10/dear-web-user-please-upgrade-your-browser/">Upgrade your browser</a></p>' +
         '<p>Or go directly to <a table_name="/<%= table_name %>">/<%= table_name %></a>.</p>' +
