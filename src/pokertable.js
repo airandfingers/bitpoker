@@ -3167,7 +3167,7 @@ self.images.addCheckBoxButtonText(checkedItem, text, options)
 for(var i =0;i<this.seats.length;i++){
 
 //draw seated seat image
-self.images.drawSeat(this.seats[i].seat, '#000000','#000000', '#7d7d7d')
+self.images.drawSeat(this.seats[i].seat, '#00008B','#000000', '#7d7d7d',{outerStrokeWidth:1})
 
 //mouseover events
 this.seats[i].seat.image.onMouseOver = self.events.seatMouseEvent
