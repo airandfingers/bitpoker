@@ -124,9 +124,11 @@ title += ' - Logged in as ' + username;
         <script src="/js/vendor/easeljs/container.js"></script>
         -->
 
+<script src="js/vendor/bootstrap.min.js"></script>
         <script src="js/vendor/async.js"></script>
         <script src="/js/pokertable.min.js"></script>
         <script>
+
           // set iframe header if this is an embedded table
           if (_.isObject(parent.iframes)) {
             var table_name = $('#server_values').data('table_name');
