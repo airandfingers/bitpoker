@@ -208,6 +208,11 @@ h2 {
     max-width: 600px;
 }
 
+#lobby {
+    margin-left: auto;
+    margin-right: auto;
+}
+
 #play_as_guest {
     margin: .5em;
 }
