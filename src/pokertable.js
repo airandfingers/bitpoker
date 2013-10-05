@@ -63,48 +63,74 @@ self.moveTableChatFullMessageText(movementObject)
 },//tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels
         defaultItemsToHideFalseHidesItem:{
                   hideDealerMessages:{value:true, updateValue: function(newValue, options){
+                    if(!options){var options = {}}
+                      var update = options.update
+      if((newValue === false || this.value === false) && newValue !== this.value){    options.update = true}
 this.value = newValue
 if(self.gameState.itemsCreated === true){
-self.updateTableChatFullDisplay(options)}
+self.updateTableChatFullDisplay(null, options)}
                   }//hideDealerMessages.updateValue function
                 },//hideDealerMessages
                   hideDealerMessagesOn: {value:false, updateValue: function(newValue, options){
+                                        if(!options){var options = {}}
+                      var update = options.update
+      if((newValue === false || this.value === false) && newValue !== this.value){    options.update = true}
 this.value = newValue
+
 if(self.gameState.itemsCreated === true){
 self.updateTableChatFullDisplay(options)}
                   }//hideDealerMessagesOn.updateValue function
                 },//hideDealerMessagesOn
                   hidePlayerMessages:{value:true, updateValue: function(newValue, options){
+                                                            if(!options){var options = {}}
+                      var update = options.update
+      if((newValue === false || this.value === false) && newValue !== this.value){    options.update = true}
+
 this.value = newValue
 if(self.gameState.itemsCreated === true){
 self.updateTableChatFullDisplay(options)}
                   }//hidePlayerMessages.updateValue function
                 },//hidePlayerMessages
                   hidePlayerMessagesOn: {value:false, updateValue: function(newValue, options){
+                                                                                if(!options){var options = {}}
+                      var update = options.update
+      if((newValue === false || this.value === false) && newValue !== this.value){    options.update = true}
 this.value = newValue
 if(self.gameState.itemsCreated === true){
 self.updateTableChatFullDisplay(options)}
                   }//hidePlayerMessagesOn.updateValue function
                 },//hidePlayerMessagesOn
                   hideObserverMessages:{value:true, updateValue: function(newValue, options){
+                                                                                if(!options){var options = {}}
+                      var update = options.update
+      if((newValue === false || this.value === false) && newValue !== this.value){    options.update = true}
 this.value = newValue
 if(self.gameState.itemsCreated === true){
 self.updateTableChatFullDisplay(options)}
                   }//hideObserverMessages.updateValue function
                 },//hideObserverMessages
                   hideObserverMessagesOn: {value:false, updateValue: function(newValue, options){
+                                                                                if(!options){var options = {}}
+                      var update = options.update
+      if((newValue === false || this.value === false) && newValue !== this.value){    options.update = true}
 this.value = newValue
 if(self.gameState.itemsCreated === true){
 self.updateTableChatFullDisplay(options)}
                   }//hideObserverMessagesOn.updateValue function
                 },//hideObserverMessagesOn
                   disableTouchScroll:{value:true, updateValue: function(newValue, options){
+                                                                                if(!options){var options = {}}
+                      var update = options.update
+      if((newValue === false || this.value === false) && newValue !== this.value){    options.update = true}
 this.value = newValue
 if(self.gameState.itemsCreated === true){
 self.updateTableChatFullDisplay(options)}
                   }//disableTouchScroll.updateValue function
                 },//disableTouchScroll
                   disableTouchScrollOn:{value:false, updateValue: function(newValue, options){
+                                                                                if(!options){var options = {}}
+                      var update = options.update
+      if((newValue === false || this.value === false) && newValue !== this.value){    options.update = true}
 this.value = newValue
 if(self.gameState.itemsCreated === true){
 self.updateTableChatFullDisplay(options)}
@@ -1823,8 +1849,22 @@ if(hasValue && isNumber && isChanged){
 //if value is different and is a number, store it
   self.adjustBetDisplay(newBetSize)}
 
+var roundedDownBetSize = self.returnRoundedDownBetSize(newBetSize)
 //if new betsize is not rounded to nearest increment, then set disable raise and bet buttons
-  if(self.returnRoundedDownBetSize(newBetSize) == false || self.returnRoundedDownBetSize(newBetSize) != newBetSize){
+  if(roundedDownBetSize == false || roundedDownBetSize != newBetSize){
+
+var disableOneClick = function(event){
+  event.onMouseUp = function(event){
+    event.target.onClick = self.events.onButtonClick
+     event.target.onPress = self.events.buttonMouseDown
+  }
+}
+
+var disableOneEnter = function(e){
+
+
+
+}
 
 console.log('disabling 1 click on raise/bet')
 self.images.bet.image.onPress = disableOneClick
@@ -1832,24 +1872,22 @@ self.images.raise.image.onPress = disableOneClick
 self.images.bet.image.onClick = null
 self.images.raise.image.onClick = null
 
+  }//if newbet is not appropriate
 
-var disableOneClick = function(event){
 
-  event.onMouseUp = function(event){
-
-    event.target.onClick = self.events.onButtonClick
-     event.target.onPress = self.events.buttonMouseDown
-  }
-}
-
-  }
   //if newbetsize is rounded, enable bet and raise click events
   if(self.returnRoundedDownBetSize(newBetSize) != false && self.returnRoundedDownBetSize(newBetSize) == newBetSize){
-    self.images.bet.image.onClick = self.events.onButtonClick
+restoreRaiseAndBetClickEvents()
+  }
+
+
+function restoreRaiseAndBetClickEvents(){
+      self.images.bet.image.onClick = self.events.onButtonClick
     self.images.raise.image.onClick = self.events.onButtonClick
     self.images.bet.image.onPress = self.events.buttonMouseDown
 self.images.raise.image.onPress = self.events.buttonMouseDown
-  }
+}
+
 }
 
   //=============END BET SLIDER===================
@@ -2789,7 +2827,7 @@ var currencyDisplayColor = 'white'
 
             var absoluteChatDistanceFromSeatY = seatHeight/4
              var chatBoxBorderColor = '#FFFFFF'
-             var chatBoxFontSize = 10
+             var chatBoxFontSize = 11
 
             //space between player's cards/seats, and chip images in play, relative to the upper left seat corner
             var bottomChipOffsetX = chipDiameter
@@ -3523,13 +3561,13 @@ var actionButtonCanvasElement = self.arrayOfParentsOfStageAndOfContainerArray[ac
 
 //$(actionButtonCanvasElement).append('<button id="fold"  class = "btn actionButton">Fold</button>')
 
-self.jQueryObjects.canvasDiv.append('<button id="fold"  class = "btn actionButton">Fold</button>')
-self.jQueryObjects.canvasDiv.append('<button id="call"  class = "btn actionButton">Call</button>')
-self.jQueryObjects.canvasDiv.append('<button id="check" class = "btn actionButton">Check</button>')
-self.jQueryObjects.canvasDiv.append('<button id="raise" class = "btn actionButton">Raise</button>')
-self.jQueryObjects.canvasDiv.append('<button id="bet"   class = "btn actionButton">Bet</button>')
-self.jQueryObjects.canvasDiv.append('<button id="sitIn" class = "btn actionButton">Sit In</button>')
-self.jQueryObjects.canvasDiv.append('<button id="rebuy" class = "btn actionButton">Get Chips</button>')
+self.jQueryObjects.canvasDiv.append('<button id="fold"  class = "btn actionButton unselectable">Fold</button>')
+self.jQueryObjects.canvasDiv.append('<button id="call"  class = "btn actionButton unselectable">Call</button>')
+self.jQueryObjects.canvasDiv.append('<button id="check" class = "btn actionButton unselectable">Check</button>')
+self.jQueryObjects.canvasDiv.append('<button id="raise" class = "btn actionButton unselectable">Raise</button>')
+self.jQueryObjects.canvasDiv.append('<button id="bet"   class = "btn actionButton unselectable">Bet</button>')
+self.jQueryObjects.canvasDiv.append('<button id="sitIn" class = "btn actionButton unselectable">Sit In</button>')
+self.jQueryObjects.canvasDiv.append('<button id="rebuy" class = "btn actionButton unselectable">Get Chips</button>')
 
           this.fold.image = $('#fold')[0]
           this.call.image = $('#call')[0]
@@ -4645,8 +4683,9 @@ var canvasHeight = $('#iframeSize')[0].height
 var canvasClass = 'pokerCanvasClass'
 var zIndexesPerCanvas = 10
 var initialZIndex = 3
+var unselectableClass = 'unselectable'
 
-self.jQueryObjects.canvasDiv.append('<canvas id = '+'\''+newCanvasID+'\''+ 'class = '+ '\''+canvasClass+ '\''+' width='+'\''+canvasWidth+'\''+' height=' +'\''+canvasHeight+'\''+'></canvas>')
+self.jQueryObjects.canvasDiv.append('<canvas id = '+'\''+newCanvasID+'\''+ 'class = '+ '\''+canvasClass+ ' '+ unselectableClass+ '\''+' width='+'\''+canvasWidth+'\''+' height=' +'\''+canvasHeight+'\''+'></canvas>')
 
 //console.log('created canvas with canvas id of: '+newCanvasID)
 //set proper z-index
@@ -4786,13 +4825,11 @@ this.returnRoundedDownBetSize = function(betSize){
 if(betSize>self.gameState.maxBet){return self.gameState.maxBet}
   else if (betSize<self.gameState.minBet){return self.gameState.minBet}
 
-    var isNumber =  !isNaN(betSize) && _.isNumber(betSize) 
+    var isNumber =  !_.isNaN(betSize) && _.isNumber(betSize) 
     var roundedBetSize
     //if not a number use last known number and round
-    if(isNumber == false ){
- return false    }
-    else{
-      roundedBetSize = Math.floor(betSize/self.gameState.minIncrement)*self.gameState.minIncrement    }
+    if(isNumber == false ){return false }
+    else{ roundedBetSize = Math.floor(betSize/self.gameState.minIncrement)*self.gameState.minIncrement    }
 
         return roundedBetSize
 }
@@ -8534,14 +8571,16 @@ self.images.seats[chatInfo.seat].chat.text.y = self.images.seats[chatInfo.seat].
       //tween image
     var imageTween =  createjs.Tween.get(self.images.seats[chatInfo.seat].chat.image,{loop:false, override:true, paused:true})
      imageTween.to({alpha:originalImageAlpha})
-    .to({alpha:0}, 10000)
+    .wait(9500)
+    .to({alpha:0}, 500)
     .call(self.hideImage,[self.images.seats[chatInfo.seat].chat], self)
     .to({alpha:originalImageAlpha})
 
     //tween text
   var textTween =    createjs.Tween.get(self.images.seats[chatInfo.seat].chat.text,{loop:false, override:true, paused:true})
      textTween.to({alpha:1})
-    .to({alpha:0}, 10000)
+     .wait(9500)
+    .to({alpha:0}, 500)
     .call(self.hideText,[self.images.seats[chatInfo.seat].chat], self)
     .to({alpha:1})
 //unpause
@@ -8553,22 +8592,62 @@ textTween.setPaused(false)
 
   }//playerChats function
 
-this.appendTableChatFullMessageText = function(textString, options){
+this.appendTableChatFullMessageText = function(messageArray, options){
+if(!options){var options = {}}
 
 var isAtBottom = this.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText() 
+var log = self.gameState.tableChatFull.log
 
-self.jQueryObjects.tableChatFullParagraph.append('<br>'+ textString)
+if(_.isNumber(messageArray) &&!_.isNaN(messageArray) && messageArray >=0 && messageArray <= log.length-1){
 
-if(isAtBottom == true && self.gameState.tableChatFull.mouseDown != true && options && options.moveTable !== false){ self.moveTableChatFullMessageText()}
-else if(options && options.moveTable == true){self.moveTableChatFullMessageText()}
+this.appendTableChatFullMessageText(log[i], options)
+
+}
+
+else  if(!_.isArray(messageArray)){
+  self.gameState.tableChatFull.fullTextString = ''  //reset textstring
+for(var i = 0;i<log.length;i++){this.appendTableChatFullMessageText(log[i], options) }
+}//if messageArray not given, just do the whole thing
+
+else{//append a single message
+var displayCurrentLog 
+
+//format of log is ['dealer',messageString, timeStampString]
+
+//skip appending messages if its of a type we dont want to display
+if(messageArray[0] === 'dealer'){displayCurrentLog = self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages.value}
+else if(messageArray[0] === 'observer'){displayCurrentLog = self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages.value}
+  else {displayCurrentLog = self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages.value}
+   
+   if(displayCurrentLog !== false) {//we WANT to display the message
+
+//add a line break if this is not the first line in the string
+if(self.gameState.tableChatFull.fullTextString.length>0){self.gameState.tableChatFull.fullTextString = self.gameState.tableChatFull.fullTextString + '<br>'}
+
+//add messageArray[1] to string
+self.gameState.tableChatFull.fullTextString = self.gameState.tableChatFull.fullTextString + messageArray[1]
+
+}
+
+self.jQueryObjects.tableChatFullParagraph.html(self.gameState.tableChatFull.fullTextString)
+}
+//self.jQueryObjects.tableChatFullParagraph.append('<br>'+ textString)
+
+if(options.update !== false && options.moveTable !== true){
+if(isAtBottom === true && self.gameState.tableChatFull.mouseDown != true && options && options.moveTable !== false){ self.moveTableChatFullMessageText()}
+else if(options && options.moveTable === true){self.moveTableChatFullMessageText()}
+}//if update !== false, or moveTable === true
 }
 
 this.updateTableChatFullMessageTextFromCurrentOrAdditionalData = function(chatInfo, options){
-
+if(!options){var options = {}}
+var log = self.gameState.tableChatFull.log
 //current preferences
+
 var isDisplayingDealerMessages = this.gameState.tableChatFull.currentlyDisplayingDealerMessages
 var isDisplayingPlayerMessages =  this.gameState.tableChatFull.currentlyDisplayingPlayerMessages
 var isDisplayingObserverMessages = this.gameState.tableChatFull.currentlyDisplayingObserverMessages
+
 
   //target preferences
 var shouldDisplayDealerMessages
@@ -8592,15 +8671,30 @@ var needToUpdate = (isDisplayingDealerMessages !==  shouldDisplayDealerMessages)
 var scrollDownAtEnd = this.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText()
 //console.log('needToUpdate = '+needToUpdate)
 //update existing display
-if(needToUpdate === true || (options && options.update === true)){
+
+//add another message to the array if necessary
+ if(chatInfo && chatInfo.chatSourceType && chatInfo.message){
+  var pushed = true
+log.push([chatInfo.chatSourceType, chatInfo.message])
+//if timeStampString add it to the array
+if(chatInfo.timeStampString){
+  log[log.length-1].push(chatInfo.timeStampString)
+}
+}//if chatInfo
+
+if(needToUpdate === true || options.update === true){
+
+this.appendTableChatFullMessageText(null)
 
 //get the top line of text to preserve position
 
 ////*****************************DONT KNOW HOW TO DO THIS YET< WILL JUST SCROLL TO BOTTOM INSTEAD FOR NOW
-
+/*
 self.gameState.tableChatFull.fullTextString = ''  //reset textstring
 
 var displayCurrentLog 
+
+
 
 //format of log is ['dealer',messageString, timeStampString]
 for(var i = 0;i<self.gameState.tableChatFull.log.length;i++){
@@ -8622,23 +8716,19 @@ self.gameState.tableChatFull.fullTextString = self.gameState.tableChatFull.fullT
 }//iterate through tableChatFull.log
 
 self.jQueryObjects.tableChatFullParagraph.html(self.gameState.tableChatFull.fullTextString)//add
-
+*/
 this.gameState.tableChatFull.currentlyDisplayingDealerMessages = shouldDisplayDealerMessages
 this.gameState.tableChatFull.currentlyDisplayingPlayerMessages = shouldDisplayPlayerMessages
 this.gameState.tableChatFull.currentlyDisplayingObserverMessages = shouldDisplayObserverMessages
 
+
+
+
 }//if needToUpdate  === true, this means a type of message needs to be shown or hidden
 
 
-if(chatInfo && chatInfo.chatSourceType && chatInfo.message){
-this.gameState.tableChatFull.log.push([chatInfo.chatSourceType, chatInfo.message])
-//if timeStampString add it to the array
-if(chatInfo.timeStampString){
-  this.gameState.tableChatFull.log[this.gameState.tableChatFull.log.length-1].push(chatInfo.timeStampString)
-}
-
-this.appendTableChatFullMessageText(chatInfo.message, {moveTable:false})
-
+else if(pushed === true){
+this.appendTableChatFullMessageText(log.length-1, {moveTable:false})
 }//if we want to append a message at the end
 
 if(scrollDownAtEnd === true){this.moveTableChatFullMessageText({resize:true})}
@@ -8690,7 +8780,7 @@ if(update === false){return stagesToUpdate}
     }
 
 
-    this.displayBetSlider =function(minBet, maxBet, minIncrement){
+    this.displayBetSlider = function(minBet, maxBet, minIncrement){
        
         this.gameState.minBet = minBet
         this.gameState.maxBet = maxBet
@@ -10450,7 +10540,24 @@ if(self.images.pots[i] && self.images.pots[i].chips && self.images.pots[i].chips
   ])
 }
 
+var canPlayerActDefaultsToUser = function(seat){
+if(!_.isNumber(seat)){var seat = self.gameState.userSeatNumber}
 
+
+var currentStackSizes = self.getCurrentStackSizes()
+var currentBetSizes = self.getCurrentBetSizes()
+var compactedStackSizes = _.compact(currentStackSizes)
+//console.log('checking if all in situation')
+//console.log(currentStackSizes)
+//console.log(compactedStackSizes)
+
+if(!_.isNumber(seat)){throw 'user not seated'}
+else if(currentStackSizes[self.gameState.userSeatNumber] <= 0){return false}
+  else if (compactedStackSizes.length <= 0){return false}
+else if(compactedStackSizes.length <= 1  && self.getHighBet() <=  currentBetSizes[self.gameState.userSeatNumber] ){return false}
+else {return true}
+
+}
 
 this.updateUserOptionsBasedOnFlagsAndPreactions = function(options){
 if(!options){var options = {}}
@@ -10458,7 +10565,7 @@ if(!options){var options = {}}
 options.update = false
 var stagesToUpdate = [] 
 
-
+var currentStackSizes = self.getCurrentStackSizes()
   stagesToUpdate.push(   self.updatePreactionOptionDisplayBasedOnLocalData(options) )
 
 if(!_.isNumber(self.gameState.userSeatNumber)){
@@ -10487,9 +10594,6 @@ var preactionOnce = self.gameState.seats[self.gameState.userSeatNumber].once
 var preactionHand = self.gameState.seats[self.gameState.userSeatNumber].hand
 var preactionOptionData = self.getPreactionOptionValues()
 
-
-
-
                   //check if user is sitting out
                   if(user.sitting_out == true){
         stagesToUpdate.push(             self.hideChildren(self.images.sitOutNextBlind,options))
@@ -10515,7 +10619,7 @@ stagesToUpdate.push( self.hideChildren(self.images.foldToAnyBetOn,options))
               stagesToUpdate.push(       self.hideChildren(self.images.sitIn,options))
      stagesToUpdate.push(      self.hideChildren(self.images.rebuy,options))
              //display sitout next hand depending on user's flag
-             console.log('checking for flags.pending_sit_out == '+flags.pending_sit_out)
+           //  console.log('checking for flags.pending_sit_out == '+flags.pending_sit_out)
               if(flags.pending_sit_out == true){
 stagesToUpdate.push( self.hideChildren(self.images.sitOutNextBlind,options))
 stagesToUpdate.push( self.hideChildren(self.images.sitOutNextBlindOn,options))
@@ -10537,25 +10641,38 @@ stagesToUpdate.push( self.hideChildren(self.images.sitOutNextBlind,options))
                     }
 }//if user is not pending sit out, and not sitting out
 
-  //check if user is involved in hand
-             if(this.gameState.seats[self.gameState.userSeatNumber].inHand === true){
-                        //fold to any bet button on or off
-                        if(this.getPreactionData('fold') ){
-if( (preactionOptionData && preactionOptionData.check === false) || this.getPreactionData('check') ){
-stagesToUpdate.push( self.hideChildren(self.images.foldToAnyBet,options))
-stagesToUpdate.push( self.displayChildren(self.images.foldToAnyBetOn,options))
-}
-}//if fold preaction enabled
+  //check if user is involved in hand and players can act
+             if(this.gameState.seats[self.gameState.userSeatNumber].inHand === true && canPlayerActDefaultsToUser() === true){
 
-             else{ 
-          stagesToUpdate.push(     self.hideChildren(self.images.foldToAnyBetOn,options))
-          stagesToUpdate.push(     self.displayChildren(self.images.foldToAnyBet,options))
-            }
-
-
+              if(currentStackSizes[self.gameState.userSeatNumber] > 0){
+                                      //fold to any bet button on or off
+                                      if(this.getPreactionData('fold') ){
+              if( (preactionOptionData && preactionOptionData.check === false) || this.getPreactionData('check') ){
+              stagesToUpdate.push( self.hideChildren(self.images.foldToAnyBet,options))
+              stagesToUpdate.push( self.displayChildren(self.images.foldToAnyBetOn,options))
+              }
+              }//if fold preaction enabled
+              
+                           else{ 
+                        stagesToUpdate.push(     self.hideChildren(self.images.foldToAnyBetOn,options))
+                        stagesToUpdate.push(     self.displayChildren(self.images.foldToAnyBet,options))
+                          }
+              
+              }//if user has chips
+              else{//if user is all-in
+stagesToUpdate.push(     self.hideChildren(self.images.foldToAnyBetOn,options))
+                        stagesToUpdate.push(     self.hideChildren(self.images.foldToAnyBet,options))
+              }//if user all in
 
 
  }//end check if user is holding cards
+else{//user is not in a hand or players are all in
+
+stagesToUpdate.push(     self.hideChildren(self.images.foldToAnyBetOn,options))
+ stagesToUpdate.push(     self.hideChildren(self.images.foldToAnyBet,options))
+
+}
+
 
 } //end check if user is not sitting out
 
@@ -10757,7 +10874,7 @@ if(!_.isUndefined(flags.bet)){
 self.gameState.seats[player.seat].sitting_out = player.sitting_out
 self.gameState.seats[player.seat].chips = player.chips
 self.gameState.seats[player.seat].username = player.username
-if(_.isNumber(player.chips)&& player.chips>0){self.gameState.seats[player.seat].notEnoughChips = false}
+if(_.isNumber(player.chips) && player.chips > 0){self.gameState.seats[player.seat].notEnoughChips = false}
   else{self.gameState.seats[player.seat].notEnoughChips = true}
 
 }
@@ -11608,7 +11725,10 @@ var stagesToUpdate = []
        }
 */
         if(player.seat == self.gameState.userSeatNumber){
+          console.log('player sits out called, user')
      stagesToUpdate .push(    self.updateLocalGameDataBasedOnServerPlayerObject(player, {update:false}) )
+
+     console.log(self.gameState.seats[player.seat])
   stagesToUpdate .push(self.updateUserOptionsBasedOnFlagsAndPreactions({update:false}))
 }
           self.updateStages(self.images.seats[player.seat].status.position.z.stage)
