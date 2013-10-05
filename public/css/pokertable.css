@@ -127,6 +127,7 @@ line-height:-1;
 -ms-user-select: none;
 user-select: none;
 }
+
 #tableChatFullText{
             -webkit-touch-callout: none;
 -webkit-user-select: none;
@@ -147,6 +148,7 @@ word-break: normal;
     z-index: 1;
     text-align: left;
 }
+
 #chatDiv input[type = 'text']{
   /*background: transparent url('/img/chat_bg.jpg') no-repeat; removed 07/28/2013 */
   background-color: rgba(0,0,0,0);
