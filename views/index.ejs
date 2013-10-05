@@ -32,6 +32,14 @@
             />
         <% } %>
 
+
+        <% if (typeof table_games !=='undefined') { %>
+
+            <div id="lobby">
+              <% include table_list %>
+            </div>
+        <% } %>
+
         <div id="iframe_container">
         </div>
 
