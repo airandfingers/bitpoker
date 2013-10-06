@@ -122,7 +122,6 @@ $(function() {
   $lobby.hide();
   var columns_resized = false;
 
-/*  
   $('#lobbyWrapperDiv').hoverIntent(function() {
     console.log('hover trigger fired!');
     if ($lobby_trigger.hasClass('active')) {
@@ -153,7 +152,6 @@ $(function() {
     }
 
   });
-*/
 
   $lobby_trigger.click(function() {
     console.log('lobby trigger fired!');
@@ -163,21 +161,11 @@ $(function() {
       $lobby_trigger
         .addClass('active');
       // hide lobby form
-      if (document.title !== 'Bitcoin Poker') {
-        console.log('document title is not bitcoin poker, so calculate left/top.');
-        $lobby
-          .css({
-            left: calculateLeft()
-          , top: calculateTop()
-          });
-      }
-      else {
-        $lobby.css({
-          'margin-left': 'auto',
-          'margin-right': 'auto'
-        });
-      }
       $lobby
+        .css({
+          left: calculateLeft()
+        , top: calculateTop()
+        })
         .stop(true, true)
         .show('slide', { direction: 'up' }, 500);
       if (! columns_resized) {
@@ -195,7 +183,7 @@ $(function() {
         .hide('slide', { direction: 'up' }, 500);
     }
   });
-  
+
   function calculateLeft() {
     var trigger_left = $lobby_trigger.position().left - $lobby_trigger.width() - 20
       , max_left = $(window).width() - $lobby.width()
@@ -206,7 +194,7 @@ $(function() {
   function calculateTop() {
     return $lobby_trigger.position().top + $lobby_trigger.height();
   }
-  
+
   if ($('#iframe_container').length > 0 &&
       $('#iframe_container').find('.iframe').length === 0) {
     $lobby_trigger.click();
