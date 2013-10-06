@@ -292,7 +292,8 @@ module.exports = (function () {
     var self = this
       , first_card
       , second_card
-      , player_objs = self.getPlayerObjs();
+      , player_objs = self.getPlayerObjs()
+      , num_players = self.players.length;
 
     _.each(self.players, function(player) {
       first_card = self.deck.deal();
@@ -308,7 +309,9 @@ module.exports = (function () {
     });
     self.hand_history.logStage('dealing');
 
-    self.nextStage();
+    setTimeout(function() {
+      self.nextStage();
+    }, num_players * self.game.PER_PLAYER_DEAL_DELAY);
   };
 
   static_properties.stage_handlers.betting_preflop   =
