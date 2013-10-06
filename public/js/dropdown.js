@@ -134,7 +134,7 @@ $(function() {
         , top: calculateTop()
         })
         .stop(true, true)
-        .show('slide', { direction: 'up' }, 500);
+        .show('fade', 400);
       if (! columns_resized) {
         $lobby.find('#table_list').dataTable().fnAdjustColumnSizing();
         columns_resized = true;
@@ -148,7 +148,7 @@ $(function() {
     }
     else {
       $lobby.stop(true, true)
-            .hide('slide', {direction: 'up' }, 500);
+            .hide();
     }
 
   });
@@ -167,7 +167,7 @@ $(function() {
         , top: calculateTop()
         })
         .stop(true, true)
-        .show('slide', { direction: 'up' }, 500);
+        .show('fade', 400);
       if (! columns_resized) {
         $lobby.find('#table_list').dataTable().fnAdjustColumnSizing();
         columns_resized = true;
@@ -180,7 +180,7 @@ $(function() {
       // hide lobby form
       $lobby
         .stop(true, true)
-        .hide('slide', { direction: 'up' }, 500);
+        .hide();
     }
   });
 
@@ -194,11 +194,12 @@ $(function() {
   function calculateTop() {
     return $lobby_trigger.position().top + $lobby_trigger.height();
   }
-
+/*
   if ($('#iframe_container').length > 0 &&
       $('#iframe_container').find('.iframe').length === 0) {
     $lobby_trigger.click();
   }
+*/
 });
 
   // ajax form submission

@@ -31,15 +31,7 @@
                 data-current_table_names="<%= JSON.stringify(user.current_table_names) %>"
             />
         <% } %>
-
-
-        <% if (typeof table_games !=='undefined') { %>
-
-            <div id="lobby">
-              <% include table_list %>
-            </div>
-        <% } %>
-
+        
         <div id="iframe_container">
         </div>
 
