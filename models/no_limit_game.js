@@ -41,6 +41,8 @@
   , WAIT_POLL_INTERVAL: { type: Number, default: defaults.WAIT_POLL_INTERVAL }
     // how long (in ms) between notifying about dealer change and posting small blind
   , DEALER_CHANGE_DELAY: { type: Number, default: defaults.DEALER_CHANGE_DELAY }
+    // how long (in ms) to wait - per player - after sending the hands_dealt message
+  , PER_PLAYER_DEAL_DELAY: { type: Number, default: defaults.PER_PLAYER_DEAL_DELAY }
     // how long (in ms) between posting blinds and next action (next blind or dealing)
   , POST_BLIND_DELAY: { type: Number, default: defaults.POST_BLIND_DELAY }
     // how long (in ms) between last betting action and street_ends message

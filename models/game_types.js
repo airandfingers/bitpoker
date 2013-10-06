@@ -11,6 +11,8 @@ module.exports = (function() {
     , WAIT_POLL_INTERVAL: 5000
       // how long (in ms) between notifying about dealer change and posting small blind
     , DEALER_CHANGE_DELAY: 1000
+      // how long (in ms) to wait - per player - after sending the hands_dealt message
+    , PER_PLAYER_DEAL_DELAY: 150
       // how long (in ms) between posting blinds and next action (next blind or dealing)
     , POST_BLIND_DELAY: 300
       // how long (in ms) between last betting action and street_ends message
