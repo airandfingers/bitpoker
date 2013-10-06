@@ -1860,9 +1860,10 @@ var disableOneClick = function(event){
   }
 }
 
-var disableOneEnter = function(e){
+var disableOneRaiseOrBetAction = function(e){
 
-
+restoreRaiseAndBetClickEvents()
+restoreBetSizeEnterEvents()
 
 }
 
@@ -1886,6 +1887,12 @@ function restoreRaiseAndBetClickEvents(){
     self.images.raise.image.onClick = self.events.onButtonClick
     self.images.bet.image.onPress = self.events.buttonMouseDown
 self.images.raise.image.onPress = self.events.buttonMouseDown
+}
+
+function restoreBetSizeEnterEvents(){
+
+
+
 }
 
 }
@@ -3137,6 +3144,10 @@ var hit = self.images.drawCheckBoxButtonHitSquareAndAdjustItemWidth(item)
 item.text.hitArea  = hit
 item.image.hitArea  = hit
 
+//assign options as properties
+assignObjectPropertiesAsPropertiesOfDisplayObject(displayObject, options)
+
+
 options.update = update
 if(update !== false){self.updateStages(stagesToUpdate)}
 else{return stagesToUpdate}
@@ -3670,8 +3681,18 @@ $('#betSize').bind('paste', function(e){self.events.betSizeChanged()})
 $("#betSize")[0].oninput = function () {
 self.events.betSizeChanged()
 }
+    
+$('#betSize').on('keypress', function(e){
+ var keycode = (event.keyCode ? event.keyCode : event.which)
+  if(keycode == '13') {    //if enter key is pressed
+if(self.isItemAddedToStage(self.images.raise)){e.target = self.images.raise.image;self.images.raise.image.onClick(e)}
+  else if(self.isItemAddedToStage(self.images.bet)){e.target = self.images.bet.image;self.images.bet.image.onClick(e)}
+    }//if keypress is enter key
 
- $('#betSizeDiv').bind('mousewheel', function(event,delta, deltaX, deltaY) {
+})
+
+
+ $('#betSizeDiv').bind('mousewheel', function (event, delta, deltaX, deltaY) {
 //console.log(event, delta, deltaX, deltaY)
 //wheelScrolls = event.originalEvent.wheelDelta/120
 self.events.wheelScroll(deltaY)
@@ -4571,6 +4592,18 @@ self.createPreactionOptionItems()
 console.log('all createjs images have been created')
 
 } //end set Defaults
+
+//assign options as properties
+var assignObjectPropertiesAsPropertiesOfDisplayObject = function (displayObject, properties){
+
+_.each(properties, function(value, index, list){
+
+if(index === 'update'){}
+else if(!_.isUndefined(value)){displayObject[index] = value}
+
+})
+
+}
 
 //options.stageNumber, if on existing number, will push the existing number up 1
 this.createStage = function (options){
@@ -9702,15 +9735,7 @@ var textContainer = 1
 var buttonContainer = 2
 
 
-//SET MORE DEFAULTS
 
-var defaults = {}
-defaults.checkBox = false
-defaults.checkBoxText = 'Dont show this message again.'
-//defaults.checkBoxCheckedEvent = function(){}
-//defaults.checkBoxUncheckedEvent = function(){}
-
-_.defaults(messageInfo, defaults)
 
          //-------------------set defaults---------------------------
          if(_.isNull(messageInfo)||_.isUndefined(messageInfo)){messageInfo = {}}
@@ -9761,7 +9786,18 @@ if(messageInfo.sameSizeButtons === true){
      var cancelX =  stageWidth/2 + messageInfo.distanceBetweenButtons/2 
         }
   
+//SET MORE DEFAULTS
 
+var defaults = {}
+defaults.checkBox = false
+defaults.checkBoxText = 'Dont show this message again.'
+ defaults.checkBoxTextColor = messageInfo.messageColor
+defaults.checkBoxFontSize = 10
+
+//defaults.checkBoxCheckedEvent = function(){}
+//defaults.checkBoxUncheckedEvent = function(){}
+
+_.defaults(messageInfo, defaults)
 
 
         //background bitmap and closeX image are in the this.setDefaults() function
