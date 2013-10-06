@@ -506,12 +506,17 @@ module.exports = (function () {
   PlayerSchema.methods.sitIn = function() {
     console.log('sitIn called!');
     if (this.sitting_out) {
-      clearInterval(this.full_table_check);
-      this.sitting_out = false;
-      this.setFlag('post_blind', true);
-      this.emit('sit_in');
-      // clear the sit-out timer, if any
-      clearTimeout(this.sit_out_timer);
+      if (this.chips > 0) {
+        clearInterval(this.full_table_check);
+        this.sitting_out = false;
+        this.setFlag('post_blind', true);
+        this.emit('sit_in');
+        // clear the sit-out timer, if any
+        clearTimeout(this.sit_out_timer);
+      }
+      else {
+        console.error('player tried to sit in when s/he has no chips!');
+      }
     }
     else {
       console.log('sitIn called when', this.username, 'is not sitting out');
