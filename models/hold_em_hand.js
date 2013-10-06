@@ -956,7 +956,7 @@ module.exports = (function () {
     all: ['stage_name', 'dealer', 'small_blind_seat', 'to_act',
           'high_bet', 'pots', 'community', 'hand_id',
           'max_players', 'min_chips', 'max_chips', 'min_increment', 
-          'small_blind', 'big_blind', 'currency', 'currency_per_chip',
+          'small_blind', 'big_blind', 'currency', 'currency_per_chip', 'act_timeout',
           'seats', 'players']
   };
   HoldEmHandSchema.methods.serialize = function(this_username, include) {
@@ -1003,6 +1003,7 @@ module.exports = (function () {
     if (_.contains(hand_include, 'currency')) hand_obj.currency = game.CURRENCY;
     if (_.contains(hand_include, 'min_increment')) hand_obj.min_increment = game.MIN_INCREMENT;
     if (_.contains(hand_include, 'currency_per_chip')) hand_obj.currency_per_chip = game.CURRENCY_PER_CHIP;
+    if (_.contains(hand_include, 'act_timeout')) hand_obj.act_timeout = game.ACT_TIMEOUT;
     if (_.contains(hand_include, 'seats')) hand_obj.seats = _.map(hand_obj.seats, serializePlayer);
     if (_.contains(hand_include, 'players')) hand_obj.players = _.map(hand_obj.players, serializePlayer);
     function serializePlayer(player) {
