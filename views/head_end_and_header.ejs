@@ -44,21 +44,6 @@
                         </li>
                     <% } %>
 
-                        <% if (title === 'Bitcoin Poker' ) { %>
-                            <li>
-                              <a href = "#" id="lobby_trigger">
-                              LOBBY
-                              </a>
-                            </li>
-
-                            <% if (locals.username) { %>
-
-                            <!-- include values to expose to scripts -->
-                            <input type="hidden" id="user_server_values"
-                                data-username="<%= locals.username %>"
-                            />
-                            <% } %>
-                        <% } else { %>
                             <% if (typeof table_games !=='undefined') { %>
                               <div id="lobbyWrapperDiv">
                                 <li>
@@ -81,7 +66,6 @@
                                 </div>
                               </div> <!-- wrapperDiv: This is to help with hoverIntent -->
                             <%  } %>
-                        <% } %>
                     <li>
                         <a href="#" id="report_bug_trigger" title="Submit bugs or feedback">
                             <img src="/img/bug.png" />
