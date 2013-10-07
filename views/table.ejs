@@ -12,7 +12,7 @@ title += ' - Logged in as ' + username;
 
 <% include head_end_and_header %>
 
-        <div id="pokerTableWrapper" width = '690' height = '450'>
+        <div id="pokerTableWrapper" class = 'nonVendor' width = '690' height = '450'>
             <div id="pokerCanvasDiv"  width = '690' height = '450'>
             <canvas id = 'iframeSize' width = '690' height = '450' style = 'display:none'></canvas>
              <div id="tableChatFullTextDiv">
@@ -29,14 +29,14 @@ title += ' - Logged in as ' + username;
                        <input type = 'radio' id ="maxRadio" name = 'addChipsRadio' value="max" size="-4">
                     <p id = 'maxText'>Max:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     &nbsp;</p>
-                    <input type = 'text' id="maxAmount">
+                    <input type = 'number' id="maxAmount">
 
 </div> <!-- maxDiv-->
 
 <div id="otherAmountDiv">
             <input type = 'radio' id ="otherAmountRadio" name = 'addChipsRadio' >
                 <p id = 'otherAmountText'>    Other Amount: </p>
-                    <input type = 'text' id="otherAmount"> 
+                    <input type = 'number' id="otherAmount"> 
 
 </div> <!-- otherAmountDiv-->
 
@@ -44,7 +44,7 @@ title += ' - Logged in as ' + username;
 
                       <input type = 'radio' id ="autoRebuyRadio" name = 'addChipsRadio' >
                  <p id = 'autoRebuyText'>   Auto-Rebuy to: </p>
-                    <input type = 'text' id="autoRebuyAmount" >     </form>  
+                    <input type = 'number' id="autoRebuyAmount" >     </form>  
 
 </div> <!-- autoRebuyDiv-->
 
@@ -52,7 +52,7 @@ title += ' - Logged in as ' + username;
 
 
             <div id="chatDiv">
-                <form id='chatForm' class = 'unselectable'>
+                <form id='chatForm' class = 'unselectable nonVendor'>
            <input type = 'text' id="chat">
                 <input type = 'text' id="trolol" style ="display :none">
                 </form>
