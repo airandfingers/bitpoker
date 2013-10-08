@@ -103,6 +103,7 @@ h3 {
     font-size: .8em;
     padding: 0 1em 1em 1em;
     text-align: center;
+    z-index: 10;
 }
 
 #login, #register, #report_bug{
