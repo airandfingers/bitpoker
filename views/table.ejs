@@ -6,13 +6,14 @@ title += ' - Logged in as ' + username;
 %>
 <% include head_start %>
         <link type="text/css" rel="stylesheet" href="/css/pokertable.css" />
-  <link type="text/css" rel="stylesheet" href="/js/vendor/jquery.mCustomScrollbar.css" />
+  <link type="text/css" rel="stylesheet" href="/css/vendor/jquery.mCustomScrollbar.css" />
+    <link type="text/css" rel="stylesheet" href="/css/vendor/jquery.qtip.min.css" />
 
 
 <% include head_end_and_header %>
 
-        <div id="pokerTableWrapper" >
-            <div id="pokerCanvasDiv">
+        <div id="pokerTableWrapper" class = 'nonVendor' width = '690' height = '450'>
+            <div id="pokerCanvasDiv"  width = '690' height = '450'>
             <canvas id = 'iframeSize' width = '690' height = '450' style = 'display:none'></canvas>
              <div id="tableChatFullTextDiv">
             <p id = 'tableChatFullText' ></p>
@@ -28,14 +29,14 @@ title += ' - Logged in as ' + username;
                        <input type = 'radio' id ="maxRadio" name = 'addChipsRadio' value="max" size="-4">
                     <p id = 'maxText'>Max:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     &nbsp;</p>
-                    <input type = 'text' id="maxAmount">
+                    <input type = 'number' id="maxAmount">
 
 </div> <!-- maxDiv-->
 
 <div id="otherAmountDiv">
             <input type = 'radio' id ="otherAmountRadio" name = 'addChipsRadio' >
                 <p id = 'otherAmountText'>    Other Amount: </p>
-                    <input type = 'text' id="otherAmount"> 
+                    <input type = 'number' id="otherAmount"> 
 
 </div> <!-- otherAmountDiv-->
 
@@ -43,7 +44,7 @@ title += ' - Logged in as ' + username;
 
                       <input type = 'radio' id ="autoRebuyRadio" name = 'addChipsRadio' >
                  <p id = 'autoRebuyText'>   Auto-Rebuy to: </p>
-                    <input type = 'text' id="autoRebuyAmount" >     </form>  
+                    <input type = 'number' id="autoRebuyAmount" >     </form>  
 
 </div> <!-- autoRebuyDiv-->
 
@@ -51,7 +52,7 @@ title += ' - Logged in as ' + username;
 
 
             <div id="chatDiv">
-                <form id='chatForm' class = 'unselectable'>
+                <form id='chatForm' class = 'unselectable nonVendor'>
            <input type = 'text' id="chat">
                 <input type = 'text' id="trolol" style ="display :none">
                 </form>
@@ -84,7 +85,10 @@ title += ' - Logged in as ' + username;
         <script src="/js/vendor/easeljs-0.6.1.min.js"></script>
   <script src="/js/vendor/easeljs-0.6.0.min.js"></script>
   <script src="/js/vendor/jquery.numeric.js"></script>
-
+  <script src="/js/vendor/bootstrap.min.js"></script>
+    <script src="/js/vendor/jquery.qtip.min.js"></script>
+ 
+  jquery.qtip.min.css
 
 <!--
         <script src="/js/vendor/easeljs/AlphaMapFilter.js"></script>
@@ -102,6 +106,8 @@ title += ' - Logged in as ' + username;
          <script src="/js/vendor/soundjs.flashplugin-0.4.1.min.js"></script>
         <script src="/js/vendor/tweenjs-0.4.0.min.js"></script>
         <script src="/js/vendor/preloadjs-0.3.0.min.js"></script>
+          <script src="/js/vendor/imagesloaded.pkgd.min.js"></script>
+        
 
          <!-- SCROLL WHEEL THINGS  -->
   <script src="/js/vendor/jquery.mousewheel.js"></script>
@@ -128,8 +134,9 @@ title += ' - Logged in as ' + username;
 <script src="js/vendor/bootstrap.min.js"></script>
         <script src="js/vendor/async.js"></script>
         <script src="/js/pokertable.min.js"></script>
-        <script>
 
+
+        <script>
           // set iframe header if this is an embedded table
           if (_.isObject(parent.iframes)) {
             var table_name = $('#server_values').data('table_name');

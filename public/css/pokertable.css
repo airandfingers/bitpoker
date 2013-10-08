@@ -1,4 +1,30 @@
+
+
 #pokerTableWrapper *{
+    position: absolute;
+  }
+
+
+
+/*
+#pokerTableWrapper *{
+    position: absolute;
+        line-height:1;
+        margin-left:0px;
+        margin-top: 0px;
+       margin-bottom:0px;
+           margin-right:0px;
+           padding:0px;
+           text-align:left;
+           border-width:0px;
+          margin:0px 0px 0px 0px;
+           word-wrap: break-word;
+          word-break: normal;
+
+}
+*/
+
+.nonVendor{
     position: absolute;
     line-height:1;
         margin-left:0px;
@@ -14,19 +40,13 @@
 
 }
 
+
 #pokerTableWrapper {
+  position:inherit;
     width: 690;
     height:450;
-        margin-left:0px;
-        margin-top: 0px;
-       margin-bottom:0px;
-           margin-right:0px;
-           padding:0px;
-           text-align:left;
-           border-width:0px;
-          margin:0px 0px 0px 0px;
-           word-wrap: break-word;
-          word-break: normal;
+    left:0px;
+    top:0px;
           overflow:hidden;
 
 }
@@ -158,7 +178,7 @@ word-break: normal;
 	font-family:tahoma, arial, sans-serif;
     position: absolute;
     z-index: 1;
-    display: none;
+   /* display: none; */
     color: #FFFFFF;
     border: 1px solid #747862;
     border-radius: 0px;
