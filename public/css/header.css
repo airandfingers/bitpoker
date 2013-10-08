@@ -27,7 +27,7 @@ header {
     top: 0;
     left: 0;
     width: 100%;
-    font-size: 1em;
+    font-size: 1.1em;
     padding: 0;
     margin: 0;
     height: 1.625em; /*26px/16px*/
@@ -70,6 +70,8 @@ header {
 .navbar a:hover   { color: red; }
 .navbar a.current_page  { color: chartreuse; }
 .navbar a#lobby_trigger  { color: orange; }
+.navbar a#lobby_trigger:hover  { color: red; }
+
 
 .navbar li:hover ul, .navbar li ul:hover {
     overflow: visible;
