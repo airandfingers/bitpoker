@@ -412,9 +412,13 @@ module.exports = (function () {
           // player can't afford to raise at minimum raise level
           min_bet = max_bet;
         }
+        if (max_bet > high_stack) {
+          // player has more chips than any other; don't let him/r raise above highest other stack
+          max_bet = high_stack;
+        }
         // bet/raise
-        //console.log('high_stack:', high_stack, 'high_bet:', self.high_bet);
-        if (max_bet > to_call && high_stack > self.high_bet) {
+        //console.log('max_bet:', max_bet, 'to_call:', to_call, 'high_stack:', high_stack, 'high_bet:', self.high_bet);
+        if (max_bet > self.high_bet && high_stack > self.high_bet) {
           bet_action = self.high_bet > 0 ? 'raise' : 'bet';
           bet_action_obj = {};
           bet_action_obj[bet_action] = [min_bet, max_bet];
