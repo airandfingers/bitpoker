@@ -645,6 +645,7 @@ module.exports = (function () {
       , hide_navbar: true
       , room_state : JSON.stringify(room_state)
       , table_state: JSON.stringify(table_state)
+      , dont_include_styles: true
       });
     }
     else {
