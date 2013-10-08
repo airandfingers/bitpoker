@@ -4,8 +4,14 @@
     src: url(/DESTROY.ttf) format("truetype");
 }
 
+@font-face {
+    /* http://www.fontspace.com/jonathan-hill/planer */
+    font-family: "Planer_Reg";
+    src: url(/Planer_Reg.otf) format("opentype");
+}
+
 header {
-    font-family: DESTROY, sans-serif;
+    font-family: Planer_Reg, Helvetica, sans-serif;
     position: fixed;
     z-index: 1;
 }
@@ -21,7 +27,7 @@ header {
     top: 0;
     left: 0;
     width: 100%;
-    font-size: 1em;
+    font-size: 1.1em;
     padding: 0;
     margin: 0;
     height: 1.625em; /*26px/16px*/
@@ -64,6 +70,8 @@ header {
 .navbar a:hover   { color: red; }
 .navbar a.current_page  { color: chartreuse; }
 .navbar a#lobby_trigger  { color: orange; }
+.navbar a#lobby_trigger:hover  { color: red; }
+
 
 .navbar li:hover ul, .navbar li ul:hover {
     overflow: visible;
@@ -95,6 +103,7 @@ h3 {
     font-size: .8em;
     padding: 0 1em 1em 1em;
     text-align: center;
+    z-index: 10;
 }
 
 #login, #register, #report_bug{
