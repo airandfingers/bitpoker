@@ -505,6 +505,41 @@ this.image.graphics.beginFill(fillColor).drawRoundRect(0, 0, this.size.x, this.s
 
 }
 
+this.image.Item.prototype.createBootstrapButton = function(id, buttonText, options){
+if(!options){var options = {}}
+
+  console.log('createBootstrapButton called')console.log(this)
+var stageNumber = this.position.z.stage
+var parentOfStage = self.arrayOfParentsOfStageAndOfContainerArray[stageNumber]
+$('#'+id).remove()//remove any previous instances of this ID
+//append new version to the div of the item
+$(parentOfStage.div).append('<button id=\"'+id+'\"' +  'class = "btn unselectable">'+buttonText+'</button>')
+
+
+
+this.image = $('#'+id)[0]
+this.image.parentOfImageObject = this
+
+//set width height and positions of button
+self.positionItemImage(this)
+$(this.image).css({
+'z-index': parseInt($(parentOfStage.stage.canvas).css('z-index')) + 1 //make sure its on top of the canvas
+,'width':this.size.x
+,'height':this.size.y
+,'display':'none'
+})
+
+if(!_.isFunction(options.onClick)){var onClick = self.events.onButtonClick}
+  else{var onClick = options.onClick}
+
+
+$(this.image).on('click', function(e){
+onClick(e)
+e.stopPropagation()
+})
+
+}
+
  this.images.itemAsBitmap = function (item,source, options){
   //console.log(this.itemAsBitmap.caller)
 if(!options){var options = {}}
@@ -3572,6 +3607,11 @@ var actionButtonCanvasElement = self.arrayOfParentsOfStageAndOfContainerArray[ac
 
 //$(actionButtonCanvasElement).append('<button id="fold"  class = "btn actionButton">Fold</button>')
 
+
+this.sitIn.createBootstrapButton('sitIn', 'Sit In')
+console.log(this.sitIn)
+
+/*
 self.jQueryObjects.canvasDiv.append('<button id="fold"  class = "btn actionButton unselectable">Fold</button>')
 self.jQueryObjects.canvasDiv.append('<button id="call"  class = "btn actionButton unselectable">Call</button>')
 self.jQueryObjects.canvasDiv.append('<button id="check" class = "btn actionButton unselectable">Check</button>')
@@ -3588,8 +3628,8 @@ self.jQueryObjects.canvasDiv.append('<button id="rebuy" class = "btn actionButto
           this.sitIn.image = $('#sitIn')[0]
          this.rebuy.image  = $('#rebuy')[0]
 
-          this.fold.image.parentOfImageObject =   this.fold
-          this.call.image.parentOfImageObject =   this.call
+          this.fold.image.parentOfImageObject  =   this.fold
+          this.call.image.parentOfImageObject  =   this.call
           this.check.image.parentOfImageObject =  this.check      
           this.raise.image.parentOfImageObject =  this.raise
           this.bet.image.parentOfImageObject   =  this.bet
@@ -3607,7 +3647,6 @@ self.jQueryObjects.canvasDiv.append('<button id="rebuy" class = "btn actionButto
 
      //set width and height of action buttons
      $('.actionButton').css({
-  
       'width':actionButtonWidth
       ,'height':actionButtonHeight
       ,'z-index': parseFloat($(actionButtonCanvasElement).css('z-index')) + 1
@@ -3620,6 +3659,9 @@ $('.actionButton').on('click', function(e){
  self.events.onButtonClick(e)
 
 })
+*/
+
+
 
 //console.log('displaying actionButton class')
 //console.log($('.actionButton'))

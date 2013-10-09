@@ -6,13 +6,13 @@ title += ' - Logged in as ' + username;
 %>
 <% include head_start %>
         <link type="text/css" rel="stylesheet" href="/css/pokertable.css" />
-  <link type="text/css" rel="stylesheet" href="/css/vendor/jquery.mCustomScrollbar.css" />
-    <link type="text/css" rel="stylesheet" href="/css/vendor/jquery.qtip.min.css" />
 
+    <link type="text/css" rel="stylesheet" href="/css/vendor/jquery.qtip.min.css" />
+  <!--  <link type="text/css" rel="stylesheet" href="/css/vendor/jquery.mCustomScrollbar.css" /> -->
 
 <% include head_end_and_header %>
 
-        <div id="pokerTableWrapper" class = 'nonVendor' width = '690' height = '450'>
+        <div id="pokerTableWrapper" width = '690' height = '450'>
             <div id="pokerCanvasDiv"  width = '690' height = '450'>
             <canvas id = 'iframeSize' width = '690' height = '450' style = 'display:none'></canvas>
              <div id="tableChatFullTextDiv">
@@ -29,14 +29,14 @@ title += ' - Logged in as ' + username;
                        <input type = 'radio' id ="maxRadio" name = 'addChipsRadio' value="max" size="-4">
                     <p id = 'maxText'>Max:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     &nbsp;</p>
-                    <input type = 'number' id="maxAmount">
+                    <input type = 'text' id="maxAmount">
 
 </div> <!-- maxDiv-->
 
 <div id="otherAmountDiv">
             <input type = 'radio' id ="otherAmountRadio" name = 'addChipsRadio' >
                 <p id = 'otherAmountText'>    Other Amount: </p>
-                    <input type = 'number' id="otherAmount"> 
+                    <input type = 'text' id="otherAmount"> 
 
 </div> <!-- otherAmountDiv-->
 
@@ -44,7 +44,7 @@ title += ' - Logged in as ' + username;
 
                       <input type = 'radio' id ="autoRebuyRadio" name = 'addChipsRadio' >
                  <p id = 'autoRebuyText'>   Auto-Rebuy to: </p>
-                    <input type = 'number' id="autoRebuyAmount" >     </form>  
+                    <input type = 'text' id="autoRebuyAmount" >     </form>  
 
 </div> <!-- autoRebuyDiv-->
 
@@ -115,7 +115,7 @@ title += ' - Logged in as ' + username;
         <script src="/js/vendor/jquery-ui.js"></script>
          <script src="/js/vendor/jquery.nicescroll.js"></script>
          <script src="/js/vendor/jquery.scrollTo-1.4.3.1-min.js"></script>
-           <script src="/js/vendor/jquery.mCustomScrollbar.js"></script>
+     <!--      <script src="/js/vendor/jquery.mCustomScrollbar.js"></script>     -->
 
  <!--    i tried using this one insead of separate and doesnt work
       <script src="/js/vendor/jquery.mCustomScrollbar.concat.min.js"></script>    -->
@@ -133,7 +133,7 @@ title += ' - Logged in as ' + username;
 
 <script src="js/vendor/bootstrap.min.js"></script>
         <script src="js/vendor/async.js"></script>
-        <script src="/js/pokertable.min.js"></script>
+   <script src="/js/pokertable.min.js"></script>
 
 
         <script>
@@ -144,3 +144,5 @@ title += ' - Logged in as ' + username;
           }
         </script>
 <% include foot %>
+
+     
