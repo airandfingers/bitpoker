@@ -333,27 +333,27 @@ module.exports = (function () {
       , bet_action
       , bet_action_obj;
 
-    switch(this.stage_name) {
+    switch(self.stage_name) {
       case 'betting_preflop':
         // big-blind-player has already started the betting at the big blind level
-        this.high_bet = game.BIG_BLIND;
+        self.high_bet = game.BIG_BLIND;
         last_raise = game.SMALL_BLIND;
         break;
       case 'betting_postflop':
         console.log('Not in betting_preflop, so resetting high_bet and to_act');
         last_raise = game.SMALL_BLIND;
-        this.high_bet = 0;
-        this.to_act = this.first_to_act;
+        self.high_bet = 0;
+        self.to_act = self.first_to_act;
         break;
       case 'betting_preriver':
       case 'betting_postriver':
         console.log('Not in betting_preflop, so resetting high_bet and to_act');
         last_raise = game.BIG_BLIND;
-        this.high_bet = 0;
-        this.to_act = this.first_to_act;
+        self.high_bet = 0;
+        self.to_act = self.first_to_act;
         break;
       default:
-        console.error('bettingRound called when stage_name is', this.stage_name);
+        console.error('bettingRound called when stage_name is', self.stage_name);
     }
 
     player = self.currentPlayer();
@@ -412,7 +412,13 @@ module.exports = (function () {
           // player can't afford to raise at minimum raise level
           min_bet = max_bet;
         }
-        if (max_bet > to_call) {
+        if (max_bet > high_stack) {
+          // player has more chips than any other; don't let him/r raise above highest other stack
+          max_bet = high_stack;
+        }
+        // bet/raise
+        //console.log('max_bet:', max_bet, 'to_call:', to_call, 'high_stack:', high_stack, 'high_bet:', self.high_bet);
+        if (max_bet > self.high_bet && high_stack > self.high_bet) {
           bet_action = self.high_bet > 0 ? 'raise' : 'bet';
           bet_action_obj = {};
           bet_action_obj[bet_action] = [min_bet, max_bet];

@@ -166,7 +166,7 @@ module.exports = (function () {
         }
         else {
           // invalid action; ignore it
-          console.error('Player chose invalid action!', action, actions_obj);
+          console.error('respondToPrompt given invalid action!', action, actions_obj);
           return false;
         }
       }
@@ -174,12 +174,12 @@ module.exports = (function () {
       if (_.isNumber(num_chips)) {
         var rounded_num_chips = game.roundNumChips(num_chips);
         if (rounded_num_chips !== num_chips) {
-          console.error('Player sent unrounded num_chips value!', num_chips, rounded_num_chips);
+          console.error('respondToPrompt given unrounded num_chips value!', num_chips, rounded_num_chips);
           num_chips = rounded_num_chips;
         }
       }
       else if (action_arg !== true) {
-        console.error('Player sent non-Number num_chips value when a Number is required!', num_chips, action, action_arg);
+        console.error('respondToPrompt given non-Number num_chips value when a Number is required!', num_chips, action, action_arg);
       }
 
       if (_.isArray(action_arg)) {
@@ -188,12 +188,12 @@ module.exports = (function () {
           , max_bet = action_arg[1];
         if (num_chips < min_bet) {
           // value is too low; ignore it
-          console.error('Player raised with less than min_bet!', num_chips, min_bet);
+          console.error('respondToPrompt given less than min_bet!', num_chips, min_bet);
           return false;
         }
         else if (num_chips > max_bet) {
           //value is too high; set to max
-          console.error('Player raised with more than max_bet!', num_chips, max_bet);
+          console.error('respondToPrompt given more than max_bet!', num_chips, max_bet);
           num_chips = max_bet;
         }
       }
@@ -205,7 +205,7 @@ module.exports = (function () {
         }
         else if (num_chips !== action_arg) {
           // value is incorrect; ignore it
-          console.error('Player tried to call with a value other than to_call!', num_chips, action_arg);
+          console.error('respondToPrompt given a call value other than to_call!', num_chips, action_arg);
           return false;
         }
       }
@@ -267,12 +267,16 @@ module.exports = (function () {
   PlayerSchema.methods.handStart = function() {
     var self = this
       , action_flags = ['check', 'call', 'bet', 'raise', 'fold']
+      , flag_value
       , hand_default_value;
     self.in_hand = true;
 
     // clear any auto-action flags that may have been set
     _.each(action_flags, function(action) {
-      delete self.flags[action];
+      flag_value = self.flags[action];
+      if (flag_value) {
+        self.setFlag(action, false);
+      }
     });
 
     // set values for fields that have declared a hand_default value
@@ -314,20 +318,22 @@ module.exports = (function () {
         actions.push(function(acb) {
           self.performAction(method_name, args_array);
           // wait until the event that the method triggers when it's done
-          self.once(complete_events[method_name], acb);
+          self.once(complete_events[method_name], function() {
+            //console.log(method_name, 'completed, calling acb....');
+            acb();
+          });
         });
       }
     });
-    async.series(actions, function onComplete(err) {
-      if (err) {
-        // will never get called (acb's aren't given arguments)
-        console.error('error during pending_actions:', err);
+    async.series(actions, function onComplete() {
+      console.log('Pending actions completed for', self.username, actions.length);
+      if (! self.sitting_out && self.seat) {
+        self.autoRebuy();
+        if (self.idle) {
+          self.sitOut();
+        }
       }
     });
-
-    if (self.idle) {
-      self.sitOut();
-    }
   };
 
   PlayerSchema.methods.sendMessage = function() {
@@ -544,7 +550,7 @@ module.exports = (function () {
             , stack: stack
             , currency_per_chip: currency_per_chip
           }
-          ,  min_buyin = self.min_buyin
+          , min_buyin = self.min_buyin
           , min
           , max;
         // set min and max
@@ -667,10 +673,79 @@ module.exports = (function () {
     });
   };
 
+  PlayerSchema.methods.autoRebuy = function() {
+    var self = this
+      , auto_rebuy_amount = self.flags.auto_rebuy
+      , game = self.game;
+
+    if (! _.isNumber(auto_rebuy_amount)) {
+      return;
+    }
+
+    var stack = self.chips
+      , chips_to_add = auto_rebuy_amount - stack;
+
+    if (chips_to_add <= 0) {
+      // stack is already >= auto_rebuy_amount
+      return;
+    }
+
+    self.socket.user.fetch(function(fetch_err, user) {
+      if (fetch_err) {
+        console.error('error while looking up user: ' + fetch_err.message || fetch_err);
+        return;
+      }
+      var currency_per_chip = game.CURRENCY_PER_CHIP
+        , currency_to_add = chips_to_add * currency_per_chip
+        , currency_balance = user[game.CURRENCY]
+        , new_balance = currency_balance - currency_to_add;
+      
+      if (new_balance < 0) {
+        console.log('player doesn\'t have enough currency to rebuy to ' + auto_rebuy_amount);
+        chips_to_add = game.roundNumChips(currency_balance / currency_per_chip, 'floor');
+        currency_to_add = chips_to_add * currency_per_chip;
+        new_balance = currency_balance - currency_to_add;
+      }
+      //console.log('chips_to_add:', chips_to_add, 'new_balance:', new_balance, 'currency_to_add:', currency_to_add);
+      if (chips_to_add === 0) {
+        console.log('player doesn\'t have enough currency to buy any chips!');
+        return;
+      }
+      user[game.CURRENCY] = new_balance;
+      user.save(function(save_err) {
+        if (save_err) {
+          console.error('error while saving user: ' + save_err.message || save_err);
+          return;
+        }
+        else {
+          self.chips += chips_to_add;
+          self.emit('chips_added', chips_to_add);
+        }
+      });
+    });
+  };
+
   static_properties.messages.set_flag = 'setFlag';
   PlayerSchema.methods.setFlag = function(name, value) {
     console.log(this.username, 'setting', name, 'to', value);
     this.flags[name] = value;
+
+    // check auto_rebuy flag value
+    if (name === 'auto_rebuy') {
+      var game = this.game;
+      if (! _.isNumber(value) || value < game.MIN_CHIPS || value > game.MAX_CHIPS) {
+        console.error('Ignoring set_flag message for invalid auto-rebuy amount:', value);
+        return;
+      }
+      this.calculateAddChipsInfo(function() {});
+    }
+    else if (value && _.isObject(this.current_prompt)) {
+      // attempt to automatically perform this action
+      // (respondToPrompt's error checking will catch if this is invalid)
+      this.idle = false;
+      this.current_prompt.callback(name, value);
+    }
+
     this.sendMessage('flag_set', name, value);
   };
 

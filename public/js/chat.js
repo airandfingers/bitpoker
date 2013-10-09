@@ -35,7 +35,8 @@ socket.on('user_chats', function(data) {
   console.log('user_chats message received: ', data);
   var sender = data.sender
     , message = data.message
-    , $message = $(_.template(chat_message_template, { sender: sender, message: message.message }));
+    , message_text = _.escape(message.message)
+    , $message = $(_.template(chat_message_template, { sender: sender, message: message_text }));
   $('#chat_messages')
     .append($message)
     .scrollTop($('#chat_messages').height());
@@ -46,7 +47,8 @@ socket.on('user_chats', function(data) {
 
 socket.on('game_event', function(message, timestamp) {
   console.log('game_event message received: ', message, timestamp);
-  var $message = $(_.template(game_event_template, { message: message.message }));
+  var message_text = _.escape(message.message)
+    , $message = $(_.template(game_event_template, { message: message_text }));
   $('#chat_messages')
     .append($message)
     .scrollTop($('#chat_messages').height());

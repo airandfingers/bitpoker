@@ -1,5 +1,7 @@
       <% if (! locals.hide_navbar) { %>
-        <script src="/js/table_list.js"></script>
+        <% if (typeof table_games !=='undefined') { %>
+          <script src="/js/table_list.js"></script>
+        <% } %>
 
         <script src="/js/vendor/jquery.validate.min.js"></script>
         <script src="/js/vendor/jquery.hoverIntent.min.js"></script>
