@@ -94,7 +94,7 @@ user-select: none;
 #cashierDiv{
   overflow:hidden;
    pointer-events: none; 
-  display:none;
+ 
 }
 
 /*
@@ -102,10 +102,7 @@ user-select: none;
    pointer-events: none; 
 }
 */
-#cashier{
-    display:none;
-      pointer-events: auto; 
-}
+#cashier{      pointer-events: auto; }
 
 #pokerCanvasDiv {
     position: absolute;
@@ -127,6 +124,7 @@ position:absolute;
   z-index: 2;
   zIndex:2;
 }
+
 #tableChatFullText{
   position:absolute;
   display:none;
