@@ -338,3 +338,20 @@ display:none;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.33);
   -webkit-font-smoothing: antialiased;
 }
+
+#disableAutoRebuy{
+  background-color: hsl(360, 99%, 27%) !important;
+  background-repeat: repeat-x;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#f80101", endColorstr="#890000");
+  background-image: -khtml-gradient(linear, left top, left bottom, from(#f80101), to(#890000));
+  background-image: -moz-linear-gradient(top, #f80101, #890000);
+  background-image: -ms-linear-gradient(top, #f80101, #890000);
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #f80101), color-stop(100%, #890000));
+  background-image: -webkit-linear-gradient(top, #f80101, #890000);
+  background-image: -o-linear-gradient(top, #f80101, #890000);
+  background-image: linear-gradient(#f80101, #890000);
+  border-color: #890000 #890000 hsl(360, 99%, 21.5%);
+  color: #fff !important;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.36);
+  -webkit-font-smoothing: antialiased;
+}
