@@ -166,7 +166,7 @@ module.exports = (function () {
         }
         else {
           // invalid action; ignore it
-          console.error('Player chose invalid action!', action, actions_obj);
+          console.error('respondToPrompt given invalid action!', action, actions_obj);
           return false;
         }
       }
@@ -174,12 +174,12 @@ module.exports = (function () {
       if (_.isNumber(num_chips)) {
         var rounded_num_chips = game.roundNumChips(num_chips);
         if (rounded_num_chips !== num_chips) {
-          console.error('Player sent unrounded num_chips value!', num_chips, rounded_num_chips);
+          console.error('respondToPrompt given unrounded num_chips value!', num_chips, rounded_num_chips);
           num_chips = rounded_num_chips;
         }
       }
       else if (action_arg !== true) {
-        console.error('Player sent non-Number num_chips value when a Number is required!', num_chips, action, action_arg);
+        console.error('respondToPrompt given non-Number num_chips value when a Number is required!', num_chips, action, action_arg);
       }
 
       if (_.isArray(action_arg)) {
@@ -188,12 +188,12 @@ module.exports = (function () {
           , max_bet = action_arg[1];
         if (num_chips < min_bet) {
           // value is too low; ignore it
-          console.error('Player raised with less than min_bet!', num_chips, min_bet);
+          console.error('respondToPrompt given less than min_bet!', num_chips, min_bet);
           return false;
         }
         else if (num_chips > max_bet) {
           //value is too high; set to max
-          console.error('Player raised with more than max_bet!', num_chips, max_bet);
+          console.error('respondToPrompt given more than max_bet!', num_chips, max_bet);
           num_chips = max_bet;
         }
       }
@@ -205,7 +205,7 @@ module.exports = (function () {
         }
         else if (num_chips !== action_arg) {
           // value is incorrect; ignore it
-          console.error('Player tried to call with a value other than to_call!', num_chips, action_arg);
+          console.error('respondToPrompt given a call value other than to_call!', num_chips, action_arg);
           return false;
         }
       }
@@ -267,12 +267,16 @@ module.exports = (function () {
   PlayerSchema.methods.handStart = function() {
     var self = this
       , action_flags = ['check', 'call', 'bet', 'raise', 'fold']
+      , flag_value
       , hand_default_value;
     self.in_hand = true;
 
     // clear any auto-action flags that may have been set
     _.each(action_flags, function(action) {
-      delete self.flags[action];
+      flag_value = self.flags[action];
+      if (flag_value) {
+        self.setFlag(action, false);
+      }
     });
 
     // set values for fields that have declared a hand_default value
@@ -734,6 +738,12 @@ module.exports = (function () {
         return;
       }
       this.calculateAddChipsInfo(function() {});
+    }
+    else if (value && _.isObject(this.current_prompt)) {
+      // attempt to automatically perform this action
+      // (respondToPrompt's error checking will catch if this is invalid)
+      this.idle = false;
+      this.current_prompt.callback(name, value);
     }
 
     this.sendMessage('flag_set', name, value);
