@@ -564,22 +564,26 @@ module.exports = (function () {
                     { username: username, pt_password: pt_password });
         req.user.convertFromGuest({
           username: username, pt_password: pt_password, email: email
-        }, function(err, user) {
-          if (err) {
-            req.flash('error', err.message);
+        }, function(convert_err, user) {
+          if (convert_err) {
+            req.flash('error', convert_err.message || convert_err);
             res.redirect('/register?next=' + target);
           }
           else {
-            req.login(user, function(err) {
-              //console.log('error is', err, '\n req.user is', req.user);
-              if (err) {
-                req.flash('error', err.message);
+            req.login(user, function(login_err) {
+              //console.log('error is', login_err, '\n req.user is', req.user);
+              if (login_err) {
+                req.flash('error', login_err.message);
                 return res.redirect('/login?next=' + target);
               }
              res.redirect(target);
             });
           }
         });
+      }
+      else {
+        console.error('Already-authenticated non-guest user trying to register!');
+        res.redirect(target);
       }
     }
     else {
@@ -588,7 +592,7 @@ module.exports = (function () {
       User.createUser({ username: username, pt_password: pt_password, email: email }, function(create_err, user) {
         console.log('createUser returns', create_err, user);
         if (create_err) {
-          req.flash('error', create_err);
+          req.flash('error', create_err || create_err);
           res.redirect('/register?next=' + target);
         }
         else {
@@ -748,6 +752,9 @@ module.exports = (function () {
     var username = req.query.username;
     if (User.isGuest(username)) {
       return res.json('Your username may not begin with "guest".');
+    }
+    if (_.escape(username) !== username) {
+      return res.json('The following characters are not allowed in usernames: & < > " \' /');
     }
     User.findOne({ username: username }, function(find_err, user) {
       if (find_err) {

@@ -38,19 +38,24 @@ module.exports = (function() {
 
   // static methods - Model.method()
   UserSchema.statics.createUser = function(spec, cb) {
-    var pt_password = spec.pt_password
+    var username = spec.username
+      , pt_password = spec.pt_password
       , error;
     console.log('createUser called for', spec);
-    if (User.isGuest(spec.username)) {
-      error = 'createUser called with guest username! ' + spec.username;
-      console.error(error);
-      return cb(error);
+    if (_.escape(username) !== username) {
+      error = 'The following characters are not allowed in usernames: & < > " \' /';
     }
-    if (! _.isString(pt_password)) {
+    else if (User.isGuest(username)) {
+      error = 'non-guest usernames may not begin with "guest"!';
+    }
+    else if (! _.isString(pt_password)) {
       error = 'User.createUser called without pt_password!';
+    }
+    if (error) {
       console.error(error);
       return cb(error);
     }
+
     spec.password = User.encryptPassword(pt_password);
     delete spec.pt_password;
 
@@ -161,24 +166,28 @@ module.exports = (function() {
 
   UserSchema.methods.convertFromGuest = function(spec, cb) {
     var self = this
+      , username = spec.username
+      , pt_password = spec.pt_password
       , keys = _.keys(spec)
       , error;
-    console.log('convertFromGuest called for', self.username);
-    
+    console.log('convertFromGuest called for', username);
+
     if (! User.isGuest(self.username)) {
-      error = 'User.convertFromGuest called for non-guest user ' + self.username;
-      console.error(error);
-      return cb(error);
+      error = 'User.convertFromGuest called for non-guest user! ' + username;
     }
-
-    if (! _.isString(spec.username)) {
+    else if (! _.isString(username)) {
       error = 'User.convertFromGuest called without username!';
-      console.error(error);
-      return cb(error);
     }
-
-    if (! _.isString(spec.pt_password)) {
+    else if (_.escape(username) !== username) {
+      error = 'The following characters are not allowed in usernames: & < > " \' /';
+    }
+    else if (User.isGuest(username)) {
+      error = 'non-guest usernames may not begin with "guest"!';
+    }
+    else if (! _.isString(pt_password)) {
       error = 'User.convertFromGuest called without pt_password!';
+    }
+    if (error) {
       console.error(error);
       return cb(error);
     }
@@ -190,7 +199,8 @@ module.exports = (function() {
     }
 
     // encrypt pt_password and save it as password
-    spec.password = User.encryptPassword(spec.pt_password);
+    spec.password = User.encryptPassword(pt_password);
+    delete spec.pt_password;
     
     console.log('updating user with', spec);
     _.extend(self, spec);
