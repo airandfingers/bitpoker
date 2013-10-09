@@ -323,12 +323,11 @@ module.exports = (function () {
     });
     async.series(actions, function onComplete() {
       console.log('Pending actions completed for', self.username, actions.length);
-      if (! self.sitting_out) {
+      if (! self.sitting_out && self.seat) {
         self.autoRebuy();
-      }
-
-      if (self.idle) {
-        self.sitOut();
+        if (self.idle) {
+          self.sitOut();
+        }
       }
     });
   };
