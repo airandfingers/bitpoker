@@ -96,6 +96,12 @@ user-select: none;
    pointer-events: none; 
   display:none;
 }
+
+/*
+#cashierDiv div{
+   pointer-events: none; 
+}
+*/
 #cashier{
     display:none;
       pointer-events: auto; 
@@ -168,6 +174,8 @@ word-break: normal;
     z-index: 1;
     text-align: left;
 }
+
+
 
 #chatDiv input[type = 'text']{
   /*background: transparent url('/img/chat_bg.jpg') no-repeat; removed 07/28/2013 */
