@@ -64,6 +64,9 @@
     var $iframe = findIframe(table_name);
     if ($iframe.length > 0) {
       $iframe.find('.iframe_header').text(title);
+      $iframe.find('.iframe_header').append(
+        "<button type='button' class='close' ><a href='javascript: iframes.closeIframe("+table_name+")'>×</a></button>"
+      );    
     }
     else {
       console.error('no iframe found for table_name', table_name);
