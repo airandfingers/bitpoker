@@ -7,7 +7,8 @@ window.onKeydown = onKeyDown
 */
 
 
-   
+   $(window).on('mousewheel', function(e){e.stopPropagation()})
+
     //default canvas size is 690x480
     //all numbers are in base 0, including variable names and documentation
     //seat position 0 is top middle and proceeds clockwise
@@ -153,8 +154,8 @@ self.updateTableChatFullDisplay(options)}
 
       confirmSeatRotation:{value:true},
 
-defaultFontType :{value:'Lucida Sans'},
-
+defaultFontType:{value:'Lucida Sans'},
+//defaultFontType:{value:'Planer_Reg'},
         sourceObjects:{value:parent.sourceObjects, updateValue:function(newValue){
 var newerValue = newValue
 if(!_.isObject(newValue)){
@@ -545,18 +546,16 @@ if(options.css){
 }
 
 //default properties
-if(!options.attributes){options.attributes = {'gjorb':1}}
+if(!options.attributes){options.attributes = {}}
 
 if(_.isString(options.loadingText) || _.isNumber(options.loadingText)){options.attributes['data-loading-text'] = options.loadingText}
   else{options.attributes['data-loading-text'] = buttonText}
 
-/*
-    console.log('displaying option properties')
-console.log(options.properties)
-*/
-
+    options.attributes.autocomplete = 'off'
+  //assign attributes
     $(this.image).attr( options.attributes)
 
+//add classes if necessary
 if(_.isString(options.class)){$(this.image).addClass(options.class)}
 
 if(!_.isFunction(options.onClick)){var onClick = self.events.onButtonClick}
@@ -2148,8 +2147,15 @@ function raiseOrBetOnBetSizeEnterPress(e){
 
   if(keycode !== 13) {return}    //if enter key is pressed
 console.log('betting/raising, event type = '+event.type)
-if(self.isItemAddedToStage(self.images.raise)){e.target = self.images.raise.image;self.events.onButtonClick(e)}
-else if(self.isItemAddedToStage(self.images.bet)){e.target = self.images.bet.image;self.events.onButtonClick(e)}
+
+if(self.isItemAddedToStage(self.images.raise)){
+$(self.images.raise.image).trigger('click')
+  //e.target = self.images.raise.image;self.events.onButtonClick(e)
+}
+else if(self.isItemAddedToStage(self.images.bet)){
+$(self.images.bet.image).trigger('click')
+  //e.target = self.images.bet.image;self.events.onButtonClick(e)
+}
    
 }//raiseOrBetOnBetSizeEnterPress
 
@@ -4182,8 +4188,8 @@ for(var n = messageBoxImageContainerIndex;n< messageBoxImageContainerIndex+conta
        
 }
 //hide messageBoxCanvas
-$(self.arrayOfParentsOfStageAndOfContainerArray[ this.messageBox[0].window.position.z.stage].stage.canvas).css('display','none')
-
+//$(self.arrayOfParentsOfStageAndOfContainerArray[ this.messageBox[0].window.position.z.stage].stage.canvas).css('display','none')
+setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(this.messageBox[0].window.position.z.stage, false)
 //table image
 
 
@@ -4337,8 +4343,8 @@ var cashierWindowContainer = 0
 
         var rowsUsed = 7        
 //hide cashierCanvas
-$(self.arrayOfParentsOfStageAndOfContainerArray[ self.images.cashier.window.position.z.stage].stage.canvas).css('display','none')
-
+//$(self.arrayOfParentsOfStageAndOfContainerArray[ self.images.cashier.window.position.z.stage].stage.canvas).css('display','none')
+setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(self.images.cashier.window, false)
 
 
            //customize radio buttons
@@ -4419,7 +4425,7 @@ $("#autoRebuyDiv").children().off()
           $('#cashierDiv').find("input[type = 'text']").off()
 
 $('#cashierDiv').on('mousedown keydown keyup', self.events.cashier)
-$('#cashierDiv').find("input[type = 'text']").on('focus focusout input', self.events.cashier)
+$('#cashierDiv').find("input[type = 'text']").on('focus focusout input paste', self.events.cashier)
 // 
 /*
     $("#otherAmountDiv").children().mousedown(function(event) {
@@ -4669,7 +4675,13 @@ if(displayDisableAutoRebuy === true || displayDisableAutoRebuy === false){goingT
 else if($(this.cashier.disableAutoRebuy.image).css('display') === 'none'){var disableAutoRebuyDisplayed = false}
  else{var disableAutoRebuyDisplayed = true}
 
-var cashierButtonWidth = minCashierButtonWidth; var addChipsX; var cancelX
+var cashierButtonWidth = minCashierButtonWidth; var addChipsX; var cancelX; 
+//get cashierWindow location
+var cashierWindowLocation = getDisplayObjectLocation(self.images.cashier.window.image)
+var cashierOffsetX = cashierWindowLocation.x - self.images.cashier.window.position.x
+var cashierOffsetY = cashierWindowLocation.y - self.images.cashier.window.position.y
+
+console.log('cashierOffsetX = '+cashierOffsetX);console.log('cashierOffsetY = '+cashierOffsetY)
 
 if(goingToDisplayDisableAutoRebuy === true){
 
@@ -4688,6 +4700,7 @@ this.cashier.disableAutoRebuy.position.x = disableAutoRebuyX
 this.cashier.disableAutoRebuy.size.x = cashierButtonWidth
 stagesToUpdate.push (this.cashier.disableAutoRebuy.updateImageLocationAndSize(options))
 stagesToUpdate.push(self.displayChildren(this.cashier.disableAutoRebuy, options))
+//stagesToUpdate.push(self.displayChildren(this.cashier.disableAutoRebuy, options))
 
 }//if displaying disable auto rebuy option
 
@@ -4712,6 +4725,11 @@ stagesToUpdate.push (this.cashier.addChips.updateImageLocationAndSize(options))
 this.cashier.cancel.position.x = cancelX
 this.cashier.cancel.size.x = cashierButtonWidth
 stagesToUpdate.push (this.cashier.cancel.updateImageLocationAndSize(options))
+
+var cashierButtons = [this.cashier.addChips, this.cashier.cancel, this.cashier.disableAutoRebuy]
+
+stagesToUpdate.push (self.setImageItemPositionAndTextBasedOnImageChange(cashierButtons, cashierOffsetX, cashierOffsetY, {permanent:false, movementType:'relative'}))
+
 
 
 options.update = update
@@ -5173,7 +5191,8 @@ $(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.canvas).on('c
 }//if stageOptions
 
 if(options.canvasHidden === true){
-$(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.canvas).css('display','none')
+  setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(stageNumber, false)
+//$(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.canvas).css('display','none')
 }
 
 //create containers and add them to stage
@@ -5255,6 +5274,7 @@ $('#'+newDivID).append('<canvas id = '+'\''+newCanvasID+'\'' + ' width = '+'\''+
 //$('#'+newCanvasID).css('z-index',initialZIndex)
 $('#'+newCanvasID).addClass(canvasClass)
 $('#'+newCanvasID).addClass(unselectableClass)
+$('#'+newDivID).css('z-index', newCanvasIDNumber*6)
 
 }//if we want to create a new canvas
 
@@ -5273,6 +5293,7 @@ var canvas = document.getElementById(newCanvasID)
 
 //IN THE FUTURE WE WANT TO INCREASE THE FUTURE CANVAS/STAGES DATA TO WE CAN ADD IT HERE
 initializeStageSettings(options)
+
 }
 
 
@@ -6269,7 +6290,24 @@ this.gameState.numSeats = numSeats
 //console.log(this.images.seats)
 //make sure new positions arenot stored again
 this.imageData.numberOfPlayersSet = true
+
     }
+
+var setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault = function(stageNumberOrItem, status){
+
+if(stageNumberOrItem instanceof self.images.Item){
+var stageNumber = stageNumberOrItem.position.z.stage
+}
+else if(_.isNumber(stageNumberOrItem)){var stageNumber = stageNumberOrItem}
+
+  var divElement = self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].div
+
+if(status === true){var display = 'inline'}
+  else{var display = 'none'}
+
+$(divElement).css('display',display)
+
+}
 
     this.displayShownCard = function (cardText, parentOfImageObject, options){
         
@@ -7116,7 +7154,7 @@ var defaultPositions  =  {}
 //console.log('animationInfo = ');console.log(animationInfo)
 //console.log('imageOrText=  ');console.log(imageOrText)
 
-  var currentPosition =  getDisplayObjectPosition(imageOrText)
+  var currentPosition =  getDisplayObjectLocation(imageOrText)
 
 
 //INITIAL POSITIONS
@@ -7201,6 +7239,7 @@ _.each(item, function(value, index, list){
 moveItem(value, newX, newY)
 })//iterate through item
 
+//restore options that were changed
 options.maxDepth = options.maxDepth+1
 options.movementType  = movementType
 }//if array or collection of items
@@ -7218,8 +7257,8 @@ if(options.movementType === 'relative' && _.isObject(item.text) && !item.image &
 }
 
 
-if(_.isObject(item.image) ){var hasImage = true;  var previousImageLocation = getDisplayObjectPosition(item.image)}
-  if(_.isObject(item.text) ){var hasText = true;var previousTextLocation = getDisplayObjectPosition(item.text)}
+if(_.isObject(item.image) ){var hasImage = true;  var previousImageLocation = getDisplayObjectLocation(item.image)}
+  if(_.isObject(item.text) ){var hasText = true;var previousTextLocation = getDisplayObjectLocation(item.text)}
 
 
 if(!_.isNumber(newX)){
@@ -7266,8 +7305,6 @@ if(options.permanent === true){
 
 //check to make sure we are actually changing image. if not return
 if(deltaX === 0 && deltaY === 0){return}
-
-
 
 
 //IMAGE
@@ -7346,7 +7383,7 @@ else{//if html element
 
 }//function to set displayobject position
 
-var getDisplayObjectPosition = function(imageOrText){
+var getDisplayObjectLocation = function(imageOrText){
 if(!_.isElement(imageOrText)){
 //  console.log('getting location of nonelement displayobejct posiion')
 var location =  {x:imageOrText.x, y:imageOrText.y}
@@ -7354,13 +7391,14 @@ var location =  {x:imageOrText.x, y:imageOrText.y}
 else{// var location = {x:  parseFloat($(imageOrText).css('left')), y: parseFloat($(imageOrText).css('top'))}
 var topLeftLocation  = $(imageOrText).position()
 var location = {x:topLeftLocation.left , y:topLeftLocation.top}
+var location = {x:  parseFloat($(imageOrText).css('left')), y: parseFloat($(imageOrText).css('top'))}
 }
 //console.log(imageOrText);console.log(location)
 
 if(_.isNaN(location.x) || _.isNaN(location.y)){console.log($(imageOrText) );
   console.log($(imageOrText).position);throw 'nan of get display object position '}
 
-if(!_.isObject(location)){console.log('getDisplayObjectPosition error');console.log(imageOrText)}
+if(!_.isObject(location)){console.log('getDisplayObjectLocation error');console.log(imageOrText)}
 return location
 
 }//get display object position function
@@ -10027,7 +10065,8 @@ stagesToUpdate.push( this.updateTableChatFullDisplay(hideOrDisplayChildrenOption
 
 var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.images.tableChatFull.htmlStageElement.position.z.stage].stage.canvas
 
-$(tableChatFullCanvas).css('display','inline')
+setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(this.images.tableChatFull.window, true)
+//$(tableChatFullCanvas).css('display','inline')
 self.jQueryObjects.tableChatFullParagraph.css('display','inline ')
 
 //restore scrollbar position
@@ -10073,7 +10112,8 @@ stagesToUpdate.push(this.hideChildren(this.images.tableChatFull, options))
 
 var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.images.tableChatFull.htmlStageElement.position.z.stage].stage.canvas
 
-$(tableChatFullCanvas).css('display','none')
+//$(tableChatFullCanvas).css('display','none')
+setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(this.images.tableChatFull.window, false)
 self.jQueryObjects.tableChatFullParagraph.css('display','none')
 if(update!== false){this.updateStages(stagesToUpdate)}
   else{stagesToUpdate}
@@ -10222,8 +10262,12 @@ if(options.update !== false){self.updateStages(stagesToUpdate)}
         hideOrDisplayChildrenOptions.update = false
 
         var stagesToUpdate = []
+        /*
 //hide cashierCanvas
 $(self.arrayOfParentsOfStageAndOfContainerArray[self.images.cashier.window.position.z.stage].stage.canvas).css('display','none')
+*/
+
+setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(self.images.cashier.window, false)
 
 
         //enable TableChatBox
@@ -10289,7 +10333,10 @@ if(self.gameState.messageBox.messageBoxImageContainerIndex === self.gameState.zP
 self.restoreActiveStages(   self.gameState.messageBox.activeStages[self.gameState.messageBox.messageBoxImageContainerIndex])
 
 //hide messageBoxCanvas
-$(self.arrayOfParentsOfStageAndOfContainerArray[ messageBoxStageNumber].stage.canvas).css('display','none')}
+//$(self.arrayOfParentsOfStageAndOfContainerArray[ messageBoxStageNumber].stage.canvas).css('display','none')
+setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(self.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex].window, false)
+
+}
 
 //store new active message box container variable
         self.gameState.messageBox.messageBoxImageContainerIndex = self.gameState.messageBox.messageBoxImageContainerIndex - self.gameState.zPositionData.containersPerMessageBox
@@ -10437,7 +10484,7 @@ if(messageInfo.sameSizeButtons === true){
 
 var defaults = {}
 defaults.checkBox = false
-defaults.checkBoxText = 'Dont show this message again.'
+defaults.checkBoxText = 'Dont show this message again (this option is currently bugged).'
  defaults.checkBoxTextColor = messageInfo.messageColor
 defaults.checkBoxFontSize = 10
 
@@ -10590,7 +10637,7 @@ var checkBoxX = messageBoxWindowX + messageBoxWindowWidth/2 - checkBoxWidth/2
 var getCheckBoxY = function(){
   //first check for the bottom of the messageBoxText
 var messageBoxMessage = self.images.messageBox[messageBoxImageContainerIndex].message
-var messageBoxTextBottom = getDisplayObjectPosition(messageBoxMessage.text)  + messageBoxMessage.text.getMeasuredHeight()
+var messageBoxTextBottom = getDisplayObjectLocation(messageBoxMessage.text)  + messageBoxMessage.text.getMeasuredHeight()
 
 var defaultCheckBoxY = self.images.messageBox[messageBoxImageContainerIndex].okay.position.y - maxDistanceFromButtonsToCheckOption -  self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked.size.y
 
@@ -10643,7 +10690,6 @@ else{
 }
 
 
-       
 //assign Y of checkbox according to messageText
 if(messageInfo.checkBox){
 var checkBoxY = getCheckBoxY()
@@ -10658,7 +10704,8 @@ stagesToUpdate.push(self.hideChildren(  self.images.messageBox[messageBoxImageCo
 
 
 //display messageBoxCanvas
-$(this.arrayOfParentsOfStageAndOfContainerArray[messageBoxStageNumber].stage.canvas).css('display','inline')
+//$(this.arrayOfParentsOfStageAndOfContainerArray[messageBoxStageNumber].stage.canvas).css('display','inline')
+setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(self.images.messageBox[messageBoxImageContainerIndex].window, true )
 
 if(update !== false){this.updateStages(stagesToUpdate)}
       else{return stagesToUpdate}
@@ -10729,7 +10776,7 @@ setAutoRebuyValueText (  autoRebuyFlagValue)
 //display textboxes for adding chips
           var htmlcashier = document.getElementById('cashier')
     htmlcashier.style.display = 'inline'
-document.getElementById('cashierDiv').style.display = 'inline'
+//document.getElementById('cashierDiv').style.display = 'inline'
 
 
 self.gameState.cashier.activeStages = this.storeActiveStages()
@@ -10741,11 +10788,15 @@ var cashierStageNumber = this.images.cashier.window.position.z.stage
 
         console.log(this.images.cashier)
 
+
+validateCashierDisplayBasedOnUserInput(true)
            stagesToUpdate.push( this.displayChildren(this.images.cashier, hideOrDisplayChildrenOptions) )
 stagesToUpdate.push(self.updateUserOptionsBasedOnFlagsAndPreactions(hideOrDisplayChildrenOptions))
 
 //display cashierCanvas
-$(this.arrayOfParentsOfStageAndOfContainerArray[ this.images.cashier.window.position.z.stage].stage.canvas).css('display','inline')
+//$(this.arrayOfParentsOfStageAndOfContainerArray[ this.images.cashier.window.position.z.stage].stage.canvas).css('display','inline')
+
+setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(self.images.cashier.window, true)
 
 if(update !== false){this.updateStages(stagesToUpdate)}
   else{return stagesToUpdate}
@@ -11291,6 +11342,7 @@ stagesToUpdate.push( this.hideSeatedOptions(options) )
 
 else{  //if player is seated
 
+//==================CASHIER UPDATES ======================
 //update autoRebuyText
 var autoRebuyData = self.getPreactionData('autorebuy')
 console.log('retreived preaction data of autorebuy value = ');console.log(autoRebuyData)
@@ -11307,7 +11359,6 @@ var displayDisableAutoRebuy = true
 stagesToUpdate.push(setAutoRebuyValueText(autoRebuyValue, options))
 //update button postions of addchips, cancel, and disableautorebuy
 stagesToUpdate.push(self.images.positionCashierButtons(displayDisableAutoRebuy, options))
-
 
 
 //enable basic seatedoptions
@@ -11822,8 +11873,8 @@ function tick(event){
                self.updateStages(self.gameState.zPositionData.loadingBackground.stage)
               // parentOfLoadingStage.stage.update()
               console.log('loading canvas now')
-               $(parentOfLoadingStage.stage.canvas).css('display','none')
-
+          //     $(parentOfLoadingStage.stage.canvas).css('display','none')
+setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(self.gameState.zPositionData.loadingBackground.stage, false)
                self.activateTicker(50)
        }
        console.log('increasing tick')
