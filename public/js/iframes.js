@@ -65,7 +65,7 @@
     if ($iframe.length > 0) {
       $iframe.find('.iframe_header').text(title);
       $iframe.find('.iframe_header').append(
-        "<button type='button' class='close' ><a href='javascript: iframes.closeIframe("+table_name+")'>×</a></button>"
+        "<button type='button' class='close' ><a href='javascript: window.parent.iframes.closeIframe("+table_name+")'>×</a></button>"
       );    
     }
     else {
