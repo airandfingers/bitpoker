@@ -10752,7 +10752,26 @@ if(update !== false){this.updateStages(stagesToUpdate)}
         this.images.cashier.tableMinValue.text.text = info.currency_per_chip*info.table_min
         this.images.cashier.tableMaxValue.text.text = info.currency_per_chip*info.table_max
         this.images.cashier.playerMinValue.text.text = info.currency_per_chip*info.min
-       this.images.cashier.accountBalanceValue.text.text = this.gameState.cashier.balance
+       this.images.cashier.accountBalanceValue.text.text = this.gameState.cashier.balance 
+if(this.gameState.cashier.balance < this.gameState.cashier.min || true === true){ 
+
+  this.images.cashier.accountBalanceValue.text.text = this.images.cashier.accountBalanceValue.text.text + ' click to visit account'
+
+this.images.cashier.accountBalanceValue.text.onClick = function(e){
+
+//POST route /increase_funbucks_by_100
+ window.open('/account', 'Account', 'width=800,height=770 ,left=200,top=200,location=0,toolbar=no,menubar=no,titlebar=no,directories=no,scrollbars=yes')
+ 
+http://192.168.56.101:9000/account
+
+socket.emit('get_add_chips_info')
+
+}
+
+}
+
+
+
        this.images.cashier.currency.text.text = info.currency+':'
 
 /*
