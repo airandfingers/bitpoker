@@ -189,7 +189,7 @@ self.updateStages(stagesToUpdate)
       
 
       tableChatFull:{
-     scrollBarType:   {value:'mCustomScrollbar'},
+    // scrollBarType:   {value:'mCustomScrollbar'},
         chatMessageFontSize: {value:11 , updateValue: function(newValue){
 this.value  = newValue
 self.jQueryObjects.tableChatFullParagraph.css('font-size', this.value)
@@ -551,7 +551,7 @@ if(!options.attributes){options.attributes = {}}
 if(_.isString(options.loadingText) || _.isNumber(options.loadingText)){options.attributes['data-loading-text'] = options.loadingText}
   else{options.attributes['data-loading-text'] = buttonText}
 
-    options.attributes.autocomplete = 'off'
+  //  options.attributes.autocomplete = 'off'
   //assign attributes
     $(this.image).attr( options.attributes)
 
