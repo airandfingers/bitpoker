@@ -559,12 +559,12 @@ module.exports = (function () {
         }
         min = _.max([min_buyin, num_to_min]);
         max = _.max([min_buyin, num_to_max]);
-        if (balance_in_chips < min) {
+        /*if (balance_in_chips < min) {
           min = max = -1;
         }
         else if (balance_in_chips < max) {
           max = balance_in_chips;
-        }
+        }*/
         _.extend(add_chips_info, {
           min: min
         , max: max
@@ -675,7 +675,7 @@ module.exports = (function () {
 
   PlayerSchema.methods.autoRebuy = function() {
     var self = this
-      , auto_rebuy_amount = self.flags.auto_rebuy
+      , auto_rebuy_amount = self.flags.autorebuy
       , game = self.game;
 
     if (! _.isNumber(auto_rebuy_amount)) {
@@ -730,14 +730,14 @@ module.exports = (function () {
     console.log(this.username, 'setting', name, 'to', value);
     this.flags[name] = value;
 
-    // check auto_rebuy flag value
-    if (name === 'auto_rebuy') {
+    // check autorebuy flag value
+    if (name === 'autorebuy') {
       var game = this.game;
       if (! _.isNumber(value) || value < game.MIN_CHIPS || value > game.MAX_CHIPS) {
         console.error('Ignoring set_flag message for invalid auto-rebuy amount:', value);
         return;
       }
-      this.calculateAddChipsInfo(function() {});
+      this.autoRebuy();
     }
     else if (value && _.isObject(this.current_prompt)) {
       // attempt to automatically perform this action
