@@ -14,6 +14,11 @@ window.onKeydown = onKeyDown
     function Table () {
 self  = this
             this.events = {}
+            this.css = {
+nonVendor: 'nonVendor'
+,unselectable: 'unselectable'
+ }
+
   this.imageData = {
       maxChipsPerColumn:5,
       distanceBetweenChipColumns:4,
@@ -183,7 +188,7 @@ self.updateStages(stagesToUpdate)
       
 
       tableChatFull:{
-    // scrollBarType :   {value:'mCustomScrollbar'},
+     scrollBarType:   {value:'mCustomScrollbar'},
         chatMessageFontSize: {value:11 , updateValue: function(newValue){
 this.value  = newValue
 self.jQueryObjects.tableChatFullParagraph.css('font-size', this.value)
@@ -328,11 +333,14 @@ this.gameState.zPositionData.tableChatFullButton={stage:tableChatFull,container:
 this.gameState.zPositionData.tableChatFullText={stage:tableChatFull,container:1}
 
         this.jQueryObjects = {}
+        this.jQueryObjects.pokerTableDiv = $('#pokerTableWrapper')
 this.jQueryObjects.canvasDiv = $('#pokerCanvasDiv')
 this.jQueryObjects.tableChatFullDiv = $('#tableChatFullTextDiv')
 this.jQueryObjects.tableChatFullParagraph = $('#tableChatFullText')
+this.jQueryObjects.chatBoxDiv = $('#chatDiv')
 this.jQueryObjects.chatBoxInput = $('#chat')
 this.jQueryObjects.cashierForm = $('#cashier')
+
 
 
         //define basic data for each stage
@@ -505,6 +513,63 @@ this.image.graphics.beginFill(fillColor).drawRoundRect(0, 0, this.size.x, this.s
 
 }
 
+
+this.images.Item.prototype.addBootstrapButton = function (id, buttonText, bootstrapButtonOptions){
+if(!bootstrapButtonOptions){var bootstrapButtonOptions = {}}
+  var options = _.clone(bootstrapButtonOptions)
+
+  console.log('addBootstrapButton called');console.log(this)
+var stageNumber = this.position.z.stage
+var parentOfStage = self.arrayOfParentsOfStageAndOfContainerArray[stageNumber]
+$('#'+id).remove()//remove any previous instances of this ID
+//append new version to the div of the item
+$(parentOfStage.div).append('<button id=\"'+id+'\"' +  'class = "btn unselectable nonVendor">'+buttonText+'</button>')
+
+
+
+this.image = $('#'+id)[0]
+this.image.parentOfImageObject = this
+
+//set width height and positions of button
+self.positionItemImage(this)
+$(this.image).css({
+'z-index': parseInt($(parentOfStage.stage.canvas).css('z-index')) + 1 //make sure its on top of the canvas
+,'width':this.size.x
+,'height':this.size.y
+,'display':'none'
+,'text-align':'center'
+})
+
+if(options.css){
+  $(this.image).css(options.css)
+}
+
+//default properties
+if(!options.attributes){options.attributes = {'gjorb':1}}
+
+if(_.isString(options.loadingText) || _.isNumber(options.loadingText)){options.attributes['data-loading-text'] = options.loadingText}
+  else{options.attributes['data-loading-text'] = buttonText}
+
+/*
+    console.log('displaying option properties')
+console.log(options.properties)
+*/
+
+    $(this.image).attr( options.attributes)
+
+if(_.isString(options.class)){$(this.image).addClass(options.class)}
+
+if(!_.isFunction(options.onClick)){var onClick = self.events.onButtonClick}
+  else{var onClick = options.onClick}
+
+$(this.image).on('click', function(e){
+onClick(e)
+e.stopPropagation()
+})
+
+}//addBootstrapButton 
+
+
  this.images.itemAsBitmap = function (item,source, options){
   //console.log(this.itemAsBitmap.caller)
 if(!options){var options = {}}
@@ -544,6 +609,16 @@ console.log('itemAsBitmap passed non source paramater');console.log(source insta
       else{return stagesToUpdate}
 
             }
+
+this.images.Item.prototype.updateImageLocationAndSize = function(options){
+
+var asdf = self.positionItemImage(this, options)
+return asdf
+}
+
+this.images.Item.prototype.addBitmap = function(source, options){
+  self.images.itemAsBitmap(this, source, options)
+}
 
             this.images.cardAsBitmap = function(item,card, options){
              /*   var cardImage = new Image()
@@ -716,17 +791,28 @@ parentOfImageObject.text.x=parentOfImageObject.position.x + parentOfImageObject.
   parentOfImageObject.text.textAlign = 'center'
 }//align center by default
 
-parentOfImageObject.text.y=parentOfImageObject.position.y + 2
+if(options.centerTextY !== false){
+var textHeight = parentOfImageObject.text.getMeasuredHeight()
+var textY = parentOfImageObject.position.y + (parentOfImageObject.size.y - textHeight)/2}
+
+else {textY = parentOfImageObject.position.y + 1}
+
+if(textY < parentOfImageObject.position.y){textY = parentOfImageObject.position.y}
+parentOfImageObject.text.y = textY
+
 parentOfImageObject.text.baseline = 'top'
 
 parentOfImageObject.text.maxWidth = parentOfImageObject.size.x*.9
 parentOfImageObject.textColor = color
 
+assignObjectPropertiesAsPropertiesOfDisplayObject(parentOfImageObject.text, options)
+
+/*
 //assign option variables to text
 _.each(options, function(value, index, list){
 if(!_.isObject(value) && !_.isUndefined(value) && !_.isFunction(parentOfImageObject.text[index])){parentOfImageObject.text[index] = value}
 })//iterate through options
-
+*/
             }
 
 
@@ -786,13 +872,147 @@ for(var i = 0;i<messages.length;i++){
 this.events.cashierTextFieldFocused = function(event){
 
 //select the text when highlighted
-           $(event.target).one('mouseup', function(e){e.preventDefault()}).select()
+          $(event.target).one('mouseup', function(e){e.preventDefault()}).select()
           
 
 }
 
+this.events.cashier = function(event){
+
+var validate; var keycode; var updateValue; var selectTextBox
+
+  //grab keycode if key event
+if(event.type === 'keydown' || event.type === 'keyup'){
+var keycode = (event.keyCode ? event.keyCode : event.which)
+}
+
+
+//determine which type of event it is
+//console.log('this.events.cashier called')
+//console.log(event)
+
+if(!_.isObject(event.originalEvent) || !_.isElement(event.originalEvent.target) || event.target.id === event.originalEvent){var originalEvent = event}
+else{var originalEvent = event.originalEvent}
+
+var jQueryTarget = $(originalEvent.target)
+var jQueryParentDiv = jQueryTarget.parent()
+var jQueryTextBox = jQueryParentDiv.children("input[type='text']")
+
+parentDivID = jQueryParentDiv.attr('id')
+
+  //if escape is pressed hide cashier and return
+if(event.type === 'keydown' && keycode === 27){
+  self.hideCashier()
+jQueryTarget.one('keyup', function(e){return false})
+  return false
+}
+
+else if(event.type === 'mousedown'){
+  var focusTextBox = true
+if(parentDivID !== 'autoRebuyDiv'){jQueryParentDiv.children("input[type='radio']").prop('checked', true)}
+}
+
+//if focus event we are going to just select the focused text
+else if(event.type === 'focus' || event.type === 'mousedown'){selectTextBox = true}
+
+  //if enter keyup, or focusout, we are going to insure that the correct value is done and change accordingly
+
+else if(event.type === 'focusout')                  {validate = true; updateValue = true} 
+  else if (event.type === 'keyup' && keycode === 13){validate = true; updateValue = true }
+  else if(event.type === 'input')                   {validate = true; updateValue = false}
+  else if (event.type === 'keydown' && keycode === 13){
+
+//going to disable further keydowns
+var preventDefault = function(e){return false}
+jQueryTarget.on('keydown.preventDefault', preventDefault)
+jQueryTarget.one('keyup', function(e){ 
+  jQueryTarget.off('keydown.preventDefault', preventDefault)
+})
+
+var shouldSubmit = validateCashierDisplayBasedOnUserInput(false)
+if(shouldSubmit === true){
+//trigger click events if allowed
+if( parentDivID === 'maxDiv' || parentDivID === 'otherAmountDiv'){$(self.images.cashier.addChips.image).trigger('click')}
+else{$(self.images.cashier.enableAutoRebuy.image).trigger('click')}
+}//if we want to submit
+
+  }//on enter keydown press
+
+  if(validate){
+    //if we updated value after validating, we are going to select it also
+   if( validateCashierDisplayBasedOnUserInput(updateValue) !== true && updateValue === true){selectTextBox = true}
+  }
+
+if(selectTextBox){
+if(event.type === 'mousedown'){var preventEventType = 'mouseup'}
+  else if ( event.type === 'keydown'){var preventEventType = 'keyup'}
+    else{preventEventType = 'mouseup'}
+    console.log('preventing one of type: ' + preventEventType)
+    //if we need to prevent an event do so
+    if(_.isString(preventEventType)){ jQueryTextBox.one(preventEventType, function(e){return false})}
+jQueryTextBox.select()
+}//if we want to select the contents of our target
+
+if(focusTextBox){jQueryTextBox.trigger('focus')}
+
+
+}
+
+var validateCashierDisplayBasedOnUserInput = function(updateValue){
+
+var acceptableValues = true
+
+var maxTextBox = $(self.images.cashier.maxAmount.image)
+var otherAmountTextBox = $(self.images.cashier.otherAmount.image)
+var autoRebuyTextBox = $(self.images.cashier.autoRebuyAmount.image)
+
+var cashierData  = self.gameState.cashier
+console.log(cashierData)
+
+var otherAmountValue = parseInt(otherAmountTextBox.val())
+//console.log('otherAmountValue = ' + otherAmountValue)
+
+if(_.isNaN(otherAmountValue) || otherAmountValue <  cashierData.min ){
+   acceptableValues = false
+//  console.log('disabling addchips button')
+  $(self.images.cashier.addChips.image).button('loading')
+  if(updateValue === true){
+//console.log('setting otheramount to '+cashierData.min)
+   otherAmountTextBox.val(cashierData.min)}
+}
+else{
+$(self.images.cashier.addChips.image).button('reset')
+}
+ // else if (otherAmountValue > cashierData.max){otherAmountTextBox.val(cashierData.max)}
+
+var autoRebuyValue = parseInt(autoRebuyTextBox.val())
+//console.log('autoRebuyValue = ' + autoRebuyValue)
+if(_.isNaN(autoRebuyValue) || autoRebuyValue <  cashierData.table_min){
+     acceptableValues = false
+//disable button
+//  console.log('disabling autorebuy button')
+$(self.images.cashier.enableAutoRebuy.image).button('loading')
+ if(updateValue === true){  
+//console.log('setting autoRebuyValue to '+cashierData.table_min)
+  autoRebuyTextBox.val(cashierData.table_min)}
+}
+else{
+$(self.images.cashier.enableAutoRebuy.image).button('reset')
+}
+//  else if (autoRebuyValue > cashierData.table_max){otherAmountTextBox.val(cashierData.table_max)}
+
+return acceptableValues
+}
+
+this.events.cashierInputChanged = function(event){
+
+
+
+
+}
 
 this.events.cashierInputSelected = function(event){
+
 
 //console.log(event)
 var min
@@ -820,13 +1040,17 @@ parentID = event.target.parentElement.id
 
 }
 
+
+
 if(parentID){
 
+//  console.log('min =  '+ min)
+//  console.log(self.gameState.cashier)
 //adjust radio buttons appropriately
 //check if radio button is already checked
 var radioInClickedDiv = $('#'+parentID).find("input[type='radio']")
 
-if(radioInClickedDiv && radioInClickedDiv.prop('checked') == false){
+if(radioInClickedDiv && radioInClickedDiv.prop('checked') === false){
 allRadios.prop('checked', false)
           radioInClickedDiv.prop('checked', true)
 }//end check if otherAmound radio is checked
@@ -839,13 +1063,19 @@ var alreadySelected = false
           else{    
          textField.val(min)
                    //select text on clicking
-           textField.select()
-           alreadySelected = true
+       //    textField.select()
+        //   alreadySelected = true
           }
      //     console.log(textField)
           if($(event.target).is("input[type='text']")){}
             else if (alreadySelected != true){   textField.select()   }
 
+              //we are going to select no matter what
+   // textField.one('mouseup', function(e){e.preventDefault()}).select()
+  // $(event.target).one('mouseup', function(e){e.preventDefault()})
+   console.log('selecting text field')
+   console.log(textField)
+   textField.focus()//.select()
         }//end check if parentID exists/not false
 
 }
@@ -1058,7 +1288,7 @@ function keepChecking(){
   //store current event
 
 
-var interval = 80
+var interval = 100
 
 var isSeatMouseEvent = event.target.id === seatObject.seat.image.id
 
@@ -1566,6 +1796,9 @@ socket.emit('stand')
 }
 
     this.events.exitTableClick = function(event){
+      //exit immediatley if user is not seated
+if(!_.isNumber(self.gameState.userSeatNumber)){self.events.exit();return}
+
       console.log('exittable clicked')
       console.log(event)
        var  messageInfo = {}
@@ -1641,7 +1874,7 @@ self.changeUserSeatView(rotatedSeatNumber)
 
 var displayShowMeHere = function(){
   var stagesToUpdate = []
-stagesToUpdate.push(self.setImageItemPositionAndTextBasedOnImageChange(showMeHere, e.stageX, e.stageY))
+stagesToUpdate.push(self.setImageItemPositionAndTextBasedOnImageChange(showMeHere, e.stageX + 1, e.stageY + 1))
 stagesToUpdate.push(self.displayChildren(showMeHere,{update:false}))
 self.updateStages(stagesToUpdate)
 console.log('displayshowmehere finished')
@@ -1809,8 +2042,8 @@ self.adjustBetDisplay(roundedBet)
  }
  }
 
-this.events.betSizeUnfocused = function(event){
-console.log('betsizeunfocused called')
+this.events.possibleRaiseOrBetAttemptFromBetSize = function(toggleRaiseAndBetEvents){
+console.log('possibleRaiseOrBetAttemptFromBetSize called val = ' + $('#betSize').val())
     var newBetSize  = parseFloat($('#betSize').val())
     var isNumber = ( !isNaN(newBetSize)) && _.isNumber(newBetSize) 
     var roundedBetSize
@@ -1821,81 +2054,157 @@ console.log('betsizeunfocused called')
     else{roundedBetSize =  self.returnRoundedDownBetSize(newBetSize)}
 
   //insure rounded bet is not less or greater than max or min and set appropriately
-    if(roundedBetSize>self.gameState.maxBet){roundedBetSize = self.gameState.maxBet}
-        else if(roundedBetSize<self.gameState.minBet){roundedBetSize = self.gameState.minBet}
+    if(roundedBetSize > self.gameState.maxBet){roundedBetSize = self.gameState.maxBet}
+        else if(roundedBetSize < self.gameState.minBet){roundedBetSize = self.gameState.minBet}
 
-if(roundedBetSize!=newBetSize){
+if(roundedBetSize != newBetSize){
  //make adjustments to bet sliders
         self.adjustBetDisplay(roundedBetSize)
 }
 //set raise and bet onclick events to default
-self.images.bet.image.onClick = self.events.onButtonClick
-self.images.raise.image.onClick = self.events.onButtonClick
-
-           
+if(toggleRaiseAndBetEvents !== false ) {trueOrFalseToggleRaiseAndBet(true) }
+        
 }
+
+var trueOrFalseToggleRaiseAndBet = function(toggleBoolean){
+
+
+/*
+var elem = $(self.images.betSlider.betSize.image)[0];
+var data = jQuery.hasData( elem ) && jQuery._data( elem );
+console.log(data.events);
+*/
+
+//we will toggle raise and bet abilities on
+  if(toggleBoolean === true ){
+console.log('trueOrFalseToggleRaiseAndBet called ')
+    enableRaiseAndBetEvents()  }
+
+//we will disable raise and bet abilities
+ else if(toggleBoolean === false ){
+console.log('trueOrFalseToggleRaiseAndBet called')
+  disableOneRaiseOrBetAttempt()  }
+
+
+function disableOneRaiseOrBetAttempt (e){
+disableNonStaticBetAndRaiseEvents()
+  console.log('disableOneRaiseOrBetAttempt called')
+
+//reset initial raise and bet events
+
+
+//disable click on raise/bet image
+//$('#self.images.raise.image.id, #self.images.bet.image.id').prop('disabled', true)
+//$('#self.images.raise.image.id, #self.images.bet.image.id').addClass('btn-disabled')
+
+  $('#self.images.raise.image.id, #self.images.bet.image.id').one('mousedown.disableOneRaiseOrBetClick', disableOneRaiseOrBetClick)
+$('#self.images.raise.image.id, #self.images.bet.image.id').one('click.preventOneClick', function(e){e.preventDefault})
+$('#self.images.raise.image.id, #self.images.bet.image.id').one('mouseup.restoreClick', function(e){e.preventDefault(); enableRaiseAndBetEvents()})
+
+
+//disable enter on betsize
+$(self.images.betSlider.betSize.image).on('keydown.correctRaiseAndBetAmountOnBetSizeEnter', correctRaiseAndBetAmountOnBetSizeEnter)
+
+}//disable one raise or bet attempt, via enter or clicking the raise/bet button
+
+function enableRaiseAndBetEvents (){
+disableNonStaticBetAndRaiseEvents()
+console.log('enableRaiseAndBetEvents called')
+//$('#self.images.raise.image.id, #self.images.bet.image.id').removeClass('btn-disabled')
+//console.log($('self.images.raise.image, self.images.bet.image'))
+//$('#self.images.raise.image.id, #self.images.bet.image.id').prop('disabled', false)
+$(self.images.betSlider.betSize.image).one('keydown.raiseOrBetOnBetSizeEnterPress', raiseOrBetOnBetSizeEnterPress)
+}
+
+//disables all raise, bet, and betSize events
+function disableNonStaticBetAndRaiseEvents () {
+$(self.images.betSlider.betSize.image).off('.raiseOrBetOnBetSizeEnterPress  .correctRaiseAndBetAmountOnBetSizeEnter .enableRaiseAndBetEventsOnBetSizeEnter')
+$('#self.images.raise.image.id, #self.images.bet.image.id').off('mousedown.disableOneRaiseOrBetClick click.preventOneClick mouseup.restoreClick')
+}
+
+
+function correctRaiseAndBetAmountOnBetSizeEnter (e) {
+//  console.log(e)
+var keycode = (event.keyCode ? event.keyCode : event.which)
+  if(keycode !== 13) {return}    //if enter key is pressed
+    $(self.images.betSlider.betSize.image).one('keyup.enableRaiseAndBetEventsOnBetSizeEnter', enableRaiseAndBetEventsOnBetSizeEnter)
+    $(self.images.betSlider.betSize.image).off('.correctRaiseAndBetAmountOnBetSizeEnter')
+      console.log('correcting bet display/events, event type = ' + event.type)
+    self.events.possibleRaiseOrBetAttemptFromBetSize (false)
+
+}
+
+function enableRaiseAndBetEventsOnBetSizeEnter (e){
+  console.log('keyup event called');console.log(e)
+var keycode = (event.keyCode ? event.keyCode : event.which)
+  if(keycode !== 13) {return}    //if enter key is pressed
+    console.log('enabling bet/raise, event type = ' + event.type)
+    self.events.possibleRaiseOrBetAttemptFromBetSize(e)
+}
+
+
+function raiseOrBetOnBetSizeEnterPress(e){
+ var keycode = (event.keyCode ? event.keyCode : event.which)
+
+  if(keycode !== 13) {return}    //if enter key is pressed
+console.log('betting/raising, event type = '+event.type)
+if(self.isItemAddedToStage(self.images.raise)){e.target = self.images.raise.image;self.events.onButtonClick(e)}
+else if(self.isItemAddedToStage(self.images.bet)){e.target = self.images.bet.image;self.events.onButtonClick(e)}
+   
+}//raiseOrBetOnBetSizeEnterPress
+
+
+function disableOneRaiseOrBetClick (e){
+  e.preventDefault()
+ // this.one('focusout.preventRestore', function(e){e.preventDefault()})
+this.one('click.preventOneClick', function(e){e.preventDefault()})
+this.one('mouseup.restoreClick', function(e){e.preventDefault(); enableRaiseAndBetEvents()})
+}//disable raise or bet onclick event once
+
+function disableEnterOnce (e){
+ var keycode = (event.keyCode ? event.keyCode : event.which)
+       console.log('keydown pressed on betSize, but we are going to disable its effect once')
+    if(keycode !== 13) {return}  //make sure keypressed is enter
+
+      e.preventDefault() //prevent raise or bet 
+ //   self.events.possibleRaiseOrBetAttemptFromBetSize(e)
+
+    //make function that restores on keyup
+     $(self.images.betSlider.betSize.image).one('keyup.restoreEnter', function(e){
+enableRaiseAndBetEvents()
+ })
+
+}//disableEnterOnce
+
+}//toggle RaiseOrBet
 
 
 
 this.events.betSizeChanged = function(){
-  console.log('betsize changed')
+  console.log('betsize changed called, val = ' + $('#betSize').val())
     //check if betSize value is different than the old value and is not empty
     var newBetSize = parseFloat($('#betSize').val())
   var hasValue = /\S/.test($('#betSize').val())
 
     var isNumber = ( !isNaN(newBetSize)) && _.isNumber(newBetSize) 
         var isChanged = newBetSize!=self.gameState.betSize
-if(hasValue && isNumber && isChanged){
-//if value is different and is a number, store it
-  self.adjustBetDisplay(newBetSize)}
+
+if(hasValue && isNumber && isChanged){  self.adjustBetDisplay(newBetSize)}//store and adust display if newBetSize is a new number
 
 var roundedDownBetSize = self.returnRoundedDownBetSize(newBetSize)
 //if new betsize is not rounded to nearest increment, then set disable raise and bet buttons
   if(roundedDownBetSize == false || roundedDownBetSize != newBetSize){
-
-var disableOneClick = function(event){
-  event.onMouseUp = function(event){
-    event.target.onClick = self.events.onButtonClick
-     event.target.onPress = self.events.buttonMouseDown
-  }
-}
-
-var disableOneRaiseOrBetAction = function(e){
-
-restoreRaiseAndBetClickEvents()
-restoreBetSizeEnterEvents()
-
-}
-
-console.log('disabling 1 click on raise/bet')
-self.images.bet.image.onPress = disableOneClick
-self.images.raise.image.onPress = disableOneClick
-self.images.bet.image.onClick = null
-self.images.raise.image.onClick = null
-
+trueOrFalseToggleRaiseAndBet(false)
   }//if newbet is not appropriate
 
-
   //if newbetsize is rounded, enable bet and raise click events
-  if(self.returnRoundedDownBetSize(newBetSize) != false && self.returnRoundedDownBetSize(newBetSize) == newBetSize){
-restoreRaiseAndBetClickEvents()
+else  if(self.returnRoundedDownBetSize(newBetSize) != false && self.returnRoundedDownBetSize(newBetSize) == newBetSize){
+trueOrFalseToggleRaiseAndBet(true)
   }
 
-
-function restoreRaiseAndBetClickEvents(){
-      self.images.bet.image.onClick = self.events.onButtonClick
-    self.images.raise.image.onClick = self.events.onButtonClick
-    self.images.bet.image.onPress = self.events.buttonMouseDown
-self.images.raise.image.onPress = self.events.buttonMouseDown
 }
 
-function restoreBetSizeEnterEvents(){
 
-
-
-}
-
-}
 
   //=============END BET SLIDER===================
 
@@ -2524,7 +2833,7 @@ this.images.imageLoading.title.text.x= this.images.imageLoading.title.position.x
  this.images.imageLoading.title.text.y= this.images.imageLoading.title.position.y + 1
  this.images.imageLoading.title.text.baseline = 'top'
  this.images.imageLoading.title.text.textAlign = 'left'
- this.images.imageLoading.title.text.textColor = titleColor
+ this.images.imageLoading.title.text.color = titleColor
 
 
  //add imageLoading
@@ -2706,6 +3015,11 @@ createPreloadArray()
 
 
 this.images.setDefaults = function(){
+
+
+
+
+
    //prevent document scorlling
   // $(document).bind('DOMMouseScroll mousewheelscroll',function(e){e.preventDefault()})
  $('#iframe, iframe').bind('mousewheel',function(e){
@@ -2849,7 +3163,7 @@ var currencyDisplayColor = 'white'
             //cashier Button width and height
 
             var cashierButtonSource =  self.permanentPreferences.sourceObjects.value.cashierButton
-           var cashierButtonWidth = 132
+           var minCashierButtonWidth = 132
            var cashierButtonHeight = 52
 
 
@@ -3047,7 +3361,9 @@ self.jQueryObjects.chatBoxInput.css('color', htmlTableChatBoxReminderTextColor)
 //set z-index of chatDiv
 var chatBoxStageParent = self.arrayOfParentsOfStageAndOfContainerArray[self.images.htmlTableChatBox.position.z.stage]
 var chatBoxStageCanvasZIndex = $(chatBoxStageParent.stage.canvas).css('z-index')
-$('#chatDiv').css('z-index', parseInt(chatBoxStageCanvasZIndex)+1)
+$(chatBoxStageParent.div).append(self.jQueryObjects.chatBoxDiv)
+
+self.jQueryObjects.chatBoxDiv.css('z-index', parseInt(chatBoxStageCanvasZIndex)+1)
 
 self.jQueryObjects.chatBoxInput.css({
  'position' :  'absolute',
@@ -3064,7 +3380,7 @@ self.jQueryObjects.chatBoxInput.css({
     //emit chat if user pressed enter
  self.jQueryObjects.chatBoxInput.keypress(function(event){
       var keycode = (event.keyCode ? event.keyCode : event.which)
-    if(keycode == '13') {    
+    if(keycode == 13) {    
         socket.emit('chat', $("#chat").val())
         $("#chat").val('')
         self.jQueryObjects.chatBoxInput.focus()
@@ -3115,7 +3431,7 @@ if(!options){var options = {}}
 options.update = false
 
       var stagesToUpdate = []
-         if(item.text instanceof createjs.Text === false)  {item.text = new createjs.Text(text, checkBoxButtonSizeAndFont, checkBoxButtonTextColor)}
+         if(item.text instanceof createjs.Text !== true)  {item.text = new createjs.Text(text, checkBoxButtonSizeAndFont, checkBoxButtonTextColor)}
           
 
           else{
@@ -3124,7 +3440,7 @@ if(item.text.text !== text
   || item.font !== checkBoxButtonSizeAndFont
   ||item.color !== checkBoxButtonTextColor
 ||item.text.x!==item.position.x + checkBoxButtonCheckBoxWidth + checkBoxButtonDistanceFromBoxToText
-||item.text.y!==item.position.y + 1
+||item.text.y!==item.position.y 
 ||item.text.baseline !== 'top'
 ||item.text.textAlign !== 'left'){
   stagesToUpdate.push(self.itemChanged(item))}
@@ -3135,7 +3451,7 @@ item.color = checkBoxButtonTextColor
           }
 
 item.text.x=item.position.x + checkBoxButtonCheckBoxWidth + checkBoxButtonDistanceFromBoxToText
-item.text.y=item.position.y + 1
+item.text.y=item.position.y 
 item.text.baseline = 'top'
 item.text.textAlign = 'left'
 item.textColor = checkBoxButtonTextColor
@@ -3145,7 +3461,7 @@ item.text.hitArea  = hit
 item.image.hitArea  = hit
 
 //assign options as properties
-assignObjectPropertiesAsPropertiesOfDisplayObject(displayObject, options)
+assignObjectPropertiesAsPropertiesOfDisplayObject(item.text, options)
 
 
 options.update = update
@@ -3567,18 +3883,36 @@ this.rebuy.image.onClick  = self.events.onButtonClick
 
 //get canvas of stage for action buttons
 var actionButtonStageNumber = self.gameState.zPositionData.button.stage
+var actionButtonDiv = self.arrayOfParentsOfStageAndOfContainerArray[actionButtonStageNumber].div
 var actionButtonCanvasElement = self.arrayOfParentsOfStageAndOfContainerArray[actionButtonStageNumber].stage.canvas
 
 
 //$(actionButtonCanvasElement).append('<button id="fold"  class = "btn actionButton">Fold</button>')
+var actionButtonClass = 'actionButton'
+var actionButtonCSS = {
+      'font': '11px ' + self.permanentPreferences.defaultFontType.value
+}
+var actionButtonOptions = {class:actionButtonClass, css:actionButtonCSS}
 
-self.jQueryObjects.canvasDiv.append('<button id="fold"  class = "btn actionButton unselectable">Fold</button>')
-self.jQueryObjects.canvasDiv.append('<button id="call"  class = "btn actionButton unselectable">Call</button>')
-self.jQueryObjects.canvasDiv.append('<button id="check" class = "btn actionButton unselectable">Check</button>')
-self.jQueryObjects.canvasDiv.append('<button id="raise" class = "btn actionButton unselectable">Raise</button>')
-self.jQueryObjects.canvasDiv.append('<button id="bet"   class = "btn actionButton unselectable">Bet</button>')
-self.jQueryObjects.canvasDiv.append('<button id="sitIn" class = "btn actionButton unselectable">Sit In</button>')
-self.jQueryObjects.canvasDiv.append('<button id="rebuy" class = "btn actionButton unselectable">Get Chips</button>')
+this.sitIn.addBootstrapButton('sitIn', 'Sit In', actionButtonOptions)
+this.rebuy.addBootstrapButton ('rebuy', 'Get Chips', actionButtonOptions)
+          this.fold.addBootstrapButton ('fold', 'Fold', actionButtonOptions)
+          this.call.addBootstrapButton ('call', 'Call', actionButtonOptions)
+          this.check.addBootstrapButton ('check', 'Check', actionButtonOptions)       
+          this.raise.addBootstrapButton ('raise', 'Raise', actionButtonOptions)
+          this.bet.addBootstrapButton ('bet', 'Bet', actionButtonOptions)
+
+//$(actionButtonCanvasElement).append('<button id="fold"  class = "btn actionButton">Fold</button>')
+
+/*
+
+$(actionButtonDiv).append('<button id="fold"  class = "btn actionButton unselectable">Fold</button>')
+$(actionButtonDiv).append('<button id="call"  class = "btn actionButton unselectable">Call</button>')
+$(actionButtonDiv).append('<button id="check" class = "btn actionButton unselectable">Check</button>')
+$(actionButtonDiv).append('<button id="raise" class = "btn actionButton unselectable">Raise</button>')
+$(actionButtonDiv).append('<button id="bet"   class = "btn actionButton unselectable">Bet</button>')
+$(actionButtonDiv).append('<button id="sitIn" class = "btn actionButton unselectable">Sit In</button>')
+$(actionButtonDiv).append('<button id="rebuy" class = "btn actionButton unselectable">Get Chips</button>')
 
           this.fold.image = $('#fold')[0]
           this.call.image = $('#call')[0]
@@ -3587,6 +3921,9 @@ self.jQueryObjects.canvasDiv.append('<button id="rebuy" class = "btn actionButto
           this.bet.image = $('#bet')[0]
           this.sitIn.image = $('#sitIn')[0]
          this.rebuy.image  = $('#rebuy')[0]
+
+
+
 
           this.fold.image.parentOfImageObject =   this.fold
           this.call.image.parentOfImageObject =   this.call
@@ -3597,17 +3934,18 @@ self.jQueryObjects.canvasDiv.append('<button id="rebuy" class = "btn actionButto
          this.rebuy.image.parentOfImageObject  =  this.rebuy
 
 //set positions of image
-   self.setImageItemPositionAndTextBasedOnImageChange(this.fold)
-      self.setImageItemPositionAndTextBasedOnImageChange(this.call)
-         self.setImageItemPositionAndTextBasedOnImageChange(this.check)
-            self.setImageItemPositionAndTextBasedOnImageChange(this.raise)
-               self.setImageItemPositionAndTextBasedOnImageChange(this.bet)
-                 self.setImageItemPositionAndTextBasedOnImageChange(this.sitIn)
-     self.setImageItemPositionAndTextBasedOnImageChange(this.rebuy)
+  self.setImageItemPositionAndTextBasedOnImageChange(this.fold)
+  self.setImageItemPositionAndTextBasedOnImageChange(this.call)
+  self.setImageItemPositionAndTextBasedOnImageChange(this.check)
+  self.setImageItemPositionAndTextBasedOnImageChange(this.raise)
+  self.setImageItemPositionAndTextBasedOnImageChange(this.bet)
+  self.setImageItemPositionAndTextBasedOnImageChange(this.sitIn)
+  self.setImageItemPositionAndTextBasedOnImageChange(this.rebuy)
+
+
 
      //set width and height of action buttons
      $('.actionButton').css({
-  
       'width':actionButtonWidth
       ,'height':actionButtonHeight
       ,'z-index': parseFloat($(actionButtonCanvasElement).css('z-index')) + 1
@@ -3615,11 +3953,12 @@ self.jQueryObjects.canvasDiv.append('<button id="rebuy" class = "btn actionButto
         ,'display':'none'
      })
 
-$('.actionButton').on('click', function(e){
-
+$('.actionButton').on('click.onButtonClick', function(e){
+ // console.log('action button clicked');console.log(e)
  self.events.onButtonClick(e)
-
 })
+*/
+
 
 //console.log('displaying actionButton class')
 //console.log($('.actionButton'))
@@ -3662,7 +4001,26 @@ self.updateBetSize('')
 //set z-index of betsizediv
 var betSizeStageParent = self.arrayOfParentsOfStageAndOfContainerArray[self.images.betSlider.vertical.position.z.stage]
 var betSizeStageCanvasZIndex = $(betSizeStageParent.stage.canvas).css('z-index')
+$(betSizeStageParent.div).append($('#betSizeDiv'))
+
 $('#betSizeDiv').css('z-index', parseInt(betSizeStageCanvasZIndex)+1)
+
+ $('#betSizeDiv').bind('mousewheel', function (event, delta, deltaX, deltaY) {
+//console.log(event, delta, deltaX, deltaY)
+//wheelScrolls = event.originalEvent.wheelDelta/120
+self.events.wheelScroll(deltaY)
+        })
+
+$("#betSize").numeric({ negative: false }, function() {this.value = ""; /*this.focus();*/ });
+//round betSize down when unfocused
+
+$('#betSize').on ('focusout',function(event){ self.events.possibleRaiseOrBetAttemptFromBetSize(event)})
+
+//trigger checks for change in betsize values
+$('#betSize').change(function(e){console.log('betsize change function called');self.events.betSizeChanged()}) 
+$('#betSize').on('change input paste', function(e){self.events.betSizeChanged()})
+$('#betSize').on('contextmenu', function(e){e.preventDefault()})
+//$("#betSize")[0].oninput = function (e) {self.events.betSizeChanged()}
 
 //highlight when clicked
 $('#betSize').focus(function(){
@@ -3670,33 +4028,6 @@ $('#betSize').focus(function(){
         event.preventDefault();
        }).select()
 })
-//round betSize down when unfocused
-$('#betSize').focusout(function(event){ self.events.betSizeUnfocused(event)})
-
-
-//trigger checks for change in betsize values
-$('#betSize').change(function(){self.events.betSizeChanged()}) 
-$('#betSize').keyup(function(){self.events.betSizeChanged()}) 
-$('#betSize').bind('paste', function(e){self.events.betSizeChanged()})
-$("#betSize")[0].oninput = function () {
-self.events.betSizeChanged()
-}
-    
-$('#betSize').on('keypress', function(e){
- var keycode = (event.keyCode ? event.keyCode : event.which)
-  if(keycode == '13') {    //if enter key is pressed
-if(self.isItemAddedToStage(self.images.raise)){e.target = self.images.raise.image;self.images.raise.image.onClick(e)}
-  else if(self.isItemAddedToStage(self.images.bet)){e.target = self.images.bet.image;self.images.bet.image.onClick(e)}
-    }//if keypress is enter key
-
-})
-
-
- $('#betSizeDiv').bind('mousewheel', function (event, delta, deltaX, deltaY) {
-//console.log(event, delta, deltaX, deltaY)
-//wheelScrolls = event.originalEvent.wheelDelta/120
-self.events.wheelScroll(deltaY)
-        })
 
 
 
@@ -3716,7 +4047,7 @@ $('#betSize').css({
 
        
 
- this.cashierButton = new this.Item(canvasWidth-80,0, cashierButtonWidth, cashierButtonHeight, self.gameState.zPositionData.button)
+ this.cashierButton = new this.Item(canvasWidth-80,0, minCashierButtonWidth, cashierButtonHeight, self.gameState.zPositionData.button)
   
   var cashierButtonSpriteData = {
 
@@ -3924,12 +4255,16 @@ var cashierWindowContainer = 0
         var distanceFromRadioToText = 6
 
         var grayBoxOffsetTop = 151
-        var htmlTextWidth = textBoxOffsetLeft- radioWidth - distanceFromRadioToText - radioOffsetLeft
+        var htmlTextWidth = textBoxOffsetLeft - radioWidth - distanceFromRadioToText - radioOffsetLeft
 
 
         var grayBoxOffsetSide = 11 //distance from gray box to end of gray background
         var grayBoxOffsetTop = 150 //from inner cashier
         var grayBoxOffsetBottom = 49 //from inner cashier
+
+    this.cashier.closeWindow =  new this.Item (closeWindowX, closeWindowY, closeWindowWidth,closeWindowHeight,{stage:cashierStageNumber, container:cashierImageContainerIndex}) 
+       this.itemAsBitmap(this.cashier.closeWindow, self.permanentPreferences.sourceObjects.value.cashierCloseX)
+       this.cashier.closeWindow.image.onClick = self.hideCashier
 
         this.cashier.window = new this.Item(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight,{stage:cashierStageNumber,container:cashierWindowContainer})
         this.itemAsBitmap(this.cashier.window, self.permanentPreferences.sourceObjects.value.cashierBackground)
@@ -4028,6 +4363,10 @@ var cashierParentOfStage = self.arrayOfParentsOfStageAndOfContainerArray[self.im
 var cashierStageCanvasZIndex = parseInt($(cashierParentOfStage.stage.canvas).css('z-index'))
 
 
+//move cashierdiv to appropriate canvasdiv
+$(cashierParentOfStage.div).append($('#cashierDiv')) //
+ var stuffToAppend = $('#cashierDiv').find('*').addBack('#cashierDiv')//
+//$(cashierParentOfStage.div).append($(cashierParentOfStage.div)) 
         //use jquery to position divs to appropriate locations
    $('#cashierDiv').css({
     'z-index': parseInt(cashierStageCanvasZIndex)+1,
@@ -4042,23 +4381,91 @@ var cashierStageCanvasZIndex = parseInt($(cashierParentOfStage.stage.canvas).css
     //  $('#cashierDiv').prop('pointer-events','none')
 
         //use jquery to set appropriate sizes of text boxes
-       $("#cashier input[type='text']").css('width', textBoxWidth+'px')
-       $("#cashier input[type='text']").css('height', textBoxHeight+'px')
+       $("#cashier input[type='text']").css(        {
+        'width': textBoxWidth+'px'
+, 'height': textBoxHeight+'px'
+      })
 
+       $("#cashier input[type='text']").numeric({ negative: false }, function() {this.value = ""; /*this.focus();*/ });
+       $("#cashier input[type='text']").attr(  'autocomplete','off')//disable autocompletion
+
+$("#cashier input[type ='radio']").addClass(self.css.unselectable)//disable autocompletion
+$("#cashier p").addClass(self.css.unselectable)//disable autocompletion
 
       //set text size and font
         $("#cashier").children().children().css({
             'font':sizeAndFont
+            ,'margin':0
+            ,'padding':0
+            ,'display':'none'
            })
 
 
            //set width of text
  $("#cashier p").css({
      'max-width': htmlTextWidth+'px',
+     'width':htmlTextWidth+'px',
      'height': textBoxHeight+'px',
      'white-space': 'nowrap'
-
      })
+
+
+//--------------------------click events--------------------------
+
+//unbind all events
+    $("#otherAmountDiv").children().off()
+$("#autoRebuyDiv").children().off()
+            $("#maxDiv").children().off()
+          $('#cashierDiv').find("input[type = 'text']").off()
+
+$('#cashierDiv').on('mousedown keydown keyup', self.events.cashier)
+$('#cashierDiv').find("input[type = 'text']").on('focus focusout input', self.events.cashier)
+// 
+/*
+    $("#otherAmountDiv").children().mousedown(function(event) {
+      self.events.cashierInputSelected(event)
+        })
+
+            $("#autoRebuyDiv").children().mousedown(function(event) {
+                 self.events.cashierInputSelected(event)
+        })
+
+
+          $("#maxDiv").children().mousedown(function(event) {
+            console.log('maxdiv event')
+            console.log(event)
+self.events.cashierInputSelected(event)
+        })
+
+//select input value on focus
+          $('#cashierDiv').find("input[type = 'text']").focus(function(event){
+            self.events.onCashierTextFieldFocus(event)
+          })
+
+*/
+
+
+var cashierTextBoxNumericOptions = {negative:false}
+
+/*
+
+WAS GOING TO ASSIGN FULL DIVS FOR EVENTS HERE, BUT W/E
+
+
+var cashierDiv
+
+    $("#otherAmountDiv").css({
+'left':radioX
+,'top':maxRadioY
+,'width':radioWidth + 
+
+    })
+
+
+
+$("#autoRebuyDiv").children().css()
+            $("#maxDiv").children().css()
+*/
 
 
 //assign item
@@ -4085,6 +4492,9 @@ this.cashier.maxAmount.image = $('#maxAmount')[0]
         var otherTextBoxY = maxTextBoxY + textBoxHeight + distanceBetweenTextBoxY
         var otherRadioY = otherTextBoxY + textBoxHeight/2 - radioHeight/2
 
+
+
+
 //assign item
 this.cashier.otherAmountRadio = new this.Item(radioX, otherRadioY, radioWidth, radioHeight, {stage:cashierStageNumber,container:  cashierImageContainerIndex})
 this.cashier.otherAmountRadio.image = $('#otherAmountRadio')[0]
@@ -4103,18 +4513,21 @@ this.cashier.otherAmountText.image = $('#otherAmountText')[0]
 this.cashier.otherAmount = new this.Item(textBoxX, otherTextBoxY, textBoxWidth, textBoxHeight, {stage:cashierStageNumber,container:  cashierImageContainerIndex})
 this.cashier.otherAmount.image = $('#otherAmount')[0] 
         //position other amount textbox
-                $('#otherAmount').css('left', textBoxX+'px')
-        $('#otherAmount').css('top', otherTextBoxY+'px')
+                $(this.cashier.otherAmount.image).css('left', textBoxX+'px')
+        $(this.cashier.otherAmount.image).css('top', otherTextBoxY+'px')
 
          var autoRebuyTextBoxY = otherTextBoxY + textBoxHeight + distanceBetweenTextBoxY
         var autoRebuyRadioY = autoRebuyTextBoxY + textBoxHeight/2 - radioHeight/2
+
+
+/*
 
 //assign item
 this.cashier.autoRebuyRadio = new this.Item(radioX, autoRebuyRadioY, radioWidth, radioHeight, {stage:cashierStageNumber,container:  cashierImageContainerIndex})
 this.cashier.autoRebuyRadio.image = $('#autoRebuyRadio')[0]
         //position autorebuy radio
-         $('#autoRebuyRadio').css('left', radioX+'px')
-        $('#autoRebuyRadio').css('top', autoRebuyRadioY+'px')
+         $(this.cashier.autoRebuyRadio.image).css('left', radioX+'px')
+        $(this.cashier.autoRebuyRadio.image).css('top', autoRebuyRadioY+'px')
 
             //assign item
 this.cashier.autoRebuyText = new this.Item(textX, autoRebuyRadioY, htmlTextWidth, textBoxHeight, {stage:cashierStageNumber,container:  cashierImageContainerIndex})
@@ -4122,6 +4535,9 @@ this.cashier.autoRebuyText.image = $('#autoRebuyText')[0]
          //position autorebuyText
          $('#autoRebuyText').css('left', textX+'px')
        $('#autoRebuyText').css('top', autoRebuyRadioY+'px')
+
+
+       */
         
                //assign item
 this.cashier.autoRebuyAmount = new this.Item(textBoxX, autoRebuyTextBoxY, textBoxWidth, textBoxHeight, {stage:cashierStageNumber,container:  cashierImageContainerIndex})
@@ -4132,27 +4548,7 @@ this.cashier.autoRebuyAmount.image = $('#autoRebuyAmount')[0]
 
 
 
-//click events
 
-    $("#otherAmountDiv").children().unbind()
-    $("#otherAmountDiv").children().mousedown(function(event) {
-      self.events.cashierInputSelected(event)
-        })
-
-$("#autoRebuyDiv").children().unbind()
-            $("#autoRebuyDiv").children().mousedown(function(event) {
-                 self.events.cashierInputSelected(event)
-        })
-
-        $("#maxDiv").children().unbind()
-          $("#maxDiv").children().mousedown(function(event) {
-self.events.cashierInputSelected(event)
-        })
-
-          $('#cashierDiv').find("input[type = 'text']").unbind()
-          $('#cashierDiv').find("input[type = 'text']").focus(function(event){
-            self.events.onCashierTextFieldFocus(event)
-          })
 
 
         //iterate through cashierItems to create all texts
@@ -4177,52 +4573,157 @@ this.cashier[cashierItems[i].name].text.maxWidth = this.cashier[cashierItems[i].
         var grayBoxHeight = cashierWindowY + cashierWindowHeight - outerBottomHeight - grayBoxOffsetBottom - grayBoxY
         this.cashier.grayBox = new this.Item(grayBoxX, grayBoxY, grayBoxWidth, grayBoxHeight, {stage:cashierStageNumber, container:cashierImageContainerIndex})
 
-// location of html textboxes for adding chips
+  this.cashier.addChipsTextBox = new this.Item (textX,this.cashier.accountBalance.position.y +25, innerCashierWidth,25,{stage:cashierStageNumber, container:cashierImageContainerIndex})
 
+// location of html textboxes for adding chips
 var addChipsText = 'add chips'
 var cancelText = 'cancel'
-var cashierButtonTextSizeAndFont = '13px ' + self.permanentPreferences.defaultFontType.value
-var cashierButtonHeight = 21
+var enableAutoRebuyText = 'Auto-Rebuy to:'
+var disableAutoRebuyText = 'Disable<br>Auto-Rebuy'
+var disableAutoRebuyFontSize = 9
+var disableAutoRebuyTextSizeAndFont = disableAutoRebuyFontSize + 'px '+ self.permanentPreferences.defaultFontType.value
+var cashierButtonFontSize = 11
+var cashierButtonTextSizeAndFont = cashierButtonFontSize +'px ' + self.permanentPreferences.defaultFontType.value
+var cashierButtonHeight = 23
 var cashierButtonTextColor = 'white'
 var cashierButtonColor = 'blue'
-var cashierRatioOfTextWidthToButtonWidth = 0.83
+var cashierRatioOfTextWidthToButtonWidth = 0.70
 //var cashierWindowYOffsetFromInnerCashier = 15 //calculated using middle of bottom of grayox and bottom of innercahiser
-var distanceBetweenCashierButtons = innerCashierWidth / 5.4
+//var distanceBetweenCashierButtons = innerCashierWidth / 9
+
+//options for creating bootstrap buttons
+var cashierButtonOptions = {
+  class:'cashierButton'
+  ,css:{
+  'font': cashierButtonTextSizeAndFont
+      , 'color' : cashierButtonTextColor
+  }//css
+  ,onClick :function(e){
+  console.log(e)
+  }//onClick function
+}//end options for creating bootstrap buttons
+
+var disableAutoRebuyOptions = {
+  class: 'cashierButton'
+  ,css:{
+  'font': disableAutoRebuyTextSizeAndFont
+      , 'color' : cashierButtonTextColor
+
+  }//css
+}
+
+//enableAutoRebuyWidth
+var enableAutoRebuyWidth = self.getStringWidth(enableAutoRebuyText, cashierButtonTextSizeAndFont)/cashierRatioOfTextWidthToButtonWidth
+this.cashier.enableAutoRebuy = new this.Item (radioX, autoRebuyRadioY, enableAutoRebuyWidth,cashierButtonHeight,{stage:cashierStageNumber, container:cashierImageContainerIndex}) 
+ this.cashier.enableAutoRebuy.addBootstrapButton('enableAutoRebuy', enableAutoRebuyText, cashierButtonOptions)
+$(this.cashier.enableAutoRebuy.image).button()
+
+//click events
+$(this.cashier.enableAutoRebuy.image).off('click')
+$(this.cashier.enableAutoRebuy.image).on('click', function(e){
+socket.emit('set_flag','autorebuy', parseInt($(self.images.cashier.autoRebuyAmount.image).val() ) )
+e.stopPropagation() //stop propagation and other bullshit
+})//autorebuy button onclick event
 
 //calculate button width
 var addChipsWidth = self.getStringWidth(addChipsText, cashierButtonTextSizeAndFont)/cashierRatioOfTextWidthToButtonWidth
 var cancelWidth = self.getStringWidth(cancelText, cashierButtonTextSizeAndFont)/cashierRatioOfTextWidthToButtonWidth
-if (addChipsWidth>=cancelWidth){
-var cashierButtonWidth= addChipsWidth}
-else{var cashierButtonWidth=cancelWidth} 
+var disableAutoRebuyWidth = self.getStringWidth('Auto-Rebuy', disableAutoRebuyTextSizeAndFont)/cashierRatioOfTextWidthToButtonWidth
+
+if (addChipsWidth >= cancelWidth){var minCashierButtonWidth = addChipsWidth}
+else{var minCashierButtonWidth = cancelWidth} 
+
+//get cashierButtonX and Y
+var innerCashierBottomY = innerCashierY + innerCashierHeight
+var cashierButtonY = innerCashierBottomY - grayBoxOffsetBottom + (grayBoxOffsetBottom - cashierButtonHeight)/2
+
+//create items, and we will change the X and width values later
+
+  this.cashier.disableAutoRebuy =  new this.Item (0, cashierButtonY, 0,cashierButtonHeight,{stage:cashierStageNumber, container:cashierImageContainerIndex}, {messages:['set_flag','autorebuy',false]}) 
+ this.cashier.disableAutoRebuy.addBootstrapButton('disableAutoRebuy', disableAutoRebuyText, disableAutoRebuyOptions)
+
+      this.cashier.addChips =  new this.Item (0, cashierButtonY, 0,cashierButtonHeight,{stage:cashierStageNumber, container:cashierImageContainerIndex}) 
+ this.cashier.addChips.addBootstrapButton('addChipsButton', 'Add Chips', cashierButtonOptions)
+  $(this.cashier.addChips.image).button()
+         $(this.cashier.addChips.image).off('click')
+        $(this.cashier.addChips.image).on('click', function(e) {self.events.onAddChipsClick(e)})
+      
+        this.cashier.cancel =  new this.Item (0, cashierButtonY, 0,cashierButtonHeight,{stage:cashierStageNumber, container:cashierImageContainerIndex}) 
+      this.cashier.cancel.addBootstrapButton('cancelButton', 'Cancel', cashierButtonOptions)  
+      $( this.cashier.cancel.image).off('click')
+$( this.cashier.cancel.image).on('click', function(e){self.hideCashier()})
+
+//disable right click on all textboxes
+     $( this.cashier.addChips.image).on('contextmenu', function(e){return false})
+     $( this.cashier.cancel.image).on('contextmenu', function(e){return false})
+     $( this.cashier.disableAutoRebuy.image).on('contextmenu', function(e){return false})
+
+self.images.positionCashierButtons = function(displayDisableAutoRebuy, options){
+if(!options){var options = {}}
+  var update = options.update
+options.update = false
+var stagesToUpdate = []
+var goingToDisplayDisableAutoRebuy
+
+if(displayDisableAutoRebuy === true || displayDisableAutoRebuy === false){goingToDisplayDisableAutoRebuy = displayDisableAutoRebuy}
+else if($(this.cashier.disableAutoRebuy.image).css('display') === 'none'){var disableAutoRebuyDisplayed = false}
+ else{var disableAutoRebuyDisplayed = true}
+
+var cashierButtonWidth = minCashierButtonWidth; var addChipsX; var cancelX
+
+if(goingToDisplayDisableAutoRebuy === true){
+
+//update width
+if (cashierButtonWidth < disableAutoRebuyWidth){var cashierButtonWidth = disableAutoRebuyWidth}
+
+console.log('dispaying disableautorebuy, buttonwidth = ' + cashierButtonWidth)
+//update distance between buttons
+var distanceBetweenCashierButtons = (innerCashierWidth - cashierButtonWidth*3)/4
+
+var cancelX = cashierWindowX  + cashierWindowWidth/2 - cashierButtonWidth/2
+var addChipsX = cancelX - distanceBetweenCashierButtons - cashierButtonWidth
+var disableAutoRebuyX = cancelX + distanceBetweenCashierButtons + cashierButtonWidth
+
+this.cashier.disableAutoRebuy.position.x = disableAutoRebuyX
+this.cashier.disableAutoRebuy.size.x = cashierButtonWidth
+stagesToUpdate.push (this.cashier.disableAutoRebuy.updateImageLocationAndSize(options))
+stagesToUpdate.push(self.displayChildren(this.cashier.disableAutoRebuy, options))
+
+}//if displaying disable auto rebuy option
+
+
+else{
+console.log('hiding disableautorebuy, buttonwidth = ' + cashierButtonWidth)
+stagesToUpdate.push(self.hideChildren(this.cashier.disableAutoRebuy, options))
+
+var distanceBetweenCashierButtons = (innerCashierWidth - minCashierButtonWidth*2)/3
 
 var addChipsX =  cashierWindowX  + cashierWindowWidth/2 - distanceBetweenCashierButtons/2 - cashierButtonWidth
 var cancelX = cashierWindowX  + cashierWindowWidth/2 + distanceBetweenCashierButtons/2
 
-var innerCashierBottomY = innerCashierY + innerCashierHeight
-var cashierButtonY = innerCashierBottomY - grayBoxOffsetBottom/2 - cashierButtonHeight/2
+}//if we gonna NOT display autorebuy option
 
 
-     this.cashier.addChipsTextBox = new this.Item (textX,this.cashier.accountBalance.position.y +25, innerCashierWidth,25,{stage:cashierStageNumber, container:cashierImageContainerIndex})
 
-      this.cashier.addChips =  new this.Item (addChipsX,cashierButtonY, cashierButtonWidth,cashierButtonHeight,{stage:cashierStageNumber, container:cashierImageContainerIndex}) 
-        this.itemAsRectangle( this.cashier.addChips, cashierButtonColor)
-        this.addItemText( this.cashier.addChips, addChipsText,cashierButtonTextSizeAndFont , cashierButtonTextColor)
-        this.cashier.addChips.image.onClick = self.events.onAddChipsClick
+this.cashier.addChips.position.x = addChipsX
+this.cashier.addChips.size.x = cashierButtonWidth
+stagesToUpdate.push (this.cashier.addChips.updateImageLocationAndSize(options))
 
-        this.cashier.cancel =  new this.Item (cancelX,cashierButtonY, cashierButtonWidth,cashierButtonHeight,{stage:cashierStageNumber, container:cashierImageContainerIndex}) 
-        this.itemAsRectangle( this.cashier.cancel, cashierButtonColor)
-        this.addItemText( this.cashier.cancel, cancelText, cashierButtonTextSizeAndFont, cashierButtonTextColor)
-        this.cashier.cancel.image.onClick = self.hideCashier
+this.cashier.cancel.position.x = cancelX
+this.cashier.cancel.size.x = cashierButtonWidth
+stagesToUpdate.push (this.cashier.cancel.updateImageLocationAndSize(options))
 
-         this.cashier.closeWindow =  new this.Item (closeWindowX,closeWindowY, closeWindowWidth,closeWindowHeight,{stage:cashierStageNumber, container:cashierImageContainerIndex}) 
-       this.itemAsBitmap(this.cashier.closeWindow, self.permanentPreferences.sourceObjects.value.cashierCloseX)
-       this.cashier.closeWindow.image.onClick = self.hideCashier
 
-      }
+options.update = update
+if(options.update !== false){self.updateStages(stagesToUpdate)}
+else{return stagesToUpdate}
+
+}//reposition button row addChips, cancel, and disableAutoRebuy buttons inside the cashier
+
+self.images.positionCashierButtons(true,{update:false})
+      }//self.images.createCashier
 
       self.images.createCashier()
-
 
    // =============================================SOUNDS========================================
  
@@ -4372,7 +4873,10 @@ var htmlChatStageElementHeight = this.tableChatFull.htmlStageElement.size.y - ht
 this.tableChatFull.htmlChatStageElement = new this.Item(htmlChatStageElementX, htmlChatStageElementY, htmlChatStageElementWidth ,htmlChatStageElementHeight, self.gameState.zPositionData.tableChatFull)
 var tableChatFullParentOfStage = self.arrayOfParentsOfStageAndOfContainerArray[ this.tableChatFull.htmlChatStageElement.position.z.stage]
 var tableChatFullStageCanvasZIndex = $(tableChatFullParentOfStage.stage.canvas).css('z-index')
- 
+
+ $(tableChatFullParentOfStage.div).append(self.jQueryObjects.tableChatFullDiv)
+
+
         self.jQueryObjects.tableChatFullDiv.css({
                     '-webkit-touch-callout': 'none',
 '-webkit-user-select': 'none',
@@ -4459,6 +4963,7 @@ background:'transparent'
 }
 
 
+ // var mCustomScrollbarOptions = {set_height: this.tableChatFull.htmlChatStageElement.size.y}
 
 if(self.permanentPreferences.tableChatFull.scrollBarType && self.permanentPreferences.tableChatFull.scrollBarType.value == 'mCustomScrollbar'){
 console.log('creating mCustomScrollbar')
@@ -4466,6 +4971,8 @@ console.log('creating mCustomScrollbar')
  //$("#tableChatFullTextDiv").css('display','inline')
 
 self.jQueryObjects.tableChatFullDiv.mCustomScrollbar(mCustomScrollbarOptions)
+console.log('created')
+console.log(self.jQueryObjects.tableChatFullDiv)
 // $("#tableChatFullTextDiv").css('display','none')
 
 }
@@ -4589,12 +5096,26 @@ for (var i = 0 ; i <  this.seats.length; i++) {
 
 self.createPreactionOptionItems()
 
+//insert class of nonVendor to all items that have been custom created by us
+var allNonVendorJqueryObject = self.jQueryObjects.pokerTableDiv.find("*")
+console.log(allNonVendorJqueryObject)
+allNonVendorJqueryObject.addClass(self.css.nonVendor)
+
+/*
+self.jQueryObjects.chatBoxDiv.find("*").removeClass(self.css.nonVendor)
+self.jQueryObjects.chatBoxDiv.removeClass(self.css.nonVendor)
+*/
+
 console.log('all createjs images have been created')
 
-} //end set Defaults
+
+} //end setDefaults
 
 //assign options as properties
 var assignObjectPropertiesAsPropertiesOfDisplayObject = function (displayObject, properties){
+//console.log('assignObjectPropertiesAsPropertiesOfDisplayObject called display object = ')
+//console.log(displayObject)
+//console.log(properties)
 
 _.each(properties, function(value, index, list){
 
@@ -4709,20 +5230,32 @@ var newCanvasIDNumber = (previousCanvasIDNumber + nextCanvasIDNumber )/2//increm
 //console.log('canvas id number determined to be :'+newCanvasIDNumber)
 //if we want to create a new canvas and use NEW canvasID number
 if(options.newCanvas === true || options.stage === 0){
+  var newDivID = 'canvas'+newCanvasIDNumber+'Div'
 var newCanvasID = 'canvas'+newCanvasIDNumber
 //defaults
-var canvasWidth = $('#iframeSize')[0].width
-var canvasHeight = $('#iframeSize')[0].height
+var canvasWidth = self.jQueryObjects.canvasDiv.attr('width')
+var canvasHeight  = self.jQueryObjects.canvasDiv.attr('height')
+//var canvasWidth = self.jQueryObjects.canvasDiv[0].width
+//var canvasHeight = self.jQueryObjects.canvasDiv[0].height
 var canvasClass = 'pokerCanvasClass'
 var zIndexesPerCanvas = 10
-var initialZIndex = 3
+//var initialZIndex = 3
+//var initialZIndex = 1
 var unselectableClass = 'unselectable'
 
-self.jQueryObjects.canvasDiv.append('<canvas id = '+'\''+newCanvasID+'\''+ 'class = '+ '\''+canvasClass+ ' '+ unselectableClass+ '\''+' width='+'\''+canvasWidth+'\''+' height=' +'\''+canvasHeight+'\''+'></canvas>')
+
+self.jQueryObjects.canvasDiv.append('<div id = '+'\''+newDivID+'\'' + ' width = '+'\''+canvasWidth+'\''+' height=' +'\''+canvasHeight+'\''+'></canvas>')
+
+$('#'+newDivID).append('<canvas id = '+'\''+newCanvasID+'\'' + ' width = '+'\''+canvasWidth+'\''+' height=' +'\''+canvasHeight+'\''+'></canvas>')
+
 
 //console.log('created canvas with canvas id of: '+newCanvasID)
 //set proper z-index
-$('#'+newCanvasID).css('z-index',parseInt(newCanvasIDNumber*zIndexesPerCanvas)+initialZIndex)
+//$('#'+newCanvasID).css('z-index',parseInt(newCanvasIDNumber*zIndexesPerCanvas)+initialZIndex)
+//$('#'+newCanvasID).css('z-index',initialZIndex)
+$('#'+newCanvasID).addClass(canvasClass)
+$('#'+newCanvasID).addClass(unselectableClass)
+
 }//if we want to create a new canvas
 
 else{ //here we want to use previous canvasID number
@@ -4734,6 +5267,7 @@ else{ //here we want to use previous canvasID number
 self.arrayOfParentsOfStageAndOfContainerArray.splice(options.stage, 0, {})
 self.arrayOfParentsOfStageAndOfContainerArray[options.stage].upToDate = true
 self.arrayOfParentsOfStageAndOfContainerArray[options.stage].nickName = options.nickName
+self.arrayOfParentsOfStageAndOfContainerArray[options.stage].div = document.getElementById(newDivID)
 var canvas = document.getElementById(newCanvasID)
         self.arrayOfParentsOfStageAndOfContainerArray[options.stage].stage = new createjs.Stage(canvas)
 
@@ -5065,13 +5599,31 @@ if(!options){var options = {}}
   var stagesToUpdate = []
 
 if(_.isObject(item.image)){
-  item.image.x = item.position.x
-  item.image.y = item.position.y
+ if (setDisplayObjectPosition(item.image, item.position.x, item.position.y) === true){
+  if(self.isItemAddedToStage(item)){
+stagesToUpdate.push(self.itemChanged(item))
+  }//if image was added to stage
+ }//if image location was changed
 }
 
+//size
+if(_.isElement(item.image)){
+  $(item.image).css({
+    'width':item.size.x
+    ,'height':item.size.y
+  })
+}//if item.image is an element
+
+/*
+else if(item.image instanceof createjs.DisplayObject){
+
+item.x = item.image.image.width
+item.
+
+}
+*/
 
 
-stagesToUpdate.push(this.itemChanged(item))
 
 if(options.update !== false){this.updateStages(stagesToUpdate)}
   else{return stagesToUpdate}
@@ -5271,9 +5823,9 @@ var permanent = options.permanent
 options.permanent = true
 var stagesToUpdate = []
 
-console.log('setSeatObjectLocationsInSeatObjectAEqualToOnesInSeatObjectB called')
-console.log(seatObjectA)
-console.log(seatObjectB)
+//console.log('setSeatObjectLocationsInSeatObjectAEqualToOnesInSeatObjectB called')
+//console.log(seatObjectA)
+//console.log(seatObjectB)
 
 this.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray(seatObjectB, function(value, indexes){
 
@@ -5467,8 +6019,8 @@ seatVisible.push(self.isItemAddedToStage(self.images.seats[i].seat))
 //seatVisible.push(self.images.seats[i].seat.image.isVisible())
 }//end iteration through this.images.seats
 //console.log('check which seats have the seat displayed ' + seatMessages)
-console.log(seatMessages)
-console.log(seatVisible)
+//console.log(seatMessages)
+//console.log(seatVisible)
 
 /*
 console.log('current rotatedSeatNumber of seat0 = ' + self.images.seats[0].rotatedSeatNumber)
@@ -6662,7 +7214,7 @@ var hasImage = false; var hasText = false;
 
 if(options.movementType === 'relative' && _.isObject(item.text) && !item.image && !_.isNaN(parseFloat(item.text.text)))
 {
-  console.log(item.text.text + 'going to be moved ' + newX +' to the right and '+ newY + ' down')
+ // console.log(item.text.text + 'going to be moved ' + newX +' to the right and '+ newY + ' down')
 }
 
 
@@ -6765,24 +7317,33 @@ if(options.update !== false){this.updateStages(stagesToUpdate)}
 
 
 var setDisplayObjectPosition = function(imageOrText, x, y, options){
+ if(!_.isObject(imageOrText)){return}
   if(!options){var options  = {}}
+//console.log('setDisplayObjectPosition called')
+//console.log(imageOrText)
 
-if(!_.isElement(imageOrText)){
+
+if(!_.isElement(imageOrText) && imageOrText instanceof createjs.DisplayObject){
   //return if no change
   if(imageOrText.x === x && imageOrText.y === y){return}
 
   imageOrText.x = x
   imageOrText.y = y
 
+return true
 //if(options.updateStageStatus !== false){return self.itemChanged()}
 
 }//if easeljs
 
 
 else{//if html element
+
     $(imageOrText).css('left',x )
  $(imageOrText).css('top', y)
+ //console.log(imageOrText)
 }//if html element
+
+
 }//function to set displayobject position
 
 var getDisplayObjectPosition = function(imageOrText){
@@ -7043,6 +7604,17 @@ var seat = self.gameState.userSeatNumber
 if(!_.isFunction(checkFunction)){var checkFunction = function(value){
 var preactionOptionData = self.getPreactionOptionValues()
 
+//if autorebuy
+if(actionType === 'autorebuy'){
+  console.log('checking autorebuy in preactiondata, value = ' +value)
+  console.log(typeof value)
+  console.log(_.isNumber(value))
+  console.log(value>0)
+if(_.isNumber(value)  && value > 0 ){return true}
+else{return false}
+}
+
+
 //if turn has not been dealt
 if(self.isItemAddedToStage(self.images.community[3])){
 var minimumNumberValue = self.gameState.bigBlind
@@ -7067,6 +7639,9 @@ if(preactionOptionData.check === false){minimumNumberValue = preactionOptionData
    else if( actionType === 'check' ||actionType === 'call_any'||actionType === 'fold' ){minimumNumberValue = NaN  }
 }// preaction optiondata exists
   if(value === true || (_.isNumber(value) && value >= minimumNumberValue )){return true}}
+
+
+
 }//assign default checkFunction
 
 
@@ -7078,9 +7653,7 @@ var handValue = self.gameState.seats[seat].hand[actionType]
 if(!_.isUndefined(streetValue)&&!_.isNaN(streetValue)&&checkFunction(streetValue)){var data = {action:actionType, value:streetValue, expiration:'street'}}
 else  if(!_.isUndefined(onceValue)&&!_.isNaN(onceValue)&&checkFunction(onceValue)){var data = {action:actionType, value:onceValue, expiration:'once'}}
 else if(!_.isUndefined(handValue)&&!_.isNaN(handValue)&&checkFunction(handValue)){var data = {action:actionType, value:handValue,expiration: 'hand'}}
-  else{
-//console.log('getPreactionDAta for '+actionType+ ' returned false')
-    return false}
+  else{var data =  false}
 
 //maybe do this later, not sure if it should be done yet
 /*
@@ -7089,8 +7662,8 @@ if(_.isNumber(data.streetValue)){
 
 }
 */
-//console.log('getPreactionDAta for '+actionType+' returning:')
-//console.log(data)
+console.log('getPreactionDAta for '+actionType+' returning:')
+console.log(data)
 return data
 }
 
@@ -7512,16 +8085,23 @@ function clearExpirationObject (gameStateObject){
   else if(_.isFunction(onEnd)){onEnd()}
 
 
-}
+}//clearExpirationObject
 
 }
 
  this.dealHoleCards = function(smallBlindSeatNumber, playerArray, holeCardArray){
      
+var numPlayers = playerArray.length
+var totalAnimationTime = 800
+
+ //var animationTime = totalAnimationTime/numPlayers/2
+var animationTime = 75
+
      var initialX = this.images.startingCard.position.x
      var initialY = this.images.startingCard.position.y
-     var animationTime = 340
-            var fractionDistancePerTick = .05
+    
+
+            var fractionDistancePerTick = .10
             var lastTick = 1/fractionDistancePerTick -1 
 
             var   interval = fractionDistancePerTick*animationTime
@@ -8424,6 +9004,7 @@ console.log('total height ' + scroll[0].getContentSize().h)
 console.log('pixels invisible above paragraph element' +  scroll[0].getScrollTop())
 console.log('height of paragraph element ' + self.jQueryObjects.tableChatFullParagraph.height())
 */
+
 if(self.permanentPreferences.tableChatFull.scrollBarType && self.permanentPreferences.tableChatFull.scrollBarType.value == 'mCustomScrollbar'){
 //console.log('creating mCustomScrollbar')
 //show so that scroll bar can be initialized
@@ -8443,13 +9024,91 @@ return isAtBottom
 
 }
 
-this.displayBubbleChat = function(chatInfo){
+this.displayBubbleChatPopover = function(chatInfo){
 
 self.images.seats[chatInfo.seat].chat.text.text = ''
+
+var playerSeatObject = self.images.seats[chatInfo.seat]
+
+//we are going to create a div on top of each player's seat
+if(playerSeatObject.bubbleChatBase instanceof self.images.Item !== true){
+playerSeatObject.bubbleChatBase = new self.images.Item(playerSeatObject.seat.position.x, playerSeatObject.seat.position.y, playerSeatObject.seat.size.x , 0, playerSeatObject.chat.position.z)
+
+var divID = 'seat'+chatInfo.seat + 'BubbleChatBase'
+self.jQueryObjects.canvasDiv.append('<div id = \"' + divID + '\"></div>')
+
+playerSeatObject.bubbleChatBase.image = $('#'+divID)[0]
+
+console.log(playerSeatObject.bubbleChatBase)
+self.positionItemImage(playerSeatObject.bubbleChatBase)
+
+$(playerSeatObject.bubbleChatBase.image).css({
+'z-index': 9999
+,'width': playerSeatObject.seat.size.x
+,'height':playerSeatObject.seat.size.y
+  // ,'pointer-events': 'none'
+  ,'background':'#FFFFFF'
+})
+
+}//if we want to create images.Item
+
+//qtip2 version
+
+var qtipOptions = {
+  show: {ready: true }//show as soon as its loaded
+ ,hide: {
+    fixed:true     //will not hide when we mouseover it
+  ,delay: 999999 
+,event:'manual'}
+  ,content: {text: chatInfo.message}
+,position: {
+    my: 'bottom right' // tooltip position
+    ,at: 'top left' // div position
+    ,target: $(playerSeatObject.bubbleChatBase.image) // my target
+    ,adjust:{resize:true}
+      // adjust:{x:,y:}
+ ,  container:$(playerSeatObject.bubbleChatBase.image)
+  }//position
+    ,style:{
+      classes:'qtip-youtube'
+    //  ,tip:{corner:'right top'}
+    }//style
+ 
+  }
+
+
+$(playerSeatObject.bubbleChatBase.image).qtip(qtipOptions)
+$(playerSeatObject.bubbleChatBase.image).toggle(true)
+
+
+/*
+var tooltipOptions = {
+title:chatInfo.message
+,placement:'top'
+//,trigger:'manual hover'
+}
+
+$(playerSeatObject.bubbleChatBase.image).tooltip(tooltipOptions)
+$(playerSeatObject.bubbleChatBase.image).tooltip('show')
+//$(playerSeatObject.bubbleChatBase.image).tooltip('toggle')
+console.log($(playerSeatObject.bubbleChatBase.image).tooltip)
+console.log($(playerSeatObject.bubbleChatBase.image))
+*/
+
+
+
+}
+
+
+this.displayBubbleChat = function(chatInfo){
+
+
 //trim front and trailing whitespace from chat message
 chatInfo.message = chatInfo.message.replace(/^\s+|\s+$/g,'')
      //perform animation only if string is longer than 0 and is not purely spaces
   if (/\S/.test(chatInfo.message)){
+
+    self.images.seats[chatInfo.seat].chat.text.text = ''
 
   //remove previous tweens that may be running:
   createjs.Tween.removeTweens(self.images.seats[chatInfo.seat].chat.image)
@@ -8620,7 +9279,7 @@ self.images.seats[chatInfo.seat].chat.text.y = self.images.seats[chatInfo.seat].
 imageTween.setPaused(false)
 textTween.setPaused(false)
 
-    }
+    }//if message has non space characters
 
 
   }//playerChats function
@@ -8815,6 +9474,9 @@ if(update === false){return stagesToUpdate}
 
     this.displayBetSlider = function(minBet, maxBet, minIncrement){
        
+       //enable raise and bet in case it wasnt before
+trueOrFalseToggleRaiseAndBet(true)
+
         this.gameState.minBet = minBet
         this.gameState.maxBet = maxBet
         this.gameState.minIncrement = minIncrement
@@ -9463,6 +10125,8 @@ self.jQueryObjects.tableChatFullParagraph.css('display','inline ')
 var updateItemText = function(item, text, options){
 if(!options){var options = {}}
   var stagesToUpdate = []
+console.log('updating item text newText = '+text)
+
 //console.log('checking updateitem text = '+text)
 if(!_.isString(text+'')){console.log('updateitemtext given non text as parameter = '+text);return }
 
@@ -9634,6 +10298,9 @@ if(update !== false){this.updateStages(stagesToUpdate)}
       else{return stagesToUpdate}
 
 
+//clear data
+self.gameState.cashier = {}
+
     }
 
 
@@ -9656,27 +10323,6 @@ var incrementOfContainersPerMessageBox = this.gameState.zPositionData.containers
            }
         } //loop through this.arrayOfParentsOfStageAndOfContainerArray[messageBoxStageNumber].containers
 //console.log(messageBoxImageContainerIndex)
-
-
-/*
-        //check if this is the first(bottom) messagebox displayed
-        if(messageBoxImageContainerIndex == this.gameState.zPositionData.initialMessageBox){
-       //hide html cashier(if visible)
-       if( $('#maxRadio').is(':visible')){
-          
-       self.gameState.cashier.display = true
-       this.jQueryObjects.cashierForm.css('display', 'none')
-       }
-       else{self.gameState.cashier.display = false}
-       
-       //check if tableChatBox is readonly
-      if(self.jQueryObjects.chatBoxInput.attr("readonly") == true){}
-      else{
-       this.gameState.tableChatBox.display = true
-       this.disableTableChatBox()
-       }
-       }
-*/
 
        //set current messageBox as top messageBoxImagContainerIndex
         self.gameState.messageBox.messageBoxImageContainerIndex = messageBoxImageContainerIndex
@@ -9713,9 +10359,10 @@ var incrementOfContainersPerMessageBox = this.gameState.zPositionData.containers
         var innerMessageBoxWidth = messageBoxWindowWidth-2*outerSideWidth 
         var innerMessageBoxHeight = messageBoxWindowHeight-outerBottomHeight-outerTopHeight
 
-        var textHeight = 30
+      //  var textHeight = 30
         var textLeftOffset = 7
-        var textTopOffset = 10
+        var textTopOffset = 8
+        var textBottomOffset = 8
         var textX = innerMessageBoxX + textLeftOffset
 
 //button width is defined in default
@@ -9816,7 +10463,27 @@ _.defaults(messageInfo, defaults)
                 }
                 )
 
-    //add closeX Image
+
+
+ //---------------------------------title---------------------------------
+        self.images.messageBox[messageBoxImageContainerIndex].windowTitle = new self.images.Item (messageBoxWindowX,messageBoxWindowY, messageBoxWindowWidth,outerTopHeight,{stage:messageBoxStageNumber,container:messageBoxImageContainerIndex+textContainer})
+         self.images.addItemText(self.images.messageBox[messageBoxImageContainerIndex].windowTitle, messageInfo.title, messageInfo.titleSizeAndFont, messageInfo.titleColor)
+
+         //----------------------------message---------------------------
+         var textHeight = innerMessageBoxHeight - textTopOffset - buttonButtomOffset - buttonHeight - textBottomOffset - maxDistanceFromButtonsToCheckOption
+
+        self.images.messageBox[messageBoxImageContainerIndex].message = new self.images.Item (textX,innerMessageBoxY+textTopOffset, innerMessageBoxWidth -textLeftOffset*2 ,textHeight,{stage:messageBoxStageNumber,container:messageBoxImageContainerIndex+textContainer})
+       
+var messageTextOptions = {
+  centerTextY:false
+  ,  lineWidth :self.images.messageBox[messageBoxImageContainerIndex].message.size.x*.9 
+,maxWidth : null
+}
+        self.images.addItemText(self.images.messageBox[messageBoxImageContainerIndex].message, messageString, messageInfo.messageSizeAndFont, messageInfo.messageColor, messageTextOptions)
+
+
+
+    //-----------------------add closeX Image----------------------------------------------
             var closeX =messageBoxWindowX+messageBoxWindowWidth - closeXRightOffset - closeXWidth
         var closeY =  messageBoxWindowY+ closeXTopOffset 
     self.images.messageBox[messageBoxImageContainerIndex].closeWindow.position.x = closeX
@@ -9842,17 +10509,7 @@ if(messageInfo.closeWindowMessages){
 }
 }
 
-        //title
-        self.images.messageBox[messageBoxImageContainerIndex].windowTitle = new self.images.Item (messageBoxWindowX,messageBoxWindowY, messageBoxWindowWidth,outerTopHeight,{stage:messageBoxStageNumber,container:messageBoxImageContainerIndex+textContainer})
-         self.images.addItemText(self.images.messageBox[messageBoxImageContainerIndex].windowTitle, messageInfo.title, messageInfo.titleSizeAndFont, messageInfo.titleColor)
-
-         //message
-        self.images.messageBox[messageBoxImageContainerIndex].message = new self.images.Item (textX,innerMessageBoxY+textTopOffset, innerMessageBoxWidth -textLeftOffset*2 ,textHeight,{stage:messageBoxStageNumber,container:messageBoxImageContainerIndex+textContainer})
-        self.images.addItemText(self.images.messageBox[messageBoxImageContainerIndex].message, messageString, messageInfo.messageSizeAndFont, messageInfo.messageColor)
-        self.images.messageBox[messageBoxImageContainerIndex].message.text.lineWidth = self.images.messageBox[messageBoxImageContainerIndex].message.size.x*.9
- self.images.messageBox[messageBoxImageContainerIndex].message.text.maxWidth = null
-
-   //OK button
+   //--------------------------------OK button--------------------------------
         self.images.messageBox[messageBoxImageContainerIndex].okay =  new self.images.Item (okayX,buttonY, messageInfo.okayWidth,buttonHeight,{stage:messageBoxStageNumber, container: messageBoxImageContainerIndex+buttonContainer}) 
         self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].okay, messageInfo.buttonBackgroundColor )
         self.images.addItemText( self.images.messageBox[messageBoxImageContainerIndex].okay, messageInfo.okayText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
@@ -9884,7 +10541,7 @@ if(self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked && se
                       okayEvent(e, checkBoxStatus)
                     }//okay.image.onClick
   
-//cancel button
+//--------------------------------cancel button--------------------------------
         if(messageInfo.cancel){
         self.images.messageBox[messageBoxImageContainerIndex].cancel =  new self.images.Item (cancelX,buttonY, messageInfo.cancelWidth,buttonHeight,{stage:messageBoxStageNumber, container: messageBoxImageContainerIndex+buttonContainer}) 
         self.images.itemAsRectangle( self.images.messageBox[messageBoxImageContainerIndex].cancel, messageInfo.buttonBackgroundColor )
@@ -9921,7 +10578,8 @@ if(messageInfo.checkBox){
 
    self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked = new self.images.Item(0,0,0,0,{stage:messageBoxStageNumber,container:messageBoxImageContainerIndex + buttonContainer})
  self.images.messageBox[messageBoxImageContainerIndex].checkBoxChecked = new self.images.Item(0,0,0,0,{stage:messageBoxStageNumber,container:messageBoxImageContainerIndex + buttonContainer})
-self.images.itemsAsCheckBoxes(   self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked,  self.images.messageBox[messageBoxImageContainerIndex].checkBoxChecked, messageInfo.checkBoxText)
+console.log('creating checkBox for messagebox');console.log(messageInfo)
+self.images.itemsAsCheckBoxes(self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked,  self.images.messageBox[messageBoxImageContainerIndex].checkBoxChecked, messageInfo.checkBoxText, {color:messageInfo.checkBoxTextColor})
 
 
 //center the checkbox button (X)
@@ -9956,9 +10614,6 @@ if(_.isNumber(checkBoxY) && !_.isNaN(checkBoxY)){return checkBoxY}
 
 }//getCheckBoxY function
 
-var checkBoxY = getCheckBoxY()
-  self.setImageItemPositionAndTextBasedOnImageChange(  self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked, checkBoxX, checkBoxY )
-  self.setImageItemPositionAndTextBasedOnImageChange(  self.images.messageBox[messageBoxImageContainerIndex].checkBoxChecked,  checkBoxX, checkBoxY)
 
 //assign onClick functions
  self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked.image.onClick = function(e){
@@ -9987,6 +10642,17 @@ else{
     self.images.messageBox[messageBoxImageContainerIndex].checkBoxChecked = null
 }
 
+
+       
+//assign Y of checkbox according to messageText
+if(messageInfo.checkBox){
+var checkBoxY = getCheckBoxY()
+  self.setImageItemPositionAndTextBasedOnImageChange(  self.images.messageBox[messageBoxImageContainerIndex].checkBoxUnchecked, checkBoxX, checkBoxY )
+  self.setImageItemPositionAndTextBasedOnImageChange(  self.images.messageBox[messageBoxImageContainerIndex].checkBoxChecked,  checkBoxX, checkBoxY)
+}//assign textbox Y
+
+
+
            stagesToUpdate.push(self.displayChildren(self.images.messageBox[messageBoxImageContainerIndex], hideOrDisplayChildrenOptions))
 stagesToUpdate.push(self.hideChildren(  self.images.messageBox[messageBoxImageContainerIndex].checkBoxChecked, hideOrDisplayChildrenOptions))
 
@@ -10011,12 +10677,13 @@ if(update !== false){this.updateStages(stagesToUpdate)}
 
       //disable tableChatBox
 
+/*
       if($('#tableChatBox').attr("readonly") == true){}
       else{
        this.gameState.tableChatBox.display = true
        this.disableTableChatBox()
        }
-
+*/
 
         //set defaults
         if(_.isUndefined(info.currency_per_chip)||_.isNull(info.currency_per_chip)){info.currency_per_chip = 1}
@@ -10032,32 +10699,32 @@ if(update !== false){this.updateStages(stagesToUpdate)}
         this.gameState.cashier.table_min = info.table_min*info.currency_per_chip
         
 
+
        this.images.cashier.blinds.text.text = info.currency_per_chip*info.small_blind+'/'+info.currency_per_chip*info.big_blind
-
          this.images.cashier.tableNameValue.text.text = info.table_name
-
         this.images.cashier.tableMinValue.text.text = info.currency_per_chip*info.table_min
-
         this.images.cashier.tableMaxValue.text.text = info.currency_per_chip*info.table_max
-
         this.images.cashier.playerMinValue.text.text = info.currency_per_chip*info.min
-
        this.images.cashier.accountBalanceValue.text.text = this.gameState.cashier.balance
-
        this.images.cashier.currency.text.text = info.currency+':'
+
+/*
+       var autoRebuyFlagValue = self.getPreactionData('autorebuy')
+if(_.isObject(autoRebuyFlagValue)){autoRebuyFlagValue = autoRebuyFlagValue.value }
+setAutoRebuyValueText (  autoRebuyFlagValue)
+*/
 
        //clear all initial values of text boxes
         $('#maxRadio').prop('checked', false)
          $('#autoRebuyRadio').prop('checked', false)
           $('#otherAmountRadio').prop('checked', false)
-             $("#otherAmount").val('')
-           $('#autoRebuyAmount').val('')
+             $("#otherAmount").val(self.gameState.cashier.min)
+           $('#autoRebuyAmount').val(this.gameState.cashier.table_min)
        $("#maxAmount").val(this.gameState.cashier.max)
         $("#maxAmount").attr("readonly", true)
 
 //displayMin Amount as auto feature
   $('#otherAmountRadio').prop('checked', true)
-  $("#otherAmount").val(self.gameState.cashier.min)
 
 //display textboxes for adding chips
           var htmlcashier = document.getElementById('cashier')
@@ -10073,7 +10740,9 @@ var cashierStageNumber = this.images.cashier.window.position.z.stage
         }
 
         console.log(this.images.cashier)
-           stagesToUpdate.push(     this.displayChildren(this.images.cashier, hideOrDisplayChildrenOptions) )
+
+           stagesToUpdate.push( this.displayChildren(this.images.cashier, hideOrDisplayChildrenOptions) )
+stagesToUpdate.push(self.updateUserOptionsBasedOnFlagsAndPreactions(hideOrDisplayChildrenOptions))
 
 //display cashierCanvas
 $(this.arrayOfParentsOfStageAndOfContainerArray[ this.images.cashier.window.position.z.stage].stage.canvas).css('display','inline')
@@ -10081,9 +10750,7 @@ $(this.arrayOfParentsOfStageAndOfContainerArray[ this.images.cashier.window.posi
 if(update !== false){this.updateStages(stagesToUpdate)}
   else{return stagesToUpdate}
 
-
 }
-
 
 
 this.storeActiveStages = function(){
@@ -10593,6 +11260,18 @@ else if(currentStackSizes[self.gameState.userSeatNumber] <= 0){return false}
 else if(compactedStackSizes.length <= 1  && self.getHighBet() <=  currentBetSizes[self.gameState.userSeatNumber] ){return false}
 else {return true}
 
+}//canPlayerActDefaultsToUser
+
+var setAutoRebuyValueText = function(value, options){
+if(!options){var options = {}}
+var stagesToUpdate = []
+
+if(!_.isNumber(value) || _.isNaN(value)  || value <=0 ){var value = 'disabled' }
+stagesToUpdate.push(updateItemText (self.images.cashier.autoRebuyValue, value, options)   )
+
+if(options.update !== false) {self.updateStages(stagesToUpdate)}
+  else{return stagesToUpdate}
+
 }
 
 this.updateUserOptionsBasedOnFlagsAndPreactions = function(options){
@@ -10612,10 +11291,29 @@ stagesToUpdate.push( this.hideSeatedOptions(options) )
 
 else{  //if player is seated
 
+//update autoRebuyText
+var autoRebuyData = self.getPreactionData('autorebuy')
+console.log('retreived preaction data of autorebuy value = ');console.log(autoRebuyData)
+
+var displayDisableAutoRebuy = false
+
+//determine whether to display the autorebuy button
+if(_.isObject(autoRebuyData)){
+var displayDisableAutoRebuy = true
+  var autoRebuyValue = autoRebuyData.value
+}
+
+  //update text 
+stagesToUpdate.push(setAutoRebuyValueText(autoRebuyValue, options))
+//update button postions of addchips, cancel, and disableautorebuy
+stagesToUpdate.push(self.images.positionCashierButtons(displayDisableAutoRebuy, options))
+
+
+
 //enable basic seatedoptions
    this.images.getChips.image.onClick = self.events.onButtonClick
      this.images.standUp.image.onClick = this.events.userStands
-  stagesToUpdate.push(        this.hideChildren(this.images.getChipsDisabledShape,options) )
+     stagesToUpdate.push (this.hideChildren(this.images.getChipsDisabledShape,options) )
 stagesToUpdate.push(  this.hideChildren(this.images.standUpDisabledShape,options))
 
 
@@ -11138,7 +11836,7 @@ function tick(event){
                  this.displayChildren(this.images.table)
          this.displayChildren(this.images.showTableChatFull)
          this.displayChildren(this.images.standUp)
-         this.displayChildren(this.images.exitTable)
+     //    this.displayChildren(this.images.exitTable)
 
 //remove extra S
          this.images.currencyDisplay.text.text = '1 chip is equal to ' + table_state.currency_per_chip + ' ' + table_state.currency
@@ -11272,7 +11970,7 @@ testFunction()
     }
     
 var testFunction = function(){
-
+console.log(self.jQueryObjects.chatBoxDiv[0])
 //self.displayChildren(self.images.fold)
 
 //TEST FOR POT SIZE
@@ -11586,14 +12284,18 @@ var stagesToUpdate = []
        else  if (actions[i].raise){
         options.value = actions[i].raise[0]
        stagesToUpdate.push(    self.updateActionButton('raise',options))
-
-
-
-       stagesToUpdate.push( self.displayBetSlider(actions[i].raise[0], actions[i].raise[1], 1) )
+//make sure we are not facing all in when we want to display bet slider
+if(actions[i].raise[0] != actions[i].raise[1]){ stagesToUpdate.push( self.displayBetSlider(actions[i].raise[0], actions[i].raise[1], 1) )}
+      
          }
       else if (actions[i].bet){
           options.value =  actions[i].bet[0]
         stagesToUpdate.push(   self.updateActionButton('bet', options))
+
+//make sure we are not facing all in when we want to display bet slider
+if(actions[i].bet[0] != actions[i].bet[1]){ stagesToUpdate.push( self.displayBetSlider(actions[i].bet[0], actions[i].bet[1], 1) )}
+     
+
                stagesToUpdate.push(  self.displayBetSlider(actions[i].bet[0], actions[i].bet[1], 1) )
 
  }
@@ -11656,7 +12358,7 @@ self.gameState.seats[seatNumber].timeToActInMS = time
 //update tableChatFull popup
 var chatObjectForInternalFunctionUse = {}
 chatObjectForInternalFunctionUse.chatSourceType = 'dealer'
-chatObjectForInternalFunctionUse.message = messageString
+chatObjectForInternalFunctionUse.message = _.escape(messageString)
 chatObjectForInternalFunctionUse.timeStampString = timeStampString
 self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInternalFunctionUse)
 
@@ -11700,6 +12402,8 @@ chatInfo.message = notificationString
 
 //remove all leading and trailing whitespace from message
   chatInfo.message = chatInfo.message.replace(/^\s+|\s+$/g,'')
+// escape reserved HTML characters in message
+  chatInfo.message = _.escape(chatInfo.message);
 
 if (/\S/.test(chatInfo.message)){//make sure chatInfo.message is not empty
 
@@ -11724,8 +12428,8 @@ chatObjectForInternalFunctionUse.message = chatInfo.sender+' says: '+chatInfo.me
 self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInternalFunctionUse)
 
 
-  self.displayBubbleChat(chatInfo)
-
+ self.displayBubbleChat(chatInfo)
+//self.displayBubbleChatPopover(chatInfo)
 }//if player chat
 }//check to make sure chatInfo.message is NOT empty
 
