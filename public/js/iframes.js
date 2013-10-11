@@ -23,7 +23,15 @@
   var id_prefix = 'iframe_'
     , iframe_template =
   '<div id="iframe_<%= table_name %>" class="iframe">' +
-    '<div class="iframe_header"></div>' +
+    '<div class="iframe_header">' +
+      '<span class="iframe_header_title"></span>' +
+      '<a href="#" class="iframe_refresh pull-left">' +
+        '<i class="icon-refresh"></i>' +
+      '</a>' +
+      '<a href="#" class="iframe_close pull-right">' +
+        '<i class="icon-remove"></i>' +
+      '</a>' +
+    '</div>' +
     '<iframe src="/<%= table_name %>" width="690" height="450">' +
         '<p>Your browser does not support iframes.</p>' +
         '<p><a href="http://www.smashingmagazine.com/2012/07/10/dear-web-user-please-upgrade-your-browser/">Upgrade your browser</a></p>' +
@@ -52,6 +60,12 @@
     , snapMode: 'outer'
     , stack: '.iframe'
     });
+
+    $iframe.find('.iframe_refresh').click(function(){
+      console.log('iframe refresh', this);
+      $iframe.find('iframe').get(0).contentWindow.location.reload();
+    });
+
   }
 
   // open iframes for each table_name in initial_tables
@@ -59,11 +73,20 @@
     openNewIframe(table_name);
   });
 
+  function setIframeCloseHandler(table_name, close_handler) {
+    console.log('setIframeCloseHandler called with', table_name, close_handler);
+    var $iframe = findIframe(table_name);
+    $iframe.find('.iframe_close').click(function(e){
+      console.log('iframe_close trigger');
+      close_handler();
+    });
+  }
+
   function setIframeTitle(table_name, title) {
     console.log('setIframeTitle called with', table_name, title)
     var $iframe = findIframe(table_name);
     if ($iframe.length > 0) {
-      $iframe.find('.iframe_header').text(title);
+      $iframe.find('.iframe_header_title').text(title);
     }
     else {
       console.error('no iframe found for table_name', table_name);
@@ -91,6 +114,7 @@
 
   iframes = {
     openNewIframe: openNewIframe
+  , setIframeCloseHandler: setIframeCloseHandler
   , setIframeTitle: setIframeTitle
   , closeIframe: closeIframe
   };
