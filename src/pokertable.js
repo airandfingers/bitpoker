@@ -1090,7 +1090,9 @@ this.events.onCashierTextFieldFocus = function(event){
     this.events.onAddChipsClick = function(event){
         if($('#maxRadio').is(':checked'))
         {
-            socket.emit('add_chips',self.gameState.cashier.max, self.gameState.cashier.currency)
+          console.log('maxradio checked')
+          console.log(self.gameState.cashier)
+            socket.emit('add_chips', self.gameState.cashier.max, self.gameState.cashier.currency)
 
         }
         else if($('#otherAmountRadio').is(':checked')){
@@ -10291,7 +10293,7 @@ setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(self.im
 */
                 self.jQueryObjects.cashierForm.css('display','none')
 
-                self.restoreActiveStages(self.gameState.cashier.activeStages)
+            //    self.restoreActiveStages(self.gameState.cashier.activeStages)
         self.gameState.cashier.display = false
 
                  $('#maxRadio').prop('checked', false)
@@ -10858,6 +10860,8 @@ this.storeActiveStages = function(){
     return activeStages}
 
 this.restoreActiveStages = function(activeStageArray){
+
+
 
 //disable mouse events for all stages
     for(var i = 0;i<this.arrayOfParentsOfStageAndOfContainerArray.length;i++){
