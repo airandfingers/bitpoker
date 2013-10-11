@@ -9409,7 +9409,7 @@ var scrollDownAtEnd = this.checkIfTableChatFullMessageTextShouldBeScrolledAfterC
 //add another message to the array if necessary
  if(chatInfo && chatInfo.chatSourceType && chatInfo.message){
   var pushed = true
-log.push([chatInfo.chatSourceType, chatInfo.message])
+log.push([chatInfo.chatSourceType, _.escape(chatInfo.message)])
 //if timeStampString add it to the array
 if(chatInfo.timeStampString){
   log[log.length-1].push(chatInfo.timeStampString)
@@ -12476,8 +12476,6 @@ chatInfo.message = notificationString
 
 //remove all leading and trailing whitespace from message
   chatInfo.message = chatInfo.message.replace(/^\s+|\s+$/g,'')
-// escape reserved HTML characters in message
-  chatInfo.message = _.escape(chatInfo.message);
 
 if (/\S/.test(chatInfo.message)){//make sure chatInfo.message is not empty
 
