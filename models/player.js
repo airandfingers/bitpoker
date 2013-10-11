@@ -734,8 +734,9 @@ module.exports = (function () {
     if (name === 'autorebuy') {
       var game = this.game;
       if (! _.isNumber(value) || value < game.MIN_CHIPS || value > game.MAX_CHIPS) {
-        console.error('Ignoring set_flag message for invalid auto-rebuy amount:', value);
-        return;
+        console.error('Received set_flag message with invalid auto-rebuy amount:', value);
+        value = false;
+        this.flags.autorebuy = value;
       }
       this.autoRebuy();
     }
