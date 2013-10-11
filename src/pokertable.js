@@ -1811,6 +1811,10 @@ self.events.userStands()
 
     }
 
+  if (_.isObject(parent.iframes)) {
+    parent.iframes.setIframeCloseHandler($('#server_values').data('table_name'), this.events.exitTableClick);
+  }
+
      this.events.viewLobbyClick = function(event){
 
          var lobbyName = "Lobby"
