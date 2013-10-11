@@ -18,6 +18,7 @@ self  = this
             this.css = {
 nonVendor: 'nonVendor'
 ,unselectable: 'unselectable'
+,noTranslate: 'notranslate'
  }
 
   this.imageData = {
@@ -5636,6 +5637,7 @@ if(_.isElement(item.image)){
   $(item.image).css({
     'width':item.size.x
     ,'height':item.size.y
+    ,'position':'absolute'
   })
 }//if item.image is an element
 
@@ -9077,9 +9079,11 @@ if(playerSeatObject.bubbleChatBase instanceof self.images.Item !== true){
 playerSeatObject.bubbleChatBase = new self.images.Item(playerSeatObject.seat.position.x, playerSeatObject.seat.position.y, playerSeatObject.seat.size.x , 0, playerSeatObject.chat.position.z)
 
 var divID = 'seat'+chatInfo.seat + 'BubbleChatBase'
-self.jQueryObjects.canvasDiv.append('<div id = \"' + divID + '\"></div>')
+var seatDiv = self.arrayOfParentsOfStageAndOfContainerArray[self.images.seats[chatInfo.seat].seat.position.z.stage].div
+$(seatDiv).append('<div id = \"' + divID + '\"></div>')
 
 playerSeatObject.bubbleChatBase.image = $('#'+divID)[0]
+$(playerSeatObject.bubbleChatBase.image).addClass(self.css.nonVendor)
 
 console.log(playerSeatObject.bubbleChatBase)
 self.positionItemImage(playerSeatObject.bubbleChatBase)
@@ -9101,7 +9105,8 @@ var qtipOptions = {
  ,hide: {
     fixed:true     //will not hide when we mouseover it
   ,delay: 999999 
-,event:'manual'}
+,event:'manual'
+}//hide
   ,content: {text: chatInfo.message}
 ,position: {
     my: 'bottom right' // tooltip position
@@ -9110,9 +9115,12 @@ var qtipOptions = {
     ,adjust:{resize:true}
       // adjust:{x:,y:}
  ,  container:$(playerSeatObject.bubbleChatBase.image)
+ ,viewport: $(seatDiv) //  true //$(window)
   }//position
     ,style:{
-      classes:'qtip-youtube'
+      classes: 'qtip-youtube'
+   //   ,width:   self.images.seats[chatInfo.seat].chat.size.x
+   //  ,height:  self.images.seats[chatInfo.seat].chat.size.y
     //  ,tip:{corner:'right top'}
     }//style
  
@@ -10275,11 +10283,12 @@ setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(self.im
 
 
         //enable TableChatBox
-        if(self.jQueryObjects.chatBoxInput.attr("readonly") == true||'readonly'){
+        /*
+        if(self.jQueryObjects.chatBoxInput.attr("readonly") == true || 'readonly'){
             self.gameState.tableChatBox.display = false
        self.enableTableChatBox()
        }
-
+*/
                 self.jQueryObjects.cashierForm.css('display','none')
 
                 self.restoreActiveStages(self.gameState.cashier.activeStages)
@@ -10293,7 +10302,7 @@ setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(self.im
            $('#autoRebuyAmount').val('')
            $('#maxAmount').val('')
            //hide cashier children
-     stagesToUpdate.push(      self.hideChildren(self.images.cashier, hideOrDisplayChildrenOptions))
+     stagesToUpdate.push(  self.hideChildren(self.images.cashier, hideOrDisplayChildrenOptions))
 
      if(update !== false){self.updateStages(stagesToUpdate)}
       else{return stagesToUpdate}
@@ -10301,31 +10310,35 @@ setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(self.im
     }
 
     this.hideMessageBox = function(hideOrDisplayChildrenOptions){
-      console.log('hidemessagebox called')
+
       if(!hideOrDisplayChildrenOptions){var hideOrDisplayChildrenOptions = {}}
         var update = hideOrDisplayChildrenOptions.update
         hideOrDisplayChildrenOptions.update = false
 
         var stagesToUpdate = []
 
-console.log(self.gameState.messageBox )
-console.log(self.gameState.messageBox.messageBoxImageContainerIndex)
+//if doesnt exist return immediately
+//console.log(self.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex])
+if(!_.isObject(self.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex])){return}
 
 var messageBoxStageNumber = self.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex].window.position.z.stage
 
 
 //console.log(self.gameState.messageBox.messageBoxImageContainerIndex)
         
-        if(self.gameState.messageBox.messageBoxImageContainerIndex === self.gameState.zPositionData.initialMessageBox.container){     
+  /*      if(self.gameState.messageBox.messageBoxImageContainerIndex === self.gameState.zPositionData.initialMessageBox.container){     
+
 
         if(self.gameState.cashier.display === true){
             this.jQueryObjects.cashierForm.css('display','inline')
         }
 
         //enable tableChatBox if necessary
-      else  if(self.gameState.tableChatBox.display == true){ self.enableTableChatBox()}
+      else if(self.gameState.tableChatBox.display == true){ self.enableTableChatBox()}
 
         }
+*/
+
 
 //console.log(self.images.messageBox[self.gameState.messageBox.messageBoxImageContainerIndex])
 
@@ -12504,8 +12517,8 @@ chatObjectForInternalFunctionUse.message = chatInfo.sender+' says: '+chatInfo.me
 self.updateTableChatFullMessageTextFromCurrentOrAdditionalData(chatObjectForInternalFunctionUse)
 
 
- self.displayBubbleChat(chatInfo)
-//self.displayBubbleChatPopover(chatInfo)
+ //self.displayBubbleChat(chatInfo)
+self.displayBubbleChatPopover(chatInfo)
 }//if player chat
 }//check to make sure chatInfo.message is NOT empty
 
