@@ -10736,8 +10736,8 @@ if(update !== false){this.updateStages(stagesToUpdate)}
         if(_.isUndefined(info.currency_per_chip)||_.isNull(info.currency_per_chip)){info.currency_per_chip = 1}
         if(_.isUndefined(info.currency)||_.isNull(info.currency)){info.currency = 'Chips'}
           
-          this.gameState.cashier.currency = info.currency
-             this.gameState.cashier.min = info.min*info.currency_per_chip
+        this.gameState.cashier.currency = info.currency
+        this.gameState.cashier.min = info.min*info.currency_per_chip
         this.gameState.cashier.max = info.max*info.currency_per_chip
         this.gameState.cashier.balance = info.balance_in_currency
         this.gameState.cashier.table_name = info.table_name
@@ -10747,7 +10747,9 @@ if(update !== false){this.updateStages(stagesToUpdate)}
         
 
 
-       this.images.cashier.blinds.text.text = info.currency_per_chip*info.small_blind+'/'+info.currency_per_chip*info.big_blind
+       this.images.cashier.currency.text.text = 'Blinds:'
+       this.images.cashier.blinds.text.text = info.currency_per_chip*info.small_blind+'/'+info.currency_per_chip*info.big_blind + ' '+info.currency
+       
          this.images.cashier.tableNameValue.text.text = info.table_name
         this.images.cashier.tableMinValue.text.text = info.currency_per_chip*info.table_min
         this.images.cashier.tableMaxValue.text.text = info.currency_per_chip*info.table_max
@@ -10771,8 +10773,6 @@ socket.emit('get_add_chips_info')
 }
 
 
-
-       this.images.cashier.currency.text.text = info.currency+':'
 
 /*
        var autoRebuyFlagValue = self.getPreactionData('autorebuy')
@@ -10836,7 +10836,7 @@ this.storeActiveStages = function(){
     }
     return activeStages}
 
-this.restoreActiveStages=function(activeStageArray){
+this.restoreActiveStages = function(activeStageArray){
 
 //disable mouse events for all stages
     for(var i = 0;i<this.arrayOfParentsOfStageAndOfContainerArray.length;i++){
@@ -12623,8 +12623,6 @@ var stagesToUpdate = []
 
         self.updateStages(stagesToUpdate)
  }  ) 
-
-
 
 
 //round ends, all hole cards are shown
