@@ -134,7 +134,7 @@ $(function() {
         , top: calculateTop()
         })
         .stop(true, true)
-        .show('fade', 400);
+        .show('fade', 250);
       if (! columns_resized) {
         $lobby.find('#table_list').dataTable().fnAdjustColumnSizing();
         columns_resized = true;
