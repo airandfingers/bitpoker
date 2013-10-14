@@ -76,9 +76,10 @@ title += ' - Logged in as ' + username;
         <input type="hidden" id="server_values"
                data-table_state="<%= table_state %>"\
                data-table_name="<%= table_name %>"\               
-               data-table_state_url="/table_state/<%= table_id %>"
-               data-preferences_url="/preferences/<%= table_id %>"
-               data-room_state="<%= room_state %>"
+               data-table_state_url="/table_state/<%= table_id %>"\
+               data-preferences_url="/preferences/<%= table_id %>"\
+               data-room_state="<%= room_state %>"\
+               data-quick_play="<%= quick_play %>"
         />
 
         <% include plugins %>
