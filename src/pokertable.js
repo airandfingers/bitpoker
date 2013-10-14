@@ -7948,9 +7948,9 @@ self.images.preactions.allInUnchecked.image.onClick = function(){
   var allInAmount = data.currentStackSizes[user] + data.currentBetSizes[user]
   var callAllInAmount = data.currentStackSizes[user] - data.currentBetSizes[user]
 
-  self.setPreactionData('hand', 'raise', allInAmount, setPreactionDataOptions)
-    self.setPreactionData('hand', 'bet', allInAmount, setPreactionDataOptions)
-     self.setPreactionData('hand', 'call', callAllInAmount, setPreactionDataOptions)
+  self.setPreactionData('hand', 'raise', data.all_in, setPreactionDataOptions)
+    self.setPreactionData('hand', 'bet', data.all_in, setPreactionDataOptions)
+  //   self.setPreactionData('hand', 'call', callAllInAmount, setPreactionDataOptions)
 
         self.updateUserOptionsBasedOnFlagsAndPreactions()
 }
