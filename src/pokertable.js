@@ -252,14 +252,13 @@ this.gameState.act = {}
  this.gameState.street = {}
     this.gameState.once = {}
         this.gameState.hand = {}
+        this.gameState.permanent = {}
 
         this.gameState.seats = []
 
         for(var i = 0;i<this.gameState.numSeats;i++){
              this.gameState.seats[i]= {}
              this.gameState.seats[i].displayMessageType = 'openSeat'
-             this.gameState.seats[i].toAct = false
-               this.gameState.seats[i].inHand = false
                this.gameState.seats[i].act = {}
              this.gameState.seats[i].once = {}
             this.gameState.seats[i].street = {}
@@ -521,7 +520,8 @@ this.images.Item.prototype.addBootstrapButton = function (id, buttonText, bootst
 if(!bootstrapButtonOptions){var bootstrapButtonOptions = {}}
   var options = _.clone(bootstrapButtonOptions)
 
-  console.log('addBootstrapButton called');console.log(this)
+ // console.log('addBootstrapButton called');console.log(this)
+
 var stageNumber = this.position.z.stage
 var parentOfStage = self.arrayOfParentsOfStageAndOfContainerArray[stageNumber]
 $('#'+id).remove()//remove any previous instances of this ID
@@ -1421,7 +1421,7 @@ function endAnimations(){
 function shouldAnimate(){
 
 //if in hand
-if(self.gameState.seats[seatNum].inHand !== false){return false}
+if(self.getPreactionData('inHand', {seat:options.seatNum}) === true){return false}
   //if seat is users
   if(seatObject.rotatedSeatNumber === self.gameState.userSeatNumber){
   if ( !(_.isArray(self.gameState.holeCards)&&self.gameState.holeCards.length >0 ) ){return false}//if hovered seat is users
@@ -5478,7 +5478,7 @@ if(betSize>self.gameState.maxBet){return self.gameState.maxBet}
         options.update = false
         options.displayChipStackSize = true
         var stagesToUpdate = []
-  self.gameState.seats[seatNumber].inHand = true
+        self.setPreactionData('hand', 'inHand', {seat:seatNumber})
 
 stagesToUpdate.push(  this.displayChipStack(betSize, this.images.seats[seatNumber], options ) )
 
@@ -6425,8 +6425,8 @@ options.update = update
     }
 
         this.displayHoleCards = function (hand,seatNumber, options){
-          self.gameState.seats[seatNumber].inHand = true
 
+self.setPreactionData('hand', 'inHand', {seat:seatNumber})
           if(!options){var options = {}}
             var update  = options.update
           options.update = false
@@ -7585,7 +7585,7 @@ this.queueExpirationFunction = function(expirationTrigger, actionFunction, optio
 if(!options){var options = {}}
 
 //if seat number is specified we push the function intot eh player's thing though normally it wont matter
-  if(_.isNumber(options.expirationPlayerNumber)){var expirationObject = this.gameState.seats[options.expirationPlayerNumber][expirationTrigger]}
+  if(_.isNumber(options.seat)){var expirationObject = this.gameState.seats[options.seat][expirationTrigger]}
 else{var expirationObject = this.gameState[expirationTrigger]}
 
 //if array we just push
@@ -7598,14 +7598,15 @@ else if(_.isFunction(expirationObject.onEnd)){//if function we turn it into arra
 this.setPreactionData = function(expirationType, actionType, value, options) {
 
 if(!options){var options = {}}
-if(!_.isNumber(options.playerNumber)){
-if(!_.isNumber(this.gameState.userSeatNumber)){console.log( 'shouldnt be able to set preaction data but did');return}
-  var playerNumber = this.gameState.userSeatNumber
-}
-else{var playerNumber = options.playerNumber}
+  if(options.seat === 'table'){}
+else if(!_.isNumber(options.seat)) {var seat = this.gameState.userSeatNumber}
+  else{var seat = options.seat}
 
-var gameStateSeatObject = this.gameState.seats[playerNumber]
-var preactionOptions = self.getPreactionOptionValues()
+if(_.isNumber(seat)){var gameStateSeatObject = this.gameState.seats[seat]}
+  else{var gameStateSeatObject = self.gameState}
+
+
+//var preactionOptions = self.getPreactionOptionValues()
 
 var expirationTypesToSet = []
 var otherActionTypesToSet = []
@@ -7660,9 +7661,12 @@ setValue(expirationTypesToSet, otherActionTypesToSet, otherActionValue)
 
 setValue(expirationTypesToSet, actionType, value)
 
-console.log('setPreactionData completed for action: ' +actionType +' and expiration: '+expirationType+' and value of:'+value)
-console.log(gameStateSeatObject[expirationType][actionType])
+/*
+console.log('setPreactionData completed for action: ' +actionType +' and expiration: '+expirationType+' and value of: '+value)
+console.log(gameStateSeatObject)
 
+console.log(gameStateSeatObject[expirationType][actionType])
+*/
 
 function setValue(expirationTypes, actionTypes, value){
 
@@ -7672,7 +7676,7 @@ if(_.isString(actionTypes)){
  if(options.server === true && _.indexOf(serverActionsSet, actionTypes) === -1)    {
   socket.emit('set_flag',actionTypes, value)
    serverActionsSet.push(actionTypes)// push value to make sure we dont send to server
-}
+}//sending to server
 else if(options.server !== true) {gameStateSeatObject[expirationTypes][actionTypes] = value}
  }//if actionTypes is a string
    else if(_.isArray(actionTypes)){// if actionType is array
@@ -7691,76 +7695,148 @@ for(var i = 0;i<expirationTypes.length;i++){setValue(expirationTypes[i], actionT
 }
 
  //returns once value, then street, then hand
-this.getPreactionData = function(actionType, checkFunction){
+this.getPreactionData = function(actionType, options){
 
-var seat = self.gameState.userSeatNumber
+if(actionType === 'all_in'){console.log('GETTING PREACTION DATA FOR : '+actionType)}
 
-if(!_.isFunction(checkFunction)){var checkFunction = function(value){
-//if(_.isUndefined(value)){return false}
- // if(_.isNaN(value)){return false}
+if(!options){var options = {}}
+
+if(options.seat === 'table'){}
+else if(!_.isNumber(options.seat) || _.isNaN(options.seat)){
+var seat = self.gameState.userSeatNumber}
+else{var seat = options.seat}
+
+if(!_.isNumber(seat)){var gameStateSeatObject = self.gameState}
+  else{var gameStateSeatObject = self.gameState.seats[seat]}
+
+if(!_.isFunction(options.checkFunction)){
+  var checkFunction = function(value, flagsObject){
+
+if(actionType === 'raise' || actionType === 'bet' || actionType === 'call' 
+   || actionType === 'all_in' || actionType === 'call_any')
+{
 
 var preactionOptionData = self.getPreactionOptionValues()
 
+//MAKE IT SO PREACTION ALWAYS RETURNS FALSE IF THE VALUE IS NOT ALLOWED
+  if(!_.isObject(preactionOptionData) || _.isEmpty(preactionOptionData) ){return}
+else if( _.isNaN(preactionOptionData[actionType]) || preactionOptionData[actionType] === false ){ return undefined}
+else if(!_.isNumber(preactionOptionData[actionType]) && preactionOptionData[actionType] !== true){return undefined}
+
+//call_any does not use numbers
+ if(actionType === 'call_any'){
+if(flagsObject['call'] === true){return true}
+  else{return undefined}
+}//if 'call_any' flag
+
+    //if 'all_in' flag
+else if(actionType === 'all_in'){
+var currentBetSizes = self.getCurrentBetSizes()
+var currentStackSizes = self.getCurrentStackSizes()
+
+  console.log('attempting to fetch all-in actiontype')
+  if(!_.isNumber(preactionOptionData[actionType])){return undefined}
+    else if (preactionOptionData[actionType] < currentBetSizes[seat] + currentStackSizes[seat]){
+
+console.log(preactionOptionData)
+console.log(currentBetSizes)
+console.log(currentStackSizes)
+console.log('seat = ' + seat)
+      throw 'all_in value not the same as calculated from table'
+    }
+  var raiseFlag  = flagsObject.raise
+
+if(!_.isNumber(raiseFlag)){return undefined}
+else if(raiseFlag < preactionOptionData[actionType]) {return undefined}
+
+var betFlag = flagsObject.bet
+
+var highBet = self.getHighBet()
+
+
+if(highBet > currentBetSizes[seat] ){
+  return true
+ }//if NOT the highest bet we need to have just raise (which we checked for above) to qualify for all-in flag
+
+else if(highBet === currentBetSizes[seat]){
+  if(!_.isNumber(betFlag)){return}
+    else if(betFlag < preactionOptionData[actionType]){return}
+      else{return true}
+}//if highbet is the player were checking
+
+}//if checking for all_in flag
+
+   
+  else if(value === true){return value}
+  else if(_.isNumber(value) && _.isNumber(preactionOptionData[actionType]) && value >= preactionOptionData[actionType] ){return value}
+    else {return undefined}
+
+  }//if preaction value is something that has to do with a number, such as raise, bet, or call
+
+else if(_.isUndefined(value)){return value}
+ else if(_.isNaN(value)){return value}
+
 //if autorebuy
-if(actionType === 'autorebuy'){
+else if(actionType === 'autorebuy'){
   console.log('checking autorebuy in preactiondata, value = ' +value)
   console.log(typeof value)
   console.log(_.isNumber(value))
-  console.log(value>0)
-if(_.isNumber(value)  && value > 0 ){return true}
-else{return false}
+  console.log(value > 0)
+if(_.isNumber(value) && value > 0 ){return true}
+else{return}
 }
 
+else if(actionType === 'toAct'){
+if(!_.isNumber(value)){return} 
+  else if(value >= 0 && value < self.gameState.numSeats){return value}
+else{console.log('toAct = ' + value);throw 'inappropriate number on toAct flag';return}
+}
 
-//if turn has not been dealt
-if(self.isItemAddedToStage(self.images.community[3])){
-var minimumNumberValue = self.gameState.bigBlind
-}//turn not dealt
+//else if(value === true || _.isNumber(value)){return value}
 
-else{//if turn dealt
-  var minimumNumberValue = self.gameState.bigBlind/2
-}//if turn dealt
+else{return value}
 
-if(!preactionOptionData || _.isEmpty(preactionOptionData)){}
-else{//if preactionOptionData exists
-  /*
-if(actionType === 'raise' ){
-  if(preactionOptionData.check === true){console.log('attempted to retreive raise preaction data when raise option should not be available'); return false}
-   }
-   else if(actionType === 'bet'){
-    if(preactionOptionData.check === false){console.log('attempted to retreive bet preaction data when bet option should not be available'); return false}
-   }
-*/
-    if( actionType === 'call'){
-if(preactionOptionData.check === false){minimumNumberValue = preactionOptionData.call}
-   }
-   else if( actionType === 'check' ||actionType === 'call_any'||actionType === 'fold' ){minimumNumberValue = NaN  }
-}// preaction optiondata exists
-  if(_.isNumber(value) && value < minimumNumberValue ){return false}
-
- return true
 }//checkFunction
 
 
 
 }//assign default checkFunction
+else{var checkFunction = options.checkFunction}
 
-var gameStateSeatObject = self.gameState.seats[seat]
-console.log('get preaction data called')
-console.log(gameStateSeatObject)
+//console.log('getPreactionData called for actionType' + actionType)
+//console.log(gameStateSeatObject)
 
 //check in flags
+var actValue = gameStateSeatObject.act[actionType]
 var streetValue = gameStateSeatObject.street[actionType]
 var onceValue = gameStateSeatObject.once[actionType]
 var handValue = gameStateSeatObject.hand[actionType]
 var permanentValue = gameStateSeatObject.permanent[actionType]
+/*
+if(checkFunction(actValue, gameStateSeatObject.act)){var data = {action:actionType, value:actValue, expiration:'street'}}
+ else if(checkFunction(streetValue,  gameStateSeatObject.street)){var data = {action:actionType, value:streetValue, expiration:'street'}}
+else  if(checkFunction(onceValue,  gameStateSeatObject.once)){var data = {action:actionType, value:onceValue, expiration:'once'}}
+else if(checkFunction(handValue,  gameStateSeatObject.hand)){var data = {action:actionType, value:handValue,expiration: 'hand'}}
+ else if(checkFunction(permanentValue,  gameStateSeatObject.permanent)){var data = {action:actionType, value:permanentValue, expiration:'permanent'}}
+*/
 
- if(!_.isUndefined(streetValue)&&!_.isNaN(streetValue)&&checkFunction(streetValue)){var data = {action:actionType, value:streetValue, expiration:'street'}}
-else  if(!_.isUndefined(onceValue)&&!_.isNaN(onceValue)&&checkFunction(onceValue)){var data = {action:actionType, value:onceValue, expiration:'once'}}
-else if(!_.isUndefined(handValue)&&!_.isNaN(handValue)&&checkFunction(handValue)){var data = {action:actionType, value:handValue,expiration: 'hand'}}
- else if(!_.isUndefined(permanentValue)&&!_.isNaN(permanentValue)&&checkFunction(permanentValue)){var data = {action:actionType, value:permanentValue, expiration:'permanent'}}
+var actProcessedValue = checkFunction(actValue, gameStateSeatObject.act)
+var streetProcessedValue = checkFunction(streetValue, gameStateSeatObject.street)
+var onceProcessedValue = checkFunction(onceValue, gameStateSeatObject.once)
+var handProcessedValue = checkFunction(handValue, gameStateSeatObject.hand)
+var permanentProcessedValue = checkFunction(permanentValue, gameStateSeatObject.permanent)
 
-  else{var data =  {}}
+var useValue = function(val){
+  if(_.isUndefined(val) || _.isNull(val) || _.isNaN(val)){return false}
+else{return true}
+}
+
+if(useValue(actProcessedValue)){var data = actProcessedValue}
+ else if(useValue(streetProcessedValue)){var data = streetProcessedValue}
+else  if(useValue(onceProcessedValue)){var data = onceProcessedValue}
+else if(useValue(handProcessedValue)){var data = handProcessedValue}
+ else if(useValue(permanentProcessedValue)){var data = permanentProcessedValue}
+
 
 //maybe do this later, not sure if it should be done yet
 /*
@@ -7769,9 +7845,14 @@ if(_.isNumber(data.streetValue)){
 
 }
 */
-console.log('getPreactionDAta for '+actionType+' returning:')
-console.log(data.value)
-return data.value
+//console.log('getPreactionData for '+actionType+' returning:')
+//console.log(data.value)
+
+if(actionType === 'toAct' && !_.isNumber(data)){
+  console.log('toAct not a number, its  = ' + data)
+}
+
+return data
 }
 
 this.getHighBet = function(){
@@ -7862,8 +7943,8 @@ self.images.preactions.checkChecked.image.onClick = function(){
 }
 //ALL-IN
 self.images.preactions.allInUnchecked.image.onClick = function(){
-  var allIn = self.getPreactionOptionValues().allIn
-  self.setPreactionData('hand', 'raise',allIn, setPreactionDataOptions)
+  var allIn = self.getPreactionOptionValues().all_in
+  self.setPreactionData('hand', 'raise', allIn, setPreactionDataOptions)
     self.setPreactionData('hand', 'bet', allIn, setPreactionDataOptions)
 
         self.updateUserOptionsBasedOnFlagsAndPreactions()
@@ -7906,20 +7987,29 @@ var highBet = self.getHighBet()
  var gameStateSeatObject = self.gameState.seats[userSeat]
  var justActed =  setJustActedOrPassNullToGetJustActed()
 
+var getMinBet = function(){
+
+if(self.isItemAddedToStage(self.images.community[3])){var minBet = self.gameState.bigBlind/2}
+  else{var minBet = self.gameState.bigBlind}
+
+    if(!_.isNumber(minBet) || _.isNaN(minBet)){
+      console.log('minbet not a number = '+minBet);
+      console.log(self.gameState);
+    }
+
+  return minBet
+
+}
 
 var isHighBetNonUser = function() {return currentBetSizes[userSeat] === highBet}
 var getUserStackSize = function(){return currentStackSizes[userSeat]}
 var getUserBet = function(){return currentBetSizes[userSeat]}
   var getPlayerToAct = function(){
-    console.log('getting player to act number')
-    var numSeats = self.gameState.numSeats
-    console.log(numSeats)
-_.each(_.range(numSeats) , function(seatNumber){
-if(self.gameState.seats[seatNumber].toAct === true){console.log('returning ' +seatNumber);return seatNumber}//if player is to act return the number
-})//iterate through and find playertoact
 
-return (justActed + 1 + numSeats)%numSeats
+var toAct = self.getPreactionData('toAct', {seat:'table'})
+if(!_.isNumber(toAct)){toAct = justActed}
 
+return playerToAct
 }//gets the player to act
 var getMaximumAllInBetSizes = function(){
 
@@ -7940,39 +8030,55 @@ return maxSizes
 
 
  var highBet = self.getHighBet();var userBet = getUserBet(); var userStackSize = getUserStackSize();
- var playerToAct = getPlayerToAct(); var maxAllInSizes = getMaximumAllInBetSizes()
+ var playerToAct = getPlayerToAct(); var maxAllInSizes = getMaximumAllInBetSizes(); var minBet = getMinBet()
 
+console.log('userBet = '+userBet + ', '+'userStackSize = ' +userStackSize)
 
-
-var allIn    = false
+var all_in    = false
 var call     = false
 var call_any = false
 var fold     = false
 var check    = false
 var raise    = false
 var bet      = false
+/*
+console.log('get preaction values called, preactiondata to act = ')
+console.log(self.getPreactionData('toAct', {seat:'table'}))
+console.log('get preaction values called, preactiondata inhand = ')
+console.log( self.getPreactionData('inHand', {seat:userSeat}))
+console.log('can player act = '+ canPlayerActDefaultsToUser(userSeat))
+console.log('minbet = '+minBet)
+*/
 
-if(canPlayerActDefaultsToUser(userSeat) === false || gameStateSeatObject.toAct !== false && gameStateSeatObject.inHand !== true ){}//display no options if user is all in
+if(canPlayerActDefaultsToUser(userSeat) === false ||  self.getPreactionData('toAct',{seat:'table'}) === userSeat 
+|| self.getPreactionData('inHand', {seat:userSeat}) !== true || !_.isNumber(minBet) 
+||_.compact(currentBetSizes).length === 0){}//display no options if user is all in
   else{
-    allIn = userStackSize + userBet //display all in option, disable later if not needed
+     all_in = userStackSize + userBet //set to false later if neceesary
   //display fold option
    fold = true
 call_any = true
 
-if(highBet>userBet){
+if(highBet > userBet){
 
-  if(highBet - userBet>=userStackSize){//if we need to put our whole stack in to call
+  if(highBet - userBet >= userStackSize){//if we need to put our whole stack in to call
 //display call option
      call = userStackSize
-     //disable  all-in option
-     allIn = false
+     all_in = false
   }//if facing all-in bet
 else{//if we do not need to go all in to call
-  call = highBet-userBet
+ 
+  call = highBet - userBet
+  raise = highBet - userBet + highBet
+  if(raise - highBet < minBet){raise = highBet  + minBet}
+  if(raise - userBet > userStackSize){raise = userStackSize + userBet}
 }//if not facing all-in bet
 
 }
 else if (highBet === userBet){
+ bet = minBet
+if(bet > userStackSize){bet = userStackSize}
+
   //display check option
   check = true
 }//if at least one highbet value is a non-user and is equal to user bet
@@ -8005,10 +8111,10 @@ if(highestBetToFace > userBet && highestBetToFace > highBet){call_any = true}
 
 }//if conditions are appropriate
 
-if(_.isNaN(allIn)){console.log(userStackSize)
+if(_.isNaN(all_in)){console.log(userStackSize)
 console.log(userBet)}
 
-var  data = {check:check, allIn:allIn, fold:fold, call:call, raise:raise, bet:bet, call_any:call_any}
+var  data = {check:check, all_in:all_in, fold:fold, call:call, raise:raise, bet:bet, call_any:call_any}
 console.log('preaction options as follows:')
 console.log(data)
 return data
@@ -8023,18 +8129,29 @@ var stagesToUpdate = []
 
 seat =  this.gameState.userSeatNumber
 var currentStackSizes = this.getCurrentStackSizes()
+var currentBetSizes = this.getCurrentBetSizes()
+
+/*
+console.log('detecginw WHETHER to display preaction options or not')
+console.log(self.getPreactionData('toAct',{seat:'table'}))
+console.log(self.getPreactionData('inHand', {seat:seat}))
+
+console.log(canPlayerActDefaultsToUser())
+
+console.log(canPlayerActDefaultsToUser())
+*/
+
 
   //we need to hide if we are to act
-if(!_.isNumber(seat) ||  this.gameState.seats[seat].toAct === true 
-  || this.gameState.seats[seat].inHand !== true 
-|| currentStackSizes[seat] <= 0 
-||  _.without(currentStackSizes, 0).length <=1 ){
+if(!_.isNumber(seat) ||   self.getPreactionData('toAct',{seat:'table'})  === seat 
+  || self.getPreactionData('inHand', {seat:seat}) !== true 
+|| currentStackSizes[seat] <= 0 || canPlayerActDefaultsToUser() === false
+ /*||  _.without(currentStackSizes, 0).length <=1 */){
  // console.log('hiding options')
 stagesToUpdate.push(this.hideChildren (this.images.preactions), options)
 }
+
 else{
-
-
 var preactionBackgroundX = this.images.fold.position.x
 var preactionBackgroundY = this.images.fold.position.y
 var preactionBackgroundWidth = this.images.betSlider.betSize.position.x + this.images.betSlider.betSize.size.x - this.images.fold.position.x
@@ -8102,27 +8219,33 @@ if(_.isNumber(preactionOptions.call)){
    stagesToUpdate.push ( addPreactionText(this.images.preactions.callUnchecked, this.images.preactions.callChecked, 'call '+callAmount))
 
 
-var checkIfCallIsValid = function(value){ if(_.isNumber(value)&&value === preactionOptions.call){return true}}
-if(this.getPreactionData('call', checkIfCallIsValid)){displayLastCheckedItem()}
+var checkIfCallIsValid = function(value){ if(_.isNumber(value) && value === preactionOptions.call){return true}}
+if(this.getPreactionData('call')){displayLastCheckedItem()}
   else{displayLastUncheckedItem()}
 
 }
 
-if(_.isNumber(preactionOptions.allIn)){
+if(_.isNumber(preactionOptions.all_in)){
 //console.log('displaying allin preaction option')
 stagesToUpdate.push (    addPreactionText(this.images.preactions.allInUnchecked, this.images.preactions.allInChecked, 'All-In'))
 
+/*
   var raiseValid = false
   var betValid = false
-  var checkIfRaiseOrBetIsValid = function(value){if(_.isNumber(value)&&value>=preactionOptions.allIn){return true}}
-if(this.getPreactionData('raise', checkIfRaiseOrBetIsValid)){raiseValid = true}
-if(this.getPreactionData('bet', checkIfRaiseOrBetIsValid)){betValid = true}
+  var checkIfRaiseOrBetIsValid = function(value){if(_.isNumber(value)&&value >= preactionOptions.all_in){return true}}
+if(this.getPreactionData('raise') >= currentStackSizes[seat] + currentBetSizes[seat]){raiseValid = true}
+if(this.getPreactionData('bet') >= currentStackSizes[seat]){betValid = true}
   //if bet on table, we only need raise to be true to display all in
 if(this.getHighBet() <= 0) {raiseValid  = true}
   else {betValid  = true}
-console.log('raise valid = ' +raiseValid+ ' , betVAlid = '+betValid)
+console.log('raise valid = ' +raiseValid+ ' , betValid = '+betValid)
+
 if(raiseValid === true && betValid === true){displayLastCheckedItem()}
   else{displayLastUncheckedItem()}
+    */
+
+  if(this.getPreactionData('all_in') ){displayLastCheckedItem()}
+    else{displayLastUncheckedItem()}
 
 }
 
@@ -8131,7 +8254,7 @@ if(preactionOptions.call_any === true){
 stagesToUpdate.push (    addPreactionText(this.images.preactions.callAnyUnchecked, this.images.preactions.callAnyChecked, 'Call Any'))
 
   var checkIfCallAnyIsValid = function(value){if(value===true){return true}}
-if(this.getPreactionData('call', checkIfCallAnyIsValid)){displayLastCheckedItem()}
+if(this.getPreactionData('call_any')){displayLastCheckedItem()}
   else{displayLastUncheckedItem()}
 
 }
@@ -8227,16 +8350,16 @@ return y
 
 
 
-this.clearExpirationData = function(expirationType, playerNumber, options){
+this.clearExpirationData = function(expirationType, seat, options){
 if(!options){var options = {}}
 
 if(expirationType !==  'act'){
-    this.clearExpirationData('act', playerNumber, options)
+    this.clearExpirationData('act', seat, options)
 if(expirationType !==  'once'){
-this.clearExpirationData('once', playerNumber, options)
+this.clearExpirationData('once', seat, options)
 if(expirationType !==  'street'){
-this.clearExpirationData('street', playerNumber, options)
-if(expirationType !==  'hand'){this.clearExpirationData('hand', playerNumber, options)}//if not hand
+this.clearExpirationData('street', seat, options)
+if(expirationType !==  'hand'){this.clearExpirationData('hand', seat, options)}//if not hand
 }//if not street
 
 }//if not once
@@ -8248,13 +8371,13 @@ var tableExpirationObject = self.gameState
 
 if(!_.isEmpty(tableExpirationObject)){clearExpirationObject(tableExpirationObject)}
 
-  if(!_.isNumber(playerNumber)){
-    if( _.isNumber(this.gameState.userSeatNumber)){var playerNumber = this.gameState.userSeatNumber}
+  if(!_.isNumber(seat)){
+    if( _.isNumber(this.gameState.userSeatNumber)){var seat = this.gameState.userSeatNumber}
       else{throw 'no player number'}
-    }//if playerNumber not given
+    }//if seat not given
 
-if(_.isNumber(playerNumber)){
-var playerSeatObject = self.gameState.seats[playerNumber]
+if(_.isNumber(seat)){
+var playerSeatObject = self.gameState.seats[seat]
 if(!_.isEmpty(tableExpirationObject)){clearExpirationObject(playerSeatObject)}
 }
 
@@ -8636,7 +8759,7 @@ else {return stagesToUpdateArray}
 
  this.displayHiddenCards =function(seatNumber, options){
   var stagesToUpdate = []
-     self.gameState.seats[seatNumber].inHand = true
+  self.setPreactionData('hand', 'inHand', true, {seat:seatNumber})
   stagesToUpdate.push(   this.displayChildren(this.images.seats[seatNumber].hiddenCards[0], options) )
   stagesToUpdate.push(    this.displayChildren(this.images.seats[seatNumber].hiddenCards[1], options) )
 
@@ -8827,7 +8950,7 @@ stagesToUpdate.push(this.hideChildren(this.images.community[i]))
         //reset data
    //            this.images.seats[i].shownCards[0].image = null
     //   this.images.seats[i].shownCards[1].image = null
-        this.gameState.seats[i].inHand = false
+         self.setPreactionData('hand', 'inHand', false, {seat:i})
      }
 stagesToUpdate.push(this.images.seats[0].hiddenCards[0].position.z.stage)
 stagesToUpdate.push(this.images.seats[0].shownCards[0].position.z.stage)
@@ -9785,7 +9908,7 @@ else{
             case 'countdown':
      stagesToUpdate.push(              this.displayChildren(this.images.seats[seatNumber].seat, options))
      //make sure player is toAct
-     if(self.gameState.seats[seatNumber].toAct === true){
+     if(self.getPreactionData('toAct',{seat:'table'})  === seatNumber){
         stagesToUpdate.push(             this.displayText(this.images.seats[seatNumber].countdown, options))
  stagesToUpdate.push(           this.hideChildren(this.images.seats[seatNumber].playerName, options))
       }
@@ -9969,7 +10092,8 @@ var stagesToUpdate = []
 
     this.playerToAct =function(seatNumber, timeoutInMS){
       self.gameState.seats[seatNumber].timeToActInMS = timeoutInMS
-         self.gameState.seats[seatNumber].toAct = true
+      self.setPreactionData('hand','toAct', seatNumber,{seat:'table'})
+        
 self.gameState.seats[seatNumber].displayMessageType = 'countdown'
 
         //function that will convert hex to RGB
@@ -10127,7 +10251,7 @@ var nextCounter = lastCompletedFillColorCounter+1
 //console.log('original time to act = ' + timeoutInMS)
 
 //check if we want to end our interval
-                if (self.gameState.seats[seatNumber].toAct === false)
+                if (  self.getPreactionData('toAct',{seat:'table'})  !== seatNumber)
                   {
                       clearInterval(countdown)
            stagesToUpdate.push( self.images.drawSeat(self.images.seats[seatNumber].seat, originalBorderColor, originalFillColor, originalMiddleDividerColor) )
@@ -11535,7 +11659,7 @@ var compactedStackSizes = _.compact(currentStackSizes)
 //console.log(currentStackSizes)
 //console.log(compactedStackSizes)
 
-if(!_.isNumber(seat)){throw 'user not seated'}
+if(!_.isNumber(seat)){return false}
 else if(currentStackSizes[self.gameState.userSeatNumber] <= 0){return false}
   else if (compactedStackSizes.length <= 0){return false}
 else if(compactedStackSizes.length <= 1  && self.getHighBet() <=  currentBetSizes[self.gameState.userSeatNumber] ){return false}
@@ -11653,7 +11777,7 @@ stagesToUpdate.push( self.hideChildren(self.images.sitOutNextBlind,options))
 }//if user is not pending sit out, and not sitting out
 
   //check if user is involved in hand and players can act
-             if(this.gameState.seats[self.gameState.userSeatNumber].inHand === true && canPlayerActDefaultsToUser() === true){
+             if(self.getPreactionData('inHand') === true && canPlayerActDefaultsToUser() === true){
 
               if(currentStackSizes[self.gameState.userSeatNumber] > 0){
                                       //fold to any bet button on or off
@@ -11858,7 +11982,7 @@ else if (!_.isUndefined(newPreferenceObject[index].value)){currentPreferenceObje
 this.updateLocalGameDataBasedOnServerPlayerObject = function(player){
   if(player.is_you == true){self.gameState.userSeatNumber = player.seat}
 
-var setPreactionDataOptions = {server:false, playerNumber:player.seat}
+var setPreactionDataOptions = {server:false, seat:player.seat}
 
     //updated local based on flags
 if(_.isObject(player.flags)){
@@ -12058,7 +12182,7 @@ var setJustActedOrPassNullToGetJustActed = function(playerNumber){
 
 if(_.isNumber(playerNumber) && !_.isNaN(playerNumber)){
   self.gameState.street.justActed = playerNumber
-   self.gameState.seats[playerNumber].toAct = false
+  self.setPreactionData('hand','toAct', false, {seat:'table'})
 }
 
 else{return self.gameState.street.justActed}
@@ -12395,7 +12519,7 @@ socket.on('hands_dealt', function(players, tableInfo){
 socket.on('pending_sit_out', function(value){
 
 if(!_.isNumber( self.gameState.userSeatNumber)){return}
-self.gameState.seats[self.gameState.userSeatNumber].flags['pending_sit_out'] = value
+  self.setPreactionData('permanent','pending_sit_out', value)
 self.updateUserOptionsBasedOnFlagsAndPreactions()
 
 
@@ -12481,7 +12605,7 @@ self.clearExpirationData('act', seatNum)
             foldSound.play()
         self.hideHoleCards(seatNum)
       //  self.hideBet(seatNum)
-        self.gameState.seats[seatNum].inHand = false
+        self.setPreactionData('hand', 'inHand', false)
         if(player.seat == self.gameState.userSeatNumber){
             self.hideChildren(self.images.foldToAnyBet)
             self.hideChildren(self.images.foldToAnyBetOn)
@@ -12491,7 +12615,7 @@ self.clearExpirationData('act', seatNum)
             case 'check':
             var checkSound = createjs.Sound.createInstance(self.images.sources.checkSound)
             checkSound.play()
-               self.gameState.seats[seatNum].inHand = true
+               self.setPreactionData('hand', 'inHand', true)
             break;
 
             case'bet':
@@ -12499,7 +12623,7 @@ self.clearExpirationData('act', seatNum)
             betSound.play()
         //    self.displayChipStack(player.current_bet, self.images.seats[player.seat], self.images.seats[player.seat].firstChip.position.x,self.images.seats[player.seat].firstChip.position.y )
             self.playerPutsChipsInPot(seatNum, player.current_bet, player.chips)
-               self.gameState.seats[seatNum].inHand = true
+               self.setPreactionData('hand', 'inHand', true)
             break;
 
             case'call':
@@ -12507,7 +12631,7 @@ self.clearExpirationData('act', seatNum)
             betSound.play()
       //       self.displayChipStack(player.current_bet, self.images.seats[player.seat], self.images.seats[player.seat].firstChip.position.x,self.images.seats[player.seat].firstChip.position.y )
             self.playerPutsChipsInPot(seatNum,player.current_bet, player.chips)
-               self.gameState.seats[seatNum].inHand = true
+               self.setPreactionData('hand', 'inHand', true)
              break;
 
             case 'raise':
@@ -12515,7 +12639,7 @@ self.clearExpirationData('act', seatNum)
             betSound.play()
        //      self.displayChipStack(player.current_bet, self.images.seats[player.seat], self.images.seats[player.seat].firstChip.position.x,self.images.seats[player.seat].firstChip.position.y )
             self.playerPutsChipsInPot(seatNum,player.current_bet, player.chips)
-               self.gameState.seats[seatNum].inHand = true
+               self.setPreactionData('hand', 'inHand', true)
             break;
 
             case'post_blind':
@@ -12523,15 +12647,16 @@ self.clearExpirationData('act', seatNum)
             betSound.play()
       //      self.displayChipStack(player.current_bet, self.images.seats[player.seat], self.images.seats[player.seat].firstChip.position.x,self.images.seats[player.seat].firstChip.position.y )
             self.playerPutsChipsInPot(seatNum,player.current_bet, player.chips)
-              self.gameState.seats[seatNum].inHand = true
+              self.setPreactionData('hand', 'inHand', true)
             break;
 
         }
             
              setJustActedOrPassNullToGetJustActed(seatNum)
+                  self.clearExpirationData('act', player.seat)
              //clear once for user
              if(seatNum === self.gameState.userSeatNumber){
-              self.gameState.seats[self.gameState.userSeatNumber].once = {}
+              self.clearExpirationData('once', player.seat)
         //unbind scroll wheel events
          $(self.arrayOfParentsOfStageAndOfContainerArray[self.images.betSlider.vertical.position.z.stage].stage.canvas).unbind('mousewheel')
 //$('#betSizeDiv').unbind('mousewheel')
@@ -12881,8 +13006,6 @@ var stagesToUpdate = []
 
 for(var i = 0;i<self.gameState.seats.length;i++){
   self.clearExpirationData('hand', i)
-  self.gameState.seats[i].inHand = false
-  self.gameState.seats[i].toAct = false
 }
 self.updateUserOptionsBasedOnFlagsAndPreactions()
          self.winners(players)
