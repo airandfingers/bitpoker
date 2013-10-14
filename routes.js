@@ -633,6 +633,7 @@ module.exports = (function () {
           redirectIfUnauthenticated,
           function(req, res, next) {
     var table_id = req.params.id
+      , quick_play = req.query.quick_play
       , table = Table.getTable(table_id)
       , table_name = table.name
       , username = req.user.username;
@@ -647,8 +648,9 @@ module.exports = (function () {
       , username: username
       , game: table.game
       , hide_navbar: true
-      , room_state : JSON.stringify(room_state)
+      , room_state: JSON.stringify(room_state)
       , table_state: JSON.stringify(table_state)
+      , quick_play: _.isString(quick_play)
       , dont_include_styles: true
       });
     }
