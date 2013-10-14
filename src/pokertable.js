@@ -7702,8 +7702,7 @@ if(actionType === 'all_in'){console.log('GETTING PREACTION DATA FOR : '+actionTy
 if(!options){var options = {}}
 
 if(options.seat === 'table'){}
-else if(!_.isNumber(options.seat) || _.isNaN(options.seat)){
-var seat = self.gameState.userSeatNumber}
+else if(!_.isNumber(options.seat) || _.isNaN(options.seat)){var seat = self.gameState.userSeatNumber}
 else{var seat = options.seat}
 
 if(!_.isNumber(seat)){var gameStateSeatObject = self.gameState}
@@ -7719,6 +7718,7 @@ if(actionType === 'raise' || actionType === 'bet' || actionType === 'call'
 var preactionOptionData = self.getPreactionOptionValues()
 var currentBetSizes = preactionOptionData.currentBetSizes
 var currentStackSizes = preactionOptionData.currentStackSizes
+var maxAllInSizes = preactionOptionData.maxAllInSizes
 
 //MAKE IT SO PREACTION ALWAYS RETURNS FALSE IF THE VALUE IS NOT ALLOWED
   if(!_.isObject(preactionOptionData) || _.isEmpty(preactionOptionData) ){return}
@@ -7734,7 +7734,21 @@ if(flagsObject['call'] === true){return true}
     //if 'all_in' flag
 else if(actionType === 'all_in'){
 
-  console.log('attempting to fetch all-in actiontype')
+
+var userAllIn = preactionOptionData[actionType]
+var compactedMaxSizes = _.compact(maxAllInSizes.splice(seat,1))
+var allInThreshhold = userAllIn
+
+//get highestNonUserStack
+var highestNonUserStack = 0
+for(var i = 0;i<compactedMaxSizes.length;i++){
+if(compactedMaxSizes[i] > highestNonUserStack){highestNonUserStack = compactedMaxSizes[i] }
+}
+
+if(highestNonUserStack < userAllIn){allInThreshhold = userAllIn}
+
+
+  //console.log('attempting to fetch all-in actiontype')
   if(!_.isNumber(preactionOptionData[actionType])){return undefined}
     else if (preactionOptionData[actionType] < currentBetSizes[seat] + currentStackSizes[seat]){
 
@@ -7744,13 +7758,14 @@ console.log(currentStackSizes)
 console.log('seat = ' + seat)
       throw 'all_in value not the same as calculated from table'
     }
+
+
   var raiseFlag  = flagsObject.raise
 
 if(!_.isNumber(raiseFlag)){return undefined}
-else if(raiseFlag < preactionOptionData[actionType]) {return undefined}
+else if(raiseFlag < allInThreshhold) {return undefined}
 
 var betFlag = flagsObject.bet
-
 var highBet = self.getHighBet()
 
 
@@ -7760,7 +7775,7 @@ if(highBet > currentBetSizes[seat] ){
 
 else if(highBet === currentBetSizes[seat]){
   if(!_.isNumber(betFlag)){return}
-    else if(betFlag < preactionOptionData[actionType]){return}
+    else if(betFlag < allInThreshhold){return}
       else{return true}
 }//if highbet is the player were checking
 
@@ -8126,6 +8141,7 @@ var  data = {check:check, all_in:all_in, fold:fold
 ,call:call, raise:raise, bet:bet, call_any:call_any
 ,currentStackSizes:currentStackSizes
 ,currentBetSizes:currentBetSizes
+,maxAllInSizes:maxAllInSizes
 }
 console.log('preaction options as follows:')
 console.log(data)
