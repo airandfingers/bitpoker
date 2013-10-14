@@ -264,7 +264,8 @@ this.gameState.act = {}
              this.gameState.seats[i].once = {}
             this.gameState.seats[i].street = {}
              this.gameState.seats[i].hand = {}
-             this.gameState.seats[i].flags = {}
+             this.gameState.seats[i].permanent = {}
+
          //     this.gameState.seats[i].originalSeatNumber = i
        //        this.gameState.seats[i].rotatedSeatNumber = i
        //         this.gameState.seats[i].nonRotatedSeatNumber = i
@@ -851,8 +852,8 @@ for(var i = 0;i<messages.length;i++){
        }
   
     this.events.foldToAnyBetClick = function(event){
-        self.setPreactionData('hand', 'check', true)
-         self.setPreactionData('hand', 'fold', true)
+        self.setPreactionData('hand', 'check', true, {server:true})
+         self.setPreactionData('hand', 'fold', true, {server:true})
          self.updateUserOptionsBasedOnFlagsAndPreactions()
      //   socket.emit('set_flag','fold',true)
       //  socket.emit('set_flag','check',true)
@@ -861,8 +862,8 @@ for(var i = 0;i<messages.length;i++){
 
     this.events.foldToAnyBetOnClick = function (event){
     //  console.log('this.events.foldToAnyBetOnClick called')
-                self.setPreactionData('hand', 'check', false)
-         self.setPreactionData('hand', 'fold', false)
+                self.setPreactionData('hand', 'check', false, {server:true})
+         self.setPreactionData('hand', 'fold', false, {server:true})
  self.updateUserOptionsBasedOnFlagsAndPreactions()
      //   socket.emit('set flag','fold',false)
      //   socket.emit('set flag','check',false)
@@ -1182,9 +1183,17 @@ defaults.seatNum =  defaults.seatObject.nonRotatedSeatNumber
 defaults.animationTime = 600
   }
 
-console.log('seat mouse over event called for seat ' + defaults.seatNum)
-options = _.defaults(options, defaults)
 
+options = _.defaults(options, defaults)
+if(!_.isNumber(options.seatNum)){
+  console.log('error');
+  console.log(event)
+  console.log(options);
+  console.log(defaults)
+}
+
+
+console.log('seat mouse over event called for seat ' + options.seatNum)
 
 //console.log(event)
 var animationTime = options.animationTime
@@ -1790,8 +1799,8 @@ if( _.isNumber(preferenceSeat) && ( preferenceSeat === 0 || preferenceSeat === s
 
 this.events.userStands = function(){
 
-self.setPreactionData('hand', 'check', true)
-self.setPreactionData('hand', 'fold', true)
+self.setPreactionData('hand', 'check', true, {server:true})
+self.setPreactionData('hand', 'fold', true, {server:true})
 
 socket.emit('stand')
 
@@ -3062,10 +3071,10 @@ console.log(e)
             var shownCardY = 0.92
 
             //-----------------checkbox buttons---------------
-var checkBoxButtonSource = self.permanentPreferences.sourceObjects.value.checkBox
-var checkBoxButtonCheckedSource = self.permanentPreferences.sourceObjects.value.checkBoxChecked
-            var checkBoxButtonWidth = 100
-      checkBoxButtonHeight = checkBoxButtonSource.height    //  var checkBoxButtonHeight = 13
+      var checkBoxButtonSource = self.permanentPreferences.sourceObjects.value.checkBox
+    var checkBoxButtonCheckedSource = self.permanentPreferences.sourceObjects.value.checkBoxChecked
+       var checkBoxButtonWidth = 100
+     var checkBoxButtonHeight = checkBoxButtonSource.height    //  var checkBoxButtonHeight = 13
             var checkBoxButtonDistanceFromChat = 8
             var checkBoxButtonOffSetLeft = 2
            var  checkBoxButtonDistanceY = 3
@@ -3086,9 +3095,9 @@ var checkBoxButtonCheckedSource = self.permanentPreferences.sourceObjects.value.
             var distanceBetweenSeatsY = 123
 
             var firstRowY = 77
-            var secondRowY =153
+            var secondRowY = 153
             var thirdRowY = secondRowY + seatHeight + distanceBetweenSeatsY
-            var fourthRowY =371
+            var fourthRowY = 371
 
             var firstColumnX = 27
             var fifthColumnX = canvasWidth - firstColumnX - seatWidth
@@ -3103,12 +3112,12 @@ var currencyDisplayTopOffset = 0
 var currencyDisplaySizeAndFont = '16px ' + self.permanentPreferences.defaultFontType.value
 var currencyDisplayColor = 'white'
 
-
             var communityY = 220
             var distanceBetweenCommunityCards = 2
 
-            var dealerButtonWidth = 30
-            var dealerButtonHeight = 22
+var dealerButtonSource = self.permanentPreferences.sourceObjects.value.dealerButton
+            var dealerButtonWidth = dealerButtonSource.width
+            var dealerButtonHeight = dealerButtonSource.height
 
             var topRowSeatDealerButtonX = -dealerButtonWidth/3
             var topRowSeatDealerButtonY = seatHeight+dealerButtonHeight*.1
@@ -3159,18 +3168,18 @@ var currencyDisplayColor = 'white'
             var chatBoxWidth = seatWidth*1.4
             var initialChatBoxHeight = seatHeight/2.3
 
-            var absoluteChatDistanceFromSeatY = seatHeight/4
+            var absoluteChatDistanceFromSeatY = seatHeight/6
              var chatBoxBorderColor = '#FFFFFF'
              var chatBoxFontSize = 11
 
             //space between player's cards/seats, and chip images in play, relative to the upper left seat corner
             var bottomChipOffsetX = chipDiameter
-            var bottomChipOffsetY = -cardHeight*shownCardY - chipDiameter*1.5
+            var bottomChipOffsetY = - cardHeight*shownCardY - chipDiameter*1.5
             var leftChipOffsetX =  seatWidth + chipDiameter*1.5
             var leftChipOffsetY = chipDiameter/2
             var topChipOffsetX = seatWidth - chipDiameter
             var topChipOffsetY = seatHeight + chipDiameter*1.5
-            var rightChipOffsetX = -chipDiameter*1.5
+            var rightChipOffsetX = - chipDiameter*1.5
             var rightChipOffsetY = seatHeight - chipDiameter/2
 
             //cashier Button width and height
@@ -3179,10 +3188,8 @@ var currencyDisplayColor = 'white'
            var minCashierButtonWidth = 132
            var cashierButtonHeight = 52
 
-
 //distance between upper buttons
 var distanceBetweenUpperButtonHitAreasY = 3
-
 
             //define dimensions for upper right and upper left buttons
 
@@ -3530,12 +3537,16 @@ self.images.addCheckBoxButtonText(checkedItem, text, options)
            
      
       _.each(_.range(this.seats.length), function(i) {
-          var x = self.images.seats[i].seat.position.x
-          var y = self.images.seats[i].seat.position.y
-          var width = self.images.seats[i].seat.size.x
-          var height = self.images.seats[i].seat.size.y
-          self.images.seats[i].seat.image = new createjs.Shape()
- self.images.seats[i].seat.image.parentOfImageObject = self.images.seats[i].seat
+var playerSeatObject = self.images.seats[i]
+
+          var x = playerSeatObject.seat.position.x
+          var y = playerSeatObject.seat.position.y
+          var width = playerSeatObject.seat.size.x
+          var height = playerSeatObject.seat.size.y
+          playerSeatObject.seat.image = new createjs.Shape()
+ playerSeatObject.seat.image.parentOfImageObject = playerSeatObject.seat
+
+
 
 
 })
@@ -3594,8 +3605,6 @@ this.seats[i].openSeat.text.baseline = 'top'
 this.seats[i].openSeat.text.textAlign = 'center'
 this.seats[i].openSeat.text.maxWidth = this.seats[i].openSeat.size.x*.9
 this.seats[i].openSeat.textColor = "#FFFFFF"       
-
-
 
 
             //disabled Seats
@@ -3755,54 +3764,88 @@ var seatLocationMarginOfError = 1.1
              // -----------------player's chat -----------------
 
              _.each(_.range(this.seats.length), function(i) {
+var playerSeatObject = self.images.seats[i]
 
-        var chatX =  self.images.seats[i].seat.position.x +self.images.seats[i].seat.size.x/2 - chatBoxWidth/2  
-        var chatY = self.images.seats[i].seat.position.y - absoluteChatDistanceFromSeatY
-   self.images.seats[i].chat = new self.images.Item(chatX, chatY, chatBoxWidth, initialChatBoxHeight, self.gameState.zPositionData.playerBubbleChat)
+        var chatX =  playerSeatObject.seat.position.x + playerSeatObject.seat.size.x/2 - chatBoxWidth/2  
+        var chatY = playerSeatObject.seat.position.y - absoluteChatDistanceFromSeatY
+   playerSeatObject.chat = new self.images.Item(chatX, chatY, chatBoxWidth, initialChatBoxHeight, self.gameState.zPositionData.playerBubbleChat)
    
-   self.images.seats[i].chat.image = new createjs.Shape()
+   playerSeatObject.chat.image = new createjs.Shape()
 
    //----------function to redraw chat box anytime with a new width
-self.images.seats[i].chat.image.drawChat = function(width,numLines){
+playerSeatObject.chat.image.drawChat = function(width,numLines){
 
     //make sure width is <= maxWidth
-    if(width == undefined){var width = self.images.seats[i].chat.size.x}
-   else if(width>self.images.seats[i].chat.size.x){width = self.images.seats[i].chat.size.x}
+    if(width == undefined){var width = playerSeatObject.chat.size.x}
+   else if(width > playerSeatObject.chat.size.x){width = playerSeatObject.chat.size.x}
    //clear previous graphics
-   self.images.seats[i].chat.image.graphics.clear()
+   playerSeatObject.chat.image.graphics.clear()
    //define parent
-self.images.seats[i].chat.image.parentOfImageObject = self.images.seats[i].chat
+playerSeatObject.chat.image.parentOfImageObject = playerSeatObject.chat
 
 //get new relative X coordinates of chat box
-var x =   (self.images.seats[i].chat.size.x - width)/2
+var x =   (playerSeatObject.chat.size.x - width)/2
 var y = 0
-    self.images.seats[i].chat.image.snapToPixel = true
-self.images.seats[i].chat.image.graphics.setStrokeStyle(1,'round').beginStroke(chatBoxBorderColor).beginFill('#000000')
-.drawRoundRect(x, y - (numLines-1)*(chatBoxFontSize+1), width, self.images.seats[i].chat.size.y+(numLines-1)*(chatBoxFontSize+1),  self.images.seats[i].chat.size.y*.16)
+   playerSeatObject.chat.image.snapToPixel = true
+playerSeatObject.chat.image.graphics.setStrokeStyle(1,'round').beginStroke(chatBoxBorderColor).beginFill('#000000')
+.drawRoundRect(x, y - (numLines-1)*(chatBoxFontSize+1), width, playerSeatObject.chat.size.y+(numLines-1)*(chatBoxFontSize+1),  playerSeatObject.chat.size.y*.16)
 
 self.images.seats[i].chat.image.alpha = self.imageData.chatBoxAlpha
 
 //position image
- self.positionItemImage(self.images.seats[i].chat, {update:false})
+ self.positionItemImage(playerSeatObject.chat, {update:false})
 
 }//end drawchat function
 
 //player chat text
- self.images.seats[i].chat.text = new createjs.Text('', chatBoxFontSize+ 'px ' + self.permanentPreferences.defaultFontType.value, self.permanentPreferences.chatTextColor.value)
-self.images.seats[i].chat.text.x=self.images.seats[i].chat.position.x +  self.images.seats[i].chat.size.x/2 
- self.images.seats[i].chat.text.y= self.images.seats[i].chat.position.y
- self.images.seats[i].chat.text.baseline = 'top'
- self.images.seats[i].chat.text.textAlign = 'center'
- self.images.seats[i].chat.text.lineWidth =   self.images.seats[i].chat.size.x*.85
+ playerSeatObject.chat.text = new createjs.Text('', chatBoxFontSize+ 'px ' + self.permanentPreferences.defaultFontType.value, self.permanentPreferences.chatTextColor.value)
+playerSeatObject.chat.text.x = playerSeatObject.chat.position.x +  playerSeatObject.chat.size.x/2 
+playerSeatObject.chat.text.y = playerSeatObject.chat.position.y
+playerSeatObject.chat.text.baseline = 'top'
+playerSeatObject.chat.text.textAlign = 'center'
+playerSeatObject.chat.text.lineWidth =   playerSeatObject.chat.size.x*.85
 
  // self.images.seats[i].chat.text.lineHeight = chatBoxFontSize+1
  // self.images.seats[i].chat.text.maxWidth = self.images.seats[i].chat.size.x*.85
 
 
+//creating bubble chat popover divs
+if(!_.isArray(playerSeatObject.bubbleChats)) {playerSeatObject.bubbleChats = []}
+
+//we are going to create a div on top of each player's seat
+if(playerSeatObject.bubbleChats[0] instanceof self.images.Item !== true){
+playerSeatObject.bubbleChats[0] = new self.images.Item(playerSeatObject.chat.position.x, playerSeatObject.chat.position.y, playerSeatObject.chat.size.x , playerSeatObject.chat.size.y, playerSeatObject.chat.position.z)
+
+var divID = 'originalSeat'+ i + 'BubbleChat0'
+//remove previous versions
+$('#'+divID).remove()
+//get canvas div
+var seatDiv = self.arrayOfParentsOfStageAndOfContainerArray[playerSeatObject.seat.position.z.stage].div
+//append new item to div
+$(seatDiv).append('<div id = \"' + divID + '\"></div>')
+
+playerSeatObject.bubbleChats[0].image = $('#'+divID)[0]
+$(playerSeatObject.bubbleChats[0].image).addClass(self.css.nonVendor)
+
+self.positionItemImage(playerSeatObject.bubbleChats[0])
+
+$(playerSeatObject.bubbleChats[0].image).css({
+'z-index': 9999
+,'width': playerSeatObject.chat.size.x
+,'height':playerSeatObject.chat.size.y
+  // ,'pointer-events': 'none'
+ // ,'background':'#FFFFFF'
+})
+
+}//if we want to create images.Item
+
+console.log('player '+ i+' bubble chat, then chat items')
+console.log(playerSeatObject.bubbleChats[0])
+console.log(playerSeatObject.chat)
 
  })
 
-//assing seatObjectAncestor to all Items in self.images.seats
+//assign seatObjectAncestor to all Items in self.images.seats
  _.each(_.range(this.seats.length), function(seatNumber) {
 _.each(self.images.seats[seatNumber], function(value, index, element){
   
@@ -5404,11 +5447,10 @@ event.target.parentOfImageObject.messages.push('sit',event.target.parentOfImageO
 
      this.receiveTableState()
 
-
        this.images.setDefaultEvents()
        this.images.setDefaultMessages()
        this.gameState.itemsCreated = true
-      this.displayTableChatBox()
+
       console.log('this.create all items finished')
     }
      
@@ -7573,7 +7615,7 @@ var serverActionsSet = []
 //if value is false we start that type of action from a clean slate, clearing everything
 if(value === false || value === null || _.isUndefined(value)){
   value = false
-expirationTypesToSet.push('act', 'street', 'once','hand')
+expirationTypesToSet.push('act', 'street', 'once', 'hand', 'permanent')
 }
 
 else if(expirationType === 'act'){
@@ -7587,6 +7629,9 @@ else if(expirationType === 'once'){
 }
 else if(expirationType === 'hand'){
     expirationTypesToSet.push('act', 'street', 'once','hand')
+}
+else if(expirationType === 'permanent'){
+    expirationTypesToSet.push('act', 'street', 'once','hand', 'permanent')
 }
 else{expirationTypesToSet.push(expirationType)}
 
@@ -7615,7 +7660,7 @@ setValue(expirationTypesToSet, otherActionTypesToSet, otherActionValue)
 
 setValue(expirationTypesToSet, actionType, value)
 
-console.log('setPreactionData for ' +actionType +' and '+expirationType+' and value of:'+value+'completed')
+console.log('setPreactionData completed for action: ' +actionType +' and expiration: '+expirationType+' and value of:'+value)
 console.log(gameStateSeatObject[expirationType][actionType])
 
 
@@ -7624,8 +7669,11 @@ function setValue(expirationTypes, actionTypes, value){
   if (_.isString(expirationTypes)) {
     //if action type is string we have straighforward answer
 if(_.isString(actionTypes)){
- if(_.indexOf(serverActionsSet, actionTypes) === -1 && options.server !== false)    {socket.emit('set_flag',actionTypes, value);serverActionsSet.push(actionTypes)}
-if(options.local !== false) {gameStateSeatObject[expirationTypes][actionTypes] = value}
+ if(options.server === true && _.indexOf(serverActionsSet, actionTypes) === -1)    {
+  socket.emit('set_flag',actionTypes, value)
+   serverActionsSet.push(actionTypes)// push value to make sure we dont send to server
+}
+else if(options.server !== true) {gameStateSeatObject[expirationTypes][actionTypes] = value}
  }//if actionTypes is a string
    else if(_.isArray(actionTypes)){// if actionType is array
       //change appropriate value(s)
@@ -7638,8 +7686,8 @@ else if(_.isArray(expirationTypes)){// if expirationType is an array
 for(var i = 0;i<expirationTypes.length;i++){setValue(expirationTypes[i], actionTypes, value)}
 }//if expirationTypes is an array
 
-
 }//function setValue
+
 }
 
  //returns once value, then street, then hand
@@ -7648,6 +7696,9 @@ this.getPreactionData = function(actionType, checkFunction){
 var seat = self.gameState.userSeatNumber
 
 if(!_.isFunction(checkFunction)){var checkFunction = function(value){
+//if(_.isUndefined(value)){return false}
+ // if(_.isNaN(value)){return false}
+
 var preactionOptionData = self.getPreactionOptionValues()
 
 //if autorebuy
@@ -7665,6 +7716,7 @@ else{return false}
 if(self.isItemAddedToStage(self.images.community[3])){
 var minimumNumberValue = self.gameState.bigBlind
 }//turn not dealt
+
 else{//if turn dealt
   var minimumNumberValue = self.gameState.bigBlind/2
 }//if turn dealt
@@ -7684,22 +7736,31 @@ if(preactionOptionData.check === false){minimumNumberValue = preactionOptionData
    }
    else if( actionType === 'check' ||actionType === 'call_any'||actionType === 'fold' ){minimumNumberValue = NaN  }
 }// preaction optiondata exists
-  if(value === true || (_.isNumber(value) && value >= minimumNumberValue )){return true}}
+  if(_.isNumber(value) && value < minimumNumberValue ){return false}
+
+ return true
+}//checkFunction
 
 
 
 }//assign default checkFunction
 
+var gameStateSeatObject = self.gameState.seats[seat]
+console.log('get preaction data called')
+console.log(gameStateSeatObject)
 
 //check in flags
-var streetValue = self.gameState.seats[seat].street[actionType]
-var onceValue = self.gameState.seats[seat].once[actionType]
-var handValue = self.gameState.seats[seat].hand[actionType]
+var streetValue = gameStateSeatObject.street[actionType]
+var onceValue = gameStateSeatObject.once[actionType]
+var handValue = gameStateSeatObject.hand[actionType]
+var permanentValue = gameStateSeatObject.permanent[actionType]
 
-if(!_.isUndefined(streetValue)&&!_.isNaN(streetValue)&&checkFunction(streetValue)){var data = {action:actionType, value:streetValue, expiration:'street'}}
+ if(!_.isUndefined(streetValue)&&!_.isNaN(streetValue)&&checkFunction(streetValue)){var data = {action:actionType, value:streetValue, expiration:'street'}}
 else  if(!_.isUndefined(onceValue)&&!_.isNaN(onceValue)&&checkFunction(onceValue)){var data = {action:actionType, value:onceValue, expiration:'once'}}
 else if(!_.isUndefined(handValue)&&!_.isNaN(handValue)&&checkFunction(handValue)){var data = {action:actionType, value:handValue,expiration: 'hand'}}
-  else{var data =  false}
+ else if(!_.isUndefined(permanentValue)&&!_.isNaN(permanentValue)&&checkFunction(permanentValue)){var data = {action:actionType, value:permanentValue, expiration:'permanent'}}
+
+  else{var data =  {}}
 
 //maybe do this later, not sure if it should be done yet
 /*
@@ -7709,8 +7770,8 @@ if(_.isNumber(data.streetValue)){
 }
 */
 console.log('getPreactionDAta for '+actionType+' returning:')
-console.log(data)
-return data
+console.log(data.value)
+return data.value
 }
 
 this.getHighBet = function(){
@@ -7777,58 +7838,59 @@ self.images.preactions.callAnyUnchecked = callAnyPreactionItems.unchecked
 self.images.preactions.callAnyChecked = callAnyPreactionItems.checked
 
 //ASSIGN ONCLICK FUNCTIONS
+var setPreactionDataOptions = {server:true}
 
 //==================assign onClick functions========================
 
 //CALL
 self.images.preactions.callUnchecked.image.onClick = function(){
-self.setPreactionData('street', 'call', self.getPreactionOptionValues().call)
+self.setPreactionData('street', 'call', self.getPreactionOptionValues().call, setPreactionDataOptions)
         self.updateUserOptionsBasedOnFlagsAndPreactions()
 }
 self.images.preactions.callChecked.image.onClick = function(){
-      self.setPreactionData('hand', 'call', false)
+      self.setPreactionData('hand', 'call', false, setPreactionDataOptions)
         self.updateUserOptionsBasedOnFlagsAndPreactions()
 }
 //CHECK
 self.images.preactions.checkUnchecked.image.onClick = function(){
-    self.setPreactionData('hand', 'check',  self.getPreactionOptionValues().check)
+    self.setPreactionData('hand', 'check',  self.getPreactionOptionValues().check, setPreactionDataOptions)
         self.updateUserOptionsBasedOnFlagsAndPreactions()
 }
 self.images.preactions.checkChecked.image.onClick = function(){
-    self.setPreactionData('hand', 'check', false, seat)
+    self.setPreactionData('hand', 'check', false, seat, setPreactionDataOptions)
         self.updateUserOptionsBasedOnFlagsAndPreactions()
 }
 //ALL-IN
 self.images.preactions.allInUnchecked.image.onClick = function(){
   var allIn = self.getPreactionOptionValues().allIn
-  self.setPreactionData('hand', 'raise',allIn)
-    self.setPreactionData('hand', 'bet', allIn)
+  self.setPreactionData('hand', 'raise',allIn, setPreactionDataOptions)
+    self.setPreactionData('hand', 'bet', allIn, setPreactionDataOptions)
 
         self.updateUserOptionsBasedOnFlagsAndPreactions()
 }
 self.images.preactions.allInChecked.image.onClick = function(){
  
-        self.setPreactionData('hand', 'raise',false)
-    self.setPreactionData('hand', 'bet', false)
+        self.setPreactionData('hand', 'raise',false, setPreactionDataOptions)
+    self.setPreactionData('hand', 'bet', false, setPreactionDataOptions)
         self.updateUserOptionsBasedOnFlagsAndPreactions()
 }
 //FOLD
 self.images.preactions.foldUnchecked.image.onClick = function(){
-    self.setPreactionData('hand', 'fold', self.getPreactionOptionValues().fold)
+    self.setPreactionData('hand', 'fold', self.getPreactionOptionValues().fold, setPreactionDataOptions)
         self.updateUserOptionsBasedOnFlagsAndPreactions()
 }
 self.images.preactions.foldChecked.image.onClick = function(){
-   self.setPreactionData('hand', 'fold', false)
+   self.setPreactionData('hand', 'fold', false, setPreactionDataOptions)
         self.updateUserOptionsBasedOnFlagsAndPreactions()
 }
 
 //CALL ANY
 self.images.preactions.callAnyUnchecked.image.onClick = function(){
-    self.setPreactionData('hand', 'call', self.getPreactionOptionValues().callAny)
+    self.setPreactionData('hand', 'call', self.getPreactionOptionValues().call_any, setPreactionDataOptions)
         self.updateUserOptionsBasedOnFlagsAndPreactions()
 }
 self.images.preactions.callAnyChecked.image.onClick = function(){
-   self.setPreactionData('hand', 'call', false)
+   self.setPreactionData('hand', 'call', false, setPreactionDataOptions)
         self.updateUserOptionsBasedOnFlagsAndPreactions()
 }
 
@@ -7836,21 +7898,61 @@ self.images.preactions.callAnyChecked.image.onClick = function(){
 }
 
 this.getPreactionOptionValues = function (){
-  var getGameStateSeatObject = function(){return self.gameState.seats[self.gameState.userSeatNumber]}
-var isHighBetNonUser = function() {return    self.getCurrentBetSizes().splice(self.gamestate.userSeatNumber,1).indexOf(self.getHighBet()) !== -1}
-var getUserStackSize = function(){return self.getCurrentStackSizes()[self.gameState.userSeatNumber]}
-var getUserBet = function(){return self.getCurrentBetSizes()[self.gameState.userSeatNumber]}
-   var highBet = self.getHighBet();var userBet = getUserBet(); var userStackSize = getUserStackSize();var gameStateSeatObject = getGameStateSeatObject()
 
-var allIn = false
-var call = false
+var userSeat = self.gameState.userSeatNumber
+var currentStackSizes = self.getCurrentStackSizes()
+var currentBetSizes = self.getCurrentBetSizes()
+var highBet = self.getHighBet()
+ var gameStateSeatObject = self.gameState.seats[userSeat]
+ var justActed =  setJustActedOrPassNullToGetJustActed()
+
+
+var isHighBetNonUser = function() {return currentBetSizes[userSeat] === highBet}
+var getUserStackSize = function(){return currentStackSizes[userSeat]}
+var getUserBet = function(){return currentBetSizes[userSeat]}
+  var getPlayerToAct = function(){
+    console.log('getting player to act number')
+    var numSeats = self.gameState.numSeats
+    console.log(numSeats)
+_.each(_.range(numSeats) , function(seatNumber){
+if(self.gameState.seats[seatNumber].toAct === true){console.log('returning ' +seatNumber);return seatNumber}//if player is to act return the number
+})//iterate through and find playertoact
+
+return (justActed + 1 + numSeats)%numSeats
+
+}//gets the player to act
+var getMaximumAllInBetSizes = function(){
+
+if(currentStackSizes.length !== currentBetSizes.length){
+console.log(chipStacks)
+console.log(betSizes)
+  throw 'error'
+}//if arrays not the same length
+
+var maxSizes = []
+
+_.each(currentStackSizes, function(value, element, list){
+maxSizes[element] = currentStackSizes[element] + currentBetSizes[element]
+})//iterate through them
+
+return maxSizes
+}
+
+
+ var highBet = self.getHighBet();var userBet = getUserBet(); var userStackSize = getUserStackSize();
+ var playerToAct = getPlayerToAct(); var maxAllInSizes = getMaximumAllInBetSizes()
+
+
+
+var allIn    = false
+var call     = false
 var call_any = false
-var fold = false
-var check = false
-var raise = false
-var bet  = false
+var fold     = false
+var check    = false
+var raise    = false
+var bet      = false
 
-if(userStackSize === 0 || gameStateSeatObject.toAct !== false && gameStateSeatObject.inHand !== true ){return false}//display no options if user is all in
+if(canPlayerActDefaultsToUser(userSeat) === false || gameStateSeatObject.toAct !== false && gameStateSeatObject.inHand !== true ){}//display no options if user is all in
   else{
     allIn = userStackSize + userBet //display all in option, disable later if not needed
   //display fold option
@@ -7875,9 +7977,41 @@ else if (highBet === userBet){
   check = true
 }//if at least one highbet value is a non-user and is equal to user bet
 
+//CHECK if CALL_ANY is appropriate
+console.log('playerToAct = '+playerToAct)
+console.log('userSeat =  ' + userSeat)
+
+if(_.isNumber(playerToAct) && !_.isNaN(playerToAct)){
+
+var seatNum = playerToAct
+var iterations = 0
+var highestBetToFace = 0
+
+while(seatNum !== userSeat){
+console.log('checkign seat: '+seatNum)
+if(maxAllInSizes[seatNum] > highestBetToFace){highestBetToFace = maxAllInSizes[seatNum]}
+iterations++
+if(iterations > self.gameState.numSeats){
+console.log('numiterations = ' + iterations)
+console.log('maxallinsizes = ' + maxAllInSizes)
+  throw 'too many iterations on determining call_any'}
+  seatNum++
+    if(seatNum >= maxAllInSizes.length){seatNum = (seatNum)%maxAllInSizes.length }
+}//iterate from player to act until player
+
+if(highestBetToFace > userBet && highestBetToFace > highBet){call_any = true}
+
+}
+
 }//if conditions are appropriate
 
-return {check:check, allIn:allIn, fold:fold, call:call, raise:raise, bet:bet}
+if(_.isNaN(allIn)){console.log(userStackSize)
+console.log(userBet)}
+
+var  data = {check:check, allIn:allIn, fold:fold, call:call, raise:raise, bet:bet, call_any:call_any}
+console.log('preaction options as follows:')
+console.log(data)
+return data
 }
 
 
@@ -7997,7 +8131,7 @@ if(preactionOptions.call_any === true){
 stagesToUpdate.push (    addPreactionText(this.images.preactions.callAnyUnchecked, this.images.preactions.callAnyChecked, 'Call Any'))
 
   var checkIfCallAnyIsValid = function(value){if(value===true){return true}}
-if(this.getPreactionData('call_any', checkIfCallAnyIsValid)){displayLastCheckedItem()}
+if(this.getPreactionData('call', checkIfCallAnyIsValid)){displayLastCheckedItem()}
   else{displayLastUncheckedItem()}
 
 }
@@ -8094,12 +8228,25 @@ return y
 
 
 this.clearExpirationData = function(expirationType, playerNumber, options){
+if(!options){var options = {}}
+
+if(expirationType !==  'act'){
+    this.clearExpirationData('act', playerNumber, options)
+if(expirationType !==  'once'){
+this.clearExpirationData('once', playerNumber, options)
+if(expirationType !==  'street'){
+this.clearExpirationData('street', playerNumber, options)
+if(expirationType !==  'hand'){this.clearExpirationData('hand', playerNumber, options)}//if not hand
+}//if not street
+
+}//if not once
+
+}//if not act
 
 //clear table data
 var tableExpirationObject = self.gameState
-clearExpirationObject(tableExpirationObject)
 
-
+if(!_.isEmpty(tableExpirationObject)){clearExpirationObject(tableExpirationObject)}
 
   if(!_.isNumber(playerNumber)){
     if( _.isNumber(this.gameState.userSeatNumber)){var playerNumber = this.gameState.userSeatNumber}
@@ -8108,9 +8255,9 @@ clearExpirationObject(tableExpirationObject)
 
 if(_.isNumber(playerNumber)){
 var playerSeatObject = self.gameState.seats[playerNumber]
-clearExpirationObject(playerSeatObject)
-
+if(!_.isEmpty(tableExpirationObject)){clearExpirationObject(playerSeatObject)}
 }
+
 
 
 function clearExpirationObject (gameStateObject){
@@ -8124,12 +8271,13 @@ function clearExpirationObject (gameStateObject){
   //clear data
   gameStateObject[expirationType] = {}
 
+if(options.callExpirationFunctions === true){
     //run onClear for street
       if(_.isArray(onEnd)){
       for (var index = 0;index<onEnd.length;index++){onEnd[index]()}    
     }//if onEnd is array
   else if(_.isFunction(onEnd)){onEnd()}
-
+}
 
 }//clearExpirationObject
 
@@ -9072,9 +9220,14 @@ return isAtBottom
 
 this.displayBubbleChatPopover = function(chatInfo){
 
+console.log('displayin bubblechat popover')
+console.log(chatInfo)
+
 self.images.seats[chatInfo.seat].chat.text.text = ''
 
 var playerSeatObject = self.images.seats[chatInfo.seat]
+
+/*
 
 //we are going to create a div on top of each player's seat
 if(playerSeatObject.bubbleChatBase instanceof self.images.Item !== true){
@@ -9090,6 +9243,7 @@ $(playerSeatObject.bubbleChatBase.image).addClass(self.css.nonVendor)
 console.log(playerSeatObject.bubbleChatBase)
 self.positionItemImage(playerSeatObject.bubbleChatBase)
 
+
 $(playerSeatObject.bubbleChatBase.image).css({
 'z-index': 9999
 ,'width': playerSeatObject.seat.size.x
@@ -9098,39 +9252,71 @@ $(playerSeatObject.bubbleChatBase.image).css({
   ,'background':'#FFFFFF'
 })
 
+
 }//if we want to create images.Item
+
+*/
 
 //qtip2 version
 
+var seatDiv = self.arrayOfParentsOfStageAndOfContainerArray[self.images.seats[chatInfo.seat].seat.position.z.stage].div
+var qtipID = 'seat'+chatInfo.seat
+
 var qtipOptions = {
-  show: {ready: true }//show as soon as its loaded
+  id:qtipID
+  //,overwrite:true
+  ,show: {ready: true }//show as soon as its loaded
  ,hide: {
     fixed:true     //will not hide when we mouseover it
-  ,delay: 999999 
+  ,delay: 10000 
 ,event:'manual'
 }//hide
   ,content: {text: chatInfo.message}
 ,position: {
-    my: 'bottom right' // tooltip position
-    ,at: 'top left' // div position
-    ,target: $(playerSeatObject.bubbleChatBase.image) // my target
+    my: 'bottom middle' // tooltip position
+    ,at: 'bottom middle' // div position
+    ,target: $(playerSeatObject.bubbleChats[0].image) // my target
     ,adjust:{resize:true}
       // adjust:{x:,y:}
- ,  container:$(playerSeatObject.bubbleChatBase.image)
- ,viewport: $(seatDiv) //  true //$(window)
+ ,  container:  $(playerSeatObject.bubbleChats[0].image)      //$(seatDiv)
+ ,viewport: $(seatDiv) //true// //  true //$(window)
+ ,adjust:{
+  method:'shift none'
+ }//position.adjust
   }//position
     ,style:{
-      classes: 'qtip-youtube'
+      classes: 'qtip-tipsy'
    //   ,width:   self.images.seats[chatInfo.seat].chat.size.x
    //  ,height:  self.images.seats[chatInfo.seat].chat.size.y
     //  ,tip:{corner:'right top'}
     }//style
  
-  }
+
+ ,events:{
+show: function(event, api){
+  //set appropriate max width and height
+$('#qtip-'+qtipID).css({
+'max-width':playerSeatObject.bubbleChats[0].size.x+'px'
+,'max-height':playerSeatObject.bubbleChats[0].size.y +'px'
+})
+
+}//show event
+ }//events
 
 
-$(playerSeatObject.bubbleChatBase.image).qtip(qtipOptions)
-$(playerSeatObject.bubbleChatBase.image).toggle(true)
+
+  }//qtip options
+
+
+
+
+$(playerSeatObject.bubbleChats[0].image).qtip('destroy', false)
+$(playerSeatObject.bubbleChats[0].image).qtip(qtipOptions)
+console.log($(playerSeatObject.bubbleChats[0].image)  )
+console.log( $('#qtip-'+qtipID))
+
+
+$(playerSeatObject.bubbleChats[0].image).toggle(true)
 
 
 /*
@@ -11382,7 +11568,8 @@ if(!_.isNumber(self.gameState.userSeatNumber)){
 
 stagesToUpdate.push( this.hideSeatedOptions(options) )
 
-  return 'display updated based on non seated player'}
+  return 'display updated based on non seated player'
+}
 
 else{  //if player is seated
 
@@ -11404,7 +11591,6 @@ stagesToUpdate.push(setAutoRebuyValueText(autoRebuyValue, options))
 //update button postions of addchips, cancel, and disableautorebuy
 stagesToUpdate.push(self.images.positionCashierButtons(displayDisableAutoRebuy, options))
 
-
 //enable basic seatedoptions
    this.images.getChips.image.onClick = self.events.onButtonClick
      this.images.standUp.image.onClick = this.events.userStands
@@ -11416,30 +11602,25 @@ stagesToUpdate.push(  this.hideChildren(this.images.standUpDisabledShape,options
 
 
 var user = self.gameState.seats[self.gameState.userSeatNumber]
-var flags = self.gameState.seats[self.gameState.userSeatNumber].flags
-var preactionsAct = self.gameState.seats[self.gameState.userSeatNumber].act
-var preactionStreet = self.gameState.seats[self.gameState.userSeatNumber].street
-var preactionOnce = self.gameState.seats[self.gameState.userSeatNumber].once
-var preactionHand = self.gameState.seats[self.gameState.userSeatNumber].hand
 var preactionOptionData = self.getPreactionOptionValues()
 
                   //check if user is sitting out
-                  if(user.sitting_out == true){
-        stagesToUpdate.push(             self.hideChildren(self.images.sitOutNextBlind,options))
+                  if(user.sitting_out){
+        stagesToUpdate.push(      self.hideChildren(self.images.sitOutNextBlind,options))
 stagesToUpdate.push( self.hideChildren(self.images.sitOutNextBlindOn,options))
 stagesToUpdate.push( self.hideChildren(self.images.foldToAnyBet,options))
 stagesToUpdate.push( self.hideChildren(self.images.foldToAnyBetOn,options))
-              stagesToUpdate.push(       this.playerSitsOut(self.gameState.userSeatNumber,options))
-              stagesToUpdate.push(       self.hideChildren(self.images.sitOutNextHand,options))
-              stagesToUpdate.push(        self.displayChildren(self.images.sitOutNextHandOn,options))
+              stagesToUpdate.push(this.playerSitsOut(self.gameState.userSeatNumber,options))
+              stagesToUpdate.push(self.hideChildren(self.images.sitOutNextHand,options))
+              stagesToUpdate.push(self.displayChildren(self.images.sitOutNextHandOn,options))
                        //either display rebuy OR sitin if user is sitting out
              if(user.notEnoughChips == true){
-        stagesToUpdate.push(       self.hideChildren(self.images.sitIn,options))
-        stagesToUpdate.push(       self.displayChildren(self.images.rebuy,options))
+        stagesToUpdate.push(   self.hideChildren(self.images.sitIn,options))
+        stagesToUpdate.push(   self.displayChildren(self.images.rebuy,options))
 }
                  else{ 
-       stagesToUpdate.push(            self.hideChildren(self.images.rebuy,options))
-        stagesToUpdate.push(           self.displayChildren(self.images.sitIn,options))
+       stagesToUpdate.push(    self.hideChildren(self.images.rebuy,options))
+        stagesToUpdate.push(   self.displayChildren(self.images.sitIn,options))
                 }
 }//user.sitting_out == true
 
@@ -11449,18 +11630,19 @@ stagesToUpdate.push( self.hideChildren(self.images.foldToAnyBetOn,options))
      stagesToUpdate.push(      self.hideChildren(self.images.rebuy,options))
              //display sitout next hand depending on user's flag
            //  console.log('checking for flags.pending_sit_out == '+flags.pending_sit_out)
-              if(flags.pending_sit_out == true){
+              if(self.getPreactionData('pending_sit_out')){
 stagesToUpdate.push( self.hideChildren(self.images.sitOutNextBlind,options))
 stagesToUpdate.push( self.hideChildren(self.images.sitOutNextBlindOn,options))
 stagesToUpdate.push( self.hideChildren(self.images.sitOutNextHand,options))
-        stagesToUpdate.push(        self.displayChildren(self.images.sitOutNextHandOn,options))
-              }//if pending_sit_out == trues
+stagesToUpdate.push( self.displayChildren(self.images.sitOutNextHandOn,options))
+              }//if pending_sit_out == true
 
 else{//if user is not pending sit out, and not sitting out
   stagesToUpdate.push( self.hideChildren(self.images.sitOutNextHandOn,options))
         stagesToUpdate.push(   self.displayChildren(self.images.sitOutNextHand,options))
                             //display sit out next big blind depending on user's flag
-              if(flags.post_blind == false){
+              if(self.getPreactionData('post_blind') === false){
+                console.log('displaying sitoutnextblindon')
 stagesToUpdate.push( self.hideChildren(self.images.sitOutNextBlind,options))
        stagesToUpdate.push(          self.displayChildren(self.images.sitOutNextBlindOn,options))
               }
@@ -11675,25 +11857,37 @@ else if (!_.isUndefined(newPreferenceObject[index].value)){currentPreferenceObje
 
 this.updateLocalGameDataBasedOnServerPlayerObject = function(player){
   if(player.is_you == true){self.gameState.userSeatNumber = player.seat}
+
+var setPreactionDataOptions = {server:false, playerNumber:player.seat}
+
     //updated local based on flags
 if(_.isObject(player.flags)){
   var flags = player.flags
-self.gameState.seats[player.seat].flags.pending_sit_out = flags.pending_sit_out
-self.gameState.seats[player.seat].flags.post_blind = flags.post_blind
+  console.log('updateLocalGameDataBasedOnServerPlayerObject')
+console.log(flags)
 
-var setPreactionDataOptions = {server:false}
+if(!_.isUndefined(flags.pending_sit_out)){
+  self.setPreactionData('permanent', 'pending_sit_out', flags.pending_sit_out, setPreactionDataOptions)
+   }
+
+  if(!_.isUndefined(flags.post_blind)){
+   self.setPreactionData('permanent', 'post_blind', flags.post_blind, setPreactionDataOptions)
+}
+  if(!_.isUndefined(flags.sitting_out)){
+   self.setPreactionData('permanent', 'sitting_out', flags.sitting_out, setPreactionDataOptions)
+}
 
 if(!_.isUndefined(flags.check)){
-  this.setPreactionData('hand', 'bet', flags.check, setPreactionDataOptions)
+  this.setPreactionData('hand', 'check', flags.check, setPreactionDataOptions)
 }
 if(!_.isUndefined(flags.call)){
-  this.setPreactionData('hand', 'bet', flags.call, setPreactionDataOptions)
+  this.setPreactionData('hand', 'call', flags.call, setPreactionDataOptions)
 }
 if(!_.isUndefined(flags.fold)){
-this.setPreactionData('hand', 'bet', flags.fold,setPreactionDataOptions)
+this.setPreactionData('hand', 'fold', flags.fold,setPreactionDataOptions)
 }
 if(!_.isUndefined(flags.raise)){
-this.setPreactionData('hand', 'bet', flags.raise, setPreactionDataOptions)
+this.setPreactionData('hand', 'raise', flags.raise, setPreactionDataOptions)
 }
 if(!_.isUndefined(flags.bet)){
   this.setPreactionData('hand', 'bet', flags.bet, setPreactionDataOptions)
@@ -11860,7 +12054,19 @@ time:time
 
 }
 
-   this.displayInitialTableState=function(table_state){
+var setJustActedOrPassNullToGetJustActed = function(playerNumber){
+
+if(_.isNumber(playerNumber) && !_.isNaN(playerNumber)){
+  self.gameState.street.justActed = playerNumber
+   self.gameState.seats[playerNumber].toAct = false
+}
+
+else{return self.gameState.street.justActed}
+
+
+}
+
+   this.displayInitialTableState = function(table_state){
 
 var showTable = false
  //set up animation variables
@@ -11931,6 +12137,7 @@ setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(self.ga
                  this.displayChildren(this.images.table)
          this.displayChildren(this.images.showTableChatFull)
          this.displayChildren(this.images.standUp)
+         this.displayTableChatBox()
      //    this.displayChildren(this.images.exitTable)
 
 //remove extra S
@@ -12201,36 +12408,50 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
 
  //var userSeatIndex = self.getSeatImageIndex(self.gameState.userSeatNumber, 'rotatedSeatNumber')
    
-           switch (flag){
-
-case 'pending_sit_out':
-self.gameState.seats[self.gameState.userSeatNumber].flags.pending_sit_out = value
-
-/*
-           break;
-
-           case 'post_blind':
-           self.gameState.seats[self.gameState.userSeatNumber].flags.post_blind = value
-
-break;
-*/
-
-
-default:
-if(flag.indexOf('sessionPreferences') !== -1){
+      if(flag.indexOf('sessionPreferences') !== -1){
  // console.log('session preference flag received')
  self.updatePreference(self.sessionPreferences, value)
-}
-else{
-//console.log('display flags of player number '+self.gameState.userSeatNumber)
-//console.log((flag.indexOf('sessionPreferences') === 0))
-//console.log(self.gameState.seats[self.gameState.userSeatNumber].flags)
+}//if session preference
 
-self.gameState.seats[self.gameState.userSeatNumber].flags[flag] = value
+else{//if flag
+
+switch (flag){
+
+case 'check':
+self.setPreactionData('hand', flag,value, {server:false}) 
+break;
+
+case 'fold':
+self.setPreactionData('hand', flag,value, {server:false}) 
+break;
+
+case 'call':
+self.setPreactionData('hand', flag,value, {server:false}) 
+break;
+
+case 'bet' :
+self.setPreactionData('hand', flag,value, {server:false}) 
+break;
+
+case 'raise':
+self.setPreactionData('hand', flag,value, {server:false}) 
+break;
+
+default:
+self.setPreactionData('permanent', flag,value, {server:false}) 
+
+
+/*
+case 'fold' || 'call' || 'raise' || 'bet' || 'check':
 self.setPreactionData('hand',flag,value, {server:false}) 
-}//if not session preference
+default:
+*/
 
-}
+}//switch statement
+
+}// if not preference
+
+
 self.updateUserOptionsBasedOnFlagsAndPreactions()
      })
 
@@ -12306,7 +12527,8 @@ self.clearExpirationData('act', seatNum)
             break;
 
         }
-             self.gameState.seats[seatNum].toAct = false
+            
+             setJustActedOrPassNullToGetJustActed(seatNum)
              //clear once for user
              if(seatNum === self.gameState.userSeatNumber){
               self.gameState.seats[self.gameState.userSeatNumber].once = {}
@@ -12534,8 +12756,8 @@ self.displayBubbleChatPopover(chatInfo)
 //player sits in
        socket.on('player_sits_in', function(player){
         var stagesToUpdate = []
-        self.gameState.seats[player.seat].flags.pending_sit_out = false
-          self.gameState.seats[player.seat].sitting_out = false
+        self.getPreactionData('pending_sit_out')
+        self.getPreactionData('sitting_out')
 
            self.images.seats[player.seat].status.text.text = player.chips
 stagesToUpdate.push(self.itemChanged( self.images.seats[player.seat].status))
@@ -12570,7 +12792,13 @@ var stagesToUpdate = []
 
 //player sits, checks if player is the user
        socket.on('player_sits', function(player, is_you){
-       
+    
+     self.clearExpirationData('act', player.seat)  
+self.clearExpirationData('once', player.seat)
+self.clearExpirationData('street', player.seat)
+self.clearExpirationData('hand', player.seat)
+self.clearExpirationData('permanent', player.seat)
+
         if(is_you == true){
             self.gameState.userSeatNumber = player.seat
 
@@ -12652,6 +12880,7 @@ var stagesToUpdate = []
        socket.on('winners', function(players){
 
 for(var i = 0;i<self.gameState.seats.length;i++){
+  self.clearExpirationData('hand', i)
   self.gameState.seats[i].inHand = false
   self.gameState.seats[i].toAct = false
 }
@@ -12670,10 +12899,6 @@ var stagesToUpdate = []
 
      stagesToUpdate.push(    self.roundEnds() )
  for(var i = 0;i<self.images.seats.length;i++){
-   self.clearExpirationData('act', i)
- self.clearExpirationData('street', i)
-self.clearExpirationData('once', i)
-self.clearExpirationData('hand', i)
 
 stagesToUpdate.push(    self.hideChildren(self.images.seats[i].hiddenCards,options))
  stagesToUpdate.push(  self.hideChildren(self.images.seats[i].shownCards,options))
