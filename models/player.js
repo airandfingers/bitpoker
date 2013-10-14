@@ -707,8 +707,8 @@ module.exports = (function () {
         new_balance = currency_balance - currency_to_add;
       }
       //console.log('chips_to_add:', chips_to_add, 'new_balance:', new_balance, 'currency_to_add:', currency_to_add);
-      if (chips_to_add === 0) {
-        console.log('player doesn\'t have enough currency to buy any chips!');
+      if (stack + chips_to_add < game.MIN_CHIPS) {
+        console.log('player doesn\'t have enough currency to buy to table minimum!');
         return;
       }
       user[game.CURRENCY] = new_balance;
