@@ -7717,6 +7717,8 @@ if(actionType === 'raise' || actionType === 'bet' || actionType === 'call'
 {
 
 var preactionOptionData = self.getPreactionOptionValues()
+var currentBetSizes = preactionOptionData.currentBetSizes
+var currentStackSizes = preactionOptionData.currentStackSizes
 
 //MAKE IT SO PREACTION ALWAYS RETURNS FALSE IF THE VALUE IS NOT ALLOWED
   if(!_.isObject(preactionOptionData) || _.isEmpty(preactionOptionData) ){return}
@@ -7731,8 +7733,6 @@ if(flagsObject['call'] === true){return true}
 
     //if 'all_in' flag
 else if(actionType === 'all_in'){
-var currentBetSizes = self.getCurrentBetSizes()
-var currentStackSizes = self.getCurrentStackSizes()
 
   console.log('attempting to fetch all-in actiontype')
   if(!_.isNumber(preactionOptionData[actionType])){return undefined}
@@ -7943,9 +7943,14 @@ self.images.preactions.checkChecked.image.onClick = function(){
 }
 //ALL-IN
 self.images.preactions.allInUnchecked.image.onClick = function(){
-  var allIn = self.getPreactionOptionValues().all_in
-  self.setPreactionData('hand', 'raise', allIn, setPreactionDataOptions)
-    self.setPreactionData('hand', 'bet', allIn, setPreactionDataOptions)
+  var data = self.getPreactionOptionValues()
+  var user = self.gameState.userSeatNumber
+  var allInAmount = data.currentStackSizes[user] + data.currentBetSizes[user]
+  var callAllInAmount = data.currentStackSizes[user] - data.currentBetSizes[user]
+
+  self.setPreactionData('hand', 'raise', allInAmount, setPreactionDataOptions)
+    self.setPreactionData('hand', 'bet', allInAmount, setPreactionDataOptions)
+     self.setPreactionData('hand', 'call', callAllInAmount, setPreactionDataOptions)
 
         self.updateUserOptionsBasedOnFlagsAndPreactions()
 }
@@ -8111,10 +8116,17 @@ if(highestBetToFace > userBet && highestBetToFace > highBet){call_any = true}
 
 }//if conditions are appropriate
 
-if(_.isNaN(all_in)){console.log(userStackSize)
-console.log(userBet)}
+if(_.isNaN(all_in)){
+console.log('all in = nan')
+  console.log(userStackSize)
+console.log(userBet)
+}
 
-var  data = {check:check, all_in:all_in, fold:fold, call:call, raise:raise, bet:bet, call_any:call_any}
+var  data = {check:check, all_in:all_in, fold:fold
+,call:call, raise:raise, bet:bet, call_any:call_any
+,currentStackSizes:currentStackSizes
+,currentBetSizes:currentBetSizes
+}
 console.log('preaction options as follows:')
 console.log(data)
 return data
@@ -8195,7 +8207,7 @@ console.log(preactionOptions)
 
 if(preactionOptions.check === true){
 //console.log('displaying check preaction option')
- stagesToUpdate.push (addPreactionText(this.images.preactions.checkUnchecked, this.images.preactions.checkChecked, 'check'))
+ stagesToUpdate.push (addPreactionText(this.images.preactions.checkUnchecked, this.images.preactions.checkChecked, 'Check'))
 
 if(this.getPreactionData('check')){displayLastCheckedItem()}
   else{displayLastUncheckedItem()}
@@ -8204,7 +8216,7 @@ if(this.getPreactionData('check')){displayLastCheckedItem()}
 
 if(preactionOptions.fold === true){
 //  console.log('displaying call preaction option')
- stagesToUpdate.push ( addPreactionText(this.images.preactions.foldUnchecked, this.images.preactions.foldChecked, 'fold'))
+ stagesToUpdate.push ( addPreactionText(this.images.preactions.foldUnchecked, this.images.preactions.foldChecked, 'Fold'))
 
 if(this.getPreactionData('fold')){displayLastCheckedItem()}
   else{displayLastUncheckedItem()}
@@ -8216,7 +8228,7 @@ if(_.isNumber(preactionOptions.call)){
 
   if(preactionOptions.call >= currentStackSizes[seat]){var callAmount = 'All-In'}
     else{var callAmount = preactionOptions.call}
-   stagesToUpdate.push ( addPreactionText(this.images.preactions.callUnchecked, this.images.preactions.callChecked, 'call '+callAmount))
+   stagesToUpdate.push ( addPreactionText(this.images.preactions.callUnchecked, this.images.preactions.callChecked, 'Call '+callAmount))
 
 
 var checkIfCallIsValid = function(value){ if(_.isNumber(value) && value === preactionOptions.call){return true}}
