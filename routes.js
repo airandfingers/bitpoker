@@ -119,17 +119,22 @@ module.exports = (function () {
           console.log('req.query.joined_table_name is a string');
           req.user.current_table_names.push(req.query.joined_table_name);
         }
+        res.render('index', {
+          title: 'Bitcoin Poker'
+        , table_games: table_games
+        , room_state: JSON.stringify(room_state)
+        , message: req.flash('error')
+        , user: req.user
+        });
+
       }
-      
+      else {
+        console.log('user is not logged in. rendering welcome environment');
+        res.redirect('/welcome');
+      }
     //console.log('Got table_games:', table_games);
 
-    res.render('index', {
-      title: 'Bitcoin Poker'
-    , table_games: table_games
-    , room_state: JSON.stringify(room_state)
-    , message: req.flash('error')
-    , user: req.user
-    });
+
   }
   app.get('/', renderHome);
 
@@ -274,6 +279,29 @@ module.exports = (function () {
     });
   });
 
+  app.get('/welcome', function (req, res) {
+    var users = Room.getRoom('').getUsernames()
+      , table_games = Table.getTableGames()
+      , room_state = { users: users };
+
+      if (_.isObject(req.user)) { 
+        console.log('req.user is an object');
+        if ( _.isString(req.query.joined_table_name) ) {
+          console.log('req.query.joined_table_name is a string');
+          req.user.current_table_names.push(req.query.joined_table_name);
+        }
+      }
+      
+    //console.log('Got table_games:', table_games);
+
+    res.render('welcome', {
+      title: 'Bitcoin Poker'
+    , table_games: table_games
+    , room_state: JSON.stringify(room_state)
+    , message: req.flash('error')
+    , user: req.user
+    });
+  });
   // validate e-mail address & save to MongoDB & send an e-mail confirmation.
   app.post('/set_email', function (req, res) {
     var username = req.user.username
