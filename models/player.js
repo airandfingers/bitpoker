@@ -327,7 +327,7 @@ module.exports = (function () {
     });
     async.series(actions, function onComplete() {
       console.log('Pending actions completed for', self.username, actions.length);
-      if (! self.sitting_out && self.seat) {
+      if (! self.sitting_out && _.isNumber(self.seat)) {
         self.autoRebuy();
         if (self.idle) {
           self.sitOut();
@@ -514,6 +514,7 @@ module.exports = (function () {
     if (this.sitting_out) {
       if (this.chips > 0) {
         clearInterval(this.full_table_check);
+        this.idle = false;
         this.sitting_out = false;
         this.setFlag('post_blind', true);
         this.emit('sit_in');
