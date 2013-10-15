@@ -1,0 +1,52 @@
+<% include head_start %>
+<% include head_end_and_header %>
+    <div id="container">
+        <% if (typeof user === 'undefined') { %>
+            <h1>Welcome to Bitcoin Poker</h1>
+            <div id="button_groups"> 
+                <h1>Choose one:</h1>
+                <form action="/register" method="get">
+                    <button class="btn btn-success btn-large">Register</button>
+                </form>
+                <form action="/guest_login" method="post">
+                    <button class="btn btn-inverse btn-large">Play as Guest</button>
+                </form>
+            </div>
+        <% }
+
+        else { %>
+            <h1></h1>
+            
+            <!--
+            <% include users %>
+            <div class="chat_container row-fluid">
+                <div id="chat_lobby" class="row-fluid">
+                    <% include chat %>
+                </div>
+            </div>
+            -->
+            <!-- include values to expose to scripts -->
+            <input type="hidden" id="server_values"
+                data-room_state="<%= room_state %>"
+                data-current_table_names="<%= JSON.stringify(user.current_table_names) %>"
+            />
+        <% } %>
+        
+        <div id="iframe_container">
+        </div>
+
+        <% if (message) { %>
+          <p><%= message %></p>
+        <% } %>
+    </div> <!-- container -->
+
+    <% include plugins %>
+
+
+    <!-- iframe-related code -->
+    <script src="/js/iframes.js"></script>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <!--<script src="/js/chat.js"></script>-->
+
+<% include foot %>
