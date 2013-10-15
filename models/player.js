@@ -64,6 +64,8 @@ module.exports = (function () {
     // message-to-handler map, { message_name: instance_method_name }
     messages: {
     }
+    // list of possible actions, used to determine which flags are auto-actino flags
+  , action_list: ['fold', 'check', 'call', 'all_in']
   };
 
   // static methods - Model.method()
@@ -131,25 +133,18 @@ module.exports = (function () {
   PlayerSchema.methods.prompt = function(actions, timeout, default_action, cb) {
     var self = this
       , actions_obj = {}
+      , auto_action_flags = self.getSetAutoActionFlags()
       , auto_action_amount
       , auto_action
       , auto_responded
       , game = self.game
+      , total_timeout = timeout
       , act_timeout
       , update_interval;
 
+    // combine possible actions into a single object, actions_obj
     _.each(actions, function(action_obj) {
       _.extend(actions_obj, action_obj);
-    });
-
-    //console.log('Comparing', possible_actions, 'to', self.flags);
-    _.all(actions_obj, function(action_arg, action) {
-      auto_action_amount = self.flags[action];
-      if (auto_action_amount) {
-        auto_action = action;
-        return false; //break
-      }
-      return true; //continue
     });
 
     // define validation and callback function
@@ -217,11 +212,40 @@ module.exports = (function () {
       return true;
     }
 
+    _.all(auto_action_flags, function(action) {
+      if (action === 'all_in') {
+        console.log('in all_in, actions_obj is', actions_obj);
+        _.all(['raise', 'bet', 'call'], function(all_in_action) {
+          if (! _.isUndefined(actions_obj[all_in_action])) {
+            auto_action = all_in_action;
+            auto_action_value = all_in_action !== 'call' ? actions_obj[all_in_action][1] : undefined;
+            return false; //break
+          }
+          return true; //continue
+        });
+        console.log('after iterating:', auto_action, auto_action_value);
+        if (auto_action) { return false; } //break
+      }
+      else if (! _.isUndefined(actions_obj[action])) {
+        auto_action = action;
+        auto_action_value = self.flags[action];
+        // clear "call X " bets after they are triggered
+        if (auto_action === 'call' && auto_action_value !== true) {
+          self.flags.call = false;
+        }
+        return false; //break
+      }
+      return true; //continue
+    });
+
     if (_.isString(auto_action)) {
-      console.log(auto_action, 'flag was set to', auto_action_amount, ', so responding immediately!');
-      auto_responded = respondToPrompt(auto_action, auto_action_amount);
+      console.log(auto_action, 'flag was set to', auto_action_value, ', so responding immediately!');
+      auto_responded = respondToPrompt(auto_action, auto_action_value);
     }
     if (! auto_responded) {
+      // clear all auto-action flags
+      _.each(auto_action_flags, function(action) { self.setFlag(action, false); });
+
       console.log('prompting', self.username, 'for next action', actions, timeout);
       self.sendMessage('act_prompt', actions, timeout);
 
@@ -232,12 +256,12 @@ module.exports = (function () {
       });
 
       act_timeout = setTimeout(function() {
-        console.log(self.username, 'fails to respond within', timeout, 'ms');
+        console.log(self.username, 'fails to respond within', total_timeout, 'ms');
         self.idle = true;
         self.socket.removeAllListeners('act');
         
         respondToPrompt(default_action);
-      }, timeout);
+      }, total_timeout);
 
       update_interval = setInterval(function() {
         timeout -= self.game.TO_ACT_UPDATE_INTERVAL;
@@ -247,7 +271,7 @@ module.exports = (function () {
       self.current_prompt = {
         actions: actions
       , actions_obj: actions_obj
-      , timeout: timeout
+      , timeout: total_timeout
       , prompt_sent: new Date()
       , callback: respondToPrompt
       };
@@ -266,13 +290,12 @@ module.exports = (function () {
 
   PlayerSchema.methods.handStart = function() {
     var self = this
-      , action_flags = ['check', 'call', 'bet', 'raise', 'fold']
       , flag_value
       , hand_default_value;
     self.in_hand = true;
 
     // clear any auto-action flags that may have been set
-    _.each(action_flags, function(action) {
+    _.each(Player.action_list, function(action) {
       flag_value = self.flags[action];
       if (flag_value) {
         self.setFlag(action, false);
@@ -728,8 +751,7 @@ module.exports = (function () {
 
   static_properties.messages.set_flag = 'setFlag';
   PlayerSchema.methods.setFlag = function(name, value) {
-    console.log(this.username, 'setting', name, 'to', value);
-    this.flags[name] = value;
+    console.log('setFlag called for', this.username, 'with', name, value);
 
     // check autorebuy flag value
     if (name === 'autorebuy') {
@@ -746,14 +768,70 @@ module.exports = (function () {
       }
       this.autoRebuy();
     }
-    else if (value && _.isObject(this.current_prompt)) {
-      // attempt to automatically perform this action
-      // (respondToPrompt's error checking will catch if this is invalid)
-      this.idle = false;
-      this.current_prompt.callback(name, value);
-    }
+    else {
+      //all other flags
+      this.flags[name] = value;
 
+      if (value !== false && _.contains(Player.action_list, name)) {
+        this.handleAutoActionFlag(name, value);
+      }
+    }
     this.sendMessage('flag_set', name, value);
+  };
+
+  PlayerSchema.methods.handleAutoActionFlag = function(action, value) {
+    switch(action) {
+    case 'fold':
+      this.setFlags({ call: false, all_in: false });
+      break;
+    case 'check':
+      this.setFlags({ all_in: false });
+      break;
+    case 'call':
+      this.setFlags({ fold: false, all_in: false });
+      break;
+    case 'all_in':
+      this.setFlags({ fold: false, check: false, call: false });
+      break;
+    default: console.error('handleAutoActionFlag called with unknown action', action);
+    }
+    if (_.isObject(this.current_prompt)) {
+      this.idle = false;
+      if (action === 'all_in') {
+        var actions_obj = this.current_prompt.actions_obj;
+        console.log('in handleAutoActionFlag all_in, actions_obj is', actions_obj);
+        _.all(['raise', 'bet', 'call'], function(all_in_action) {
+          if (! _.isUndefined(actions_obj[all_in_action])) {
+            action = all_in_action;
+            if (all_in_action === 'call') {
+              value = actions_obj.call;
+            }
+            else {
+              value = actions_obj[all_in_action][1];
+            }
+            return false; //break
+          }
+          return true; //continue
+        });
+        console.log('after iterating:', action, value);
+      }
+      // clear "call X " bets after they are triggered
+      else if (action === 'call' && value !== true) {
+        this.flags.call = false;
+      }
+      this.current_prompt.callback(action, value);
+    }
+  };
+
+  PlayerSchema.methods.getSetAutoActionFlags = function() {
+    var self = this
+      , auto_action_flags = [];
+    _.each(Player.action_list, function(action) {
+      if (self.flags[action] !== false && self.flags[action] !== undefined) {
+        auto_action_flags.push(action);
+      }
+    });
+    return auto_action_flags;
   };
 
   static_properties.messages.set_flags = 'setFlags';
