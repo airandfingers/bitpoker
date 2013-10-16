@@ -1093,7 +1093,7 @@ this.events.onCashierTextFieldFocus = function(event){
         {
           console.log('maxradio checked')
           console.log(self.gameState.cashier)
-            socket.emit('add_chips', self.gameState.cashier.max, self.gameState.cashier.currency)
+            socket.emit('add_chips', self.gameState.cashier.max, self.initial_table_state.currency)
 
         }
         else if($('#otherAmountRadio').is(':checked')){
@@ -1106,7 +1106,7 @@ this.events.onCashierTextFieldFocus = function(event){
             }
             else{
                 
-                socket.emit('add_chips',Number(amount), self.gameState.cashier.currency)
+                socket.emit('add_chips',Number(amount), self.initial_table_state.currency)
             }
 
         }
@@ -1120,7 +1120,7 @@ this.events.onCashierTextFieldFocus = function(event){
             }
             else{
                 
-                socket.emit('auto_rebuy',Number(amount), self.gameState.cashier.currency)
+                socket.emit('auto_rebuy',Number(amount), self.initial_table_state.currency)
             }
 
         }
@@ -1920,7 +1920,7 @@ $(window).on(
 
     this.events.wheelScroll = function(numScrolls){
       if(_.isNumber(numScrolls) == false){return 'scroll failed'}
-      var change = numScrolls*self.permanentPreferences.bigBlindsPerMouseScroll.value*self.gameState.bigBlind
+      var change = numScrolls*self.permanentPreferences.bigBlindsPerMouseScroll.value*self.initial_table_state.big_blind
           var betValue  = parseFloat($('#betSize').val())
     var isBetValueValid = ( !isNaN(betValue)) && _.isNumber(betValue) 
      if(isBetValueValid == true){ var newBet = change+betValue} //use current value
@@ -1937,7 +1937,7 @@ $(window).on(
         var minX = self.images.betSlider.horizontal.position.x
          var maxX = self.images.betSlider.horizontal.position.x + self.images.betSlider.horizontal.size.x-self.images.betSlider.vertical.size.x
        
-         var pixelsPerTick = self.gameState.bigBlind*self.permanentPreferences.bigBlindsPerHorizontalSliderTick.value/(self.gameState.maxBet-self.gameState.minBet)*(maxX-minX)
+         var pixelsPerTick = self.initial_table_state.big_blind*self.permanentPreferences.bigBlindsPerHorizontalSliderTick.value/(self.gameState.maxBet-self.gameState.minBet)*(maxX-minX)
           
 
          //takes vertical slider location and proportionaly shows bet size
@@ -1945,7 +1945,7 @@ $(window).on(
 
       betSizePercent = (self.images.betSlider.vertical.image.x-minX)/(maxX-minX)
      unroundedBetAmount =  betSizePercent*(self.gameState.maxBet-self.gameState.minBet)+self.gameState.minBet
-     roundedBet = Math.round(unroundedBetAmount/self.gameState.minIncrement)*self.gameState.minIncrement
+     roundedBet = Math.round(unroundedBetAmount/self.initial_table_state.min_increment)*self.initial_table_state.min_increment
 
 self.adjustBetDisplay(roundedBet)
          }
@@ -2030,7 +2030,7 @@ self.adjustBetDisplay(roundedBet)
             event.target.x = event.stageX
       betSizePercent = (event.stageX-minX)/(maxX-minX)
      unroundedBetAmount =  betSizePercent*(self.gameState.maxBet-self.gameState.minBet)+self.gameState.minBet
-     roundedBet = Math.round(unroundedBetAmount/self.gameState.minIncrement)*self.gameState.minIncrement
+     roundedBet = Math.round(unroundedBetAmount/self.initial_table_state.min_increment)*self.initial_table_state.min_increment
   }
 
 self.adjustBetDisplay(roundedBet)
@@ -2050,7 +2050,7 @@ self.adjustBetDisplay(roundedBet)
     event.target.x = event.stageX
       betSizePercent = (event.stageX-minX)/(maxX-minX)
       unroundedBetAmount =  betSizePercent*(self.gameState.maxBet-self.gameState.minBet)+self.gameState.minBet
-      roundedBet = Math.round(unroundedBetAmount/self.gameState.minIncrement)*self.gameState.minIncrement
+      roundedBet = Math.round(unroundedBetAmount/self.initial_table_state.min_increment)*self.initial_table_state.min_increment
   }
 
 self.adjustBetDisplay(roundedBet)
@@ -5466,7 +5466,7 @@ if(betSize>self.gameState.maxBet){return self.gameState.maxBet}
     var roundedBetSize
     //if not a number use last known number and round
     if(isNumber == false ){return false }
-    else{ roundedBetSize = Math.floor(betSize/self.gameState.minIncrement)*self.gameState.minIncrement    }
+    else{ roundedBetSize = Math.floor(betSize/self.initial_table_state.min_increment)*self.initial_table_state.min_increment    }
 
         return roundedBetSize
 }
@@ -8040,8 +8040,8 @@ var highBet = self.getHighBet()
 
 var getMinBet = function(){
 
-if(self.isItemAddedToStage(self.images.community[3])){var minBet = self.gameState.bigBlind/2}
-  else{var minBet = self.gameState.bigBlind}
+if(self.isItemAddedToStage(self.images.community[3])){var minBet = self.initial_table_state.small_blind}
+  else{var minBet = self.initial_table_state.big_blind}
 
     if(!_.isNumber(minBet) || _.isNaN(minBet)){
       console.log('minbet not a number = '+minBet);
@@ -9910,7 +9910,7 @@ trueOrFalseToggleRaiseAndBet(true)
 
         this.gameState.minBet = minBet
         this.gameState.maxBet = maxBet
-        this.gameState.minIncrement = minIncrement
+       // this.gameState.minIncrement = minIncrement
 
  //reset slider to original position and color
  this.images.betSlider.vertical.image.x =  this.images.betSlider.vertical.position.x
@@ -11154,8 +11154,8 @@ if(update !== false){this.updateStages(stagesToUpdate)}
         this.images.cashier.playerMinValue.text.text = info.currency_per_chip*info.min
        this.images.cashier.accountBalanceValue.text.text = this.gameState.cashier.balance 
 if(this.gameState.cashier.balance < this.gameState.cashier.min ){ 
-
-  this.images.cashier.accountBalanceValue.text.text = this.images.cashier.accountBalanceValue.text.text + '///GET MORE CH'
+var accountBalanceColor = 'red'
+  this.images.cashier.accountBalanceValue.text.text = this.images.cashier.accountBalanceValue.text.text + '//CLICK HERE'
 
 this.images.cashier.accountBalanceValue.text.onClick = function(e){
 
@@ -11163,12 +11163,9 @@ this.images.cashier.accountBalanceValue.text.onClick = function(e){
 // window.open('/account', 'Account', 'width=800,height=770 ,left=200,top=200,location=0,toolbar=no,menubar=no,titlebar=no,directories=no,scrollbars=yes')
  
 $.post('/increase_funbucks_by_100')
-
 socket.emit('get_add_chips_info')
 
 }
-
-var accountBalanceColor = 'red'
 
 }
 
@@ -12260,6 +12257,8 @@ else{return self.gameState.street.justActed}
 
    this.displayInitialTableState = function(table_state){
 
+this.initial_table_state = table_state
+
 var showTable = false
  //set up animation variables
  var tickerInterval = 5
@@ -12432,10 +12431,10 @@ potSizes[i] = table_state.pots[i].value
        
 
          //set game data
-     self.gameState.bigBlind = table_state.big_blind
-     self.gameState.minIncrement = table_state.min_increment
-     self.gameState.cashier.currency = table_state.currency
-     self.gameState.cashier.currency_per_chip =  table_state.currency_per_chip
+  //   self.gameState.bigBlind = table_state.big_blind
+ //    self.gameState.minIncrement = table_state.min_increment
+   //  self.gameState.cashier.currency = table_state.currency
+    // self.gameState.cashier.currency_per_chip =  table_state.currency_per_chip
 
 //display buttons/table stuff
 this.updateUserOptionsBasedOnFlagsAndPreactions()
@@ -12611,10 +12610,15 @@ switch (flag){
 
 case 'check':
 case 'fold':
-case 'call':
 case 'bet' :
 case 'raise':
+case 'all_in':
+case 'call_any':
 self.setPreactionData('hand', flag,value, {server:false}) 
+break;
+
+case 'call':
+self.setPreactionData('once', flag,value, {server:false}) 
 break;
 
 default:
@@ -13055,7 +13059,7 @@ options.update = false
 
 var stagesToUpdate = []
 
-     stagesToUpdate.push(    self.roundEnds() )
+     stagesToUpdate.push(self.roundEnds() )
  for(var i = 0;i<self.images.seats.length;i++){
 
 stagesToUpdate.push(    self.hideChildren(self.images.seats[i].hiddenCards,options))
