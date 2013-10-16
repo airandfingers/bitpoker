@@ -4715,6 +4715,8 @@ $( this.cashier.cancel.image).on('click', function(e){self.hideCashier()})
      $( this.cashier.disableAutoRebuy.image).on('contextmenu', function(e){return false})
 
 self.images.positionCashierButtons = function(displayDisableAutoRebuy, options){
+console.log('positioncashier buttons called displayDisableAutoRebuy = '+displayDisableAutoRebuy)
+
 if(!options){var options = {}}
   var update = options.update
 options.update = false
@@ -7820,7 +7822,7 @@ else if(actionType === 'autorebuy'){
   console.log(typeof value)
   console.log(_.isNumber(value))
   console.log(value > 0)
-if(_.isNumber(value) && value > 0 ){return true}
+if(_.isNumber(value) && value > 0 ){return value}
 else{return}
 }
 
@@ -11769,6 +11771,8 @@ var autoRebuyFlagValue = self.getPreactionData('autorebuy')
 console.log('retreived preaction data of autorebuy value = ' + autoRebuyFlagValue)
 
 var displayDisableAutoRebuy = false
+
+console.log(typeof autoRebuyFlagValue)
 
 //determine whether to display the autorebuy button
 if(_.isNumber(autoRebuyFlagValue)){
