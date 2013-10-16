@@ -3773,7 +3773,7 @@ var playerSeatObject = self.images.seats[i]
    playerSeatObject.chat.image = new createjs.Shape()
 
    //----------function to redraw chat box anytime with a new width
-playerSeatObject.chat.image.drawChat = function(width,numLines){
+playerSeatObject.chat.image.drawChat = function(width, numLines){
 
     //make sure width is <= maxWidth
     if(width == undefined){var width = playerSeatObject.chat.size.x}
@@ -3812,9 +3812,15 @@ playerSeatObject.chat.text.lineWidth =   playerSeatObject.chat.size.x*.85
 //creating bubble chat popover divs
 if(!_.isArray(playerSeatObject.bubbleChats)) {playerSeatObject.bubbleChats = []}
 
+var bubbleChatDivX = chatX
+var bubbleChatDivWidth = playerSeatObject.chat.size.x
+var bubbleChatDivHeight = 55
+var bubbleChatDivY = playerSeatObject.chat.position.y + playerSeatObject.chat.size.y - bubbleChatDivHeight
+
+
 //we are going to create a div on top of each player's seat
 if(playerSeatObject.bubbleChats[0] instanceof self.images.Item !== true){
-playerSeatObject.bubbleChats[0] = new self.images.Item(playerSeatObject.chat.position.x, playerSeatObject.chat.position.y, playerSeatObject.chat.size.x , playerSeatObject.chat.size.y, playerSeatObject.chat.position.z)
+playerSeatObject.bubbleChats[0] = new self.images.Item(bubbleChatDivX, bubbleChatDivY, bubbleChatDivWidth , bubbleChatDivHeight, playerSeatObject.chat.position.z)
 
 var divID = 'originalSeat'+ i + 'BubbleChat0'
 //remove previous versions
@@ -3831,8 +3837,8 @@ self.positionItemImage(playerSeatObject.bubbleChats[0])
 
 $(playerSeatObject.bubbleChats[0].image).css({
 'z-index': 9999
-,'width': playerSeatObject.chat.size.x
-,'height':playerSeatObject.chat.size.y
+//,'width': playerSeatObject.chat.size.x
+//,'height':playerSeatObject.chat.size.y
   // ,'pointer-events': 'none'
  // ,'background':'#FFFFFF'
 })
@@ -9466,7 +9472,12 @@ var qtipOptions = {
   ,delay: 10000 
 ,event:'manual'
 }//hide
-  ,content: {text: chatInfo.message}
+  ,content: {
+    text: chatInfo.message
+    ,attr:{
+'max-height': self.images.seats[chatInfo.seat].bubbleChats[0].size.y + 'px'
+    }//content.attr
+  }//content
 ,position: {
     my: 'bottom middle' // tooltip position
     ,at: 'bottom middle' // div position
@@ -9474,25 +9485,33 @@ var qtipOptions = {
     ,adjust:{resize:true}
       // adjust:{x:,y:}
  ,  container:  $(playerSeatObject.bubbleChats[0].image)      //$(seatDiv)
- ,viewport: $(seatDiv) //true// //  true //$(window)
- ,adjust:{
-  method:'shift none'
- }//position.adjust
+ //,viewport: $(seatDiv)// $(playerSeatObject.bubbleChats[0].image) //true// //  true //$(window)
+ ,adjust:{method:'shift none' }//position.adjust
   }//position
     ,style:{
       classes: 'qtip-tipsy'
-   //   ,width:   self.images.seats[chatInfo.seat].chat.size.x
-   //  ,height:  self.images.seats[chatInfo.seat].chat.size.y
+   //   ,width:   self.images.seats[chatInfo.seat].bubbleChats[0].size.x
+    // ,height:  self.images.seats[chatInfo.seat].bubbleChats[0].size.y
     //  ,tip:{corner:'right top'}
     }//style
  
 
  ,events:{
 show: function(event, api){
+  console.log('show event on qtip called')
+  console.log(event)
+  var elementID = '#qtip-'+qtipID
+  console.log('appling css styles to element with id of: ' + elementID)
+  console.log($(elementID))
   //set appropriate max width and height
-$('#qtip-'+qtipID).css({
+$(elementID).css({
 'max-width':playerSeatObject.bubbleChats[0].size.x+'px'
-,'max-height':playerSeatObject.bubbleChats[0].size.y +'px'
+//,'max-height':playerSeatObject.bubbleChats[0].size.y +'px'
+,'max-height':1 +'px'
+,'overflow':'hidden'
+,'overflow-y':'hidden'
+,'overflow-x':'hidden'
+,'opacity': .3
 })
 
 }//show event
