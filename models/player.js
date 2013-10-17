@@ -218,7 +218,12 @@ module.exports = (function () {
         _.all(['raise', 'bet', 'call'], function(all_in_action) {
           if (! _.isUndefined(actions_obj[all_in_action])) {
             auto_action = all_in_action;
-            auto_action_value = all_in_action !== 'call' ? actions_obj[all_in_action][1] : undefined;
+            if (all_in_action === 'call') {
+              auto_action_value = actions_obj.call;
+            }
+            else {
+              auto_action_value = actions_obj[all_in_action][1];
+            }
             return false; //break
           }
           return true; //continue
