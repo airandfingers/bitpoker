@@ -207,7 +207,7 @@ self.jQueryObjects.tableChatFullParagraph.css('color', this.value)
         } 
            },
 
-        windowColor: {value:'black'  },
+        windowColor: {value:'#000000'  },
 
         windowAlpha:{value: 0.4 , updateValue: function(newValue){
 
@@ -4862,7 +4862,6 @@ var tableChatFullStageCanvas =  self.arrayOfParentsOfStageAndOfContainerArray[ t
 'height': this.tableChatFull.htmlStageElement.size.y+'px'
   })
         $(tableChatFullStageCanvas).css({
-'display':'none',
                'left':this.tableChatFull.htmlStageElement.position.x+'px',
     'top':this.tableChatFull.htmlStageElement.position.y +'px',
   //  'z-index':1
@@ -4874,7 +4873,7 @@ var tableChatFullWindowBorderWidth = 1
 var tableChatFullWindowAlpha = self.permanentPreferences.tableChatFull.windowAlpha.value
 var tableChatFullRoundedRectCornerSizeRatioOfHeight = 0.05
 
-  this.tableChatFull.window = new this.Item(0, 0, tableChatFullStageWidth, tableChatFullStageHeight,self.gameState.zPositionData.tableChatFull)
+  this.tableChatFull.window = new this.Item(0, 0, tableChatFullStageWidth, tableChatFullStageHeight, self.gameState.zPositionData.tableChatFull)
   this.tableChatFull.window.image = new createjs.Shape()
 this.tableChatFull.window.image.graphics.beginFill(tableChatFullWindowBackgroundColor)
 .setStrokeStyle(tableChatFullWindowBorderWidth,'round').beginStroke(tableChatFullWindowBorderColor)
@@ -9815,7 +9814,7 @@ appendTableChatFullMessageInArrayForm(log[messageArray])
 }
 
 else  if(!_.isArray(messageArray)){
-console.log('appendfull text is iterating through the full message log of length: ' + log.length)
+//console.log('appendfull text is iterating through the full message log of length: ' + log.length)
 for(var i = 0;i<log.length;i++){appendTableChatFullMessageInArrayForm(log[i], false) }
 
   //replace with full length text
@@ -9839,8 +9838,8 @@ else if(options && options.moveTable === true){self.moveTableChatFullMessageText
 
 
 function appendTableChatFullMessageInArrayForm(messageInArrayForm){
-  console.log('messageInArrayForm = ')
-  console.log(messageInArrayForm)
+ // console.log('messageInArrayForm = ')
+//  console.log(messageInArrayForm)
 var displayCurrentLog 
 
 //format of log is ['dealer',messageString, timeStampString]
@@ -10589,7 +10588,7 @@ var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.im
 
 setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(this.images.tableChatFull.window, true)
 //$(tableChatFullCanvas).css('display','inline')
-self.jQueryObjects.tableChatFullParagraph.css('display','inline ')
+//self.jQueryObjects.tableChatFullParagraph.css('display','inline ')
 
 //restore scrollbar position
  var scrollInfo ={magnitude: self.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value}
@@ -10600,8 +10599,7 @@ console.log('tablechatfull object = ')
 console.log(this.images.tableChatFull)
 
 hideOrDisplayChildrenOptions.update = update
-if(update !== false){
-  this.updateStages(stagesToUpdate)}
+if(update !== false){  this.updateStages(stagesToUpdate)}
   else{return stagesToUpdate}
 
 
@@ -10639,7 +10637,7 @@ var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.im
 
 //$(tableChatFullCanvas).css('display','none')
 setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(this.images.tableChatFull.window, false)
-self.jQueryObjects.tableChatFullParagraph.css('display','none')
+//self.jQueryObjects.tableChatFullParagraph.css('display','none')
 if(update!== false){this.updateStages(stagesToUpdate)}
   else{stagesToUpdate}
 }
