@@ -72,6 +72,7 @@
                         </a>
                     </li>
                     <% include bug_report %>
+
                     <!-- SIGN UP dropdown Link -->
                     <li class="right">
                         <% if (locals.username) { %>
@@ -142,6 +143,14 @@
                           </form>
                         </div>
                     <% } %>
+                    <!-- Funbucks/Satoshi Chip Count -->
+                    <li class="right">
+                        <% if(locals.username) { %>
+                            Fb <%= funbucks %>
+                            Sat <%= satoshi %>
+                        <% } %>
+                    </li>
+
                 </ul>
             </nav>
           <% } %>
