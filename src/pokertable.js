@@ -1791,7 +1791,7 @@ if( _.isNumber(preferenceSeat) && ( preferenceSeat === 0 || preferenceSeat === s
          
          //self.hideMessageBox()
          }
-          var messageString = 'Your table viewpoint has been changed so that you appear at the bottom middle.  Your position relative to other players remains the same. Click '+messageInfo.cancelText+ ' to change your view back.'  
+          var messageString = 'Your table viewpoint has been changed so that you appear at the bottom middle.  Your position relative to other players remains the same. Click '+messageInfo.cancelText+ ' to change your view back.  At the table, you may also right click ---> Show Me Here to change your view.'  
               self.displayMessageBox(messageString, messageInfo)
          }//if we want to display popup, display it
          }//rotate seat to display user as seat 0, then check if we need to confirm the change with the user
@@ -3778,7 +3778,7 @@ playerSeatObject.chat.image.drawChat = function(width, numLines){
     //make sure width is <= maxWidth
     if(width == undefined){var width = playerSeatObject.chat.size.x}
    else if(width > playerSeatObject.chat.size.x){width = playerSeatObject.chat.size.x}
-   //clear previous graphics
+   //clear previous graphicss
    playerSeatObject.chat.image.graphics.clear()
    //define parent
 playerSeatObject.chat.image.parentOfImageObject = playerSeatObject.chat
@@ -3788,7 +3788,7 @@ var x =   (playerSeatObject.chat.size.x - width)/2
 var y = 0
    playerSeatObject.chat.image.snapToPixel = true
 playerSeatObject.chat.image.graphics.setStrokeStyle(1,'round').beginStroke(chatBoxBorderColor).beginFill('#000000')
-.drawRoundRect(x, y - (numLines-1)*(chatBoxFontSize+1), width, playerSeatObject.chat.size.y+(numLines-1)*(chatBoxFontSize+1),  playerSeatObject.chat.size.y*.16)
+.drawRoundRect(x, y - (numLines-1)*(chatBoxFontSize+1), width, playerSeatObject.chat.size.y+(numLines-1)*(chatBoxFontSize+1),  playerSeatObject.chat.size.y*.02)
 
 self.images.seats[i].chat.image.alpha = self.imageData.chatBoxAlpha
 
@@ -3812,8 +3812,8 @@ playerSeatObject.chat.text.lineWidth =   playerSeatObject.chat.size.x*.85
 //creating bubble chat popover divs
 if(!_.isArray(playerSeatObject.bubbleChats)) {playerSeatObject.bubbleChats = []}
 
-var bubbleChatDivX = chatX
-var bubbleChatDivWidth = playerSeatObject.chat.size.x
+var bubbleChatDivWidth = playerSeatObject.chat.size.x*1.1
+var bubbleChatDivX = chatX + playerSeatObject.chat.size.x/2 - bubbleChatDivWidth/2
 var bubbleChatDivHeight = 55
 var bubbleChatDivY = playerSeatObject.chat.position.y + playerSeatObject.chat.size.y - bubbleChatDivHeight
 
@@ -3837,6 +3837,7 @@ self.positionItemImage(playerSeatObject.bubbleChats[0])
 
 $(playerSeatObject.bubbleChats[0].image).css({
 'z-index': 9999
+//,'overflow':'hidden'
 //,'width': playerSeatObject.chat.size.x
 //,'height':playerSeatObject.chat.size.y
   // ,'pointer-events': 'none'
@@ -8101,18 +8102,26 @@ var check
 var raise 
 var bet 
 
-/*
+
 console.log('get preaction values called, preactiondata to act = ')
 console.log(self.getPreactionData('toAct', {seat:'table'}))
 console.log('get preaction values called, preactiondata inhand = ')
 console.log( self.getPreactionData('inHand', {seat:userSeat}))
 console.log('can player act = '+ canPlayerActDefaultsToUser(userSeat))
 console.log('minbet = '+minBet)
-*/
 
-if(canPlayerActDefaultsToUser(userSeat) === false ||  self.getPreactionData('toAct',{seat:'table'}) === userSeat 
-|| self.getPreactionData('inHand', {seat:userSeat}) !== true || !_.isNumber(minBet) 
-||_.compact(currentBetSizes).length === 0){}//display no options if user is all in
+
+if(canPlayerActDefaultsToUser(userSeat) === false){
+  console.log('getPreactionOptionValues fail due to player cannot act')
+}
+else if (self.getPreactionData('toAct',{seat:'table'}) === userSeat ){
+    console.log('getPreactionOptionValues fail due to user is to act and so cannot display preaction values')
+}
+else if(self.getPreactionData('inHand', {seat:userSeat}) !== true){
+console.log('getPreactionOptionValues fail due to user not in hand')
+}
+else if (!_.isNumber(minBet) ){console.log('getPreactionOptionValues fail due to minbet not a number')}
+else if(_.compact(currentStackSizes).length === 0){console.log('getPreactionOptionValues fail due to all stacksizes === 0')}
   else{
      all_in = userStackSize + userBet //set to false later if neceesary
   //display fold option
@@ -9421,6 +9430,9 @@ return isAtBottom
 
 this.displayBubbleChatPopover = function(chatInfo){
 
+var fontSize  = '13px'
+
+
 console.log('displayin bubblechat popover')
 console.log(chatInfo)
 
@@ -9462,6 +9474,7 @@ $(playerSeatObject.bubbleChatBase.image).css({
 
 var seatDiv = self.arrayOfParentsOfStageAndOfContainerArray[self.images.seats[chatInfo.seat].seat.position.z.stage].div
 var qtipID = 'seat'+chatInfo.seat
+var qtipJQueryTarget = $(playerSeatObject.bubbleChats[0].image)
 
 var qtipOptions = {
   id:qtipID
@@ -9470,23 +9483,24 @@ var qtipOptions = {
  ,hide: {
     fixed:true     //will not hide when we mouseover it
   ,delay: 10000 
-,event:'manual'
+//,event:'manual'
 }//hide
   ,content: {
     text: chatInfo.message
     ,attr:{
-'max-height': self.images.seats[chatInfo.seat].bubbleChats[0].size.y + 'px'
+//'max-height': self.images.seats[chatInfo.seat].bubbleChats[0].size.y + 'px'
+//,'overflow':'hidden'
     }//content.attr
   }//content
 ,position: {
     my: 'bottom middle' // tooltip position
     ,at: 'bottom middle' // div position
-    ,target: $(playerSeatObject.bubbleChats[0].image) // my target
+    ,target: qtipJQueryTarget // my target
     ,adjust:{resize:true}
       // adjust:{x:,y:}
  ,  container:  $(playerSeatObject.bubbleChats[0].image)      //$(seatDiv)
- //,viewport: $(seatDiv)// $(playerSeatObject.bubbleChats[0].image) //true// //  true //$(window)
- ,adjust:{method:'shift none' }//position.adjust
+ ,viewport: $(window)//$(playerSeatObject.bubbleChats[0].image) //true// //  true //$(window)
+  ,adjust:{method:'shift shift' }//position.adjust
   }//position
     ,style:{
       classes: 'qtip-tipsy'
@@ -9499,20 +9513,62 @@ var qtipOptions = {
  ,events:{
 show: function(event, api){
   console.log('show event on qtip called')
-  console.log(event)
-  var elementID = '#qtip-'+qtipID
-  console.log('appling css styles to element with id of: ' + elementID)
-  console.log($(elementID))
+ // console.log(event)
+  //console.log(api.elements)
+  var container = api.elements.tooltip
+  var content = api.elements.content
+
+  setCSS()
   //set appropriate max width and height
-$(elementID).css({
-'max-width':playerSeatObject.bubbleChats[0].size.x+'px'
-//,'max-height':playerSeatObject.bubbleChats[0].size.y +'px'
-,'max-height':1 +'px'
-,'overflow':'hidden'
-,'overflow-y':'hidden'
-,'overflow-x':'hidden'
-,'opacity': .3
+//createjs.Tween.get($(elementID), {override:true})
+//.wait(1).call(setCSS)
+
+function setCSS (){
+
+var width = playerSeatObject.bubbleChats[0].size.x
+var height = playerSeatObject.bubbleChats[0].size.y
+console.log('calling set css')
+
+var containerWidthBullshit = container.outerWidth(true) - container.width()
+var containerHeightBullshit = container.outerHeight(true) - container.height()
+
+//set total height and width to match width and height
+var containerWidth = width - containerWidthBullshit
+var containerHeight = height - containerHeightBullshit
+
+//set max width/height of container
+container.css({
+'max-width':containerWidth + 'px'
+,'max-height':containerHeight + 'px'
 })
+
+//calculate margin/padding/other bullshit
+var contentWidthBullshit = content.outerWidth(true) - content.width()
+var contentHeightBullshit = content.outerHeight(true) - content.height()
+
+//set total height and width to match width and height
+var contentWidth = width - contentWidthBullshit
+var contentHeight = height - contentHeightBullshit
+
+content.css({
+'max-width':contentWidth + 'px',
+'max-height': contentHeight + 'px',
+'overflow':'hidden'
+//,'overflow-y':'hidden'
+//,'opacity': 0.8
+,'font-family':self.permanentPreferences.defaultFontType.value
+,'font-size': fontSize
+//,'line-height':1
+,'font-weight':300
+})
+
+content.addClass(self.css.unselectable)
+
+
+
+
+}//set css function
+
 
 }//show event
  }//events
@@ -9522,15 +9578,20 @@ $(elementID).css({
   }//qtip options
 
 
+qtipJQueryTarget.qtip('hide')
+qtipJQueryTarget.children('.qtip').remove()
 
 
-$(playerSeatObject.bubbleChats[0].image).qtip('destroy', false)
-$(playerSeatObject.bubbleChats[0].image).qtip(qtipOptions)
+qtipJQueryTarget.qtip('destroy', false)
+qtipJQueryTarget.qtip(qtipOptions)
+
+/*
 console.log($(playerSeatObject.bubbleChats[0].image)  )
 console.log( $('#qtip-'+qtipID))
+*/
 
 
-$(playerSeatObject.bubbleChats[0].image).toggle(true)
+//$(playerSeatObject.bubbleChats[0].image).toggle(true)
 
 
 /*
@@ -12641,7 +12702,8 @@ self.setPreactionData('hand', flag,value, {server:false})
 break;
 
 case 'call':
-self.setPreactionData('once', flag,value, {server:false}) 
+if(!_.isNumber(value)){ self.setPreactionData('hand', flag,value, {server:false}) }
+else {self.setPreactionData('once', flag,value, {server:false}) }
 break;
 
 default:
@@ -12678,7 +12740,7 @@ self.clearExpirationData('act', seatNum)
         self.playerActs(seatNum, action.toUpperCase(), 1.2)
         
     //display updated potsize if necessary
-        if(pot&&action!=='check'){self.updatePotSize(pot)}
+        if(pot && action!=='check'){self.updatePotSize(pot)}
 
         switch(action.toLowerCase()){
         case 'fold':
@@ -12707,7 +12769,6 @@ self.clearExpirationData('act', seatNum)
             case'post_blind':
               var betSound = createjs.Sound.createInstance(self.images.sources.betSound)
             betSound.play()
-      //      self.displayChipStack(player.current_bet, self.images.seats[player.seat], self.images.seats[player.seat].firstChip.position.x,self.images.seats[player.seat].firstChip.position.y )
             self.playerPutsChipsInPot(seatNum,player.current_bet, player.chips)
               self.setPreactionData('hand', 'inHand', true)
             break;
@@ -12715,7 +12776,7 @@ self.clearExpirationData('act', seatNum)
         }
             
              setJustActedOrPassNullToGetJustActed(seatNum)
-                  self.clearExpirationData('act', player.seat)
+                  self.clearExpirationData('act', seatNum)
              //clear once for user
              if(seatNum === self.gameState.userSeatNumber){
               self.clearExpirationData('once', player.seat)
@@ -12896,7 +12957,8 @@ if( self.gameState.seats[player.seat].toAct == true){self.startCountdown(player.
    chatInfo.seat = self.gameState.userSeatNumber
 chatInfo.message = notificationString
 
-  self.displayBubbleChat(chatInfo)
+  //self.displayBubbleChat(chatInfo)
+  self.displayBubbleChatPopover(chatInfo)
 
 })
 
