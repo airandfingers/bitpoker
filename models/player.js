@@ -249,7 +249,11 @@ module.exports = (function () {
     }
     if (! auto_responded) {
       // clear all auto-action flags
-      _.each(auto_action_flags, function(action) { self.setFlag(action, false); });
+      var flags = {};
+      _.each(auto_action_flags, function(action) {
+        flags[action] = false;
+      });
+      self.setFlags(flags, true);
 
       console.log('prompting', self.username, 'for next action', actions, timeout);
       self.sendMessage('act_prompt', actions, timeout);
@@ -295,6 +299,7 @@ module.exports = (function () {
 
   PlayerSchema.methods.handStart = function() {
     var self = this
+      , flags = {}
       , flag_value
       , hand_default_value;
     self.in_hand = true;
@@ -303,9 +308,12 @@ module.exports = (function () {
     _.each(Player.action_list, function(action) {
       flag_value = self.flags[action];
       if (flag_value) {
-        self.setFlag(action, false);
+        flags[action] = false;
       }
     });
+    if (! _.isEmpty(flags)) {
+      self.setFlags(flags, true);
+    }
 
     // set values for fields that have declared a hand_default value
     _.each(PlayerSchema.tree, function(field_obj, field_name) {
@@ -758,48 +766,55 @@ module.exports = (function () {
   PlayerSchema.methods.setFlag = function(name, value) {
     console.log('setFlag called for', this.username, 'with', name, value);
 
-    // check autorebuy flag value
-    if (name === 'autorebuy') {
-      var game = this.game;
-      if (! _.isNumber(value) || value < game.MIN_CHIPS) {
-        console.error('Received set_flag message with invalid auto-rebuy amount:', value);
-        value = false;
-        this.flags.autorebuy = value;
-      }
-      else if (value > game.MAX_CHIPS) {
-        console.error('Received set_flag message with auto-rebuy amount > MAX_CHIPS:', value);
-        value = game.MAX_CHIPS;
-        this.flags.autorebuy = value;
-      }
-      this.autoRebuy();
+    // call handleAutoActionFlag instead
+    if (value !== false && _.contains(Player.action_list, name)) {
+      this.handleAutoActionFlag(name, value);
     }
-    else {
-      //all other flags
-      this.flags[name] = value;
-
-      if (value !== false && _.contains(Player.action_list, name)) {
-        this.handleAutoActionFlag(name, value);
+    else {  
+      // check autorebuy flag value
+      if (name === 'autorebuy') {
+        var game = this.game;
+        if (! _.isNumber(value) || value < game.MIN_CHIPS) {
+          console.error('Received set_flag message with invalid auto-rebuy amount:', value);
+          value = false;
+          this.flags.autorebuy = value;
+        }
+        else if (value > game.MAX_CHIPS) {
+          console.error('Received set_flag message with auto-rebuy amount > MAX_CHIPS:', value);
+          value = game.MAX_CHIPS;
+          this.flags.autorebuy = value;
+        }
+        this.autoRebuy();
       }
+      else {
+        //all other flags
+        this.flags[name] = value;
+      }
+      this.sendMessage('flag_set', name, value);
     }
-    this.sendMessage('flag_set', name, value);
   };
 
   PlayerSchema.methods.handleAutoActionFlag = function(action, value) {
+    var actions = {};
+    actions[action] = value;
     switch(action) {
     case 'fold':
-      this.setFlags({ call: false, all_in: false });
+      _.extend(actions, { call: false, all_in: false });
       break;
     case 'check':
-      this.setFlags({ all_in: false });
+      _.extend(actions, { all_in: false });
       break;
     case 'call':
-      this.setFlags({ fold: false, all_in: false });
+      _.extend(actions, { fold: false, all_in: false });
       break;
     case 'all_in':
-      this.setFlags({ fold: false, check: false, call: false });
+      _.extend(actions, { fold: false, check: false, call: false });
       break;
     default: console.error('handleAutoActionFlag called with unknown action', action);
     }
+    this.setFlags(actions, true);
+
+    // handle flag immediately if it might be an answer to an outstanding prompt
     if (_.isObject(this.current_prompt)) {
       this.idle = false;
       if (action === 'all_in') {
@@ -840,11 +855,23 @@ module.exports = (function () {
   };
 
   static_properties.messages.set_flags = 'setFlags';
-  PlayerSchema.methods.setFlags = function(flags) {
+  PlayerSchema.methods.setFlags = function(flags, send_flags_set) {
     var self = this;
-    _.each(flags, function(value, name) {
-      self.setFlag(name, value);
-    });
+    // send_flags_set determines whether to send flags_set or flag_set; default is flag_set
+    
+    if (send_flags_set !== true) {
+      // default behavior - just call setFlag
+      _.each(flags, function(value, name) {
+        self.setFlag(name, value);
+      });
+    }
+    else {
+      // send_flags_set behavior - set flags by hand, don't process autorebuy/autoactions, send flags_set
+      _.each(flags, function(value, name) {
+        self.flags[name] = value;
+      });
+      self.sendMessage('flags_set', flags);
+    }
   };
 
   PlayerSchema.methods.isFlagSet = function(name) {
