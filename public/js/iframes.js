@@ -101,6 +101,9 @@
     else {
       console.error('no iframe found for table_name', table_name);
     }
+    if ($('#iframe_container').find('iframe').length === 0) {
+      $('#lobby_trigger').click();
+    }
     $.post('/leave_table', { table_name: table_name }, function(response) {
       console.log('/leave_table returns', response)
     })

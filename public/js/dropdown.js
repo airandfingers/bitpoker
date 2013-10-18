@@ -195,8 +195,7 @@ $(function() {
     return $lobby_trigger.position().top + $lobby_trigger.height();
   }
 
-  if ($('#iframe_container').length > 0 &&
-      $('#iframe_container').find('.iframe').length === 0 && $('#server_values').length > 0 ) {
+  if ($('#server_values').data('current_table_names').length === 0) {
     $lobby_trigger.click();
   }
 
