@@ -140,7 +140,6 @@ $(function() {
         columns_resized = true;
       }
     }
-
   }, function() {
     console.log('hover off trigger fired!');
     if ($lobby_trigger.hasClass('active')) {
@@ -201,6 +200,42 @@ $(function() {
   }
 
 });
+
+<!-- Hide/Show Account functionionality -->
+var $account = $('#account')
+  , $account_trigger = $('#account_trigger')
+
+$(function() {
+  $account_trigger.click(account_drop)
+});
+
+function account_drop() {
+  //$account.show('slide', { direction: "right" }, 400);
+  console.log('account dropdown trigger fired.');
+
+    if (! $account_trigger.hasClass('active')) {
+      // add active class
+      $account_trigger
+        .addClass('active');
+      // hide lobby form
+      $account
+        .css({
+          left: $(this).position().left - 160
+        , top: $(this).position().top
+        })
+        .stop(true, true)
+        .show('slide', {direction: 'right'},  400);
+    }
+    else {
+      // remove active class
+      $account_trigger
+        .removeClass('active');
+      // hide lobby form
+      $account
+        .stop(true, true)
+        .hide('slide', {direction: 'right'},  400);
+    }
+}
 
   // ajax form submission
   $report_bug.find('form').submit(function(e) {

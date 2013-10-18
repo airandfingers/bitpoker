@@ -121,8 +121,11 @@ module.exports = (function () {
         }
         res.render('index', {
           title: 'Bitcoin Poker'
+        , email: req.user.email
+        , email_confirmed: req.user.email_confirmed
         , funbucks: req.user.funbucks
         , table_games: table_games
+        , registration_date: req.user.registration_date
         , room_state: JSON.stringify(room_state)
         , message: req.flash('error')
         , satoshi: req.user.satoshi
