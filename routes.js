@@ -121,10 +121,13 @@ module.exports = (function () {
         }
         res.render('index', {
           title: 'Bitcoin Poker'
+        , funbucks: req.user.funbucks
         , table_games: table_games
         , room_state: JSON.stringify(room_state)
         , message: req.flash('error')
-        , user: req.user
+        , satoshi: req.user.satoshi
+        , user: req.user      
+
         });
 
       }
