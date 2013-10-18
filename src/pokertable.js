@@ -240,7 +240,8 @@ this.performance.numCanvasClears = 0
           currentlyDisplayingPlayerMessages:null,
           currentlyDisplayingObserverMessages:null,
 scrollToBasedOnHiddenPixelsAtTopOfChatMessageText:99999999,
-mouseDown:false
+mouseDown:false,
+fullTextString:''
         }
 
         this.gameState.betSize = new Number
@@ -9479,7 +9480,10 @@ var qtipJQueryTarget = $(playerSeatObject.bubbleChats[0].image)
 var qtipOptions = {
   id:qtipID
   //,overwrite:true
-  ,show: {ready: true }//show as soon as its loaded
+  ,show: {
+  ready: true,
+show:'manual'
+   }//show as soon as its loaded
  ,hide: {
     fixed:true     //will not hide when we mouseover it
   ,delay: 10000 
@@ -9798,6 +9802,7 @@ textTween.setPaused(false)
   }//playerChats function
 
 this.appendTableChatFullMessageText = function(messageArray, options){
+  console.log('this.appendTableChatFullMessageText called' + 'messageArray parameter = '+messageArray)
 if(!options){var options = {}}
 
 var isAtBottom = this.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText() 
@@ -9805,44 +9810,82 @@ var log = self.gameState.tableChatFull.log
 
 if(_.isNumber(messageArray) &&!_.isNaN(messageArray) && messageArray >=0 && messageArray <= log.length-1){
 
-this.appendTableChatFullMessageText(log[i], options)
+appendTableChatFullMessageInArrayForm(log[messageArray])
 
 }
 
 else  if(!_.isArray(messageArray)){
-  self.gameState.tableChatFull.fullTextString = ''  //reset textstring
-for(var i = 0;i<log.length;i++){this.appendTableChatFullMessageText(log[i], options) }
+console.log('appendfull text is iterating through the full message log of length: ' + log.length)
+for(var i = 0;i<log.length;i++){appendTableChatFullMessageInArrayForm(log[i], false) }
+
+  //replace with full length text
+replaceTableChatFullParagraphText(self.gameState.tableChatFull.fullTextString)
+
 }//if messageArray not given, just do the whole thing
 
-else{//append a single message
-var displayCurrentLog 
+else if (_.isArray(messageArray)){//append a single message
 
-//format of log is ['dealer',messageString, timeStampString]
-
-//skip appending messages if its of a type we dont want to display
-if(messageArray[0] === 'dealer'){displayCurrentLog = self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages.value}
-else if(messageArray[0] === 'observer'){displayCurrentLog = self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages.value}
-  else {displayCurrentLog = self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages.value}
-   
-   if(displayCurrentLog !== false) {//we WANT to display the message
-
-//add a line break if this is not the first line in the string
-if(self.gameState.tableChatFull.fullTextString.length>0){self.gameState.tableChatFull.fullTextString = self.gameState.tableChatFull.fullTextString + '<br>'}
-
-//add messageArray[1] to string
-self.gameState.tableChatFull.fullTextString = self.gameState.tableChatFull.fullTextString + messageArray[1]
+log.push(messageArray)
+appendTableChatFullMessageInArrayForm(messageArray)
 
 }
-
-self.jQueryObjects.tableChatFullParagraph.html(self.gameState.tableChatFull.fullTextString)
-}
+else{console.log('append text passed invalid parameter')}
 //self.jQueryObjects.tableChatFullParagraph.append('<br>'+ textString)
 
 if(options.update !== false && options.moveTable !== true){
 if(isAtBottom === true && self.gameState.tableChatFull.mouseDown != true && options && options.moveTable !== false){ self.moveTableChatFullMessageText()}
 else if(options && options.moveTable === true){self.moveTableChatFullMessageText()}
 }//if update !== false, or moveTable === true
+
+
+function appendTableChatFullMessageInArrayForm(messageInArrayForm){
+  console.log('messageInArrayForm = ')
+  console.log(messageInArrayForm)
+var displayCurrentLog 
+
+//format of log is ['dealer',messageString, timeStampString]
+
+//skip appending messages if its of a type we dont want to display
+if(messageInArrayForm[0] === 'dealer'){displayCurrentLog = self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages.value}
+else if(messageInArrayForm[0] === 'observer'){displayCurrentLog = self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages.value}
+  else {displayCurrentLog = self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages.value}
+   
+   if(displayCurrentLog !== false) {//we WANT to display the message
+
+var stringToAppend = ''
+
+//add a line break if this is not the first line in the string
+if(self.gameState.tableChatFull.fullTextString.length > 0){stringToAppend = stringToAppend + '<br>'}
+
+//add messageArray[1] to string
+stringToAppend = stringToAppend + messageInArrayForm[1]
+
+}//we are going to display the message
+
+//update current locally stored data and the paragraph data
+appendTableChatFullString(stringToAppend)
+
+}//append an array
+
+function appendTableChatFullString(textToAppend, updateDefaultsToTrue){
+
+//update current locally stored data and the paragraph data
+self.gameState.tableChatFull.fullTextString = self.gameState.tableChatFull.fullTextString + textToAppend
+if(updateDefaultsToTrue !== false) {self.jQueryObjects.tableChatFullParagraph.append(textToAppend)}
+
+}//append a string
+
+function replaceTableChatFullParagraphText(fullText){
+  if(!_.isString(fullText + '')){fullText  = ''}
+  //update current locally stored data and the paragraph data
+self.gameState.tableChatFull.fullTextString = ''
+self.jQueryObjects.tableChatFullParagraph.text(fullText)
+}//replace the text
+
 }
+
+
+
 
 this.updateTableChatFullMessageTextFromCurrentOrAdditionalData = function(chatInfo, options){
 if(!options){var options = {}}
@@ -10095,7 +10138,7 @@ else{
 
    stagesToUpdate.push(             this.hideChildren(this.images.seats[seatNumber].playerName, options))
     stagesToUpdate.push(             this.hideText(this.images.seats[seatNumber].action, options))
-    stagesToUpdate.push(             this.hideText(this.images.seats[seatNumber].countdown, options))
+    stagesToUpdate.push(         this.hideText(this.images.seats[seatNumber].countdown, options))
     stagesToUpdate.push(             this.hideChildren(this.images.seats[seatNumber].openSeat, options))
      stagesToUpdate.push(            this.hideChildren(this.images.seats[seatNumber].disabledSeat, options))
             break;
@@ -10411,7 +10454,7 @@ var nextCounter = lastCompletedFillColorCounter+1
                       }
 else{
 //UPDATE GRAPHIC AROUND THE TABLE SEAT
- stagesToUpdate.push(  self.images.drawSeat(self.images.seats[seatNumber].seat, toActBorderColor, newFillColor, toActMiddleDividerColor, {borderFillRatio: self.gameState.seats[seatNumber].timeToActInMS/timeoutInMS, newFillColor:toActTimeLeftBorderColor}) )
+ stagesToUpdate.push(  self.images.drawSeat(self.images.seats[seatNumber].seat, toActBorderColor, newFillColor, toActMiddleDividerColor, {borderFillRatio: self.initial_table_state.act_timeout/timeoutInMS, newFillColor:toActTimeLeftBorderColor}) )
     
     //================COUNTDOWN TEXT START================================================================
 
@@ -10483,6 +10526,8 @@ if(!displayOrHideChildrenOptions){var displayOrHideChildrenOptions = {}}
 displayOrHideChildrenOptions.update = false
 
 var stagesToUpdate = []
+console.log('update tablechatfull display called')
+console.log(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem)
 
 //hide items that should be hidden by default
 _.each(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem,function(value, index, list){
@@ -10508,6 +10553,7 @@ else{return stagesToUpdate}
 
 
 this.displayTableChatFull = function(hideOrDisplayChildrenOptions){
+  console.log('display table chat full called')
     if(!hideOrDisplayChildrenOptions){var hideOrDisplayChildrenOptions = {}}
         var update = hideOrDisplayChildrenOptions.update
         hideOrDisplayChildrenOptions.update = false
@@ -10549,6 +10595,9 @@ self.jQueryObjects.tableChatFullParagraph.css('display','inline ')
  var scrollInfo ={magnitude: self.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value}
 self.moveTableChatFullMessageText(scrollInfo)
 self.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.updateValue(self.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value)
+
+console.log('tablechatfull object = ')
+console.log(this.images.tableChatFull)
 
 hideOrDisplayChildrenOptions.update = update
 if(update !== false){
