@@ -7,13 +7,23 @@ window.onKeydown = onKeyDown
 */
 
 
-   $(window).on('mousewheel', function(e){e.stopPropagation()})
+ // $(window).on('mousewheel', function(e){e.stopPropagation()})
 
     //default canvas size is 690x480
     //all numbers are in base 0, including variable names and documentation
     //seat position 0 is top middle and proceeds clockwise
     function Table () {
 self  = this
+
+var getPlayZoneLandingPage = function(){
+ if (_.isArray($('#server_values').data('current_table_names'))){var page = window}
+else{var page = parent}
+  return page
+}
+
+var playZoneLandingPage =  getPlayZoneLandingPage()
+if(!_.isObject(playZoneLandingPage.sourceObjects)){playZoneLandingPage.sourceObjects = {}}
+
             this.events = {}
             this.css = {
 nonVendor: 'nonVendor'
@@ -32,8 +42,6 @@ nonVendor: 'nonVendor'
   //============PREFERENCES================
 this.sessionPreferences = {
 
-
-
 displaySize:{value:'desktop', updateValue:function(newValue){
  // console.log(self.permanentPreferences.sourceObjects.value)
 this.value = newValue
@@ -49,7 +57,7 @@ self.permanentPreferences.sourceObjects.value.cardObjectParent = self.permanentP
             }
 //redraw table//update card sizes here
 }//change value function
-},
+},//displaySize
       changeUserSeatViewTo:{value:false, updateValue: function(newValue){
 this.value  = newValue
 
@@ -157,12 +165,12 @@ self.updateTableChatFullDisplay(options)}
 
 defaultFontType:{value:'Lucida Sans'},
 //defaultFontType:{value:'Planer_Reg'},
-        sourceObjects:{value:parent.sourceObjects, updateValue:function(newValue){
+        sourceObjects:{value:playZoneLandingPage.sourceObjects, updateValue:function(newValue){
 var newerValue = newValue
 if(!_.isObject(newValue)){
-  console.log('permanent preferences creating new parent.sourceObjects = {}')
-  if(!_.isObject(parent.sourceObjects)){parent.sourceObjects = {}}
-var newerValue = parent.sourceObjects
+  console.log('permanent preferences creating new playZoneLandingPage.sourceObjects = {}')
+  if(!_.isObject(playZoneLandingPage.sourceObjects)){playZoneLandingPage.sourceObjects = {}}
+var newerValue = playZoneLandingPage.sourceObjects
 }
   this.value = newerValue
         }//updateValue function
@@ -555,7 +563,7 @@ if(_.isString(options.loadingText) || _.isNumber(options.loadingText)){options.a
 
   //  options.attributes.autocomplete = 'off'
   //assign attributes
-    $(this.image).attr( options.attributes)
+    $(this.image).attr(options.attributes)
 
 //add classes if necessary
 if(_.isString(options.class)){$(this.image).addClass(options.class)}
@@ -595,7 +603,7 @@ else if(_.isObject(source)){
 }//if image source is an Image object
 
 else{
-console.log('itemAsBitmap passed non source paramater');console.log(source instanceof parent.window.Image);console.log(source);throw '';
+console.log('itemAsBitmap passed non source paramater');console.log(source instanceof playZoneLandingPage.window.Image);console.log(source);throw '';
 
 }
   self.positionItemImage(   item, {update:false}) 
@@ -853,21 +861,10 @@ for(var i = 0;i<messages.length;i++){
   
     this.events.foldToAnyBetClick = function(event){
         self.setPreactionData('hand', ['check','fold'], true, {server:true})
-       //  self.setPreactionData('hand', 'fold', true, {server:true})
-     //    self.updateUserOptionsBasedOnFlagsAndPreactions()
-     //   socket.emit('set_flag','fold',true)
-      //  socket.emit('set_flag','check',true)
-
     }
 
     this.events.foldToAnyBetOnClick = function (event){
-    //  console.log('this.events.foldToAnyBetOnClick called')
                 self.setPreactionData('hand', ['check','fold'], false, {server:true})
-       //  self.setPreactionData('hand', 'fold', false, {server:true})
- //self.updateUserOptionsBasedOnFlagsAndPreactions()
-     //   socket.emit('set flag','fold',false)
-     //   socket.emit('set flag','check',false)
-
     }
 
 this.events.cashierTextFieldFocused = function(event){
@@ -875,7 +872,6 @@ this.events.cashierTextFieldFocused = function(event){
 //select the text when highlighted
           $(event.target).one('mouseup', function(e){e.preventDefault()}).select()
           
-
 }
 
 this.events.cashier = function(event){
@@ -1823,8 +1819,8 @@ self.events.userStands()
 
     }
 
-  if (_.isObject(parent.iframes)) {
-    parent.iframes.setIframeCloseHandler($('#server_values').data('table_name'), this.events.exitTableClick);
+  if (_.isObject(playZoneLandingPage.iframes)) {
+    playZoneLandingPage.iframes.setIframeCloseHandler($('#server_values').data('table_name'), this.events.exitTableClick);
   }
 
      this.events.viewLobbyClick = function(event){
@@ -1837,9 +1833,9 @@ self.events.userStands()
 
     this.events.exit = function(event){
         self.hideMessageBox()
-        if (_.isObject(parent.iframes)) {
+        if (_.isObject(playZoneLandingPage.iframes)) {
           console.log('Close iframe');
-          parent.iframes.closeIframe($('#server_values').data('table_name'))
+          playZoneLandingPage.iframes.closeIframe($('#server_values').data('table_name'))
         }
         else {
           console.log('Close window instead');
@@ -2490,7 +2486,7 @@ self.displayChildren(introScreen,{update:false})
           console.log('last non-flash sound loaded')
         }
 
-        if(loadedFiles>=totalSources){
+        if(loadedFiles >= totalSources){
 console.log('load completed with total of '+ errorFiles +' image and sound errors whose sources are in the following array:')
 console.log(errorSrcArray)
 
@@ -2627,10 +2623,10 @@ for(var i =0;i<flashArray.length;i++){
 }
 
 //-----------functions below this line ---------------------
-this.initializeParent = function(){
+this.initializeParent = function(backgroundLoad){
 
+if(backgroundLoad !== true){this.initializeStagesAndCanvasCallThisFirst()}
 
-this.initializeStagesAndCanvasCallThisFirst()
 
 
  var totalSources = 0
@@ -2752,6 +2748,7 @@ var createPreloadArray = function(){
 
 console.log(imageSourceArray)
 
+if(backgroundLoad !== true){
     //console.log(imageSourceArray)
     //define dimensions of preloading screen
     var introScreen = {}
@@ -2788,7 +2785,7 @@ console.log(imageSourceArray)
      introScreen.preloadBar.image  = new createjs.Shape()
      introScreen.preloadBar.drawBar = function (progressRatio){
 
-if(!_.isNumber(progressRatio)||_.isNaN(progressRatio)){var progressRatio = 0}
+if(!_.isNumber(progressRatio) || _.isNaN(progressRatio)){var progressRatio = 0}
 
          //where to start fill
          var progressX = introScreen.preloadBar.size.x*progressRatio + introScreen.preloadBar.position.x
@@ -2864,19 +2861,19 @@ this.images.imageLoading.title.text.x= this.images.imageLoading.title.position.x
         //add images and text to containers 
     //  console.log(introScreen)
 self.displayChildren(introScreen,{update:false})        
-
     }
 
+}//if we are loading only in background and displaying nothing
 
  //define image.onload functions
     function handleLoad(src, id, onEnd){
         loadedFiles++
  //       introScreen.status.text.text = src + ' loaded'
   //      introScreen.preloadBar.drawBar(loadedFiles/totalSources)
-       parent.loadingScreen.status = src + ' loaded'
-       parent.loadingScreen.progressRatio = loadedFiles/totalSources
+       playZoneLandingPage.loadingScreen.status = src + ' loaded'
+       playZoneLandingPage.loadingScreen.progressRatio = loadedFiles/totalSources
         console.log(src +' loaded file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
-      console.log(parent.loadingScreen.progressRatio)
+      console.log(playZoneLandingPage.loadingScreen.progressRatio)
         if (id == imageSourceArray[imageSourceArray.length-1].id){
             console.log("last image loaded")
         }
@@ -2892,10 +2889,10 @@ self.displayChildren(introScreen,{update:false})
         errorFiles++
         errorSrcArray.push(src)
        // introScreen.status.text.text = src + ' loaded'
-       parent.loadingScreen.status = src + ' loaded'
-       parent.loadingScreen.progressRatio = loadedFiles/totalSources
+       playZoneLandingPage.loadingScreen.status = src + ' loaded'
+       playZoneLandingPage.loadingScreen.progressRatio = loadedFiles/totalSources
          console.log(src + ' error loading file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
-         console.log(parent.loadingScreen.progressRatio)
+         console.log(playZoneLandingPage.loadingScreen.progressRatio)
      //   introScreen.preloadBar.drawBar(loadedFiles/totalSources)
          if (id == imageSourceArray[imageSourceArray.length-1].id)  {
             console.log('last image loaded')
@@ -2904,7 +2901,7 @@ self.displayChildren(introScreen,{update:false})
           console.log('last non-flash sound loaded')
         }
 
-        if(loadedFiles>=totalSources){
+        if(loadedFiles >= totalSources){
 console.log('load completed with total of '+ errorFiles +' image and sound errors whose sources are in the following array:')
 console.log(errorSrcArray)
 
@@ -2955,24 +2952,26 @@ console.log('loaded '+ loadedImages+' images out of a total of '+imageArray.leng
 
  function onComplete (){
   console.log('onComplete called in initialize');console.log(parent)
-     parent.loaded = true
-      self.displayChildren(self.images.imageLoading.title,{update:false})
-        self.createAllItems()
+     playZoneLandingPage.loaded = true
+     if(backgroundLoad !== true){
+           self.displayChildren(self.images.imageLoading.title,{update:false})
+             self.createAllItems()
+           }//if we not just loading in the background
         } 
 
 function checkIfCompleted(e){
  // console.log(e)
 //CHECK IF COMPLETED
 //if(loadedImages >= imageArray.length){
-  if(parent.loadingScreen.progressRatio >= 1 || parent.loaded === true){
-    console.log('loading has been completed');console.log(parent);console.log(self.permanentPreferences.sourceObjects.value);console.log(parent.sourceObjects)
+  if(playZoneLandingPage.loadingScreen.progressRatio >= 1 || playZoneLandingPage.loaded === true){
+    console.log('loading has been completed');console.log(parent);console.log(self.permanentPreferences.sourceObjects.value);console.log(playZoneLandingPage.sourceObjects)
   onComplete()
 createjs.Ticker.removeEventListener(e.type, checkIfCompleted)
 }
 //UPDATE DISPLAY IF NOT COMPLETED
 else{
-  introScreen.preloadBar.drawBar(parent.loadingScreen.progressRatio)
-   introScreen.status.text.text = parent.loadingScreen.status
+  introScreen.preloadBar.drawBar(playZoneLandingPage.loadingScreen.progressRatio)
+   introScreen.status.text.text = playZoneLandingPage.loadingScreen.status
    self.itemChanged(introScreen.status)
    self.updateStages()
 }
@@ -3013,14 +3012,14 @@ for(var i =0;i<flashArray.length;i++){
 
 //console.log('we are going to check whether to perform load from this page, or use other page load');
 //console.log(parent)
-if(parent.loaded === true || parent.loading === true){console.log('other frame to load our images');console.log(self.permanentPreferences.sourceObjects.value);console.log(parent.sourceObjects)}
+if(playZoneLandingPage.loaded === true || playZoneLandingPage.loading === true){console.log('other frame to load our images');console.log(self.permanentPreferences.sourceObjects.value);console.log(playZoneLandingPage.sourceObjects)}
   else{
     console.log('loading from this page')
-  //  parent.sourceObjects = {}
-    parent.loading = true
-parent.loadingScreen = {}
-parent.loadingScreen.progressRatio = 0
-parent.loadingScreen.status = ''
+  //  playZoneLandingPage.sourceObjects = {}
+    playZoneLandingPage.loading = true
+playZoneLandingPage.loadingScreen = {}
+playZoneLandingPage.loadingScreen.progressRatio = 0
+playZoneLandingPage.loadingScreen.status = ''
 
 
 createPreloadArray()
@@ -3028,9 +3027,13 @@ createPreloadArray()
     preloadImages(imageSourceArray)
   }
 
+//if this is the main page (parent of the table iframes), we dont want to display anything at all
+  if(backgroundLoad !== true) { 
     displayPreloadScreen()
 //add event listener to stage to see if it is done
    createjs.Ticker.addEventListener('tick', checkIfCompleted)
+  }
+
 
 }//initialize on parent object function
 
@@ -3038,15 +3041,12 @@ createPreloadArray()
 
 this.images.setDefaults = function(){
 
-
-
-
-
    //prevent document scorlling
   // $(document).bind('DOMMouseScroll mousewheelscroll',function(e){e.preventDefault()})
- $('#iframe, iframe').bind('mousewheel',function(e){
-console.log(e)
-  e.preventDefault()})
+ $(window).on('mousewheel',function(e){
+console.log('mousewheel scrolled')
+  e.stopPropagation()
+} )
 //========================IMAGE STATIC VARIABLES ==============================
  var canvasWidth = self.arrayOfParentsOfStageAndOfContainerArray[self.gameState.zPositionData.background.stage].stage.canvas.width
      var canvasHeight = self.arrayOfParentsOfStageAndOfContainerArray[self.gameState.zPositionData.background.stage].stage.canvas.height
@@ -11340,7 +11340,7 @@ if(update !== false){this.updateStages(stagesToUpdate)}
         this.images.cashier.tableMinValue.text.text = info.currency_per_chip*info.table_min
         this.images.cashier.tableMaxValue.text.text = info.currency_per_chip*info.table_max
         this.images.cashier.playerMinValue.text.text = info.currency_per_chip*info.min
-       this.images.cashier.accountBalanceValue.text.text = this.gameState.cashier.balance 
+       this.images.cashier.accountBalanceValue.text.text = this.gameState.cashier.balance + ' '+info.currency
 if(this.gameState.cashier.balance < this.gameState.cashier.min ){ 
 var accountBalanceColor = 'red'
   this.images.cashier.accountBalanceValue.text.text = this.images.cashier.accountBalanceValue.text.text + '//CLICK HERE'
@@ -13260,11 +13260,23 @@ self.jQueryObjects.tableChatFullDiv.mCustomScrollbar()
  //   holdemCanvas.createAllItems()
 
  //console.log($('#server_values').data('table_state'))
-    holdemCanvas = new Table()
-    holdemCanvas.updatePreference(holdemCanvas.permanentPreferences, holdemCanvas.getPermanentPreferences())
-    holdemCanvas.updatePreference(holdemCanvas.permanentPreferences, holdemCanvas.permanentPreferences, {updateEqualValues:true})
+   holdemCanvas = new Table()
+   console.log(parent)
+console.log(parent.iframes)
 
-   holdemCanvas.initializeParent()
+if (_.isArray($('#server_values').data('current_table_names'))) {
+  // we're in index.ejs
+      console.log('this is not an iframe')
+holdemCanvas.initializeParent(true)
+}
+else {
+  // we're not in index.ejs
+    console.log('this is an iframe')
+     holdemCanvas.updatePreference(holdemCanvas.permanentPreferences, holdemCanvas.getPermanentPreferences())
+     holdemCanvas.updatePreference(holdemCanvas.permanentPreferences, holdemCanvas.permanentPreferences, {updateEqualValues:true})
+
+    holdemCanvas.initializeParent()
+}
 
       console.log(document)
       
