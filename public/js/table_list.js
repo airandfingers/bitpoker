@@ -23,8 +23,7 @@
         //return popup(table_name);
 
         //remove 'active' class from lobby_trigger and hide lobby
-        $('#lobby_trigger').removeClass('active')
-        $('#lobby').hide('slide', { direction: 'up' }, 500);        
+        $('#lobby_trigger').click();        
       }
       else {
           //navigate to home page

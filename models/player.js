@@ -136,7 +136,7 @@ module.exports = (function () {
       , auto_action_flags = self.getSetAutoActionFlags()
       , auto_action_amount
       , auto_action
-      , auto_responded
+      , auto_acted
       , game = self.game
       , total_timeout = timeout
       , act_timeout
@@ -149,23 +149,15 @@ module.exports = (function () {
 
     // define validation and callback function
     function respondToPrompt(action, num_chips) {
-      var action_arg = actions_obj[action];
+      var action_arg = actions_obj[action] // the allowed value(s) for this action
+        , flags_to_clear;
+      
+      // validate arguments
       if (_.isUndefined(action_arg)) {
-        if (action === 'raise' && ! _.isUndefined(action_arg = actions_obj.bet)) {
-          // switch from raise to bet
-          action = 'bet';
-        }
-        else if (action === 'bet' && ! _.isUndefined(action_arg = actions_obj.raise)) {
-          // switch from bet to raise
-          action = 'raise';
-        }
-        else {
-          // invalid action; ignore it
-          console.error('respondToPrompt given invalid action!', action, actions_obj);
-          return false;
-        }
+        // invalid action; ignore it
+        console.error('respondToPrompt given invalid action!', action, actions_obj);
+        return false;
       }
-
       if (_.isNumber(num_chips)) {
         var rounded_num_chips = game.roundNumChips(num_chips);
         if (rounded_num_chips !== num_chips) {
@@ -175,10 +167,26 @@ module.exports = (function () {
       }
       else if (action_arg !== true) {
         console.error('respondToPrompt given non-Number num_chips value when a Number is required!', num_chips, action, action_arg);
+        return false;
       }
 
-      if (_.isArray(action_arg)) {
-        // bet or raise
+      // action-specific stuff: perform validation and set flags_to_clear
+      if (action === 'fold') {
+        // doesn't matter; everything will be cleared by handEnd
+        flags_to_clear = [];
+      }
+      else if (action === 'check') {
+        // clear call X, not call any or fold (all_in should never happen)
+        flags_to_clear = ['call'];
+      }
+      else if (action === 'call') {
+        if (num_chips !== action_arg) {
+          console.error('respondToPrompt given value other than to_call!', num_chips, action_arg);
+          return false;
+        }
+        flags_to_clear = ['fold', 'call'];
+      }
+      else if (action === 'bet' || action === 'raise') {
         var min_bet = action_arg[0]
           , max_bet = action_arg[1];
         if (num_chips < min_bet) {
@@ -191,19 +199,31 @@ module.exports = (function () {
           console.error('respondToPrompt given more than max_bet!', num_chips, max_bet);
           num_chips = max_bet;
         }
+        flags_to_clear = ['fold', 'check', 'call', 'call_any'];
       }
-      else if (_.isNumber(action_arg)) {
-        // call
-        if (num_chips === true) {
-          // call any
-          num_chips = action_arg;
-        }
-        else if (num_chips !== action_arg) {
-          // value is incorrect; ignore it
-          console.error('respondToPrompt given a call value other than to_call!', num_chips, action_arg);
-          return false;
-        }
+      else {
+        console.error('unknown action', action);
+        return false;
       }
+      // determine whether each flag actually needs to be cleared
+      var flags_obj = {};
+      _.each(flags_to_clear, function(action) {
+        if (action === 'call_any') {
+          if (self.flags.call === true) {
+            flags_obj.call = false;
+          }
+        }
+        else if (action === 'call') {
+          if (_.isNumber(self.flags.call)) {
+            flags_obj.call = false;
+          }
+        }
+        else if (self.flags[action]) {
+          flags_obj[action] = false;
+        }
+      });
+      // clear flags that need to be cleared
+      self.setFlags(flags_obj, true);
 
       self.current_prompt = undefined;
       clearTimeout(act_timeout);
@@ -212,7 +232,9 @@ module.exports = (function () {
       return true;
     }
 
+    // determine whether to auto-act
     _.all(auto_action_flags, function(action) {
+      // all_in is a special case - it can mean raise, bet, or call
       if (action === 'all_in') {
         console.log('in all_in, actions_obj is', actions_obj);
         _.all(['raise', 'bet', 'call'], function(all_in_action) {
@@ -231,30 +253,26 @@ module.exports = (function () {
         console.log('after iterating:', auto_action, auto_action_value);
         if (auto_action) { return false; } //break
       }
+      // "call any" flag
+      else if (action === 'call' && self.flags[action] === true) {
+        auto_action = 'call';
+        auto_action_value = actions_obj.call;
+      }
+      // other auto-action flags (check, fold, call X)
       else if (! _.isUndefined(actions_obj[action])) {
         auto_action = action;
         auto_action_value = self.flags[action];
-        // clear "call X " bets after they are triggered
-        if (auto_action === 'call' && auto_action_value !== true) {
-          self.flags.call = false;
-        }
         return false; //break
       }
       return true; //continue
     });
-
+    // auto-act if appropriate
     if (_.isString(auto_action)) {
       console.log(auto_action, 'flag was set to', auto_action_value, ', so responding immediately!');
-      auto_responded = respondToPrompt(auto_action, auto_action_value);
+      auto_acted = respondToPrompt(auto_action, auto_action_value);
     }
-    if (! auto_responded) {
-      // clear all auto-action flags
-      var flags = {};
-      _.each(auto_action_flags, function(action) {
-        flags[action] = false;
-      });
-      self.setFlags(flags, true);
 
+    if (! auto_acted) {
       console.log('prompting', self.username, 'for next action', actions, timeout);
       self.sendMessage('act_prompt', actions, timeout);
 
