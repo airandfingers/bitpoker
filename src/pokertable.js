@@ -527,8 +527,7 @@ var stageNumber = this.position.z.stage
 var parentOfStage = self.arrayOfParentsOfStageAndOfContainerArray[stageNumber]
 $('#'+id).remove()//remove any previous instances of this ID
 //append new version to the div of the item
-$(parentOfStage.div).append('<button id=\"'+id+'\"' +  'class = "btn unselectable nonVendor">'+buttonText+'</button>')
-
+$(parentOfStage.div).append('<button type = "button" id=\"'+id+'\"' +  'class = "btn-custom unselectable nonVendor">'+buttonText+'</button>')
 
 
 this.image = $('#'+id)[0]
@@ -853,9 +852,9 @@ for(var i = 0;i<messages.length;i++){
        }
   
     this.events.foldToAnyBetClick = function(event){
-        self.setPreactionData('hand', 'check', true, {server:true})
-         self.setPreactionData('hand', 'fold', true, {server:true})
-         self.updateUserOptionsBasedOnFlagsAndPreactions()
+        self.setPreactionData('hand', ['check','fold'], true, {server:true})
+       //  self.setPreactionData('hand', 'fold', true, {server:true})
+     //    self.updateUserOptionsBasedOnFlagsAndPreactions()
      //   socket.emit('set_flag','fold',true)
       //  socket.emit('set_flag','check',true)
 
@@ -863,9 +862,9 @@ for(var i = 0;i<messages.length;i++){
 
     this.events.foldToAnyBetOnClick = function (event){
     //  console.log('this.events.foldToAnyBetOnClick called')
-                self.setPreactionData('hand', 'check', false, {server:true})
-         self.setPreactionData('hand', 'fold', false, {server:true})
- self.updateUserOptionsBasedOnFlagsAndPreactions()
+                self.setPreactionData('hand', ['check','fold'], false, {server:true})
+       //  self.setPreactionData('hand', 'fold', false, {server:true})
+ //self.updateUserOptionsBasedOnFlagsAndPreactions()
      //   socket.emit('set flag','fold',false)
      //   socket.emit('set flag','check',false)
 
@@ -4864,7 +4863,6 @@ var tableChatFullStageCanvas =  self.arrayOfParentsOfStageAndOfContainerArray[ t
         $(tableChatFullStageCanvas).css({
                'left':this.tableChatFull.htmlStageElement.position.x+'px',
     'top':this.tableChatFull.htmlStageElement.position.y +'px',
-  //  'z-index':1
            })
 
 var tableChatFullWindowBackgroundColor = self.permanentPreferences.tableChatFull.windowColor.value
@@ -5547,6 +5545,9 @@ options.update = update
 if(update !== false){this.updateStages(stagesToUpdate)}
 else{ return stagesToUpdate}
     }
+
+
+
 
 //create copy for popup animation after player folds
 this.createHoleCardCopyIfNeeded = function (playerNumber) {
@@ -7590,6 +7591,53 @@ community2Animation.item=self.images.community[2]
 
 }
  
+
+var setOneFlagOrPreference = function(flag, value, options){
+
+      if(flag.indexOf('sessionPreferences') !== -1){
+ // console.log('session preference flag received')
+ self.updatePreference(self.sessionPreferences, value)
+}//if session preference
+
+else{//if flag
+
+switch (flag){
+
+case 'check':
+case 'fold':
+case 'bet' :
+case 'raise':
+case 'all_in':
+case 'call_any':
+self.setPreactionData('hand', flag,value, {server:false}) 
+break;
+
+case 'call':
+if(!_.isNumber(value)){ self.setPreactionData('hand', flag,value, {server:false}) }
+else {self.setPreactionData('once', flag,value, {server:false}) }
+break;
+
+default:
+self.setPreactionData('permanent', flag,value, {server:false}) 
+break;
+
+/*
+case 'fold' || 'call' || 'raise' || 'bet' || 'check':
+self.setPreactionData('hand',flag,value, {server:false}) 
+default:
+*/
+
+}//switch statement
+
+}// if not preference
+
+
+
+
+}//set 1 flag function
+
+
+
 this.queueExpirationFunction = function(expirationTrigger, actionFunction, options){
 if(!options){var options = {}}
 
@@ -7620,7 +7668,7 @@ if(_.isNumber(seat)){var gameStateSeatObject = this.gameState.seats[seat]}
 var expirationTypesToSet = []
 var otherActionTypesToSet = []
 var otherActionValue = false
-var serverActionsSet = []
+
 
 //if value is false we start that type of action from a clean slate, clearing everything
 if(value === false || value === null || _.isUndefined(value)){
@@ -7645,6 +7693,7 @@ else if(expirationType === 'permanent'){
 }
 else{expirationTypesToSet.push(expirationType)}
 
+/*
 if(options.clientLogic === true){
 //we change other values if we are adding a preaction, but not if we are taking one away
 if(value === true || _.isNumber(value)){
@@ -7663,12 +7712,12 @@ else if (actionType === 'raise' || actionType === 'bet'){
   otherActionTypesToSet.push('call', 'fold', 'check', 'call_any')
 }
 }//if value is not false
-setValue(expirationTypesToSet, otherActionTypesToSet, otherActionValue)
+setValues(expirationTypesToSet, otherActionTypesToSet, otherActionValue)
 
 }//if we want to perform clientside Logic
+*/
 
-
-setValue(expirationTypesToSet, actionType, value)
+setValues(expirationTypesToSet, actionType, value)
 
 /*
 console.log('setPreactionData completed for action: ' +actionType +' and expiration: '+expirationType+' and value of: '+value)
@@ -7677,29 +7726,39 @@ console.log(gameStateSeatObject)
 console.log(gameStateSeatObject[expirationType][actionType])
 */
 
-function setValue(expirationTypes, actionTypes, value){
+function setValues(expirationTypes, actionTypes, values){
+var serverActionsSet = []
+var flagsObjectToSendToServer =  {}
 
-  if (_.isString(expirationTypes)) {
-    //if action type is string we have straighforward answer
-if(_.isString(actionTypes)){
+  if (!_.isArray(actionTypes)) {actionTypes = [actionTypes]}
+    if(!_.isArray(expirationTypes)){expirationTypes = [expirationTypes]}
+  
+
+for(var i = 0;i<actionTypes.length;i++){
+ if(_.isArray(values)){var valueOfFlag = values[i]}
+    else{var valueOfFlag = values}
+
+//iterate thorugh expirationTypes
+for(var j = 0;j<expirationTypes.length;j++){set1Value(expirationTypes[j], actionTypes[i], valueOfFlag)}  
+
+}//iteration through actionTypes
+
+
+
+if(options.server === true){ socket.emit('set_flags', flagsObjectToSendToServer)}
+
+function set1Value (expiration, action, val){
+
  if(options.server === true && _.indexOf(serverActionsSet, actionTypes) === -1)    {
-  socket.emit('set_flag',actionTypes, value)
-   serverActionsSet.push(actionTypes)// push value to make sure we dont send to server
+ // socket.emit('set_flag',actionTypes, values)
+  flagsObjectToSendToServer[action] = val
+   serverActionsSet.push(action)// push values to make sure we dont send to server
 }//sending to server
-else if(options.server !== true) {gameStateSeatObject[expirationTypes][actionTypes] = value}
- }//if actionTypes is a string
-   else if(_.isArray(actionTypes)){// if actionType is array
-      //change appropriate value(s)
-for(var i = 0;i<actionTypes.length;i++){setValue(expirationTypes, actionTypes[i],value)}
-}//if actionTypes is array
-}//if expirationType is a string
+else if(options.server !== true) {gameStateSeatObject[expiration][action] = val}
 
-else if(_.isArray(expirationTypes)){// if expirationType is an array
-  //change appropriate value(s)
-for(var i = 0;i<expirationTypes.length;i++){setValue(expirationTypes[i], actionTypes, value)}
-}//if expirationTypes is an array
+}//set1Value function
 
-}//function setValue
+}//function setValues
 
 }
 
@@ -12723,51 +12782,29 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
 
 })
 
+ socket.on('flags_set', function(flags){
+
+_.each(flags, function(value, key, list){
+
+setOneFlagOrPreference(key, value, {update:false})
+
+})//iteration
+
+
+self.updateUserOptionsBasedOnFlagsAndPreactions()
+
+
+
+ })//flags_set
+
 
 //flag is set
-       socket.on('flag_set', function(flag, value){
+       socket.on('flag_set', function(flagName, valueOfFlag){
  //console.log($('#server_values').data('table_state'))
 
  //var userSeatIndex = self.getSeatImageIndex(self.gameState.userSeatNumber, 'rotatedSeatNumber')
    
-      if(flag.indexOf('sessionPreferences') !== -1){
- // console.log('session preference flag received')
- self.updatePreference(self.sessionPreferences, value)
-}//if session preference
-
-else{//if flag
-
-switch (flag){
-
-case 'check':
-case 'fold':
-case 'bet' :
-case 'raise':
-case 'all_in':
-case 'call_any':
-self.setPreactionData('hand', flag,value, {server:false}) 
-break;
-
-case 'call':
-if(!_.isNumber(value)){ self.setPreactionData('hand', flag,value, {server:false}) }
-else {self.setPreactionData('once', flag,value, {server:false}) }
-break;
-
-default:
-self.setPreactionData('permanent', flag,value, {server:false}) 
-break;
-
-/*
-case 'fold' || 'call' || 'raise' || 'bet' || 'check':
-self.setPreactionData('hand',flag,value, {server:false}) 
-default:
-*/
-
-}//switch statement
-
-}// if not preference
-
-
+setOneFlagOrPreference(flagName, valueOfFlag, {update:false})
 self.updateUserOptionsBasedOnFlagsAndPreactions()
      })
 
