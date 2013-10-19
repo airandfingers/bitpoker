@@ -3673,11 +3673,11 @@ var seatLocationMarginOfError = 1.1
 
         
         //determine location of theoretical upper right most chip
-        var distanceBetweenChipsY = this.pots[0].secondChip.position.y-this.pots[0].firstChip.position.y
+        var distanceBetweenChipsY = this.pots[0].secondChip.position.y - this.pots[0].firstChip.position.y
         var upperRightChipX = this.seats[i].firstChip.position.x
-        var upperRightChipY = this.seats[i].firstChip.position.y+distanceBetweenChipsY*(self.imageData.maxChipsPerColumn-1)
+        var upperRightChipY = this.seats[i].firstChip.position.y + distanceBetweenChipsY*(self.imageData.maxChipsPerColumn-1)
 
-        var betX = upperRightChipX+absoluteDistanceBetweenBetTextAndChipImages
+        var betX = upperRightChipX + chipDiameter + absoluteDistanceBetweenBetTextAndChipImages
         var betY = upperRightChipY
         //bet size
         this.seats[i].bet = new this.Item(betX,betY,betTextWidth,betTextHeight,self.gameState.zPositionData.chips)
@@ -6849,6 +6849,15 @@ else if( sizeItem.position.x + sizeItem.size.x <= maxLeftX){ console.log('maxLEf
 
 if(sizeItem.position.y >= maxBottomY ){ var sizeLongitudePositioning = 'bottom'}
 else if( sizeItem.position.y + measuredSizeHeight <= actualTopY){ var sizeLongitudePositioning = 'top'}
+  else if (sizeItem.position.y + sizeItem.size.y <= maxTopY){ var sizeLongitudePositioning = 'top'}
+
+if(_.isObject(sizeItem.seatObjectAncestor)){
+console.log('we are adjusting the betsize text of seat: '+ sizeItem.seatObjectAncestor.nonRotatedSeatNumber + ', displayed in seat position: '+sizeItem.seatObjectAncestor.rotatedSeatNumber)
+console.log('chipDirection is: ' + chipDirection)
+console.log('left right positioning: ' + sizeLatitudePositioning)
+console.log('bottom top positioning: ' + sizeLongitudePositioning)
+
+}//log bet size text
 
 
 //if positioning is right we position X directly to the right of our item ad keep y the same
