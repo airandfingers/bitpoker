@@ -184,7 +184,7 @@ $(function() {
   });
 
   function calculateLeft() {
-    var trigger_left = $lobby_trigger.position().left - $lobby_trigger.width() - 20
+    var trigger_left = $lobby_trigger.position().left
       , max_left = $(window).width() - $lobby.width()
       , left = trigger_left < max_left ? trigger_left : max_left;
     return left;
