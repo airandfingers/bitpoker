@@ -137,6 +137,12 @@ h3 {
     width: 150px;
 }
 
+#account {
+    width: 260px;
+    position: absolute;
+    display: none;
+}
+
 .footer {
     color: #FFFFCC;
     font-family: DESTROY, sans-serif;   
