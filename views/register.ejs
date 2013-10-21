@@ -4,7 +4,7 @@
             Pick your username and password.
         </h1>
         <div class="span8 center inverse"> 
-            <% if (message) { %>
+            <% if (typeof message === 'string') { %>
                 <p><%= message %></p>
             <% } %>
             <% if (mode === 'register') { %>
