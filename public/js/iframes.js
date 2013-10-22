@@ -74,7 +74,7 @@
   });
 
   function setIframeCloseHandler(table_name, close_handler) {
-    console.log('setIframeCloseHandler called with', table_name, close_handler);
+ //   console.log('setIframeCloseHandler called with', table_name, close_handler);
     var $iframe = findIframe(table_name);
     $iframe.find('.iframe_close').click(function(e){
       console.log('iframe_close trigger');
