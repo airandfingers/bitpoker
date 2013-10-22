@@ -182,7 +182,7 @@ module.exports = (function () {
       else if (action === 'call') {
         if (num_chips !== action_arg) {
           console.error('respondToPrompt given value other than to_call!', num_chips, action_arg);
-          return false;
+          num_chips = action_arg;
         }
         flags_to_clear = ['fold', 'call'];
       }
