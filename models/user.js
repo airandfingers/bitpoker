@@ -36,7 +36,7 @@ module.exports = (function() {
   , current_table_names: { type: [String], default: function() { return {}; } }
   // persistent preferences shared across sessions/tables
   , preferences        : { type: Schema.Types.Mixed, default: function() { return {}; } }
-  });
+  }, { minimize: false }); // set minimize to false to save empty objects
 
   // static methods - Model.method()
   UserSchema.statics.createUser = function(spec, cb) {
@@ -61,8 +61,8 @@ module.exports = (function() {
     spec.password = User.encryptPassword(pt_password);
     delete spec.pt_password;
 
-    console.log('creating user with', spec);
     var user = new User(spec);
+    console.log('created user with', spec, user);
     user.generateDepositAddress(function() {
       user.save(function(save_err, result) {
         if (save_err) {
@@ -93,6 +93,7 @@ module.exports = (function() {
       }
       var username = 'guest' + guest_num
         , user = new User({ username: username });
+      console.log('Created guest user:', user);
       cb(user);
     });
   };
@@ -136,6 +137,32 @@ module.exports = (function() {
 
   UserSchema.statics.getByIdWithoutPassword = function(id, cb) {
     User.findOne({ _id: id }, { password: false }, cb);
+  };
+
+  UserSchema.statics.getLeaders = function(currency, cb) {
+    console.log ('getLeaders function called');
+    User.find()
+      .limit(25)
+      .sort('-' + currency)
+      .select('username funbucks satoshi')
+      .exec(function (err, users) {
+        if (err) return cb(err);
+        console.log('users are', users);
+        cb(err, users);
+      });   
+  };
+
+  UserSchema.statics.encryptPassword = function(pt_password) {
+    var shasum = crypto.createHash('sha1');
+    if (_.isString(pt_password)) {
+      shasum.update(pt_password);
+      shasum = shasum.digest('hex');
+    }
+    else {
+      console.log('User.encryptPassword called without pt_password!');
+      shasum = null;
+    }
+    return shasum;
   };
 
   // instance methods - document.method()
@@ -313,30 +340,30 @@ module.exports = (function() {
     });
   };
 
-  UserSchema.statics.getLeaders = function(currency, cb) {
-    console.log ('getLeaders function called');
-    User.find()
-      .limit(25)
-      .sort('-' + currency)
-      .select('username funbucks satoshi')
-      .exec(function (err, users) {
-        if (err) return cb(err);
-        console.log('users are', users);
-        cb(err, users);
-      });   
+  UserSchema.methods.setPreference = function(name, value, cb) {
+    var user = this;
+    user.preferences[name] = value;
+    user.markModified('preferences');
+    user.save(function(save_err) {
+      if (save_err) {
+        console.error('Error during setPreference.save:', save_err);
+      }
+      cb(user);
+    });
   };
 
-  UserSchema.statics.encryptPassword = function(pt_password) {
-    var shasum = crypto.createHash('sha1');
-    if (_.isString(pt_password)) {
-      shasum.update(pt_password);
-      shasum = shasum.digest('hex');
-    }
-    else {
-      console.log('User.encryptPassword called without pt_password!');
-      shasum = null;
-    }
-    return shasum;
+  UserSchema.methods.setPreferences = function(preferences, cb) {
+    var user = this;
+    _.each(preferences, function(value, name) {
+      user.preferences[name] = value;
+    });
+    user.markModified('preferences');
+    user.save(function(save_err) {
+      if (save_err) {
+        console.error('Error during setPreferences.save:', save_err);
+      }
+      cb(user);
+    });
   };
 
   /* the model - a fancy constructor compiled from the schema:
