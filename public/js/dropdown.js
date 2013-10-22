@@ -130,8 +130,8 @@ $(function() {
     else {
       $lobby
         .css({
-          left: calculateLeft()
-        , top: calculateTop()
+          left: calculateLeft($lobby_trigger, $lobby)
+        , top: calculateTop($lobby_trigger)
         })
         .stop(true, true)
         .show('fade', 250);
@@ -162,8 +162,8 @@ $(function() {
       // hide lobby form
       $lobby
         .css({
-          left: calculateLeft()
-        , top: calculateTop()
+          left: calculateLeft($lobby_trigger, $lobby)
+        , top: calculateTop($lobby_trigger)
         })
         .stop(true, true)
         .show('fade', 400);
@@ -183,16 +183,7 @@ $(function() {
     }
   });
 
-  function calculateLeft() {
-    var trigger_left = $lobby_trigger.position().left - $lobby_trigger.width() - 20
-      , max_left = $(window).width() - $lobby.width()
-      , left = trigger_left < max_left ? trigger_left : max_left;
-    return left;
-  }
-
-  function calculateTop() {
-    return $lobby_trigger.position().top + $lobby_trigger.height();
-  }
+  
 
   if ($('#server_values').data('current_table_names').length === 0) {
     $lobby_trigger.click();
@@ -200,40 +191,36 @@ $(function() {
 
 });
 
-<!-- Hide/Show Account functionionality -->
-var $account = $('#account')
-  , $account_trigger = $('#account_trigger')
+
 
 $(function() {
-  $account_trigger.click(account_drop)
+  var $account_trigger = $('#account_trigger')
+    , $account_dropdown = $('#account');
+  $account_trigger.click(function() {
+    toggleDropdown($account_trigger, $account_dropdown,
+                   { top: 0
+                   , toggle_args: ['slide', { direction: 'right' }, 400] });
+  });
 });
 
-function account_drop() {
-  //$account.show('slide', { direction: "right" }, 400);
-  console.log('account dropdown trigger fired.');
-
-    if (! $account_trigger.hasClass('active')) {
-      // add active class
-      $account_trigger
-        .addClass('active');
-      // hide lobby form
-      $account
-        .css({
-          left: $(this).position().left - 160
-        , top: $(this).position().top
-        })
-        .stop(true, true)
-        .show('slide', {direction: 'right'},  400);
-    }
-    else {
-      // remove active class
-      $account_trigger
-        .removeClass('active');
-      // hide lobby form
-      $account
-        .stop(true, true)
-        .hide('slide', {direction: 'right'},  400);
-    }
+function toggleDropdown($trigger, $dropdown, options) {
+  console.log('toggleDropdown called with', $trigger, $dropdown);
+  //console.log('$dropdown\'s top and left are', $dropdown.position().top, $dropdown.position().left);
+  if (true) {
+    // calculate and set position of $dropdown
+    var left = (! _.isUndefined(options.left)) ? options.left : calculateLeft($trigger, $dropdown)
+      , top = (! _.isUndefined(options.top)) ? options.top : calculateTop($trigger)
+      , toggle_args = options.toggle_args || ['fade']
+    $dropdown.css({
+      left: left
+    , top: top
+    });
+  }
+  // add or remove active class
+  $trigger.toggleClass('active');
+  // show or hide dropdown
+  $dropdown.stop(true, true)
+           .toggle.apply($dropdown, toggle_args);
 }
 
   // ajax form submission
@@ -280,15 +267,30 @@ function account_drop() {
   });
 });
 
+function calculateLeft($trigger, $dropdown) {
+  // calculate trigger's left and maximum left
+  var trigger_left = $trigger.position().left
+    , max_left = $(window).width() - $dropdown.width()
+  // return whichever is less
+    , left = trigger_left < max_left ? trigger_left : max_left;
+  return left;
+}
+
+function calculateTop($trigger) {
+  // return vertical position of $trigger's bottom
+  console.log($trigger.position().top, $trigger.height());
+  return $trigger.position().top + $trigger.height();
+}
+
 <!-- Hide/Show Register functionality -->
-  $.validator.setDefaults({
-    messages: {
-      new_password_confirm: {
-        equalTo: 'Password fields must match.'
-      }
+$.validator.setDefaults({
+  messages: {
+    new_password_confirm: {
+      equalTo: 'Password fields must match.'
     }
-  });
-  $(function() {
-    $('#register form[action="/register"]').validate();
-    $('#login form[action="/login"]').validate();
-  });
+  }
+});
+$(function() {
+  $('#register form[action="/register"]').validate();
+  $('#login form[action="/login"]').validate();
+});

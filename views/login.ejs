@@ -2,7 +2,7 @@
   <div id="container">
     <div class="span8 center inverse"> 
       <h1>Log into your account.</h1>
-      <% if (message) { %>
+      <% if (typeof message === 'string') { %>
         <p><%= message %></p>
       <% } %>
 

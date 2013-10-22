@@ -1,7 +1,7 @@
-      <% if (message) { %>
+      <% if (typeof message === 'string') { %>
         <p class="inverse"><%= message %></p>
       <% } %>
-        <h1> Account Information</h1>
+        <h2> Account Information</h2>
 
         <div>
             username: <%= username %>

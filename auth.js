@@ -35,14 +35,13 @@ module.exports = (function () {
   passport.deserializeUser(function(id, done) {
     //console.log("deserializeUser called!");
     // everything except password (for security reasons)
-    User.findById(id, 'username registration_date funbucks email email_confirmed satoshi deposit_address recovery_code current_table_names',
-                  function(err, result) {
+    User.getByIdWithoutPassword(id, function(err, user) {
       if (err) { return done(err); }
-      if (! result) {
-        return done(null, false, {message: 'Unknown id!'});
+      if (user instanceof User) {
+        done(null, user);
       }
       else {
-        return done(null, result);
+        done(null, false, { message: 'Unknown id!' });
       }
     });
   });
