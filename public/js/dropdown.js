@@ -263,6 +263,7 @@ function toggleDropdown($trigger, $dropdown, options) {
           $explode_timer.text(delay + ' ' + second_seconds);
         }
       }, 1000);
+            $('#report_bug_trigger').removeClass('active');
     });
   });
 });
