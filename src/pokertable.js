@@ -13069,7 +13069,7 @@ testFunction()
     
 var testFunction = function(){
 console.log(' calling testfunction')
-console.log($('chatDiv')[0])
+console.log($('#chatDiv')[0])
 //console.log(self.jQueryObjects.chatBoxDiv[0])
 //self.displayChildren(self.images.fold)
 
