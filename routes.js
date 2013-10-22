@@ -321,17 +321,20 @@ module.exports = (function () {
       res.json({ error: error });       
       req.flash('error', 'You cannot register an email address to a guest account.');
     }
-    console.log('POST /set_email called ' + req.body.email +'req.user is ', req.user);
-    //if email is valid, save it to MondoDB
-    req.user.sendConfirmationEmail(email, function(err) {
-      if (err) {
-        res.json({ error : err });
-      }
-      else {
-        res.json({ email: email });
-      }
-    });
+    else {
+      console.log('POST /set_email called ' + req.body.email +'req.user is ', req.user);
+      //if email is valid, save it to MondoDB
+      req.user.sendConfirmationEmail(email, function(err) {
+        if (err) {
+          res.json({ error : err });
+        }
+        else {
+          res.json({ email: email });
+        }
+      });
+    }
   });
+
 
   //delete account
   app.post('/delete_account', function (req, res) {

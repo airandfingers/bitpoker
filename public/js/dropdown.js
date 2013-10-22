@@ -103,7 +103,7 @@ $(function() {
         , top: $(this).position().top + $(this).height()
         })
         .show('slide', { direction: 'up' }, 500)
-        .find('input:first').focus();
+        .find('#report_bug_textarea').focus();
     }
     else {
       // remove active class

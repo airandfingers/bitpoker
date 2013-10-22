@@ -5,6 +5,7 @@ $('#set_email').submit(function set_email (e) {
     console.log('set_email callback fired. email is', email);
     if (data.error) {
       console.error(data.error);
+      $('#set_email_error').html(data.error);
     }
     else {
       console.log('set_email callback fired. data is', data);
