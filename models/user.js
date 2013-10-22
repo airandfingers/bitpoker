@@ -34,6 +34,8 @@ module.exports = (function() {
   , registration_date  : { type: Date, default: Date.now }
   , deposit_address    : { type: String }
   , current_table_names: { type: [String], default: function() { return {}; } }
+  // persistent preferences shared across sessions/tables
+  , preferences        : { type: Schema.Types.Mixed, default: function() { return {}; } }
   });
 
   // static methods - Model.method()
@@ -130,6 +132,10 @@ module.exports = (function() {
 
   UserSchema.statics.isGuest = function(username) {
     return username.substring(0, 5) === 'guest';
+  };
+
+  UserSchema.statics.getByIdWithoutPassword = function(id, cb) {
+    User.findOne({ _id: id }, { password: false }, cb);
   };
 
   // instance methods - document.method()
