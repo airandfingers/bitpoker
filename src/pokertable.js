@@ -164,7 +164,7 @@ self.updateTableChatFullDisplay(options)}
 
       confirmSeatRotation:{value:true},
 
-defaultFontType:{value:'Lucida Sans'},
+defaultFontType:{value:'Planer_Reg'},
 //defaultFontType:{value:'Planer_Reg'},
         sourceObjects:{value:playZoneLandingPage.sourceObjects, updateValue:function(newValue){
 var newerValue = newValue
@@ -189,7 +189,7 @@ this.value = newValue
 if(self.gameState.itemsCreated === true){
 var stagesToUpdate = []
         for(var i = 0 ;i<self.images.seats.length;i++){
-stagesToUpdate.push ( self.itemChanged(self.images.seats[i].chat.text.color = this.value))}//iterate thorugh this.images.seats
+stagesToUpdate.push ( self.easelJSDisplayObjectChanged(self.images.seats[i].chat.text.color = this.value))}//iterate thorugh this.images.seats
 
 self.updateStages(stagesToUpdate)
 }//if items have been created
@@ -222,7 +222,7 @@ self.jQueryObjects.tableChatFullParagraph.css('color', this.value)
 
 this.value = newValue
 if(self.gameState.itemsCreated === true ){
-self.updateStages  (self.itemChanged (self.images.tableChatFull.window.alpha = this.value))
+self.updateStages  (self.easelJSDisplayObjectChanged (self.images.tableChatFull.window.alpha = this.value))
 }
          }//windowAlpha.updateValue
       }
@@ -279,13 +279,13 @@ this.gameState.act = {}
 
         for(var i = 0;i<this.gameState.numSeats;i++){
              this.gameState.seats[i]= {}
-             this.gameState.seats[i].displayMessageType = 'openSeat'
                this.gameState.seats[i].act = {}
              this.gameState.seats[i].once = {}
             this.gameState.seats[i].street = {}
              this.gameState.seats[i].hand = {}
-             this.gameState.seats[i].permanent = {}
+             this.gameState.seats[i].permanent = {displayMessageType:'openSeat'}
 
+//self.setPreactionData('permanent', 'displayMessageType', 'openSeat', {seat:i})
          //     this.gameState.seats[i].originalSeatNumber = i
        //        this.gameState.seats[i].rotatedSeatNumber = i
        //         this.gameState.seats[i].nonRotatedSeatNumber = i
@@ -694,6 +694,32 @@ this.image.graphics.beginFill(fillColor).drawRoundRect(0, 0, this.size.x, this.s
 
 }
 
+this.images.Item.prototype.removeChild = function(imageOrText){
+  var stagesToUpdate = []
+var removeChild = function(textOrImageString){
+
+if(_.isElement(this[textOrImageString])){$(this[textOrImageString]).remove()}
+else if(this[textOrImageString] instanceof createjs.DisplayObject){
+
+if(textOrImageString === 'text'){stagesToUpdate.push (self.hideText(this, {update:false}))}
+  else if(textOrImageString === 'image'){stagesToUpdate.push (self.hideImage(this, {update:false}))   }
+    else{throw 'incorrect parameter passed to eliminate '+ textOrImage}
+
+
+}
+
+
+}//eliminate function
+if(imageOrText === 'text' || imageOrText === 'image'){removeChild(imageOrText)}
+  else{
+    removeChild('text')
+    removeChild('image')
+  }
+
+
+self.updateStages(stagesToUpdate)
+
+}
 
 this.images.Item.prototype.addBootstrapButton = function (id, buttonText, bootstrapButtonOptions){
 if(!bootstrapButtonOptions){var bootstrapButtonOptions = {}}
@@ -702,59 +728,63 @@ if(!bootstrapButtonOptions){var bootstrapButtonOptions = {}}
  // console.log('addBootstrapButton called');console.log(this)
 
 var stageNumber = this.position.z.stage
-var parentOfStage = self.arrayOfParentsOfStageAndOfContainerArray[stageNumber]
+//var parentOfStage = self.arrayOfParentsOfStageAndOfContainerArray[stageNumber]
 var leftoverButtons = $('#'+id)
 //remove any previous instances of this ID 
 if(leftoverButtons.length > 0){
 console.log('leftover button removed with id = ' + id)
   $('#'+id).remove()
 }
+//remove any other possible images
+this.removeChild('image')
 
-
+var newButton = $('<button>').attr({
+  'id':id
+  ,'class': "btn-custom unselectable nonVendor"
+  ,'type':'button'
+}).html(buttonText)
 
 //append new version to the div of the item
-$(parentOfStage.div).append('<button type = "button" id=\"'+id+'\"' +  'class = "btn-custom unselectable nonVendor">'+buttonText+'</button>')
+//$(parentOfStage.div).append('<button type = "button" id=\"'+id+'\"' +  'class = "btn-custom unselectable nonVendor">'+buttonText+'</button>')
 
 //console.log('created bootrap button with id = ' + id)
 //console.log(this.position.z)
 
-this.image = $('#'+id)[0]
-this.image.parentOfImageObject = this
+//this.image = $('#'+id)[0]
+//this.image.parentOfImageObject = this
 
 //set width height and positions of button
-self.positionItemImage(this)
-$(this.image).css({
-'z-index': parseInt($(parentOfStage.stage.canvas).css('z-index')) + 1 //make sure its on top of the canvas
-,'width':this.size.x
-,'height':this.size.y
-,'display':'none'
-,'text-align':'center'
-})
+
+newButton.css({'text-align':'center'})
 
 if(options.css){
-  $(this.image).css(options.css)
+  newButton.css(options.css)
 }
 
 //default properties
-if(!options.attributes){options.attributes = {}}
+if(!options.attr){options.attr = {}}
 
-if(_.isString(options.loadingText) || _.isNumber(options.loadingText)){options.attributes['data-loading-text'] = options.loadingText}
-  else{options.attributes['data-loading-text'] = buttonText}
+if(_.isString(options.loadingText) || _.isNumber(options.loadingText)){options.attr['data-loading-text'] = options.loadingText}
+  else{options.attr['data-loading-text'] = buttonText}
 
-  //  options.attributes.autocomplete = 'off'
+  //  options.attr.autocomplete = 'off'
   //assign attributes
-    $(this.image).attr(options.attributes)
+    newButton.attr(options.attr)
 
 //add classes if necessary
-if(_.isString(options.class)){$(this.image).addClass(options.class)}
+if(_.isString(options.class)){newButton.addClass(options.class)}
 
 if(!_.isFunction(options.onClick)){var onClick = self.events.onButtonClick}
   else{var onClick = options.onClick}
 
-$(this.image).on('click', function(e){
+newButton.on('click', function(e){
 onClick(e)
 e.stopPropagation()
 })
+
+
+this.addElement(newButton[0], 'image')
+
 
 }//addBootstrapButton 
 
@@ -788,14 +818,14 @@ else{
 console.log('itemAsBitmap passed non source paramater');console.log(source instanceof playZoneLandingPage.window.Image);console.log(source);throw '';
 
 }
-  self.positionItemImage(   item, {update:false}) 
+  self.positionItemImage(item, {update:false}) 
 
     item.image.parentOfImageObject = item
     item.bitmapSource = source
     if(item.messages){
-        item.image.onClick = self.events.onButtonClick
+        item.image.addEventListener('click', self.events.onButtonClick)
     }
- stagesToUpdate.push(  self.itemChanged(item))
+ stagesToUpdate.push(  self.easelJSDisplayObjectChanged(item))
 
  options.update = update
     if(options.update !== false){self.updateStages(stagesToUpdate)}
@@ -854,7 +884,7 @@ item.drawRoundedRectangle(fillColor)
 item.image.parentOfImageObject = item
 item.fillColor = fillColor
 if(item.messages){
-    item.image.onClick = self.events.onButtonClick
+    item.image.addEventListener('click', self.events.onButtonClick )
 }
             }
 
@@ -969,18 +999,33 @@ distanceToFill = 0
 return stage
       }
 
+
+this.images.Item.prototype.addItemText = function( text, sizeAndFont, color, options){
+self.images.addItemText (this, text, sizeAndFont, color, options)
+
+}
+
             //for example: (parentOfImageObject, fold, "13px " + self.permanentPreferences.defaultFontType.value, "#100D08")
-            this.images.addItemText = function(parentOfImageObject,text,sizeAndFont,color, options){
+            this.images.addItemText = function(parentOfImageObject, text, sizeAndFont, color, options){
                 if(!options){var options = {}}
-                parentOfImageObject.text = new createjs.Text(text, sizeAndFont, color)
+
+//remove any previous html texts that might be here
+if(_.isElement(parentOfImageObject.text)){$(parentOfImageObject.text).remove()}
+
+if(options.html !== true){
+   if(parentOfImageObject.text instanceof createjs.Text !== true) {parentOfImageObject.text = new createjs.Text('', '', '')}
+
+parentOfImageObject.text.text = text
+parentOfImageObject.text.color = color
+parentOfImageObject.text.font = sizeAndFont
 
 if(options.textAlign === 'left'){
-parentOfImageObject.text.x=parentOfImageObject.position.x
+parentOfImageObject.text.x = parentOfImageObject.position.x
 parentOfImageObject.text.textAlign = options.textAlign
 
 }//if left align
 else{//center align by default
-parentOfImageObject.text.x=parentOfImageObject.position.x + parentOfImageObject.size.x/2 
+parentOfImageObject.text.x = parentOfImageObject.position.x + parentOfImageObject.size.x/2 
   parentOfImageObject.text.textAlign = 'center'
 }//align center by default
 
@@ -1006,6 +1051,47 @@ _.each(options, function(value, index, list){
 if(!_.isObject(value) && !_.isUndefined(value) && !_.isFunction(parentOfImageObject.text[index])){parentOfImageObject.text[index] = value}
 })//iterate through options
 */
+}//make createjs text
+
+
+else{//if we want to create an HTML text
+
+
+var x = parentOfImageObject.position.x; var y = parentOfImageObject.position.y
+var width = parentOfImageObject.size.x; var height = parentOfImageObject.size.y;
+
+if(!options.numLines){options.numLines = 1}
+var lineHeight = (height/options.numLines) + 'px'
+
+var newText = $('<p>').text(text).css({
+  'font':sizeAndFont
+  ,'color':color
+  ,'width':width
+  ,'height':height
+  ,'max-width':width
+  ,'max-height':height
+    ,'left':x
+    ,'top':y
+  ,'text-align':'center'
+  ,'line-height':lineHeight
+  ,'pointer-events':'none'
+  ,'display':'none'
+  ,'font-weight':400
+}).addClass(self.css.unselectable + ' ' + self.css.nonVendor)
+
+if(_.isObject(options.css)){newText.css(options.css)}
+  if(options.textAlign){newText.css('text-align', options.textAlign)}
+
+    if(options.class){newText.addClass(options.class)}
+      if(options.attr){newText.attr(options.attr)}
+
+        parentOfImageObject.addElement(newText[0], 'text')
+//console.log('addItemText completed for html = true')
+//console.log(parentOfImageObject)
+
+}// make HTML element
+
+
             }
 
 
@@ -1520,7 +1606,7 @@ for(var i = 0;i< getHoleCardAnimationArray().length;i++){
 getHoleCardAnimationArray()[i].image.addEventListener('tick', function(){
 if(shouldAnimate() === false){endAnimations()}
 }//tick function
-)//addEventlistener
+)//addEventListener
 }
 */
        function animateUp(){
@@ -2066,10 +2152,10 @@ var showMeHere = new self.images.Item(0,0,buttonWidth, buttonHeight, {stage:butt
 
  self.images.addItemText(showMeHere, 'Show Me Here', buttonFontSize+'px '+ buttonFont, 'black' )
 
-showMeHere.image.onClick = function(e){
+showMeHere.image.addEventListener('click', function(e){
 self.hideChildren(showMeHere)
 self.changeUserSeatView(rotatedSeatNumber)
-}
+})
 
 var displayShowMeHere = function(){
   var stagesToUpdate = []
@@ -3039,7 +3125,7 @@ if(unfinishedX != false && unfinishedX<introScreen.preloadBar.position.x+introSc
 
 
 //if image is on the stage, we need to set the stage upToDate variable to false
-return self.itemChanged(introScreen.preloadBar)
+return self.easelJSDisplayObjectChanged(introScreen.preloadBar)
  
      }
 
@@ -3190,7 +3276,7 @@ createjs.Ticker.removeEventListener(e.type, checkIfCompleted)
 else{
   introScreen.preloadBar.drawBar(playZoneLandingPage.loadingScreen.progressRatio)
    introScreen.status.text.text = playZoneLandingPage.loadingScreen.status
-   self.itemChanged(introScreen.status)
+   self.easelJSDisplayObjectChanged(introScreen.status)
    self.updateStages()
 }
 
@@ -3259,12 +3345,6 @@ createPreloadArray()
 
 this.images.setDefaults = function(){
 
-   //prevent document scorlling
-  // $(document).bind('DOMMouseScroll mousewheelscroll',function(e){e.preventDefault()})
- $(window).on('mousewheel',function(e){
-console.log('mousewheel scrolled')
-  return false
-} )
 //========================IMAGE STATIC VARIABLES ==============================
  var canvasWidth = self.getParentOfStageObject(0).stage.canvas.width  
      var canvasHeight = self.getParentOfStageObject(0).stage.canvas.height
@@ -3681,7 +3761,7 @@ if(item.text.text !== text
 ||item.text.y!==item.position.y 
 ||item.text.baseline !== 'top'
 ||item.text.textAlign !== 'left'){
-  stagesToUpdate.push(self.itemChanged(item))}
+  stagesToUpdate.push(self.easelJSDisplayObjectChanged(item))}
 
             item.text.text = text
 item.font = checkBoxButtonSizeAndFont
@@ -3727,28 +3807,30 @@ self.images.addCheckBoxButtonText(checkedItem, text, options)
 
    
 
-
+/*
       //onclick
-       this.foldToAnyBet.image.onClick =    self.events.foldToAnyBetClick          //self.events.onButtonClick
-        this.sitOutNextHand.image.onClick = self.events.onButtonClick
-          this.sitOutNextBlind.image.onClick  = self.events.onButtonClick
+       this.foldToAnyBet.image.addEventListener('click',  self.events.foldToAnyBetClick  )       //self.events.onButtonClick
+        this.sitOutNextHand.image.addEventListener('click', self.events.onButtonClick )
+          this.sitOutNextBlind.image.addEventListener('click',self.events.onButtonClick )
            //onclick for  on versions
-                  this.foldToAnyBetOn.image.onClick  =        self.events.foldToAnyBetOnClick     //self.events.onButtonClick
-                  this.sitOutNextHandOn.image.onClick = self.events.onButtonClick
-                    this.sitOutNextBlindOn.image.onClick = self.events.onButtonClick
+                  this.foldToAnyBetOn.image.addEventListener('click',  self.events.foldToAnyBetOnClick) //self.events.onButtonClick
+                  this.sitOutNextHandOn.image.addEventListener('click', self.events.onButtonClick)
+                    this.sitOutNextBlindOn.image.addEventListener('click', self.events.onButtonClick)
+*/
 
+  var seatZ =  getZ('staticItems','seats')
 
            //----------------------seats-------------------------------
-           this.seats[0].seat = new this.Item(thirdColumnX,fourthRowY,seatWidth,seatHeight, getZ('staticItems','seats'))
-           this.seats[1].seat = new this.Item(secondColumnX,fourthRowY,seatWidth,seatHeight,getZ('staticItems','seats'))
-           this.seats[2].seat = new this.Item(firstColumnX,thirdRowY,seatWidth,seatHeight,getZ('staticItems','seats'))
-           this.seats[3].seat = new this.Item(firstColumnX,secondRowY,seatWidth,seatHeight,getZ('staticItems','seats'))
-           this.seats[4].seat = new this.Item(secondColumnX,firstRowY,seatWidth,seatHeight,getZ('staticItems','seats'))
-           this.seats[5].seat = new this.Item(thirdColumnX,firstRowY,seatWidth,seatHeight,getZ('staticItems','seats'))
-           this.seats[6].seat = new this.Item(fourthColumnX,firstRowY,seatWidth,seatHeight,getZ('staticItems','seats'))
-            this.seats[7].seat = new this.Item(fifthColumnX,secondRowY,seatWidth,seatHeight,getZ('staticItems','seats'))
-             this.seats[8].seat = new this.Item(fifthColumnX,thirdRowY,seatWidth,seatHeight,getZ('staticItems','seats'))
-     this.seats[9].seat = new this.Item(fourthColumnX,fourthRowY,seatWidth,seatHeight,getZ('staticItems','seats'))
+           this.seats[0].seat = new this.Item(thirdColumnX,fourthRowY,seatWidth,seatHeight, seatZ)
+           this.seats[1].seat = new this.Item(secondColumnX,fourthRowY,seatWidth,seatHeight,seatZ)
+           this.seats[2].seat = new this.Item(firstColumnX,thirdRowY,seatWidth,seatHeight,seatZ)
+           this.seats[3].seat = new this.Item(firstColumnX,secondRowY,seatWidth,seatHeight,seatZ)
+           this.seats[4].seat = new this.Item(secondColumnX,firstRowY,seatWidth,seatHeight,seatZ)
+           this.seats[5].seat = new this.Item(thirdColumnX,firstRowY,seatWidth,seatHeight,seatZ)
+           this.seats[6].seat = new this.Item(fourthColumnX,firstRowY,seatWidth,seatHeight,seatZ)
+            this.seats[7].seat = new this.Item(fifthColumnX,secondRowY,seatWidth,seatHeight,seatZ)
+             this.seats[8].seat = new this.Item(fifthColumnX,thirdRowY,seatWidth,seatHeight,seatZ)
+     this.seats[9].seat = new this.Item(fourthColumnX,fourthRowY,seatWidth,seatHeight,seatZ)
 
       //---filled seats------
      
@@ -3783,17 +3865,23 @@ this.seats[i].seat.image.addEventListener('click', self.events.onDisabledOrNonUs
 
 
     //--------------------empty seats and text----------------- 
-         this.seats[i].openSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,getZ('staticItems','seats'))
-          this.seats[i].disabledSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,getZ('staticItems','seats'))
+         this.seats[i].openSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,seatZ)
+          this.seats[i].disabledSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y, seatZ)
 
 
-         this.seats[i].action = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,getZ('staticItems','seats'))
-         this.seats[i].countdown = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,getZ('staticItems','seats'))
-         this.seats[i].winner = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,getZ('staticItems','seats'))
+         this.seats[i].action = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
+         this.seats[i].countdown = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
+         this.seats[i].winner = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
 
        
-         this.seats[i].playerName = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,getZ('staticItems','seats'))
-         this.seats[i].status = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2,getZ('staticItems','seats'))
+         this.seats[i].playerName = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
+         this.seats[i].status = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y + this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
+ console.log(this.seats[i])
+
+//throw''
+ this.seats[i].stackSize = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
+ this.seats[i].gettingChips = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
+this.seats[i].sittingOut = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
 
      //------------------hole cards-----------------------------
             var middleOfSeat = this.seats[i].seat.position.x +this.seats[i].seat.size.x/2
@@ -3863,9 +3951,7 @@ this.cardAsBitmap(this.seats[i].hiddenCards[1],  null)
             this.addItemText(this.seats[i].shownCards[0],'','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
             this.addItemText(this.seats[i].shownCards[1],'','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
             //player name
-            this.addItemText(this.seats[i].playerName,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF' )
-            //player's status
-            this.addItemText(this.seats[i].status,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF' )
+            this.addItemText(this.seats[i].playerName,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF' , {html:true} )
             //action
             this.addItemText(this.seats[i].action,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF')
             //countdown
@@ -3873,6 +3959,14 @@ this.cardAsBitmap(this.seats[i].hiddenCards[1],  null)
             //winner
              this.addItemText(this.seats[i].winner,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF')
         
+                    //player's status
+            this.addItemText(this.seats[i].status,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true})
+            this.seats[i].stackSize.addItemText('','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
+
+ this.seats[i].gettingChips.addItemText ('Adding Chips','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
+ this.seats[i].sittingOut.addItemText('Sitting Out','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
+
+
 
        //----------------------dealer button----Player's bets----------------------------------
 
@@ -4107,18 +4201,6 @@ console.log(freeSpace)
 if(freeSpace < 0){var actionButtonY = canvasHeight - actionButtonHeight}
 else{var actionButtonY = canvasHeight - distanceFromBottomOfSeat0ToBottomOfCanvas + freeSpace/2}
 
-         //---------------action buttons------------------
-         /*
-      this.fold = new this.Item(actionButtonLeftX,actionButtonY,actionButtonWidth,actionButtonHeight,getZ('staticItems','buttons'), {messages:['act','fold']})
-      this.call = new this.Item(actionButtonLeftX+actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,getZ('staticItems','buttons'), {messages:['act','call']})
-      this.check = new this.Item(actionButtonLeftX+actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,getZ('staticItems','buttons'), {messages:['act','check']})
-      this.raise = new this.Item(this.check.position.x +actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,getZ('staticItems','buttons'),{messages:['act','raise']})
-      this.bet = new this.Item(this.check.position.x +actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,getZ('staticItems','buttons'),{messages: ['act','bet']})
-*/
-
-//ACT BUTTON ITEMS
-
-
 
    this.fold = new this.Item(actionButtonLeftX,actionButtonY,actionButtonWidth,actionButtonHeight,getZ('staticItems','buttons'), {messages:['act','fold']})
       this.call = new this.Item(actionButtonLeftX+actionButtonWidth+distanceBetweenActionButtons,actionButtonY,actionButtonWidth,actionButtonHeight,getZ('staticItems','buttons'), {messages:['act','call']})
@@ -4131,38 +4213,6 @@ else{var actionButtonY = canvasHeight - distanceFromBottomOfSeat0ToBottomOfCanva
         this.rebuy = new this.Item(actionButtonLeftX,actionButtonY,actionButtonWidth,actionButtonHeight,getZ('staticItems','buttons'), {messages:['get_add_chips_info']})
 
 
-//CANVAS ACT BUTTON IMAGES
-/*
-        this.itemAsRectangle(this.fold,  'red')
-        this.addItemText(this.fold, 'fold','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
-        this.itemAsRectangle(this.call, 'red')
-        this.addItemText(this.call, 'call','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
-        this.itemAsRectangle(this.check, 'red')
-        this.addItemText(this.check, 'check','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
-        this.itemAsRectangle(this.raise, 'red')
-        this.addItemText(this.raise, 'raise', '12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
-        this.itemAsRectangle(this.bet, 'red')
-        this.addItemText(this.bet, 'bet','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
-
-        this.fold.image.onClick = self.events.onButtonClick
-        this.call.image.onClick  = self.events.onButtonClick
-        this.check.image.onClick = self.events.onButtonClick
-         this.raise.image.onClick  = self.events.onButtonClick
-         this.bet.image.onClick  = self.events.onButtonClick
-         
-*/
-
-
-//CANVAS VERSIONS
-/*
-         this.itemAsRectangle(this.sitIn,'black')
-this.addItemText(this.sitIn,'Deal Me In','10px ' + self.permanentPreferences.defaultFontType.value,'white')
-
- this.itemAsRectangle(this.rebuy,'black')
-this.addItemText(this.rebuy,'Get Chips','10px ' + self.permanentPreferences.defaultFontType.value,'white')
-this.sitIn.image.onClick = self.events.onButtonClick
-this.rebuy.image.onClick  = self.events.onButtonClick
-*/
 
 //BOOTSTRAP HTML ACT BUTTON IMAGES
 
@@ -4186,74 +4236,6 @@ this.rebuy.addBootstrapButton ('rebuy', 'Get Chips', actionButtonOptions)
           this.check.addBootstrapButton ('check', 'Check', actionButtonOptions)       
           this.raise.addBootstrapButton ('raise', 'Raise', actionButtonOptions)
           this.bet.addBootstrapButton ('bet', 'Bet', actionButtonOptions)
-
-//$(actionButtonCanvasElement).append('<button id="fold"  class = "btn actionButton">Fold</button>')
-
-/*
-
-$(actionButtonDiv).append('<button id="fold"  class = "btn actionButton unselectable">Fold</button>')
-$(actionButtonDiv).append('<button id="call"  class = "btn actionButton unselectable">Call</button>')
-$(actionButtonDiv).append('<button id="check" class = "btn actionButton unselectable">Check</button>')
-$(actionButtonDiv).append('<button id="raise" class = "btn actionButton unselectable">Raise</button>')
-$(actionButtonDiv).append('<button id="bet"   class = "btn actionButton unselectable">Bet</button>')
-$(actionButtonDiv).append('<button id="sitIn" class = "btn actionButton unselectable">Sit In</button>')
-$(actionButtonDiv).append('<button id="rebuy" class = "btn actionButton unselectable">Get Chips</button>')
-
-          this.fold.image = $('#fold')[0]
-          this.call.image = $('#call')[0]
-          this.check.image = $('#check')[0]        
-          this.raise.image = $('#raise')[0]
-          this.bet.image = $('#bet')[0]
-          this.sitIn.image = $('#sitIn')[0]
-         this.rebuy.image  = $('#rebuy')[0]
-
-
-
-
-          this.fold.image.parentOfImageObject =   this.fold
-          this.call.image.parentOfImageObject =   this.call
-          this.check.image.parentOfImageObject =  this.check      
-          this.raise.image.parentOfImageObject =  this.raise
-          this.bet.image.parentOfImageObject   =  this.bet
-          this.sitIn.image.parentOfImageObject =  this.sitIn
-         this.rebuy.image.parentOfImageObject  =  this.rebuy
-
-//set positions of image
-  self.setImageItemPositionAndTextBasedOnImageChange(this.fold)
-  self.setImageItemPositionAndTextBasedOnImageChange(this.call)
-  self.setImageItemPositionAndTextBasedOnImageChange(this.check)
-  self.setImageItemPositionAndTextBasedOnImageChange(this.raise)
-  self.setImageItemPositionAndTextBasedOnImageChange(this.bet)
-  self.setImageItemPositionAndTextBasedOnImageChange(this.sitIn)
-  self.setImageItemPositionAndTextBasedOnImageChange(this.rebuy)
-
-
-
-     //set width and height of action buttons
-     $('.actionButton').css({
-      'width':actionButtonWidth
-      ,'height':actionButtonHeight
-      ,'z-index': parseFloat($(actionButtonCanvasElement).css('z-index')) + 1
-      ,'font': '11px ' + self.permanentPreferences.defaultFontType.value
-        ,'display':'none'
-     })
-
-$('.actionButton').on('click.onButtonClick', function(e){
- // console.log('action button clicked');console.log(e)
- self.events.onButtonClick(e)
-})
-*/
-
-
-//console.log('displaying actionButton class')
-//console.log($('.actionButton'))
-/*
-        this.fold.image.onClick = self.events.onButtonClick
-        this.call.image.onClick  = self.events.onButtonClick
-        this.check.image.onClick = self.events.onButtonClick
-         this.raise.image.onClick  = self.events.onButtonClick
-         this.bet.image.onClick  = self.events.onButtonClick
-*/
 
 
 
@@ -4417,7 +4399,7 @@ var exitTableOffsetY = distanceBetweenUpperButtonHitAreasY - exitTableHitAreaTop
 //.closePath()
 
  this.exitTable.image.hitArea = exitTableHit
-this.exitTable.image.onClick = self.events.exitTableClick
+this.exitTable.image.addEventListener('click', self.events.exitTableClick)
 
         
 
@@ -4523,7 +4505,7 @@ var cashierWindowContainer = 0
 
     this.cashier.closeWindow =  new this.Item (closeWindowX, closeWindowY, closeWindowWidth,closeWindowHeight,{stage:cashierStageNumber, container:cashierImageContainerIndex}) 
        this.itemAsBitmap(this.cashier.closeWindow, self.permanentPreferences.sourceObjects.value.cashierCloseX)
-       this.cashier.closeWindow.image.onClick = self.hideCashier
+       this.cashier.closeWindow.image.addEventListener('click', self.hideCashier)
 
         this.cashier.window = new this.Item(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight,{stage:cashierStageNumber,container:cashierWindowContainer})
         this.itemAsBitmap(this.cashier.window, self.permanentPreferences.sourceObjects.value.cashierBackground)
@@ -5005,11 +4987,11 @@ var showTableChatFullOffsetY = distanceBetweenUpperButtonHitAreasY - showTableCh
 
 this.showTableChatFull = new this.Item(this.getChips.position.x, this.getChips.position.y+this.getChips.size.y+showTableChatFullOffsetY, showTableChatFullWidth, showTableChatFullHeight, getZ('staticItems','buttons') )
 this.itemAsBitmap(this.showTableChatFull, showTableChatFullSource)
-this.showTableChatFull.image.onClick = self.events.showTableChatFullOnClick
+this.showTableChatFull.image.addEventListener('click', self.events.showTableChatFullOnClick)
 
 this.hideTableChatFull = new this.Item(this.getChips.position.x, this.getChips.position.y+this.getChips.size.y+showTableChatFullOffsetY, showTableChatFullWidth, showTableChatFullHeight, getZ('staticItems','buttons') )
 this.itemAsBitmap(this.hideTableChatFull, self.permanentPreferences.sourceObjects.value.hideTableChatFull)
-this.hideTableChatFull.image.onClick = self.events.hideTableChatFullOnClick
+this.hideTableChatFull.image.addEventListener('click', self.events.hideTableChatFullOnClick)
 
 //define shape of hit area
     var showTableChatFullHitArea = new createjs.Shape()
@@ -5082,32 +5064,32 @@ var hideDealerMessagesOffsetTop =  checkBoxButtonDistanceY
 this.tableChatFull.hideDealerMessages = new this.Item(hideDealerMessagesOffsetLeft, hideDealerMessagesOffsetTop, this.tableChatFull.window.size.x - checkBoxButtonOffSetLeft*2, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
 this.itemAsBitmap(this.tableChatFull.hideDealerMessages, self.permanentPreferences.sourceObjects.value.checkBox)
 self.images.addCheckBoxButtonText(this.tableChatFull.hideDealerMessages, 'Hide dealer messages')
-this.tableChatFull.hideDealerMessages.image.onClick = self.events.hideDealerMessagesClicked
+this.tableChatFull.hideDealerMessages.image.addEventListener('click', self.events.hideDealerMessagesClicked)
 
 this.tableChatFull.hideDealerMessagesOn = new this.Item(hideDealerMessagesOffsetLeft, this.tableChatFull.hideDealerMessages.position.y, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
 this.itemAsBitmap(this.tableChatFull.hideDealerMessagesOn, self.permanentPreferences.sourceObjects.value.checkBoxChecked)
 self.images.addCheckBoxButtonText(this.tableChatFull.hideDealerMessagesOn, 'Hide dealer messages')
-this.tableChatFull.hideDealerMessagesOn.image.onClick = self.events.hideDealerMessagesOnClicked
+this.tableChatFull.hideDealerMessagesOn.image.addEventListener('click', self.events.hideDealerMessagesOnClicked)
 
 this.tableChatFull.hidePlayerMessages = new this.Item(hideDealerMessagesOffsetLeft, hideDealerMessagesOffsetTop*2+checkBoxButtonHeight, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
 this.itemAsBitmap(this.tableChatFull.hidePlayerMessages, self.permanentPreferences.sourceObjects.value.checkBox)
 self.images.addCheckBoxButtonText(this.tableChatFull.hidePlayerMessages, 'Hide player messages')
-this.tableChatFull.hidePlayerMessages.image.onClick = self.events.hidePlayerMessagesClicked
+this.tableChatFull.hidePlayerMessages.image.addEventListener('click', self.events.hidePlayerMessagesClicked)
 
 this.tableChatFull.hidePlayerMessagesOn = new this.Item(hideDealerMessagesOffsetLeft, this.tableChatFull.hidePlayerMessages.position.y, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
 this.itemAsBitmap(this.tableChatFull.hidePlayerMessagesOn, self.permanentPreferences.sourceObjects.value.checkBoxChecked)
 self.images.addCheckBoxButtonText(this.tableChatFull.hidePlayerMessagesOn, 'Hide player messages')
-this.tableChatFull.hidePlayerMessagesOn.image.onClick = self.events.hidePlayerMessagesOnClicked
+this.tableChatFull.hidePlayerMessagesOn.image.addEventListener('click', self.events.hidePlayerMessagesOnClicked)
 
 this.tableChatFull.hideObserverMessages = new this.Item(hideDealerMessagesOffsetLeft, checkBoxButtonDistanceY*3+checkBoxButtonHeight*2, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
 this.itemAsBitmap(this.tableChatFull.hideObserverMessages, self.permanentPreferences.sourceObjects.value.checkBox)
 self.images.addCheckBoxButtonText(this.tableChatFull.hideObserverMessages, 'Hide observer messages')
-this.tableChatFull.hideObserverMessages.image.onClick = self.events.hideObserverMessagesClicked
+this.tableChatFull.hideObserverMessages.image.addEventListener('click', self.events.hideObserverMessagesClicked)
 
 this.tableChatFull.hideObserverMessagesOn = new this.Item(hideDealerMessagesOffsetLeft, this.tableChatFull.hideObserverMessages.position.y, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
 this.itemAsBitmap(this.tableChatFull.hideObserverMessagesOn, self.permanentPreferences.sourceObjects.value.checkBoxChecked)
 self.images.addCheckBoxButtonText(this.tableChatFull.hideObserverMessagesOn, 'Hide observer messages')
-this.tableChatFull.hideObserverMessagesOn.image.onClick = self.events.hideObserverMessagesOnClicked
+this.tableChatFull.hideObserverMessagesOn.image.addEventListener('click', self.events.hideObserverMessagesOnClicked)
 
 
 
@@ -5121,12 +5103,12 @@ var rightSideCheckBoxY = this.tableChatFull.hideDealerMessages.position.y
 this.tableChatFull.disableTouchScroll = new this.Item(rightSideCheckBoxX, rightSideCheckBoxY, 0, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
 this.itemAsBitmap(this.tableChatFull.disableTouchScroll, self.permanentPreferences.sourceObjects.value.checkBox)
 self.images.addCheckBoxButtonText(this.tableChatFull.disableTouchScroll, 'Disable touch scroll')
-this.tableChatFull.disableTouchScroll.image.onClick = self.events.disableTouchScrollClicked
+this.tableChatFull.disableTouchScroll.image.addEventListener('click', self.events.disableTouchScrollClicked)
 
 this.tableChatFull.disableTouchScrollOn = new this.Item(this.tableChatFull.disableTouchScroll.position.x, this.tableChatFull.disableTouchScroll.position.y, this.tableChatFull.disableTouchScroll.size.x, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
 this.itemAsBitmap(this.tableChatFull.disableTouchScrollOn, self.permanentPreferences.sourceObjects.value.checkBoxChecked)
 self.images.addCheckBoxButtonText(this.tableChatFull.disableTouchScrollOn, 'Disable touch scroll')
-this.tableChatFull.disableTouchScrollOn.image.onClick = self.events.disableTouchScrollOnClicked
+this.tableChatFull.disableTouchScrollOn.image.addEventListener('click', self.events.disableTouchScrollOnClicked)
 
 //chat message text
 
@@ -5524,18 +5506,16 @@ if(options.stageOptions.newCanvas === true || options.stageNumber === 0){
   var newDivID = 'canvas'+newCanvasIDNumber+'Div'
 var newCanvasID = 'canvas'+newCanvasIDNumber
 //defaults
-var canvasWidth = self.jQueryObjects.canvasDiv.attr('width')
-var canvasHeight  = self.jQueryObjects.canvasDiv.attr('height')
+var canvasWidth = self.jQueryObjects.canvasDiv.outerWidth(true)
+var canvasHeight  = self.jQueryObjects.canvasDiv.outerHeight(true)
 //var canvasWidth = self.jQueryObjects.canvasDiv[0].width
 //var canvasHeight = self.jQueryObjects.canvasDiv[0].height
 var canvasClass = self.css.canvas
 var zIndexesPerDiv = 10
 
-
 self.jQueryObjects.canvasDiv.append('<div id = '+'\''+newDivID+'\'' + ' width = '+'\''+canvasWidth+'\''+' height=' +'\''+canvasHeight+'\''+'></canvas>')
 
 $('#'+newDivID).append('<canvas id = '+'\''+newCanvasID+'\'' + ' width = '+'\''+canvasWidth+'\''+' height=' +'\''+canvasHeight+'\''+'></canvas>')
-
 
 //console.log('created canvas with canvas id of: '+newCanvasID)
 //set proper z-index
@@ -5634,7 +5614,7 @@ console.log(this.images.background.image.isVisible())
 
         //mouse events for clicking on empty seats
              for (var i = 0; i < this.seats.length; i = i + 1){
-         this.seats[i].openSeat.image.onClick = function(event){
+         this.seats[i].openSeat.image.addEventListener('click', function(event){
           //clear the message array
 if(_.isArray(event.target.parentOfImageObject.messages)){event.target.parentOfImageObject.messages.splice(0)}//splice if arry
 else{event.target.parentOfImageObject.messages = []}//declare new array if not already an array
@@ -5642,7 +5622,7 @@ else{event.target.parentOfImageObject.messages = []}//declare new array if not a
 
 event.target.parentOfImageObject.messages.push('sit',event.target.parentOfImageObject.seatObjectAncestor.rotatedSeatNumber)
           self.events.onButtonClick(event)
-        }//openSeat.image.onClick event
+        })//openSeat.image.onClick event
         }
 
 
@@ -5705,7 +5685,7 @@ stagesToUpdate.push(  this.displayChipStack(betSize, this.images.seats[seatNumbe
         if(parseFloat(betSize)>0){
           if(parseFloat(this.images.seats[seatNumber].bet.text.text) !== parseFloat(betSize)){//check to make sure changed
          this.images.seats[seatNumber].bet.text.text = betSize
-      stagesToUpdate.push(   this.itemChanged(this.images.seats[seatNumber].bet) )
+      stagesToUpdate.push(   this.easelJSDisplayObjectChanged(this.images.seats[seatNumber].bet) )
 }//check to make sure changed
 stagesToUpdate.push( this.displayChildren(this.images.seats[seatNumber].bet, options))
        }
@@ -5713,7 +5693,7 @@ stagesToUpdate.push( this.displayChildren(this.images.seats[seatNumber].bet, opt
 betSize = ''
           if(this.images.seats[seatNumber].bet.text.text !== ''){//check to make sure changed
          this.images.seats[seatNumber].bet.text.text = betSize
-      stagesToUpdate.push(   this.itemChanged(this.images.seats[seatNumber].bet) )
+      stagesToUpdate.push(   this.easelJSDisplayObjectChanged(this.images.seats[seatNumber].bet) )
 }//check to make sure changed
 
  stagesToUpdate.push(this.hideChildren(this.images.seats[seatNumber].bet, options))
@@ -5727,7 +5707,7 @@ betSize = ''
         //change betsize graphic value
           if(this.images.seats[seatNumber].status.text.text !== stackSize){//check to make sure changed
          this.images.seats[seatNumber].status.text.text = stackSize
-   stagesToUpdate.push(      this.itemChanged(this.images.seats[seatNumber].bet) )
+   stagesToUpdate.push(      this.easelJSDisplayObjectChanged(this.images.seats[seatNumber].bet) )
 }//check to make ure changed
          
 
@@ -5889,19 +5869,22 @@ if(!options){var options = {}}
   var stagesToUpdate = []
 
 if(_.isObject(item.image)){
+ // console.log('setting display object position through positionitemimage')
  if (setDisplayObjectPosition(item.image, item.position.x, item.position.y) === true){
   if(self.isItemAddedToStage(item)){
-stagesToUpdate.push(self.itemChanged(item))
+stagesToUpdate.push(self.easelJSDisplayObjectChanged(item))
   }//if image was added to stage
  }//if image location was changed
 }
 
 //size
 if(_.isElement(item.image)){
+ // console.log('adjusting element item.image')
   $(item.image).css({
     'width':item.size.x
     ,'height':item.size.y
     ,'position':'absolute'
+    ,'z-index': item.position.z.container
   })
 }//if item.image is an element
 
@@ -5947,13 +5930,15 @@ this.getSeatImageIndex  = function (seatNum, seatNumberVariableName){
 var itemCopyWithOnlyLocationData = {}
 if(item.image){
 itemCopyWithOnlyLocationData.image = {}
-  itemCopyWithOnlyLocationData.image.x = item.image.x
-  itemCopyWithOnlyLocationData.image.y = item.image.y
+var itemImageLocation = getDisplayObjectLocation(item.image)
+  itemCopyWithOnlyLocationData.image.x = itemImageLocation.x
+  itemCopyWithOnlyLocationData.image.y = itemImageLocation.y
 }
 if(item.text){
 itemCopyWithOnlyLocationData.text={}
-  itemCopyWithOnlyLocationData.text.x = item.text.x
-  itemCopyWithOnlyLocationData.text.y = item.text.y
+var itemTextLocation = getDisplayObjectLocation(item.text)
+  itemCopyWithOnlyLocationData.text.x = itemTextLocation.x
+  itemCopyWithOnlyLocationData.text.y = itemTextLocation.y
 }
 /*
 if(item instanceof self.images.Item){
@@ -6011,8 +5996,6 @@ var changed = false
 if(_.isUndefined(itemB.position)){console.log('itemB position undefined');console.log(itemB)}
 if(_.isUndefined(itemA.position)){console.log('itemA position undefined');console.log(itemA)}
 
-
-
 if(!itemA.image && !itemB.image && itemA.text && itemB.text && !_.isNaN(parseInt(itemA.text.text) )  ){
 
 
@@ -6024,7 +6007,11 @@ if(!itemA.image && !itemB.image && itemA.text && itemB.text){
   //  console.log(itemA);console.log(itemB)
    itemA.position.x = itemB.position.x
 itemA.position.y = itemB.position.y
- var deltaX = itemB.text.x - itemA.text.x; var deltaY = itemB.text.y - itemA.text.y
+
+var itemAPosition = getDisplayObjectLocation(itemA.text)
+var itemBPosition = getDisplayObjectLocation(itemB.text)
+ var deltaX = itemBPosition.x - itemAPosition.x; 
+ var deltaY = itemBPosition.y - itemAPosition.y
  options.permanent = false //not goint to adjust position values with setitem function
 
 }
@@ -6076,8 +6063,8 @@ itemA.size.y = itemB.size.y
  options.permanent = permanent 
    options.movementType = movementType 
 if(options.updateStageStatus === true){
-if(options && options.update === true){self.updateStages(self.itemChanged(itemA))}
-else{return self.itemChanged(itemA)}
+if(options && options.update === true){self.updateStages(self.easelJSDisplayObjectChanged(itemA))}
+else{return self.easelJSDisplayObjectChanged(itemA)}
 }
 
 }
@@ -6266,7 +6253,7 @@ compareSeatObjectAToSeatObjectB(this.images.seats[i], temporaryArrayOfNonrotated
 rotatedSeatNumberArray.push (self.images.seats[i].rotatedSeatNumber)
 nonRotatedSeatNumberArray.push (self.images.seats[i].nonRotatedSeatNumber)
 
-seatMessages.push (self.gameState.seats[i].displayMessageType)
+//seatMessages.push (self.gameState.seats[i].displayMessageType)
 }//end iteration through this.images.seats
 
 //perform check to make sure that the change has been succesfful
@@ -6680,7 +6667,7 @@ itemsToHide = _.flatten(itemsToHide)
 
     }
 
-    this.itemChanged = function(item, options){
+    this.easelJSDisplayObjectChanged = function(item, options){
       if(!options){var options  = {}}
 if(this.isItemAddedToStage(item)){
 if(options.updateStageStatus !== false){this.arrayOfParentsOfStageAndOfContainerArray[item.position.z.stage].upToDate = false}
@@ -6704,7 +6691,7 @@ if(!potSize||(_.isArray(potSize) && _.isEmpty(_.compact(potSize)))){
   console.log('we are hiding all pots in teh updatePotSize function')
   for(var i  = 0;i<this.images.pots.length;i++){
     this.images.pots[i].potSize.text.text = 0
-   stagesToUpdate.push( this.itemChanged(this.images.pots[i].potSize) )
+   stagesToUpdate.push( this.easelJSDisplayObjectChanged(this.images.pots[i].potSize) )
  stagesToUpdate.push(  this.hideChildren(this.images.pots[i].potSize, options))
  stagesToUpdate.push(    this.hideChildren(this.images.pots[i].chips, options))
 stagesToUpdate.push(     this.hideChildren(this.images.totalPotSize, options))
@@ -6746,7 +6733,7 @@ if(parseFloat(potSize[i]) != parseFloat(this.images.pots[i].potSize.text.text) |
   console.log('updating pot size '+i+'with value '+ potSize[i])
   /*
  this.images.pots[i].potSize.text.text = potSize[i]
-    stagesToUpdate.push(  this.itemChanged(this.images.pots[i].potSize))
+    stagesToUpdate.push(  this.easelJSDisplayObjectChanged(this.images.pots[i].potSize))
     */
 stagesToUpdate.push( this.displayChipStack(parseFloat(potSize[i]), self.images.pots[i], options) )
   }//check if value is different
@@ -6788,7 +6775,7 @@ aggregatedPotSize = aggregatedPotSize + parseFloat(potSize[i])
 if(parseFloat(potSize[i]) != parseFloat(this.images.pots[i].potSize.text.text)){
   console.log('updating pot size '+i+'with value '+ potSize[i])
  this.images.pots[i].potSize.text.text = potSize[i]
-    stagesToUpdate.push(  this.itemChanged(this.images.pots[i].potSize))
+    stagesToUpdate.push(  this.easelJSDisplayObjectChanged(this.images.pots[i].potSize))
 stagesToUpdate.push( this.displayChipStack(parseFloat(potSize[i]), self.images.pots[i], self.images.pots[i].firstChip.position.x, self.images.pots[i].firstChip.position.y, options) )
   }//check if value is different
 else {console.log('pot '+i+'not redrawn because same value')}
@@ -6805,7 +6792,7 @@ else {console.log('pot '+i+'not redrawn because same value')}
   var newTotalPotSizeText = 'Total: '+newTotalPotSize
   if(newTotalPotSizeText != this.images.totalPotSize.text.text ){
   this.images.totalPotSize.text.text = newTotalPotSizeText
-  stagesToUpdate.push(this.itemChanged( this.images.totalPotSize))
+  stagesToUpdate.push(this.easelJSDisplayObjectChanged( this.images.totalPotSize))
     }//if different
           stagesToUpdate.push(   this.displayChildren(this.images.totalPotSize, options) )
        }
@@ -6821,18 +6808,27 @@ else {return stagesToUpdate}
     }
 
     this.playerSits = function(seatNumber, playerName, chips, options){
+var stagesToUpdate = []
+if (!options){var options = {}}
+var update = options.update
+options.update = false  
 
-        this.gameState.seats[seatNumber].displayMessageType = 'seat'
-        this.images.seats[seatNumber].playerName.text.text =  playerName
+self.setPreactionData('permanent', 'displayMessageType', 'seat', {seat:seatNumber, server:false})
+       stagesToUpdate.push (updateItemText(this.images.seats[seatNumber].playerName, playerName))
+       //this.images.seats[seatNumber].playerName.text.text =  playerName
         if(_.isNumber(chips) && chips>0){
-        this.images.seats[seatNumber].status.text.text =  chips
+stagesToUpdate.push (updateItemText(this.images.seats[seatNumber].status, chips))
+       // this.images.seats[seatNumber].status.text.text =  chips
         }
         else if( chips == 0){
-             this.images.seats[seatNumber].status.text.text =  'adding chips'
+          stagesToUpdate.push (updateItemText(this.images.seats[seatNumber].status, 'adding chips'))
+           //  this.images.seats[seatNumber].status.text.text =  'adding chips'
         }
        
-      var stagesToUpdate =   this.displayCorrectSeatItems(seatNumber, options)
-      return stagesToUpdate
+       options.update = update
+     stagesToUpdate.push  (this.displayCorrectSeatItems(seatNumber, options))
+     if(options.update === false) {return stagesToUpdate}
+      else{self.updateStages(stagesToUpdate)}
     }
 
     this.hideBet = function (seatNumber, options){
@@ -6856,8 +6852,6 @@ return stagesToUpdate
    
 }//if options
       else{var stageNumber= child.parentOfImageObject.position.z.stage}
-
- 
 
         this.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[containerIndex].addChild(child)
 
@@ -7369,7 +7363,7 @@ function  onChange (event){
   if( (animationInfo.item.image && imageUpToDate === true) ||   (animationInfo.item.text && textUpToDate === true)){return}
 
 if(checkIfAllTasksCompletedResetsArrayIfItIs(outOfDateItems) ){
-      for(var i = 0;i<animationInfo.animatedItems.length;i++){self.itemChanged(animationInfo.animatedItems[i])}
+      for(var i = 0;i<animationInfo.animatedItems.length;i++){self.easelJSDisplayObjectChanged(animationInfo.animatedItems[i])}
 if(_.isFunction(animationInfo.onTick)){animationInfo.onTick(animationInfo, imageTween, textTween)}
   //set up to date as true
   textUpToDate = true
@@ -7394,7 +7388,7 @@ function onEnd (animationInfo, imageTween, textTween){
   //check if actually ended
    if( (animationInfo.item.image && imageEnded === false) ||  (animationInfo.item.text && textEnded === false) ){return}
     if(checkIfAllTasksCompletedResetsArrayIfItIs(endedItems)){
-      for(var i = 0;i<animationInfo.animatedItems.length;i++){self.itemChanged(animationInfo.animatedItems[i])}
+      for(var i = 0;i<animationInfo.animatedItems.length;i++){self.easelJSDisplayObjectChanged(animationInfo.animatedItems[i])}
 
       animationInfo.onEnd(animationInfo, imageTween, textTween)
   }//if all items ended
@@ -7537,7 +7531,7 @@ if(options.movementType === 'relative' && _.isObject(item.text) && !item.image &
 
 
 if(_.isObject(item.image) ){var hasImage = true;  var previousImageLocation = getDisplayObjectLocation(item.image)}
-  if(_.isObject(item.text) ){var hasText = true;var previousTextLocation = getDisplayObjectLocation(item.text)}
+  if(_.isObject(item.text) ){var hasText = true;  var previousTextLocation = getDisplayObjectLocation(item.text)}
 
 
 if(!_.isNumber(newX)){
@@ -7593,7 +7587,7 @@ var newImageY = previousImageLocation.y + deltaY
 
   setDisplayObjectPosition(item.image, newImageX, newImageY)
 
-if(options.updateStageStatus !== false){stagesToUpdate.push(self.itemChanged(item))}
+if(options.updateStageStatus !== false){stagesToUpdate.push(self.easelJSDisplayObjectChanged(item))}
 
 }
 
@@ -7606,7 +7600,7 @@ newTextY = previousTextLocation.y + deltaY
 
      setDisplayObjectPosition(item.text, newTextX, newTextY)
 
-if(!hasImage && options.updateStageStatus !== false){stagesToUpdate.push(self.itemChanged(item))}
+if(!hasImage && options.updateStageStatus !== false){stagesToUpdate.push(self.easelJSDisplayObjectChanged(item))}
 
 }
 
@@ -7639,7 +7633,7 @@ var setDisplayObjectPosition = function(imageOrText, x, y, options){
 //console.log(imageOrText)
 
 
-if(!_.isElement(imageOrText) && imageOrText instanceof createjs.DisplayObject){
+if(imageOrText instanceof createjs.DisplayObject){
   //return if no change
   if(imageOrText.x === x && imageOrText.y === y){return}
 
@@ -7647,15 +7641,17 @@ if(!_.isElement(imageOrText) && imageOrText instanceof createjs.DisplayObject){
   imageOrText.y = y
 
 return true
-//if(options.updateStageStatus !== false){return self.itemChanged()}
+//if(options.updateStageStatus !== false){return self.easelJSDisplayObjectChanged()}
 
 }//if easeljs
 
 
-else{//if html element
-
-    $(imageOrText).css('left',x )
- $(imageOrText).css('top', y)
+else if (_.isElement(imageOrText)){//if html element
+console.log('display object position set as element')
+    $(imageOrText).css({
+'left':x 
+,'top':y
+    })
  //console.log(imageOrText)
 }//if html element
 
@@ -7668,14 +7664,16 @@ if(!_.isElement(imageOrText)){
 var location =  {x:imageOrText.x, y:imageOrText.y}
 }
 else{// var location = {x:  parseFloat($(imageOrText).css('left')), y: parseFloat($(imageOrText).css('top'))}
-var topLeftLocation  = $(imageOrText).position()
-var location = {x:topLeftLocation.left , y:topLeftLocation.top}
+//var topLeftLocation  = $(imageOrText).position()
+//var location = {x:topLeftLocation.left , y:topLeftLocation.top}
 var location = {x:  parseFloat($(imageOrText).css('left')), y: parseFloat($(imageOrText).css('top'))}
 }
 //console.log(imageOrText);console.log(location)
 
-if(_.isNaN(location.x) || _.isNaN(location.y)){console.log($(imageOrText) );
-  console.log($(imageOrText).position);throw 'nan of get display object position '}
+if(_.isNaN(location.x) || _.isNaN(location.y)){
+  console.log($(imageOrText) );console.log(location)
+  throw 'nan of get display object position'
+}
 
 if(!_.isObject(location)){console.log('getDisplayObjectLocation error');console.log(imageOrText)}
 return location
@@ -8240,15 +8238,22 @@ self.images.itemAsBitmap(preactionItemOn, self.permanentPreferences.sourceObject
       self.images.addCheckBoxButtonText(preactionItemOn, text)
 
 if(_.isFunction(onClickUnchecked)) {
-  preactionItem.image.onClick = function(event){
+preactionItem.image.addEventListener('click', function(e){
    onClickUnchecked(event, preactionItem, preactionItemOn)
-    self.hideChildren(preactionItem,{update:false});self.displayChildren(preactionItemOn)}
-  }
+    self.hideChildren(preactionItem,{update:false})
+    self.displayChildren(preactionItemOn)
+})
+}//if unchecked function assigned
+
    if(_.isFunction(onClickChecked)) { 
-     preactionItemOn.image.onClick = function(event){
+
+    preactionItemOn.image.addEventListener('click', function(e){
       onClickChecked(event, preactionItemOn, preactionItem)
-      self.hideChildren(preactionItemOn,{update:false});self.displayChildren(preactionItem)}
-}
+      self.hideChildren(preactionItemOn,{update:false})
+      self.displayChildren(preactionItem)
+})
+}//if check function assigned
+
 return{unchecked: preactionItem, checked: preactionItemOn }
 
 }
@@ -8285,62 +8290,74 @@ var setPreactionDataOptions = {server:true}
 //==================assign onClick functions========================
 
 //CALL
-self.images.preactions.callUnchecked.image.onClick = function(){
+self.images.preactions.callUnchecked.image.addEventListener('click', function(e){
+
 self.setPreactionData('once', 'call', self.getPreactionOptionValues().call, setPreactionDataOptions)
-       // self.updateUserOptionsBasedOnFlagsAndPreactions()
-}
-self.images.preactions.callChecked.image.onClick = function(){
-      self.setPreactionData('hand', 'call', false, setPreactionDataOptions)
-      //  self.updateUserOptionsBasedOnFlagsAndPreactions()
-}
+
+})
+self.images.preactions.callChecked.image.addEventListener('click', function(e){
+
+  self.setPreactionData('hand', 'call', false, setPreactionDataOptions)
+
+})
+
 //CHECK
-self.images.preactions.checkUnchecked.image.onClick = function(){
-    self.setPreactionData('hand', 'check',  self.getPreactionOptionValues().check, setPreactionDataOptions)
-      //  self.updateUserOptionsBasedOnFlagsAndPreactions()
-}
-self.images.preactions.checkChecked.image.onClick = function(){
+self.images.preactions.checkUnchecked.image.addEventListener('click', function(e){
+
+  self.setPreactionData('hand', 'check',  self.getPreactionOptionValues().check, setPreactionDataOptions)
+
+})
+self.images.preactions.checkChecked.image.addEventListener('click', function(e){
+
     self.setPreactionData('hand', 'check', false, setPreactionDataOptions)
-      //  self.updateUserOptionsBasedOnFlagsAndPreactions()
-}
+
+})
+
 //ALL-IN
-self.images.preactions.allInUnchecked.image.onClick = function(){
+self.images.preactions.allInUnchecked.image.addEventListener('click', function(e){
+
+/*
   var data = self.getPreactionOptionValues()
   var user = self.gameState.userSeatNumber
   var allInAmount = data.currentStackSizes[user] + data.currentBetSizes[user]
   var callAllInAmount = data.currentStackSizes[user] - data.currentBetSizes[user]
-
+*/
   self.setPreactionData('hand', 'all_in', true, setPreactionDataOptions)
-  //   self.setPreactionData('hand', 'call', callAllInAmount, setPreactionDataOptions)
 
- //       self.updateUserOptionsBasedOnFlagsAndPreactions()
-}
-self.images.preactions.allInChecked.image.onClick = function(){
- 
-        self.setPreactionData('hand', 'all_in', false, setPreactionDataOptions)
-   //     self.updateUserOptionsBasedOnFlagsAndPreactions()
-}
+})
+self.images.preactions.allInChecked.image.addEventListener('click', function(e){
+
+  self.setPreactionData('hand', 'all_in', false, setPreactionDataOptions)
+
+})
+
 //FOLD
-self.images.preactions.foldUnchecked.image.onClick = function(){
-    self.setPreactionData('hand', 'fold', self.getPreactionOptionValues().fold, setPreactionDataOptions)
-  //      self.updateUserOptionsBasedOnFlagsAndPreactions()
-}
-self.images.preactions.foldChecked.image.onClick = function(){
+self.images.preactions.foldUnchecked.image.addEventListener('click', function(e){
+
+ //self.setPreactionData('hand', 'fold', self.getPreactionOptionValues().fold, setPreactionDataOptions)
+ self.setPreactionData('hand', 'fold', true, setPreactionDataOptions)
+
+})
+self.images.preactions.foldChecked.image.addEventListener('click', function(e){
+
    self.setPreactionData('hand', 'fold', false, setPreactionDataOptions)
-     //   self.updateUserOptionsBasedOnFlagsAndPreactions()
-}
+
+})
 
 //CALL ANY
-self.images.preactions.callAnyUnchecked.image.onClick = function(){
-    self.setPreactionData('hand', 'call', self.getPreactionOptionValues().call_any, setPreactionDataOptions)
-     //   self.updateUserOptionsBasedOnFlagsAndPreactions()
-}
-self.images.preactions.callAnyChecked.image.onClick = function(){
+self.images.preactions.callUnchecked.image.addEventListener('click', function(e){
+
+  //  self.setPreactionData('hand', 'call', self.getPreactionOptionValues().call_any, setPreactionDataOptions)
+self.setPreactionData('hand', 'call', true, setPreactionDataOptions)
+
+})
+self.images.preactions.callUnchecked.image.addEventListener('click', function(e){
+
    self.setPreactionData('hand', 'call', false, setPreactionDataOptions)
-    //    self.updateUserOptionsBasedOnFlagsAndPreactions()
-}
 
+})
 
-}
+}//create preaction options
 
 this.getPreactionOptionValues = function (){
 
@@ -8913,7 +8930,7 @@ callback(null, callBackNumber)
 }
 
      this.playerStands = function(seatNumber){
-          this.gameState.seats[seatNumber].displayMessageType = 'openSeat'
+          self.setPreactionData('permanent', 'displayMessageType', 'openSeat', {server:false, seat:seatNumber})
 
       if(seatNumber === this.gameState.userSeatNumber){
           this.hideSeatedOptions()
@@ -8921,7 +8938,6 @@ callback(null, callBackNumber)
         
         }
         for (var i=0;i<this.gameState.numSeats;i++){
-            
         this.displayCorrectSeatItems(i)
         }
     }
@@ -8947,7 +8963,7 @@ if( _.isNumber(options.seatNumber)){var seatNum = options.seatNumber}
 if(cardArray[i].size.y > distanceFromCardTopToSeatBottom){
   //check if last iteration
  cardArray[i].image.sourceRect = createRectangle(cardArray[i], cardArray[i+1], distanceFromCardTopToSeatBottom)
- stagesToUpdate.push(this.itemChanged(cardArray[i]))
+ stagesToUpdate.push(this.easelJSDisplayObjectChanged(cardArray[i]))
 }
 
 if(options.update !== false){this.updateStages(stagesToUpdate)}
@@ -9241,16 +9257,39 @@ return changedWithoutUpdate
 
  this.playerSitsOut =function(seatNumber, options){
             var stagesToUpdate = []
-            self.gameState.seats[seatNumber].sitting_out = true
-         if(this.images.seats[seatNumber].status.text.text !== "Sitting Out"){
-          this.images.seats[seatNumber].status.text.text = "Sitting Out"
-          stagesToUpdate.push(this.itemChanged(this.images.seats[seatNumber].status))
+
+            self.setPreactionData('permanent', 'sitting_out', true, {seat:seatNumber})
+            stagesToUpdate.push(     this.images.seats[seatNumber].status.updateText("Sitting Out", {update:false})        )
+
         if (options && options.update === false){return stagesToUpdate }
-  else(this.updateStages(stagesToUpdate ))
-         }
+  else{this.updateStages(stagesToUpdate )  }
 
 
         }
+
+
+this.images.Item.prototype.hide = function(options){
+
+if(options.onlyText){return self.hideText(this, options)}
+  else if(options.onlyImage){return self.hideImage(this, options)}
+
+
+else {return self.hideChildren(this, options)}
+
+
+}
+
+this.images.Item.prototype.display = function(options){
+
+  if(options.onlyText){return self.displayText(this, options)}
+  else if(options.onlyImage){return self.displayImage(this, options)}
+
+
+else {return self.displayChildren(this, options)}
+
+}
+
+
 
  this.hideChildren = function(parentOrGrandparent, options){
        if (!options){var options = {}}
@@ -9617,7 +9656,7 @@ if(newStackSize>maxStackSize){newStackSize = maxStackSize}
 
 
     //    self.images.seats[seatNumber].bet.text.text =  chipsInFrontOfPlayer[seatNumber]
-//stagesWeWantToUpdateAfter.push(self.itemChanged(self.images.seats[seatNumber].bet))
+//stagesWeWantToUpdateAfter.push(self.easelJSDisplayObjectChanged(self.images.seats[seatNumber].bet))
    stagesWeWantToUpdateAfter.push(   self.playerPutsChipsInPot(seatNumber,chipsInFrontOfPlayer[seatNumber], newStackSize, {update:false}))
 
   stagesWeWantToUpdateAfter.push(  self.displayChildren(self.images.seats[seatNumber].bet, {update:false}) )
@@ -9794,7 +9833,11 @@ show:'manual'
    }//show as soon as its loaded
  ,hide: {
     fixed:true     //will not hide when we mouseover it
-  ,delay: 10000 
+  //,delay: 10000
+  ,inactive:10000 
+  //,event: 'click'
+ // ,target: qtipJQueryTarget
+  ,leave:false
 //,event:'manual'
 }//hide
   ,content: {
@@ -9831,6 +9874,7 @@ show: function(event, api){
   var content = api.elements.content
 
   setCSS()
+  api.hide()
   //set appropriate max width and height
 //createjs.Tween.get($(elementID), {override:true})
 //.wait(1).call(setCSS)
@@ -9896,6 +9940,7 @@ qtipJQueryTarget.children('.qtip').remove()
 
 qtipJQueryTarget.qtip('destroy', false)
 qtipJQueryTarget.qtip(qtipOptions)
+
 
 /*
 console.log($(playerSeatObject.bubbleChats[0].image)  )
@@ -10292,8 +10337,8 @@ if(update === false){return stagesToUpdate}
       options.update = false
 var stagesToUpdate = []
 
-this.images.standUp.image.onClick = null
-this.images.getChips.image.onClick = null
+this.images.standUp.image.removeAllEventListeners() 
+this.images.getChips.image.removeAllEventListeners()
 stagesToUpdate.push( this.displayChildren (this.images.standUpDisabledShape, options))
 stagesToUpdate.push(this.displayChildren (this.images.getChipsDisabledShape, options))
 
@@ -10315,8 +10360,13 @@ if(update === false){return stagesToUpdate}
     }
 
 
-    this.displayBetSlider = function(minBet, maxBet, minIncrement){
+    this.displayBetSlider = function(minBet, maxBet, minIncrement, options){
        
+var stagesToUpdate = []
+if(!options){var options = {}}
+  var update = options.update
+options.update = false
+
        //enable raise and bet in case it wasnt before
 trueOrFalseToggleRaiseAndBet(true)
 
@@ -10326,20 +10376,28 @@ trueOrFalseToggleRaiseAndBet(true)
 
  //reset slider to original position and color
  this.images.betSlider.vertical.image.x =  this.images.betSlider.vertical.position.x
-  this.updateBetSize(minBet)
+ stagesToUpdate.push (self.easelJSDisplayObjectChanged(this.images.betSlider.vertical))
+ stagesToUpdate.push (this.updateBetSize(minBet))
 
-  //display betSlider 
-  this.displayChildren(this.images.betSlider)
+
 //$('#betSize').css('display','inline')
 
 //scroll wheel
 
+/*
     $(this.getParentOfStageObject(this.images.betSlider.vertical).div).on('mousewheel.adjustBetSize', function(event,delta, deltaX, deltaY) {
 self.events.wheelScroll(deltaY)
         })
-   
 
+    $(window).on('mousewheel.disable', function(e){return false})
+   */
+
+  //display betSlider 
+   stagesToUpdate.push (this.displayChildren(this.images.betSlider, options))
    
+   options.update = update
+   if(options.update !== false){self.updateStages(stagesToUpdate)}
+    else{return stagesToUpdate}
     /*
      $(this.getParentOfStageObject(this.images.betSlider.vertical).stage.canvas).bind('DOMMouseScroll', function(event, delta, deltaX, deltaY) {
       
@@ -10347,7 +10405,7 @@ wheelScrolls = event.originalEvent.wheelDelta/120
 self.events.wheelScroll(wheelScrolls)
         })
 */
-    }
+    }//display bet slider
 
 
     this.displayCorrectSeatItems = function(seatNumber, options){
@@ -10371,7 +10429,7 @@ else{
  // console.log('updating displayCorrectSeatItems of seat '+ seatNumber + ' as '+ this.gameState.seats[seatNumber].displayMessageType)
 //console.log(self.images.seats[seatNumber].seat.image)
 
-        switch (this.gameState.seats[seatNumber].displayMessageType){
+        switch (self.getPreactionData('displayMessageType', {seat:seatNumber})){
 
             case 'seat':
    stagesToUpdate.push(         this.displayChildren(this.images.seats[seatNumber].seat, options))
@@ -10491,9 +10549,9 @@ if(update === false){return stagesToUpdate}
     this.playerActs =function(seatNumber, actionText, fadeTimeInSeconds){
          //if player is current user, hide action buttons
         if(seatNumber === self.gameState.userSeatNumber){this.hideAllActionButtons(this.gameState.userSeatNumber)}
-        this.gameState.seats[seatNumber].displayMessageType = 'action'
+self.setPreactionData('permanent', 'displayMessageType', 'action', {server:false})
 
-        self.images.seats[seatNumber].action.text.text = actionText
+        // self.images.seats[seatNumber].action.text.text = actionText
 
        
 
@@ -10503,37 +10561,41 @@ if(update === false){return stagesToUpdate}
         else{alpha = 2}
 
       var playerAction =   setInterval(function() {
+var stagesToUpdate = []
+var options = {update:false}
 
-          if(self.gameState.seats[seatNumber].displayMessageType != 'action'||alpha<=0)
+var displayMessageType = self.getPreactionData('displayMessageType' , {seat:seatNumber})
+
+          if(displayMessageType !== 'action'||alpha<=0)
           {
-                if(self.gameState.seats[seatNumber].displayMessageType === 'action'){self.gameState.seats[seatNumber].displayMessageType = 'seat'}
+                if(displayMessageType === 'action'){self.setPreactionData('permanent', 'displayMessageType', 'seat', {seat:seatNumber, server:false})}
                 clearInterval(playerAction)
             }
 
         else if(alpha>1){
+                      
+        stagesToUpdate.push(   self.images.seats[seatNumber].action.updateText(actionText, options) )
                 self.images.seats[seatNumber].action.text.alpha = 1
-                self.images.seats[seatNumber].action.text.text = actionText
-                self.updateStages(self.images.seats[seatNumber].action.position.z.stage)
                 }
             else{
                 self.images.seats[seatNumber].action.text.alpha = alpha
-            self.images.seats[seatNumber].action.text.text = actionText
-            self.updateStages(self.images.seats[seatNumber].action.position.z.stage)
+           stagesToUpdate.push(   self.images.seats[seatNumber].action.updateText(actionText, options) )
             }
             
             alpha = alpha - interval/1000
  //hide other messages on the seat box
-        self.displayCorrectSeatItems(seatNumber)
+       stagesToUpdate.push( self.displayCorrectSeatItems(seatNumber, options) )
+       self.updateStages(stagesToUpdate)
 
 }, interval)
     }
 
     this.playerWins =function(seatNumber, chipsWon, fadeTimeInSeconds){
-        
-        this.gameState.seats[seatNumber].displayMessageType === 'winner'
 
-         self.images.seats[seatNumber].winner.text.text = ''
-          //hide other messages on the seat box
+        self.images.seats[seatNumber].winner.updateText('')
+self.setPreactionData('permanent', 'displayMessageType', 'winner', {seat:seatNumber, server:false})
+
+           //hide other messages on the seat box
 
          var interval = 100
          var alpha
@@ -10542,27 +10604,29 @@ if(update === false){return stagesToUpdate}
 
 
       var declareWinner =   setInterval(function() {
+
+var displayMessageType = self.getPreactionData('displayMessageType' , {seat:seatNumber})
 var stagesToUpdate = []
-          if(self.gameState.seats[seatNumber].displayMessageType != 'winner'||alpha<=0)
+var options = {update:false, seat:seatNumber, server:false }
+          if(displayMessageType != 'winner'||alpha<=0)
           {
-                if(self.gameState.seats[seatNumber].displayMessageType === 'winner'){self.gameState.seats[seatNumber].displayMessageType = 'seat'}
+                if(displayMessageType === 'winner'){self.setPreactionData('permanent', 'displayMessageType', 'seat', options)}
                 
                 clearInterval(declareWinner)
             }
             
-            else if(alpha>1){
+            else if(alpha > 1){
+              stagesToUpdate.push(self.images.seats[seatNumber].winner.updateText('Wins '+chipsWon, options) )
                 self.images.seats[seatNumber].winner.text.alpha = 1
-                self.images.seats[seatNumber].winner.text.text = 'Wins '+chipsWon
-           stagesToUpdate.push(self.images.seats[seatNumber].winner.position.z.stage)
                 }
             else{
                 self.images.seats[seatNumber].winner.text.alpha = alpha
-            self.images.seats[seatNumber].winner.text.text = 'Wins '+chipsWon
-             stagesToUpdate.push(self.images.seats[seatNumber].winner.position.z.stage)
+           stagesToUpdate.push(self.images.seats[seatNumber].winner.updateText('Wins '+chipsWon, options) )
             }
             
             alpha = alpha - interval/1000
- stagesToUpdate.push(self.displayCorrectSeatItems(seatNumber, {update:false}))
+
+ stagesToUpdate.push(self.displayCorrectSeatItems(seatNumber, options))
  self.updateStages(stagesToUpdate)
 
 }, interval)
@@ -10570,10 +10634,10 @@ var stagesToUpdate = []
     }
 
     this.playerToAct =function(seatNumber, timeoutInMS){
-      self.gameState.seats[seatNumber].timeToActInMS = timeoutInMS
+
+  self.setPreactionData('hand','timeToAct', timeoutInMS,{seat:seatNumber})
       self.setPreactionData('hand','toAct', seatNumber,{seat:'table'})
-        
-self.gameState.seats[seatNumber].displayMessageType = 'countdown'
+          self.setPreactionData('permanent','displayMessageType', 'countdown',{seat:seatNumber})
 
         //function that will convert hex to RGB
     var hexToRGB =     function(hex) {
@@ -10640,6 +10704,8 @@ var toActMiddleDividerColor = '#FFFFFF'
  //================DO STUFF BELOW====================================
  //console.log('starting countdown function with an interval of '+ interval)
  //console.log(self.playerToAct.caller)
+
+ var options = {server:false, seat:seatNumber, update:false}
 //-----------start swapping colors until toAct becomes false----------------
               var countdown = setInterval(function() {
 var stagesToUpdate = []
@@ -10734,39 +10800,37 @@ var nextCounter = lastCompletedFillColorCounter+1
                   {
                       clearInterval(countdown)
            stagesToUpdate.push( self.images.drawSeat(self.images.seats[seatNumber].seat, originalBorderColor, originalFillColor, originalMiddleDividerColor) )
-           if(self.gameState.seats[seatNumber].displayMessageType == 'countdown'){self.gameState.seats[seatNumber].displayMessageType = 'seat'}
+           if(self.getPreactionData('displayMessageType', options) === 'countdown'){self.setPreactionData('permanent', 'displayMessageType', 'seat', options)}
                       }
 else{
 //UPDATE GRAPHIC AROUND THE TABLE SEAT
  stagesToUpdate.push(  self.images.drawSeat(self.images.seats[seatNumber].seat, toActBorderColor, newFillColor, toActMiddleDividerColor, {borderFillRatio: self.initial_table_state.act_timeout/timeoutInMS, newFillColor:toActTimeLeftBorderColor}) )
     
     //================COUNTDOWN TEXT START================================================================
+var remainingTimeToAct = self.getPreactionData('timeToAct', options)
+var countDownText = 'Time: '+ Math.ceil(remainingTimeToAct/1000)
 
-var countDownText = 'Time: '+ Math.ceil(self.gameState.seats[seatNumber].timeToActInMS/1000)
-
-   if ( self.gameState.seats[seatNumber].timeToActInMS>= 0){
-       if( self.images.seats[seatNumber].countdown.text.text !== countDownText){
-        self.images.seats[seatNumber].countdown.text.text =  countDownText
-        var countDownTextStage = self.images.seats[seatNumber].countdown.position.z.stage
-var countdownTextContainer = self.images.seats[seatNumber].countdown.position.z.container
-             
-
-        stagesToUpdate.push(self.itemChanged(self.images.seats[seatNumber].countdown))
-
-       }//if we need to change countdown text cuz its different
+   if ( remainingTimeToAct >= 0){
+     stagesToUpdate.push  (self.images.seats[seatNumber].countdown.updateText(countDownText, options)   )
    }//if time to act is 0 or higher
      
      //==============================================================COUNT DOWN TEXT END================================================
         
          }//if we did NOT clear the countdown
 
+
+
+
+ //decrement time to act
+      self.setPreactionData('hand','timeToAct', remainingTimeToAct - interval,{seat:seatNumber})
+                    
+                    //correct posible failed seatitems
+                       stagesToUpdate.push(   self.displayCorrectSeatItems(seatNumber, options) 
 //update stages as necessary
-                   stagesToUpdate.push(   self.displayCorrectSeatItems(seatNumber, {update:false}) )
+)
                       self.updateStages(stagesToUpdate)
 
-                      //decrement time to act
-                      self.gameState.seats[seatNumber].timeToActInMS = self.gameState.seats[seatNumber].timeToActInMS - interval
-        },interval)
+                         },interval)
 
     }
 
@@ -10970,19 +11034,106 @@ self.jQueryObjects.tableChatFullParagraph.css('display','inline ')
 
 */
 
+this.images.Item.prototype.addElement = function(element, textOrImage){
+
+
+var parentDiv = self.getParentOfStageObject(this).div
+var elementType = $(this).get(0).tagName
+
+if(textOrImage === 'text'){var type  = 'text'}
+else if(textOrImage === 'image'){  var type = 'image'}
+else if(_.isObject(this.image) && !_.isObject(this.text)){var type = 'text'}
+  else if(!this.image && _.isObject(this.text)){var type = 'image'}
+else if(elementType === 'p'){var type = 'text'}
+  else{var type = 'image'}
+
+
+if(type === 'text'){var z = this.position.z.container + 1}
+  else{var z = this.position.z.container}
+
+//CHECK TO MAKE SURE MAX WIDTH HEIGHT AND WIDTH ARE NOT TOO HIGH
+//if(parseFloat($(element).css('max-width'))
+
+$(element).css({
+'z-index':z
+,'display':'none'
+})
+
+$(parentDiv).append(element)
+this[type] = element
+element.parentOfImageObject = this
+
+if(type === 'image'){
+
+  self.positionItemImage(this, {update:false})
+
+var location = getDisplayObjectLocation(this.image)
+if(location.x !== this.position.x){throw location}
+  if(location.y !== this.position.y){throw location}
+
+
+}
+
+
+
+}
+this.images.Item.prototype.isItemDisplayed = function(){
+
+
+if(this.image instanceof easeljs.DisplayObject || this.text instanceof easeljs.DisplayObject){
+
+ if (self.isItemAddedToStage(this)){return true}
+
+}
+
+if (_.isElement(this.image)){
+
+var cssImageDisplay = $(this.image).css('display')
+if(cssImageDisplay !== 'none' && cssImageDisplay !== 'hidden'){return true}
+
+}
+
+if (_.isElement(this.text)){
+var cssTextDisplay = $(this.text).css('display')
+if(cssTextDisplay !== 'none' && cssTextDisplay !== 'hidden'){return true}
+}
+
+
+return false
+}
+
+this.images.Item.prototype.getText = function (){
+
+if(this.text instanceof createjs.Text){var text = this.text.text}
+  else if(_.isElement(this.text)){var text =  $(this.text).text()}
+    else if(_.isElement(this.image)){var text =  $(this.image).text()}
+
+
+return text
+}
+
+this.images.Item.prototype.updateText = function (text, options){
+
+return updateItemText(this, text, options)
+
+}
+
 var updateItemText = function(item, text, options){
 if(!options){var options = {}}
   var stagesToUpdate = []
-console.log('updating item text newText = '+text)
 
 //console.log('checking updateitem text = '+text)
 if(!_.isString(text+'')){console.log('updateitemtext given non text as parameter = '+text);return }
 
-        if(_.isElement(item.text)){$( item.text).html(text)}
-  else if(_.isObject(item.text)){//if easel js item
+        if(_.isElement(item.text)){
+         $(item.text).html(text)
+      //    console.log('finished updating html of element updatitemtext')
+      //    console.log(item)
+        }
+  else if(item.text instanceof createjs.Text){//if easel js item
           if(item.text.text+'' !== text+''){
             item.text.text = text
-                  stagesToUpdate.push(self.itemChanged(item))
+                  stagesToUpdate.push(self.easelJSDisplayObjectChanged(item))
                 }//if two texts are not equal
         }//if item.text easel js
 
@@ -11032,7 +11183,8 @@ if(parseFloat(options.value) >= currentStackSize){var fullText = 'Bet All-In'}
        else if(actionTypeOrItem === 'sitIn'){var fullText = 'Sit In'; options.messages = ['sit_in']}
            else if(actionTypeOrItem === 'rebuy'){var fullText = 'Rebuy'; options.messages = ['get_add_chips_info']}
 
-stagesToUpdate.push(updateItemText(item, fullText, options))
+//stagesToUpdate.push(updateItemText(item, fullText, options))
+stagesToUpdate.push(item.updateText(fullText, options))
 
 }// if value given as string
 
@@ -11158,14 +11310,14 @@ if(!_.isNumber(current)){return}
 }
 
 
-messageBoxAPI.decrement = function(){
+messageBoxAPI.decrementCurrent = function(){
 
 var nextVal = this.getCurrent() - this.getStageNumberIncrement()
 this.setCurrent(nextVal)
 
 }
 
-messageBoxAPI.incremenet = function (){
+messageBoxAPI.incrementCurrent = function (){
 
   var nextVal = this.getCurrent() + this.getStageNumberIncrement()
 this.setCurrent(nextVal)
@@ -11210,14 +11362,13 @@ return
 }
 
 var itemsToHide = this.getItemsObject(current)
-this.decrement()
+this.decrementCurrent()
 setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(current, false)
   return  self.hideChildren(itemsToHide, options)
 
 }
 
 messageBoxAPI.show = function(messageString, messageInfo, hideOrDisplayChildrenOptions){
-
 
 return self.displayMessageBox (messageString, messageInfo, hideOrDisplayChildrenOptions)
 
@@ -11235,7 +11386,9 @@ return self.displayMessageBox (messageString, messageInfo, hideOrDisplayChildren
 var newStageNumber = messageBoxAPI.getNext()
 if(!_.isNumber(newStageNumber)){return}//if we can't display anymore dont
 
+messageBoxAPI.incrementCurrent()//increase current
 messageBoxAPI.clearItemsObject()
+
 var messageBoxItems = messageBoxAPI.getItemsObject(newStageNumber)
 
 
@@ -11407,15 +11560,16 @@ if(messageInfo.closeWindowMessages){
         if(messageInfo.closeWindowEvent){
           //check if is a string submitted via server
           if(_.isString(messageInfo.closeWindowEvent) ){
-            messageBoxItems.closeWindow.image.onClick = eval(messageInfo.closeWindowEvent)
+            messageBoxItems.closeWindow.image.addEventListener('click', eval(messageInfo.closeWindowEvent) )
           }
-          else{messageBoxItems.closeWindow.image.onClick = messageInfo.closeWindowEvent}
+          else{messageBoxItems.closeWindow.image.addEventListener('click', messageInfo.closeWindowEvent)}
         } //end check if messageInfo.closeWindowEvent exists
         else{
- messageBoxItems.closeWindow.image.onClick = function(event){
+ messageBoxItems.closeWindow.image.addEventListener('click', function(event){
   self.events.onButtonClick(event)
   messageBoxAPI.hide()
-}
+})
+
 }
 
    //--------------------------------OK button--------------------------------
@@ -11437,7 +11591,7 @@ if(messageInfo.closeWindowMessages){
       if(!_.isFunction(okayEvent)){ var  okayEvent = function(e) { self.events.onButtonClick(e);  messageBoxAPI.hide()} }
 
       //assign okay.image.onClick
-                    messageBoxItems.okay.image.onClick = function(e){
+                    messageBoxItems.okay.image.addEventListener('click', function(e){
 
 if(messageBoxItems.checkBoxUnchecked && self.isItemAddedToStage(messageBoxItems.checkBoxUnchecked))
 {
@@ -11448,7 +11602,7 @@ if(messageBoxItems.checkBoxUnchecked && self.isItemAddedToStage(messageBoxItems.
   var checkBoxStatus = 'checked'
 }
                       okayEvent(e, checkBoxStatus)
-                    }//okay.image.onClick
+                    })//okay.image.onClick
   
 //--------------------------------cancel button--------------------------------
         if(messageInfo.cancel){
@@ -11463,15 +11617,15 @@ if(messageBoxItems.checkBoxUnchecked && self.isItemAddedToStage(messageBoxItems.
            if(messageInfo.cancelEvent){
              //check if is a string submitted via server
           if(_.isString(messageInfo.cancelEvent) ){
-            messageBoxItems.cancel.image.onClick = eval(messageInfo.cancelEvent)
+            messageBoxItems.cancel.image.addEventListener('click', eval(messageInfo.cancelEvent))
           }
-          else{messageBoxItems.cancel.image.onClick = messageInfo.cancelEvent}
+          else{messageBoxItems.cancel.image.addEventListener('click', messageInfo.cancelEvent)}
              }//end check if messageInfo.cancelEvent exists
-       else{  
-        messageBoxItems.cancel.image.onClick = function(event){
+       else{  //use default cancel event
+        messageBoxItems.cancel.image.addEventListener('click', function(event){
  self.events.onButtonClick(event)
       messageBoxAPI.hide()
-        }
+        })//onclick event
        }
      }//end checking if messageInfo.cancel is true
        //remove previous instances of cancel if it doesn't exist
@@ -11521,7 +11675,7 @@ if(_.isNumber(checkBoxY) && !_.isNaN(checkBoxY)){return checkBoxY}
 
 
 //assign onClick functions
- messageBoxItems.checkBoxUnchecked.image.onClick = function(e){
+ messageBoxItems.checkBoxUnchecked.image.addEventListener('click', function(e){
 if(_.isFunction(messageInfo.checkBoxUncheckedEvent)){messageInfo.checkBoxUncheckedEvent(e)}
    else if(_.isString(messageInfo.checkBoxUncheckedEvent) ){   eval(messageInfo.checkBoxUncheckedEvent)(e)}
 console.log('unchecked mesagebox checkbox clicked')
@@ -11530,14 +11684,14 @@ console.log('unchecked mesagebox checkbox clicked')
  stagesToUpdate.push (self.displayChildren(messageBoxItems.checkBoxChecked, {update:false}) )
  self.updateStages(stagesToUpdate)
 
- }//unchecked.image.onClick
-messageBoxItems.checkBoxChecked.image.onClick = function(e){
+ })//unchecked.image.onClick
+messageBoxItems.checkBoxChecked.image.addEventListener('click', function(e){
 if(_.isFunction(messageInfo.checkBoxCheckedEvent)){messageInfo.checkBoxCheckedEvent(e)}
   else if(_.isString(messageInfo.checkBoxCheckedEvent) ){  eval(messageInfo.checkBoxCheckedEvent)(e)}
 
  var stagesToUpdate = [ self.hideChildren(messageBoxItems.checkBoxChecked, {update:false}), self.displayChildren(messageBoxItems.checkBoxUnchecked, {update:false})]
  self.updateStages(stagesToUpdate)
-}//checked.image.onClick
+})//checked.image.onClick
 
 }//if we want to display check Box
 
@@ -11608,7 +11762,7 @@ if(this.gameState.cashier.balance < this.gameState.cashier.min ){
 var accountBalanceColor = 'red'
   this.images.cashier.accountBalanceValue.text.text = this.images.cashier.accountBalanceValue.text.text + '//CLICK HERE'
 
-this.images.cashier.accountBalanceValue.text.onClick = function(e){
+this.images.cashier.accountBalanceValue.text.addEventListener('click', function(e){
 
 //POST route /increase_funbucks_by_100
 // window.open('/account', 'Account', 'width=800,height=770 ,left=200,top=200,location=0,toolbar=no,menubar=no,titlebar=no,directories=no,scrollbars=yes')
@@ -11616,7 +11770,7 @@ this.images.cashier.accountBalanceValue.text.onClick = function(e){
 $.post('/increase_funbucks_by_100')
 socket.emit('get_add_chips_info')
 
-}
+})//onclick for account balance value
 
 }
 
@@ -11726,7 +11880,7 @@ var stackSizes = []
 
 for(var i = 0;i<this.gameState.numSeats;i++){
   //fetch stack size
-var size = parseInt(this.images.seats[i].status.text.text)
+var size =  parseInt(this.images.seats[i].status.getText()) 
 //check if stackSize is string format, if so stack size  = 0
 if( _.isNaN(size) ){size = 0} 
   //if stack is number
@@ -12209,8 +12363,8 @@ stagesToUpdate.push(setAutoRebuyValueText(autoRebuyFlagValue, options))
 stagesToUpdate.push(self.images.positionCashierButtons(displayDisableAutoRebuy, options))
 
 //enable basic seatedoptions
-   this.images.getChips.image.onClick = self.events.onButtonClick
-     this.images.standUp.image.onClick = this.events.userStands
+   this.images.getChips.image.addEventListener('click', self.events.onButtonClick)
+     this.images.standUp.image.addEventListener('click', this.events.userStands)
      stagesToUpdate.push (this.hideChildren(this.images.getChipsDisabledShape,options) )
 stagesToUpdate.push(  this.hideChildren(this.images.standUpDisabledShape,options))
 
@@ -12288,6 +12442,14 @@ stagesToUpdate.push( self.hideChildren(self.images.sitOutNextBlind,options))
              //disable scroll event if user is not to act
 if(this.getPreactionData('toAct',{seat:'table'}) !== self.gameState.userSeatNumber){
  $(self.arrayOfParentsOfStageAndOfContainerArray[self.images.betSlider.vertical.position.z.stage].div).off('mousewheel.adjustBetSize')
+$(window).off('mousewheel.disable')
+}
+
+else{//user is to act
+$(window).on('mousewheel.disable', function(e){return false})
+   $(this.getParentOfStageObject(this.images.betSlider.vertical).div).on('mousewheel.adjustBetSize', function(event,delta, deltaX, deltaY) {
+self.events.wheelScroll(deltaY)
+        })
 }
               /*
               }//if user has chips
@@ -12893,8 +13055,8 @@ this.updateTableChatFullMessageTextFromCurrentOrAdditionalData(null, {update:tru
 if(table_state.stage_name === 'waiting'){var dealerPosition = null}
 else{var dealerPosition = table_state.dealer}
   self.gameState.dealer = dealerPosition
-self.animateDealerButton(dealerPosition,  24)
-
+self.animateDealerButton(dealerPosition,  0)
+self.displayChildren(self.images.dealerButton, {update:false})
 
 showTable = true
 
@@ -12906,8 +13068,9 @@ testFunction()
     }
     
 var testFunction = function(){
-
-console.log(self.images)
+console.log(' calling testfunction')
+console.log(self.images.seats[0].status.text)
+console.log(self)
 //console.log(self.jQueryObjects.chatBoxDiv[0])
 //self.displayChildren(self.images.fold)
 
@@ -12939,7 +13102,7 @@ for(var i = 0;i<self.gameState.numSeats;i++){
              self.displayInitialTableState(table_state)
             self.activateSockets()
     })
-   console.clear()
+ //  console.clear()
     socket.emit('get_table_state')
     }
      
@@ -12952,13 +13115,24 @@ for(var i = 0;i<self.gameState.numSeats;i++){
 
 
         for(var i = 0;i<self.images.seats.length;i++){
-if(self.gameState.seats[i].displayMessageType == 'action'||'seat'||'openSeat'||'disabledSeat'){}
-    else{self.gameState.seats[i].displayMessageType = 'seat'}
-      self.clearExpirationData('street', i)
+          var options = {seat:i, update:false}
+          var displayMessageType = self.getPreactionData('displayMessageType', options)
+
+switch(displayMessageType){
+  case 'action':
+  case 'seat':
+  case 'openSeat':
+  case 'disabledSeat':
+  break;
+
+  default: self.setPreactionData('permanent','displayMessageType', 'seat', options )
+break;
+
+}
+ self.clearExpirationData('street', i)
         }
 
  self.newStreetEnds(potSizes)
- //      self.streetEnds(potSizes)
 
     })
 
@@ -13134,11 +13308,10 @@ self.clearExpirationData('act', seatNum)
 //user to act 
  socket.on('act_prompt', function(actions, timeout){
 
-console.log('act prompt received')
-console.log(actions)
+//console.log('act prompt received')
+//console.log(actions)
 
-self.playerToAct(self.gameState.userSeatNumber, timeout)
-self.updateUserOptionsBasedOnFlagsAndPreactions()
+
 
    //  self.startCountdown(self.gameState.userSeatNumber,Math.round(timeout/1000))
 
@@ -13207,25 +13380,13 @@ if(actions[i].bet[0] != actions[i].bet[1]){ stagesToUpdate.push( self.displayBet
                stagesToUpdate.push(  self.displayBetSlider(actions[i].bet[0], actions[i].bet[1], 1) )
 
  }
-/*
-         var onClick = self.images.raise.onClick
-self.images.bet.onClick = function(event){
-self.setPreactionData('hand', 'fold', false)
-self.setPreactionData('hand', 'check', false)
-  onClick(event)
-}
-var onClick = self.images.raise.onClick
-self.images.raise.onClick = function(event){
-self.setPreactionData('hand', 'fold', false)
-self.setPreactionData('hand', 'check', false)
-  onClick(event)
-}
-self.images.raise.image.addEventListener('click', removeBetPreactions)
-*/
-
         
          })//iterate through action choices
 
+
+
+stagesToUpdate.push( self.playerToAct(self.gameState.userSeatNumber, timeout) )
+stagesToUpdate.push(self.updateUserOptionsBasedOnFlagsAndPreactions({update:false}) )
          self.updateStages(stagesToUpdate)
 })
 
@@ -13351,12 +13512,14 @@ self.displayBubbleChatPopover(chatInfo)
         self.getPreactionData('pending_sit_out')
         self.getPreactionData('sitting_out')
 
-           self.images.seats[player.seat].status.text.text = player.chips
-stagesToUpdate.push(self.itemChanged( self.images.seats[player.seat].status))
+
+
+        stagesToUpdate.push  ( self.images.seats[player.seat].status.updateText(player.chips, {update:false}))
+
         if(player.seat == self.gameState.userSeatNumber){
           setFlags(player, false, {update:false, server:false, seat:player.seat}) 
 }
- stagesToUpdate.push(     self.updateUserOptionsBasedOnFlagsAndPreactions({update:false}))
+ stagesToUpdate.push(self.updateUserOptionsBasedOnFlagsAndPreactions({update:false}))
         self.updateStages(stagesToUpdate)
 })
 
@@ -13365,17 +13528,13 @@ stagesToUpdate.push(self.itemChanged( self.images.seats[player.seat].status))
 var stagesToUpdate = []
 
      stagesToUpdate.push(    self.playerSitsOut(player.seat) )
-/*
-        if(self.images.seats[player.seat].status.text.text !== 'Sitting Out' ){
-      stagesToUpdate .push(    self.images.seats[player.seat].status.text.text = 'Sitting Out')
-     stagesToUpdate.push(     self.itemChanged( self.images.seats[player.seat].status.text) )
-       }
-*/
+
         if(player.seat == self.gameState.userSeatNumber){
           console.log('player sits out called, user')
      stagesToUpdate .push(    setFlags(player, false, {update:false, server:false, seat:player.seat}) )
   stagesToUpdate .push(self.updateUserOptionsBasedOnFlagsAndPreactions({update:false}))
-}
+}//if user
+
           self.updateStages(stagesToUpdate)
 })
 
@@ -13442,28 +13601,35 @@ options.update = false
 var stagesToUpdate = []
 
 
-           if(is_you == true){player.seat = self.gameState.userSeatNumber}
-      if(player.sitting_out == true){  
+           if(is_you === true){player.seat = self.gameState.userSeatNumber}
+      if(player.sitting_out === true){  
         //this playerSitsOutfunction wil automatically make ure not to update if not necessary
         stagesToUpdate.push(self.playerSitsOut(player.seat, options))  
       }
-           else if(player.chips>0){
-            if(self.images.seats[player.seat].status.text.text+''!== player.chips+''){
-                self.images.seats[player.seat].status.text.text = player.chips
-                stagesToUpdate.push(self.images.seats[player.seat].status.position.z.stage)
-              }
+           else if(player.chips > 0){
+
+       stagesToUpdate.push(self.images.seats[player.seat].status.updateText(player.chips, options))       
+
            }//if player out of chips
 
 
         if(is_you){
-      stagesToUpdate.push(      self.hideCashier(options) )
-            if(player.chips>0){stagesToUpdate.push( self.hideChildren(self.images.rebuy, options))
-            if (player.sitting_out == true){stagesToUpdate.push(self.displayChildren(self.images.sitIn, options))}
-            }
-        }
+      stagesToUpdate.push(  self.hideCashier(options) )
+            if(player.chips > 0){
+                            stagesToUpdate.push( self.hideChildren(self.images.rebuy, options))
+if (player.sitting_out == true){stagesToUpdate.push(self.displayChildren(self.images.sitIn, options))}
+
+            }//if we have more than 0 chips
+else{
+  stagesToUpdate.displayChildren(self.images.rebuy, options)
+stagesToUpdate.push(self.hideChildren(self.images.sitIn, options))
+}//if we're out of chips
+            
+            
+        }//if player ===is user
 
         self.updateStages(stagesToUpdate)
- }  ) 
+ }) 
 
 
 //round ends, all hole cards are shown
@@ -13531,10 +13697,10 @@ else {
     console.log('this is an iframe')
      holdemCanvas.updatePreference(holdemCanvas.permanentPreferences, holdemCanvas.getPermanentPreferences())
      holdemCanvas.updatePreference(holdemCanvas.permanentPreferences, holdemCanvas.permanentPreferences, {updateEqualValues:true})
-
     holdemCanvas.loadImageSources()
 }
 
+console.log(holdemCanvas.images.seats[0])
       console.log(document)
       
     // console.log(holdemCanvas.images.sources)
