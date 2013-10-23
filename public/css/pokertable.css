@@ -32,7 +32,8 @@
        margin-bottom:0px;
            margin-right:0px;
            padding:0px;
-           text-align:left;
+         /*  text-align:left; */
+         text-align:left;
            border-width:0px;
           margin:0px 0px 0px 0px;
            word-wrap: break-word;
@@ -42,10 +43,11 @@
 
 #pokerTableWrapper {
   position:inherit;
-    width: 690;
-    height:450;
+    width: 690px;
+    height:450px;
     left:0px;
     top:0px;
+    overflow:none;
 }
 
 .unselectable{
@@ -103,6 +105,8 @@ user-select: none;
 
 #pokerCanvasDiv {
     position: absolute;
+    width:inherit;
+    height:inherit;
 }
 #canvas{
 position:absolute;
