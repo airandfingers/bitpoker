@@ -3859,8 +3859,8 @@ for(var i =0;i<this.seats.length;i++){
 self.images.drawSeat(this.seats[i].seat, '#00008B','#000000', '#7d7d7d',{outerStrokeWidth:1})
 
 //mouseover events
-this.seats[i].seat.image.onMouseOver = self.events.seatMouseEvent
-this.seats[i].seat.image.onMouseOut = self.events.seatMouseEvent
+this.seats[i].seat.image.addEventListener('mouseover',  self.events.seatMouseEvent)
+this.seats[i].seat.image.addEventListener('mouseout',  self.events.seatMouseEvent)
 this.seats[i].seat.image.addEventListener('click', self.events.onDisabledOrNonUserSeatClick)
 
 
@@ -5679,36 +5679,11 @@ if(betSize>self.gameState.maxBet){return self.gameState.maxBet}
 
 stagesToUpdate.push(  this.displayChipStack(betSize, this.images.seats[seatNumber], options ) )
 
-//ASSIGN BETSIZE
-
-/*
-        if(parseFloat(betSize)>0){
-          if(parseFloat(this.images.seats[seatNumber].bet.text.text) !== parseFloat(betSize)){//check to make sure changed
-         this.images.seats[seatNumber].bet.text.text = betSize
-      stagesToUpdate.push(   this.easelJSDisplayObjectChanged(this.images.seats[seatNumber].bet) )
-}//check to make sure changed
-stagesToUpdate.push( this.displayChildren(this.images.seats[seatNumber].bet, options))
-       }
-        else{
-betSize = ''
-          if(this.images.seats[seatNumber].bet.text.text !== ''){//check to make sure changed
-         this.images.seats[seatNumber].bet.text.text = betSize
-      stagesToUpdate.push(   this.easelJSDisplayObjectChanged(this.images.seats[seatNumber].bet) )
-}//check to make sure changed
-
- stagesToUpdate.push(this.hideChildren(this.images.seats[seatNumber].bet, options))
-       }
-*/
-
-
-
 
         if(!_.isNull(stackSize) && !_.isUndefined(stackSize) && stackSize <=0 ){stackSize = 'All In'}
         //change betsize graphic value
-          if(this.images.seats[seatNumber].status.text.text !== stackSize){//check to make sure changed
-         this.images.seats[seatNumber].status.text.text = stackSize
-   stagesToUpdate.push(      this.easelJSDisplayObjectChanged(this.images.seats[seatNumber].bet) )
-}//check to make ure changed
+       stagesToUpdate.push(        this.images.seats[seatNumber].status.updateText(stackSize, options) )
+        stagesToUpdate.push(        this.images.seats[seatNumber].stackSize.updateText(stackSize, options) )
          
 
 
@@ -5759,7 +5734,7 @@ var holeCardSources = []
 //if player = user
 if(self.gameState.userSeatNumber === playerNumber
  && _.isArray(self.gameState.holeCards)
- && self.gameState.holeCards.length>0){
+ && self.gameState.holeCards.length > 0){
  // console.log('creating user hole card copy')
 shouldCopyHoleCards = true
 holeCardSources = self.gameState.holeCards
@@ -5787,7 +5762,7 @@ if(shouldCopyHoleCards !== true){return false}
 //copy the holecards
 for(var i = 0;i<holeCardArray.length;i++){
 
-animationArray[i] = new this.images.Item(0,0,0,0,{stage:0,container:0})
+animationArray[i] = new this.images.Item(0,0,0,0, self.images.seats[0].hiddenCards[0].position.z)
 self.images.cardAsBitmap( animationArray[i], holeCardSources[i])
 self.setItemLocationsInItemAEqualToOnesInItemB(animationArray[i], holeCardArray[i])
 
@@ -5798,14 +5773,15 @@ var options = {
   seatNum:playerNumber,
   seatObject:self.images.seats[playerNumber]
 }
-  animationArray[i].image.onMouseOver =function(event){
+  animationArray[i].image.addEventListener('mouseover',  function(event){
     console.log('animatedCard moused OVER')
   //  self.events.seatMouseEvent(event, options)
-   self.images.seats[playerNumber].seat.image.onMouseOver(event, options)}
-    animationArray[i].image.onMouseOut = function(event){
+   self.events.seatMouseEvent(event, options)
+ })
+    animationArray[i].image.addEventListener('mouseout',  function(event){
   console.log('animatedCard moused OUT')
-      self.images.seats[playerNumber].seat.image.onMouseOut(event, options)
-}
+      self.events.seatMouseEvent(event, options)
+})
 
 if(animationArray[i].text){
   animationArray[i].text.y  =( this.images.seats[playerNumber].seat.text.y - this.images.seats[playerNumber].seat.image.y) + this.images.seats[playerNumber].seat.position.y
@@ -6816,8 +6792,9 @@ options.update = false
 self.setPreactionData('permanent', 'displayMessageType', 'seat', {seat:seatNumber, server:false})
        stagesToUpdate.push (updateItemText(this.images.seats[seatNumber].playerName, playerName))
        //this.images.seats[seatNumber].playerName.text.text =  playerName
-        if(_.isNumber(chips) && chips>0){
-stagesToUpdate.push (updateItemText(this.images.seats[seatNumber].status, chips))
+        if(_.isNumber(chips) && chips > 0){
+stagesToUpdate.push (self.images.seats[seatNumber].status.updateText( chips, options))
+stagesToUpdate.push (self.images.seats[seatNumber].stackSize.updateText(chips, options))
        // this.images.seats[seatNumber].status.text.text =  chips
         }
         else if( chips == 0){
@@ -8284,12 +8261,30 @@ self.images.preactions.foldChecked = foldPreactionItems.checked
 self.images.preactions.callAnyUnchecked = callAnyPreactionItems.unchecked
 self.images.preactions.callAnyChecked = callAnyPreactionItems.checked
 
+//remove existing event listeners
+self.images.preactions.callUnchecked.image.removeAllEventListeners()
+self.images.preactions.callChecked.image.removeAllEventListeners()
+
+self.images.preactions.checkUnchecked.image.removeAllEventListeners()
+self.images.preactions.checkChecked.image.removeAllEventListeners()
+
+self.images.preactions.allInUnchecked.image.removeAllEventListeners()
+self.images.preactions.callUnchecked.image.removeAllEventListeners()
+
+self.images.preactions.foldUnchecked.image.removeAllEventListeners()
+self.images.preactions.foldChecked.image.removeAllEventListeners()
+
+self.images.preactions.callAnyUnchecked.image.removeAllEventListeners()
+self.images.preactions.callAnyChecked.image.removeAllEventListeners()
+
 //ASSIGN ONCLICK FUNCTIONS
 var setPreactionDataOptions = {server:true}
 
 //==================assign onClick functions========================
 
 //CALL
+
+
 self.images.preactions.callUnchecked.image.addEventListener('click', function(e){
 
 self.setPreactionData('once', 'call', self.getPreactionOptionValues().call, setPreactionDataOptions)
@@ -8345,13 +8340,13 @@ self.images.preactions.foldChecked.image.addEventListener('click', function(e){
 })
 
 //CALL ANY
-self.images.preactions.callUnchecked.image.addEventListener('click', function(e){
+self.images.preactions.callAnyUnchecked.image.addEventListener('click', function(e){
 
   //  self.setPreactionData('hand', 'call', self.getPreactionOptionValues().call_any, setPreactionDataOptions)
 self.setPreactionData('hand', 'call', true, setPreactionDataOptions)
 
 })
-self.images.preactions.callUnchecked.image.addEventListener('click', function(e){
+self.images.preactions.callAnyChecked.image.addEventListener('click', function(e){
 
    self.setPreactionData('hand', 'call', false, setPreactionDataOptions)
 
@@ -9260,7 +9255,7 @@ return changedWithoutUpdate
 
             self.setPreactionData('permanent', 'sitting_out', true, {seat:seatNumber})
             stagesToUpdate.push(     this.images.seats[seatNumber].status.updateText("Sitting Out", {update:false})        )
-
+ 
         if (options && options.update === false){return stagesToUpdate }
   else{this.updateStages(stagesToUpdate )  }
 
@@ -11880,7 +11875,7 @@ var stackSizes = []
 
 for(var i = 0;i<this.gameState.numSeats;i++){
   //fetch stack size
-var size =  parseInt(this.images.seats[i].status.getText()) 
+var size =  parseInt(this.images.seats[i].stackSize.getText()) 
 //check if stackSize is string format, if so stack size  = 0
 if( _.isNaN(size) ){size = 0} 
   //if stack is number
@@ -12375,7 +12370,7 @@ var preactionOptionData = self.getPreactionOptionValues()
                   //check if gameStateSeatObject is sitting out
                   if(self.getPreactionData('sitting_out')){
                     console.log('updating user options based on sitting_out user')
-        stagesToUpdate.push(      self.hideChildren(self.images.sitOutNextBlind,options))
+        stagesToUpdate.push(self.hideChildren(self.images.sitOutNextBlind,options))
 stagesToUpdate.push( self.hideChildren(self.images.sitOutNextBlindOn,options))
 stagesToUpdate.push( self.hideChildren(self.images.foldToAnyBet,options))
 stagesToUpdate.push( self.hideChildren(self.images.foldToAnyBetOn,options))
@@ -13514,6 +13509,7 @@ self.displayBubbleChatPopover(chatInfo)
 
 
         stagesToUpdate.push  ( self.images.seats[player.seat].status.updateText(player.chips, {update:false}))
+stagesToUpdate.push(     self.images.seats[player.seat].stackSize.updateText(player.chips, {update:false})        )
 
         if(player.seat == self.gameState.userSeatNumber){
           setFlags(player, false, {update:false, server:false, seat:player.seat}) 
@@ -13527,10 +13523,9 @@ self.displayBubbleChatPopover(chatInfo)
 var stagesToUpdate = []
 
      stagesToUpdate.push(    self.playerSitsOut(player.seat) )
-
+ stagesToUpdate .push(    setFlags(player, false, {update:false, server:false, seat:player.seat}) )
         if(player.seat == self.gameState.userSeatNumber){
-          console.log('player sits out called, user')
-     stagesToUpdate .push(    setFlags(player, false, {update:false, server:false, seat:player.seat}) )
+    
   stagesToUpdate .push(self.updateUserOptionsBasedOnFlagsAndPreactions({update:false}))
 }//if user
 
@@ -13608,6 +13603,7 @@ var stagesToUpdate = []
            else if(player.chips > 0){
 
        stagesToUpdate.push(self.images.seats[player.seat].status.updateText(player.chips, options))       
+stagesToUpdate.push(     self.images.seats[player.seat].stackSize.updateText(player.chips, options)        )
 
            }//if player out of chips
 
