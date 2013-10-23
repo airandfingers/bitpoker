@@ -454,7 +454,7 @@ stageContainers.staticItems = ['background', 'table', 'buttons chat', null, 'hol
 
 stageOptionData.animatedTableItems = _.clone(disabledOptions)
 stageOptionData.animatedTableItems.newCanvas = true
-stageContainers.animatedTableItems = ['dealerChip', 'chips', 'community', 'chipAnimation', 'cardAnimation']
+stageContainers.animatedTableItems = ['dealerChip', 'community', 'chips', null, 'cardAnimation']
 divOptionData.animatedTableItems = {mouseDisabled:true}
 
 stageOptionData.tableChatFull = _.clone(stageOptionData.staticItems)
@@ -3574,7 +3574,7 @@ var showTableChatFullHitAreaOffsetBottomRight = 27
   //------------------------------community cards---------------------------
         this.community[0] = new this.Item(canvasWidth/2-cardWidth/2-cardWidth*2-distanceBetweenCommunityCards*2,communityY,cardWidth, cardHeight,getZ('community'))
         this.community[1] = new this.Item(canvasWidth/2-cardWidth/2-cardWidth-distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,getZ('community'))
-        this.community[2] = new this.Item(canvasWidth/2-cardWidth/2,communityY,cardWidth, cardHeight,getZ('community'))
+        this.community[2] = new this.Item(canvasWidth/2-cardWidth/2,communityY,cardWidth, cardHeight, getZ('community'))
         this.community[3] = new this.Item(canvasWidth/2+cardWidth/2+distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,getZ('community'))
         this.community[4] = new this.Item(canvasWidth/2+cardWidth/2+cardWidth+2*distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,getZ('community'))
 
@@ -5724,7 +5724,7 @@ if(betSize>self.gameState.maxBet){return self.gameState.maxBet}
         options.update = false
         options.displayChipStackSize = true
         var stagesToUpdate = []
-        self.setPreactionData('hand', 'inHand', {seat:seatNumber})
+    //    self.setPreactionData('hand', 'inHand', {seat:seatNumber})
 
 stagesToUpdate.push(  this.displayChipStack(betSize, this.images.seats[seatNumber], options ) )
 
@@ -7241,7 +7241,7 @@ var chipImageSource = self.permanentPreferences.sourceObjects.value.chips['10']
        else{ var chipImageSource = self.permanentPreferences.sourceObjects.value.chips.black}
 
 
-       parentOfChipArray[options.chipArrayName].push(new this.images.Item(x,y,diameter,diameter,getZ('animatedTableItems')))
+       parentOfChipArray[options.chipArrayName].push(new this.images.Item(x,y,diameter,diameter, getZ('chips')))
         this.images.itemAsBitmap(parentOfChipArray[options.chipArrayName][parentOfChipArray[options.chipArrayName].length-1], chipImageSource) 
  
 parentOfChipArray[options.chipArrayName][parentOfChipArray[options.chipArrayName].length-1].text =  new createjs.Text(chipValue, '7px ' + self.permanentPreferences.defaultFontType.value, 'white')
@@ -7761,7 +7761,7 @@ var initialX = this.images.startingCard.position.x
 var stagesToUpdate = []
 
   //create TEMPORARY face down card to animate
-    var animatedCard = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, getZ('animatedTableItems'))
+    var animatedCard = new this.images.Item(initialX, initialY, this.images.community[0].size.x, this.images.community[0].size.y, getZ('cardAnimation'))
   stagesToUpdate.push( this.images.cardAsBitmap(animatedCard, null) )
 
      //play deal sound
@@ -8933,7 +8933,7 @@ var dealHoleCardSound =  createjs.Sound.createInstance(self.images.sources.dealH
 
         if(cardsDealt==playerArrayNumber){
           //define temporary animated cardback
-            animatedCards0[cardsDealt] = new self.images.Item(initialX, initialY, self.images.community[0].size.x, self.images.community[0].size.y, getZ('animatedTableItems'))
+            animatedCards0[cardsDealt] = new self.images.Item(initialX, initialY, self.images.community[0].size.x, self.images.community[0].size.y, getZ('cardAnimation'))
           self.images.cardAsBitmap(animatedCards0[cardsDealt], null)
   
 
@@ -8955,7 +8955,7 @@ var dealCard0AnimationInfo = {
           }//if dealing first hole card
 
           else if(cardsDealt>playerArrayNumber){
-          animatedCards1[cardsDealt] = new self.images.Item(initialX, initialY, self.images.community[0].size.x, self.images.community[0].size.y, getZ('animatedTableItems'))
+          animatedCards1[cardsDealt] = new self.images.Item(initialX, initialY, self.images.community[0].size.x, self.images.community[0].size.y, getZ('cardAnimation'))
           self.images.cardAsBitmap(animatedCards1[cardsDealt], null) 
                
    asyncArray.push(function(callback){
