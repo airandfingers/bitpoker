@@ -15,8 +15,15 @@ window.onKeydown = onKeyDown
     function Table () {
 self  = this
 
+self.isIframe = function(){
+
+  if (_.isArray($('#server_values').data('current_table_names'))){return false}
+    else{return true}
+}
+
 var getPlayZoneLandingPage = function(){
- if (_.isArray($('#server_values').data('current_table_names'))){var page = window}
+
+ if (self.isIframe()){var page = window}
 else{var page = parent}
   return page
 }
@@ -162,11 +169,12 @@ self.updateTableChatFullDisplay(options)}
 
   this.permanentPreferences = {
 
-      confirmSeatRotation:{value:true},
+      confirmSeatRotation:{value:true}
 
-defaultFontType:{value:'Planer_Reg'},
 //defaultFontType:{value:'Planer_Reg'},
-        sourceObjects:{value:playZoneLandingPage.sourceObjects, updateValue:function(newValue){
+,defaultFontType:{value:'arial'}
+
+        ,sourceObjects:{value:playZoneLandingPage.sourceObjects, updateValue:function(newValue){
 var newerValue = newValue
 if(!_.isObject(newValue)){
   console.log('permanent preferences creating new playZoneLandingPage.sourceObjects = {}')
@@ -2036,11 +2044,22 @@ if( _.isNumber(preferenceSeat) && ( preferenceSeat === 0 || preferenceSeat === s
 //confirm the choice if the preference requires it
         if(self.permanentPreferences.confirmSeatRotation.value === true) {   
           var messageInfo = {}    
-                       messageInfo.title = 'Seat Viewpoint Changed'
+                       messageInfo.title = 'Perspective Changed'
                      messageInfo.okayText = 'OK, this is fine'
                      messageInfo.cancelText = 'Change view'
                      messageInfo.cancel = true
                      messageInfo.checkBox = true
+                     messageInfo.checkBoxUncheckedEvent = function(e){
+
+
+
+                     }
+                     messageInfo.checkBoxCheckedEvent = function(e){
+
+
+
+
+                     }
           messageInfo.okayEvent = function(e, checkBoxStatus){
      
            if(checkBoxStatus === 'checked'){
@@ -2051,6 +2070,11 @@ if( _.isNumber(preferenceSeat) && ( preferenceSeat === 0 || preferenceSeat === s
                messageBoxAPI.hide()//hide message box
            self.sessionPreferences.changeUserSeatViewTo.value = self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber
          console.log('setting seat view preference to '+ self.sessionPreferences.changeUserSeatViewTo.value)
+
+if(checkBoxStatus === 'unchecked'){ self.permanentPreferences.confirmSeatRotation.value = true}
+       
+     else if(checkBoxStatus === 'checked'){ self.permanentPreferences.confirmSeatRotation.value = false}
+     //    self.savePermanentPreferences()
          self.saveSessionPreferences()
          }
           messageInfo.cancelEvent = function (){
@@ -2062,7 +2086,7 @@ if( _.isNumber(preferenceSeat) && ( preferenceSeat === 0 || preferenceSeat === s
          //messageBoxAPI.hide()
          }
           var messageString = 'Your table viewpoint has been changed so that you appear at the bottom middle.  Your position relative to other players remains the same. Click '+messageInfo.cancelText+ ' to change your view back.  At the table, you may also right click ---> Show Me Here to change your view.'  
-              self.displayMessageBox(messageString, messageInfo)
+              messageBoxAPI.display(messageString, messageInfo)
          }//if we want to display popup, display it
          }//rotate seat to display user as seat 0, then check if we need to confirm the change with the user
 }
@@ -2925,6 +2949,11 @@ for(var i =0;i<flashArray.length;i++){
 //-----------functions below this line ---------------------
 this.loadImageSources = function(backgroundLoad){
 
+if(self.isIframe()){
+var preferencesRetreived = false
+
+self.getInitialPermanentPreferences (function(){preferencesRetreived = true})
+}
 console.log('loadImageSources called')
 
 if(backgroundLoad !== true){this.initializeStagesAndCanvasCallThisFirst()}
@@ -3031,14 +3060,14 @@ var createPreloadArray = function(){
           resourceID++
           imageSourceArray.push({src:self.images.sources.desktopCardFolder+cardRank+'s.png', id: resourceID, name: cardRank+'s', sourceObjectParent: desktopCards})
           resourceID++
-         imageSourceArray.push({src: self.images.sources.mobileCardFolder+cardRank+'c.png', id: resourceID, name: cardRank+'c', sourceObjectParent: mobileCards})
+    /*     imageSourceArray.push({src: self.images.sources.mobileCardFolder+cardRank+'c.png', id: resourceID, name: cardRank+'c', sourceObjectParent: mobileCards})
         resourceID++
           imageSourceArray.push({src:self.images.sources.mobileCardFolder+cardRank+'d.png', id: resourceID, name: cardRank+'d', sourceObjectParent: mobileCards})
           resourceID++
           imageSourceArray.push({src:self.images.sources.mobileCardFolder+cardRank+'h.png', id: resourceID, name: cardRank+'h', sourceObjectParent: mobileCards})
           resourceID++
           imageSourceArray.push({src:self.images.sources.mobileCardFolder+cardRank+'s.png', id: resourceID, name: cardRank+'s', sourceObjectParent: mobileCards})
-          resourceID++
+   */       resourceID++
       }//push card
 
 
@@ -3267,9 +3296,8 @@ function checkIfCompleted(e){
  // console.log(e)
 //CHECK IF COMPLETED
 //if(loadedImages >= imageArray.length){
-  if(playZoneLandingPage.loadingScreen.progressRatio >= 1 || playZoneLandingPage.loaded === true){
-    console.log('loading has been completed');console.log(parent);console.log(self.permanentPreferences.sourceObjects.value);console.log(playZoneLandingPage.sourceObjects)
-  onComplete()
+  if((playZoneLandingPage.loadingScreen.progressRatio >= 1 || playZoneLandingPage.loaded === true) && preferencesRetreived !== false){
+     onComplete()
 createjs.Ticker.removeEventListener(e.type, checkIfCompleted)
 }
 //UPDATE DISPLAY IF NOT COMPLETED
@@ -3876,7 +3904,7 @@ this.seats[i].seat.image.addEventListener('click', self.events.onDisabledOrNonUs
        
          this.seats[i].playerName = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
          this.seats[i].status = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y + this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
- console.log(this.seats[i])
+ 
 
 //throw''
  this.seats[i].stackSize = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
@@ -4251,6 +4279,9 @@ var betSizeY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.si
 
 var betSliderX = this.bet.position.x + this.bet.size.x + distanceBetweenActionButtons
 var betSliderMiddleY = actionButtonY + actionButtonHeight/2
+  
+
+
    this.betSlider.horizontal = new this.Item (betSliderX,betSliderMiddleY-horizontalBetSliderHeight/2,horizontalBetSliderWidth,horizontalBetSliderHeight,getZ('staticItems','buttons'))
               var verticalY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.size.y/2-verticalBetSliderHeight/2
       this.betSlider.vertical = new this.Item(this.betSlider.horizontal.position.x,verticalY,verticalBetSliderWidth,verticalBetSliderHeight,getZ('staticItems','buttons'))
@@ -4258,10 +4289,28 @@ var betSizeX = this.betSlider.horizontal.position.x+this.betSlider.horizontal.si
 var betSizeY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.size.y/2-betSizeHeight/2
       this.betSlider.betSize = new this.Item(betSizeX,betSizeY,betSizeWidth,betSizeHeight,getZ('staticItems','buttons'))
 
+//JQUERY UI BETSLIDER
 
+/*
+var sliderOptions = {
+change:function(e, ui){}//when the slider changes
+}
+var jquerySlider = $('<div>').addClass(self.css.nonVendor + ' ' + self.css.unselectable).css({
+  'overflow':'visible'
+  ,'margin':'0px'
+}).slider(sliderOptions)
+
+this.betSlider.slider = new this.Item(betSliderX, )
+*/
+
+
+
+
+//CANVAS BET SLIDER
       this.itemAsBitmap(this.betSlider.horizontal, self.permanentPreferences.sourceObjects.value.horizontalSlider)
         this.itemAsBitmap(this.betSlider.vertical, self.permanentPreferences.sourceObjects.value.verticalSlider)
 this.betSlider.betSize.image = document.getElementById('betSize')
+
 
 self.updateBetSize('')
 
@@ -5838,7 +5887,40 @@ createjs.Ticker.setFPS(12)
 }
 
 
+var getExtraWidthAndHeightOfElement = function(element){
 
+var initialDisplay = $(element).css('display')
+var initialX = $(element).css('left')
+var initialY = $(element).css('top')
+if(initialDisplay === 'none'){
+//move item way off screen
+$(element).css({
+  'left':-99999
+,'top':-999999
+,'display':'inline'
+})
+
+
+}//if we need to "display" to calculate width/height
+
+var extraWidth  = $(element).outerWidth(true) - $(element).width()
+var extraHeight = $(element).outerHeight(true) - $(element).height()
+
+if(initialDisplay === 'none'){
+
+$(element).css({
+  'left':initialX
+,'top':initialY
+,'display': initialDisplay
+})
+
+
+}//restore the element to its original position and visibility
+
+
+return {width:extraWidth, height:extraHeight}
+
+}
 
     this.positionItemImage = function (item, options) {
 if(!options){var options = {}}
@@ -5855,10 +5937,14 @@ stagesToUpdate.push(self.easelJSDisplayObjectChanged(item))
 
 //size
 if(_.isElement(item.image)){
+//we are going to move the image way out of bounds for a second
+
+var extraFat =  getExtraWidthAndHeightOfElement(item.image)
+
  // console.log('adjusting element item.image')
   $(item.image).css({
-    'width':item.size.x
-    ,'height':item.size.y
+    'width':item.size.x - extraFat.width
+    ,'height':item.size.y - extraFat.height
     ,'position':'absolute'
     ,'z-index': item.position.z.container
   })
@@ -7624,10 +7710,14 @@ return true
 
 
 else if (_.isElement(imageOrText)){//if html element
-console.log('display object position set as element')
+//console.log('display object position set as element')
+
+
+var extraFat = getExtraWidthAndHeightOfElement(imageOrText)
+
     $(imageOrText).css({
-'left':x 
-,'top':y
+'left':x + extraFat.width/2
+,'top':y + extraFat.height/2
     })
  //console.log(imageOrText)
 }//if html element
@@ -7643,7 +7733,8 @@ var location =  {x:imageOrText.x, y:imageOrText.y}
 else{// var location = {x:  parseFloat($(imageOrText).css('left')), y: parseFloat($(imageOrText).css('top'))}
 //var topLeftLocation  = $(imageOrText).position()
 //var location = {x:topLeftLocation.left , y:topLeftLocation.top}
-var location = {x:  parseFloat($(imageOrText).css('left')), y: parseFloat($(imageOrText).css('top'))}
+var extraFat = getExtraWidthAndHeightOfElement(imageOrText)
+var location = {x:  parseFloat($(imageOrText).css('left')) - extraFat.width/2, y: parseFloat($(imageOrText).css('top')) - extraFat.height/2}
 }
 //console.log(imageOrText);console.log(location)
 
@@ -11054,9 +11145,11 @@ $(element).css({
 ,'display':'none'
 })
 
-$(parentDiv).append(element)
-this[type] = element
 element.parentOfImageObject = this
+
+//check if element is already a descendent of div
+if($(parentDiv).find(element).length !== 1){$(parentDiv).append(element)}
+this[type] = element
 
 if(type === 'image'){
 
@@ -11363,7 +11456,7 @@ setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(current
 
 }
 
-messageBoxAPI.show = function(messageString, messageInfo, hideOrDisplayChildrenOptions){
+messageBoxAPI.display = function(messageString, messageInfo, hideOrDisplayChildrenOptions){
 
 return self.displayMessageBox (messageString, messageInfo, hideOrDisplayChildrenOptions)
 
@@ -11630,9 +11723,9 @@ if(messageBoxItems.checkBoxUnchecked && self.isItemAddedToStage(messageBoxItems.
 //--------------------checkbox option------------------------------
 if(messageInfo.checkBox){
 
-   messageBoxItems.checkBoxUnchecked = new self.images.Item(0,0,0,0,getZ(newStageNumber, 'buttons'))
- messageBoxItems.checkBoxChecked = new self.images.Item(0,0,0,0,getZ(newStageNumber,'buttons'))
-console.log('creating checkBox for messagebox');console.log(messageInfo)
+   messageBoxItems.checkBoxUnchecked = new self.images.Item(0,0,0,0, getZ(newStageNumber, 'buttons'))
+ messageBoxItems.checkBoxChecked = new self.images.Item(0,0,0,0, getZ(newStageNumber,'buttons'))
+//console.log('creating checkBox for messagebox');console.log(messageInfo)
 self.images.itemsAsCheckBoxes(messageBoxItems.checkBoxUnchecked,  messageBoxItems.checkBoxChecked, messageInfo.checkBoxText, {color:messageInfo.checkBoxTextColor})
 
 
@@ -12390,7 +12483,7 @@ stagesToUpdate.push( self.hideChildren(self.images.foldToAnyBetOn,options))
 
          //if user is NOT sitting out
          else{
-           console.log('updating user options based on NOT sitting_out user')
+        //   console.log('updating user options based on NOT sitting_out user')
               stagesToUpdate.push(       self.hideChildren(self.images.sitIn,options))
      stagesToUpdate.push(      self.hideChildren(self.images.rebuy,options))
              //display sitout next hand depending on user's flag
@@ -12482,26 +12575,6 @@ if(update === false){return stagesToUpdate}
 
 this.getPermanentPreferences = function() {
 
-//var permanentPreferences = $.getJSON('/preferences/1')
-
-$.getJSON('/preferences/1', function(response) { 
-console.log('get permanent preferences called, response is: ')
-   console.log(response); 
-  if(_.isObject(response)){
-self.updatePreference(self.permanentPreferences, response.permanentPreferences)
-}
-});
-// response.data will probably be the preferences Object
-
-//console.log(permanentPreferences)
-//console.log('permanet')
-
-//console.log($('#server_values')[0].dataset)
-//console.log($('#server_values').data('table_1'))
-$//('#server_values')[0].dataset.table_state_url
-//.data('x').. I forget the specifics, 
-//but take a look at #server_values, and if it has data-table_name, then replace "x" with "table_name".
-
 //return permanentPreferences
 }
 
@@ -12514,7 +12587,7 @@ console.log(this.sessionPreferences)
 
 this.savePermanentPreferences = function(){
 
-    socket.emit('set_preference', 'permanentpreferences', this.permanentPreferences)
+    socket.emit('set_preference', 'permanentPreferences', self.permanentPreferences)
 
 }
 
@@ -13089,6 +13162,22 @@ for(var i = 0;i<self.gameState.numSeats;i++){
 }
 
   //---------------------SOCKET CODE------------------------
+
+this.getInitialPermanentPreferences = function(callback){
+
+   socket.once('table_state', function(table_state){
+             console.log('one time table_state message received solely for the purpose of getting permanent preferences')
+ self.updatePreference(self.permanentPreferences, table_state.preferences, {updateEqualValues:true})  
+
+if(_.isFunction(callback)){callback()}
+   
+    })
+
+//if(_.isFunction(callback)){callback()}
+    socket.emit('get_table_state')
+}
+
+
     this.receiveTableState = function(){
       console.log('receiveTableState called')
    socket.once('table_state', function(table_state){
@@ -13679,23 +13768,20 @@ self.jQueryObjects.tableChatFullDiv.mCustomScrollbar()
 
  //console.log($('#server_values').data('table_state'))
    holdemCanvas = new Table()
-   console.log(parent)
-console.log(parent.iframes)
 
-if (_.isArray($('#server_values').data('current_table_names'))) {
-  // we're in index.ejs
+
+if(holdemCanvas.isIframe()) {
+  // we're not in index.ejs
+    console.log('this is an iframe')
+    
+      holdemCanvas.loadImageSources()
+}
+else{
+    // we're in index.ejs
       console.log('this is not an iframe')
 holdemCanvas.loadImageSources(true)
 }
-else {
-  // we're not in index.ejs
-    console.log('this is an iframe')
-     holdemCanvas.updatePreference(holdemCanvas.permanentPreferences, holdemCanvas.getPermanentPreferences())
-     holdemCanvas.updatePreference(holdemCanvas.permanentPreferences, holdemCanvas.permanentPreferences, {updateEqualValues:true})
-    holdemCanvas.loadImageSources()
-}
 
-console.log(holdemCanvas.images.seats[0])
       console.log(document)
       
     // console.log(holdemCanvas.images.sources)
