@@ -9743,7 +9743,7 @@ if(newStackSize>maxStackSize){newStackSize = maxStackSize}
 
     //    self.images.seats[seatNumber].bet.text.text =  chipsInFrontOfPlayer[seatNumber]
 //stagesWeWantToUpdateAfter.push(self.easelJSDisplayObjectChanged(self.images.seats[seatNumber].bet))
-   stagesWeWantToUpdateAfter.push(   self.playerPutsChipsInPot(seatNumber,chipsInFrontOfPlayer[seatNumber], newStackSize, {update:false}))
+   stagesWeWantToUpdateAfter.push(   self.playerPutsChipsInPot(seatNumber, chipsInFrontOfPlayer[seatNumber], newStackSize, {update:false}))
 
   stagesWeWantToUpdateAfter.push(  self.displayChildren(self.images.seats[seatNumber].bet, {update:false}) )
 if(self.arrayOfParentsOfStageAndOfContainerArray[self.images.seats[seatNumber].chips[0].position.z.stage].stage.contains(self.images.seats[seatNumber].chips[0].image)) {

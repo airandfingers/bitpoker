@@ -26,7 +26,7 @@ module.exports = (function() {
       // how long (in ms) to wait for players to respond to prompts
     , ACT_TIMEOUT: 16000
       // how long (in ms, per pot) to wait after winners message and before reset_table message
-    , DISPLAY_HANDS_DURATION: 3000
+    , DISPLAY_HANDS_DURATION: 4000
       // how long (in ms) players can sit out before being forced from their seats
     , SIT_OUT_TIME_ALLOWED: 30000 // 30 seconds (for testing)
       // how long (in ms) players are forced to wait before buying with less than they stood up with
