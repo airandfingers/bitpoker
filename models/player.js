@@ -899,6 +899,7 @@ module.exports = (function () {
   PlayerSchema.methods.onConnect = function(socket) {
     var self = this;
     self.disconnected = false;
+    self.preferences = self.socket.user.preferences;
 
     // override message-received trigger (called $emit) to log, trigger player event, then trigger
     var $emit = self.socket.$emit;
@@ -993,15 +994,19 @@ module.exports = (function () {
 
   static_properties.messages.set_preference = 'setPreference';
   PlayerSchema.methods.setPreference = function(name, value) {
-    //console.log(this.username, 'setting preference', name, 'to', value);
-    this.preferences[name] = value;
+    var self = this;
+    self.socket.user.setPreference(name, value, function(user) {
+      self.socket.user = user;
+      self.preferences = user.preferences;
+    });
   };
 
   static_properties.messages.set_preferences = 'setPreferences';
   PlayerSchema.methods.setPreferences = function(preferences) {
     var self = this;
-    _.each(preferences, function(value, name) {
-      self.setPreference(name, value);
+    self.socket.user.setPreferences(preferences, function(user) {
+      self.socket.user = user;
+      self.preferences = user.preferences;
     });
   };
 

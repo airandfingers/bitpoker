@@ -63,7 +63,7 @@ module.exports = (function () {
     var self = this
       , user_id = socket.handshake.session.passport.user;
     if (! _.isUndefined(user_id)) {
-      User.findById(user_id, 'username', function(err, user) {
+      User.getByIdWithoutPassword(user_id, function(err, user) {
         if (err) { console.error(err); }
         else if (! user) {
           console.error( 'No user found with id', user_id, '!' );
