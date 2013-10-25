@@ -4191,8 +4191,8 @@ change:function(e, ui){
 self.events.betSliderChanged(e, ui)
 
 }//when the slider changes
-
- ,*/slide: function(e, ui) {
+,*/
+slide: function(e, ui) {
   self.events.betSliderChanged(e, ui)
     var betSliderHandle =     $('.ui-slider-handle', self.images.betSlider.slider.image)
         betSliderHandle.qtip('option', 'content.text', '' + ui.value)
@@ -4227,10 +4227,11 @@ betSliderHandle.qtip({
     }
     ,show:{
       event:'mousedown'
+      ,delay:0
     }
     ,hide: {
          event:'mouseup unfocus'
-        ,delay: 500
+        ,delay: 250
     }
     ,events:{
       //function that updates the content when the qtip is shown
@@ -5617,8 +5618,13 @@ event.target.parentOfImageObject.messages.push('sit',event.target.parentOfImageO
 //return betsize that is rounded down or FALSE if betsize is not a number, also checks to make sure betsize is within in and max
 this.returnRoundedDownBetSize = function(betSize){
 
-var isNumber =  !_.isNaN(betSize) && _.isNumber(betSize) 
+var isNumber =  !_.isNaN(betSize) && _.isNumber(betSize)
+    var minIncrement = self.initial_table_state.min_increment
+
+
    if(isNumber === false ){return false}
+
+
 
 //check to insure betSize is not outside of bounds, return min or max if it is
 else if(betSize >= self.gameState.maxBet){return self.gameState.maxBet}
@@ -5627,7 +5633,7 @@ else if(betSize >= self.gameState.maxBet){return self.gameState.maxBet}
     //if not a number use last known number and round
  
     else{
-      var roundedBetSize = Math.floor(betSize/self.initial_table_state.min_increment)*self.initial_table_state.min_increment   
+      var roundedBetSize = Math.floor(betSize/minIncrement)*minIncrement
         return roundedBetSize
        }
 
@@ -9085,7 +9091,7 @@ function createRectangle(currentCard, nextCard, height){
 
         var sliderSize = betSize
 
-console.log('adjustBetDisplayToInputOfUser called: ' + betSize)
+//console.log('adjustBetDisplayToInputOfUser called: ' + betSize)
 var sliderAPI = $(self.images.betSlider.slider.image).slider
 //console.log($(self.images.betSlider.slider.image).slider('option','min'))
 //console.log(sliderAPI)
@@ -10459,7 +10465,7 @@ if(update === false){return stagesToUpdate}
     }
 
 
-    this.displayBetSlider = function(minBet, maxBet, minIncrement, options){
+    this.displayBetSlider = function(minBet, maxBet, options){
        
 var stagesToUpdate = []
 if(!options){var options = {}}
@@ -10479,7 +10485,7 @@ console.log('min: '+minBet + ', max: ' + maxBet)
        .slider('option','min', minBet) //set min value
        .slider('option','max', maxBet) //set max value
        .slider('value', minBet) //set slider handle to minimum
-
+.slider('option', 'step', self.initial_table_state.min_increment) //set minincrement
 
 console.log('slider value after set to min = ' + $( this.images.betSlider.slider.image).slider('value'))
 
@@ -10490,7 +10496,7 @@ console.log('slider value after set to min = ' + $( this.images.betSlider.slider
 
 //scroll wheel
 
-    $(this.getParentOfStageObject(this.images.betSlider.slider).div).on('mousewheel.adjustBetSize', function(event, delta, deltaX, deltaY) {
+    $(self.getParentOfStageObject(self.images.betSlider.slider).div).on('mousewheel.adjustBetSize', function(event, delta, deltaX, deltaY) {
 self.events.wheelScroll(deltaY)
         })
 
@@ -12063,13 +12069,13 @@ else{betSizes.push(false)}//else we push null
 return betSizes
 }
 
-    this.newStreetEnds = function(potSizes){
+    this.streetEnds = function(potSizes){
  var animationTime = 350
         var ticks = 30
 var chipMoveSound = createjs.Sound.createInstance(this.images.sources.moveChipsSound)
 
 //unbind scroll wheel events
-    $(this.arrayOfParentsOfStageAndOfContainerArray[this.images.betSlider.slider.position.z.stage].stage.canvas).off('mousewheel')
+    $(self.getParentOfStageObject(this.images.betSlider.slider).div).off('mousewheel.adjustBetSize')
 
 
 //master async.series array:
@@ -12295,108 +12301,6 @@ async.series(masterSeriesArray)
     }
 
 
-this.streetEnds = function(potSizes){
-
-
- //unbind scroll wheel events
-         $(this.arrayOfParentsOfStageAndOfContainerArray[this.images.betSlider.slider.position.z.stage].stage.canvas).off('mousewheel')
-
-
- var animationTime = 200
-        var ticks = 6
-        var chipIntoPotAnimationArray = []
-var callBackNumber = 0
-var chipMoveSound = createjs.Sound.createInstance(this.images.sources.moveChipsSound)
-
-       
-     
-
-
-
-        //push animateImages into an array
-        _.each(_.range(self.images.seats.length), function(seatNumber) {
-if(self.images.seats[seatNumber].chips.length>0){ 
-  console.log('playernumber:'+seatNumber+'size:'+self.images.seats[seatNumber].chips.length)
-}
-if(self.images.pots[seatNumber] && self.images.pots[seatNumber].chips && self.images.pots[seatNumber].chips.length>0){ 
-  console.log('potnumber:'+seatNumber+'size:'+self.images.pots[seatNumber].chips.length)
-}
-            if(self.images.seats[seatNumber].chips && _.isArray( self.images.seats[seatNumber].chips) && self.images.seats[seatNumber].chips.length>=1  && self.images.seats[seatNumber].chips[0].image && self.arrayOfParentsOfStageAndOfContainerArray[self.images.seats[seatNumber].chips[0].position.z.stage].stage.contains(self.images.seats[seatNumber].chips[0].image) )
-            {
-                console.log('preparing animation')
-                
-                var animationDistanceX = self.images.pots[0].firstChip.position.x -  self.images.seats[seatNumber].firstChip.position.x
-                var animationDistanceY = self.images.pots[0].firstChip.position.y  - self.images.seats[seatNumber].firstChip.position.y
-
-                 _.each(_.range(self.images.seats[seatNumber].chips.length), function(n)
-                 {
-/*
-if(n == 0){var endOfAnimationFunction = function(){
-console.log('calling callback function of first chip in the array of player '+seatNumber)
-  }}
-  else{var endOfAnimationFunction = function(){}}
-*/
-chipIntoPotAnimationArray.push(function(callback){
-  self.hideText(self.images.seats[seatNumber].bet,{update:false})
-  var animationInfo = {}
-  animationInfo.item =  self.images.seats[seatNumber].chips[n]
-  animationInfo.finalX = self.images.seats[seatNumber].chips[n].position.x + animationDistanceX
-  animationInfo.finalY = self.images.seats[seatNumber].chips[n].position.y+ animationDistanceY
-  animationInfo.numTicks = ticks
-  animationInfo.time = animationTime
-  animationInfo.onEnd = function(){
-    console.log('completed animation of player'+seatNumber+' chipstack and chip number '+n);
-    callback(null, callBackNumber)
-
-  }
-
-
-      self.animateImage(animationInfo)
-
-                })    //push function into chipIntoPotAnimationArray
-                callBackNumber++      
-                })//end iteration through each chip in the chipstack
-                }//make sure player has bet images in front of him
-                })//iterate through each seat
- 
-
-async.series([
-function(next){
-  if(chipIntoPotAnimationArray.length>0){chipMoveSound.play()}
-    async.parallel(chipIntoPotAnimationArray, function(err, results){
-      console.log(results)
-if(results.length = callBackNumber){
-console.log('parallel all chips from players moving into pot completed')
-      next(null, 1)}
-      else{console.log('error of chipintopot parellel animation is equal to');console.log(err)}
-
-    })
-},
-
-function(next){
-  
-  //update pot sizes and remove bets
-   self.hideAllBets({update:false}) 
-
-    self.updatePotSize(potSizes)
-    /*
-for(var i = 0;i<self.images.seats.length;i++){
-  if(self.images.seats[i].chips.length>0){ 
-  console.log('playernumber:'+i+'size:'+self.images.seats[i].chips.length)
-}
-console.log(self.images.pots)
-if(self.images.pots[i] && self.images.pots[i].chips && self.images.pots[i].chips.length>0){ 
-  console.log('potnumber:'+i+'size:'+self.images.pots[i].chips.length)
-}
-}
-*/
-    //play second sound if chips need to be split into side pots
-    if(potSizes.length>1){chipMoveSound.play() }
- 
-      next(null, 2)
-}
-  ])
-}
 
 var canPlayerActDefaultsToUser = function(seat){
 if(!_.isNumber(seat)){var seat = self.gameState.userSeatNumber}
@@ -12547,7 +12451,7 @@ stagesToUpdate.push( self.hideChildren(self.images.sitOutNextBlind,options))
 
 if(this.getPreactionData('toAct',{seat:'table'}) !== self.gameState.userSeatNumber){
   
- $(self.arrayOfParentsOfStageAndOfContainerArray[self.images.betSlider.slider.position.z.stage].div).off('mousewheel.adjustBetSize')
+ $(self.getParentOfStageObject(self.images.betSlider.slider).div).off('mousewheel.adjustBetSize')
 $(window).off('mousewheel.disable')
 }
 
@@ -12570,7 +12474,7 @@ stagesToUpdate.push(     self.hideChildren(self.images.foldToAnyBetOn,options))
 else{//user is not in a hand or players are all in
 
              //disable scroll event
-$(self.arrayOfParentsOfStageAndOfContainerArray[self.images.betSlider.slider.position.z.stage].div).off('mousewheel.adjustBetSize')
+$(self.getParentOfStageObject(self.images.betSlider.slider).div).off('mousewheel.adjustBetSize')
 
 stagesToUpdate.push(     self.hideChildren(self.images.foldToAnyBetOn,options))
  stagesToUpdate.push(     self.hideChildren(self.images.foldToAnyBet,options))
@@ -13234,7 +13138,7 @@ break;
  self.clearExpirationData('street', i)
         }
 
- self.newStreetEnds(potSizes)
+ self.streetEnds(potSizes)
 
     })
 
@@ -13356,7 +13260,7 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
 var seatNum = player.seat
 //clear on act data
 self.clearExpirationData('act', seatNum)
-     if(action !== skip) {self.playerActs(seatNum, action.toUpperCase(), 1.2)}
+     if(action != 'skip') {self.playerActs(seatNum, action.toUpperCase(), 1.2)}
         
     //display updated potsize if necessary
         if(pot && action!=='check'){self.updatePotSize(pot)}
@@ -13400,7 +13304,7 @@ self.clearExpirationData('act', seatNum)
              if(seatNum === self.gameState.userSeatNumber){
               self.clearExpirationData('once', player.seat)
         //unbind scroll wheel events
-$(self.arrayOfParentsOfStageAndOfContainerArray[self.images.betSlider.slider.position.z.stage].div).off('mousewheel.adjustBetSize')
+$(self.getParentOfStageObject(self.images.betSlider.slider).div).off('mousewheel.adjustBetSize')
 
             }
 
@@ -13468,7 +13372,7 @@ var stagesToUpdate = []
         options.value = actions[i].raise[0]
        stagesToUpdate.push(    self.updateActionButton('raise',options))
 //make sure we are not facing all in when we want to display bet slider
-if(actions[i].raise[0] != actions[i].raise[1]){ stagesToUpdate.push( self.displayBetSlider(actions[i].raise[0], actions[i].raise[1], 1) )}
+if(actions[i].raise[0] != actions[i].raise[1]){ stagesToUpdate.push( self.displayBetSlider(actions[i].raise[0], actions[i].raise[1]) )}
       
          }
       else if (actions[i].bet){
@@ -13476,10 +13380,8 @@ if(actions[i].raise[0] != actions[i].raise[1]){ stagesToUpdate.push( self.displa
         stagesToUpdate.push(   self.updateActionButton('bet', options))
 
 //make sure we are not facing all in when we want to display bet slider
-if(actions[i].bet[0] != actions[i].bet[1]){ stagesToUpdate.push( self.displayBetSlider(actions[i].bet[0], actions[i].bet[1], 1) )}
-     
-
-               stagesToUpdate.push(  self.displayBetSlider(actions[i].bet[0], actions[i].bet[1], 1) )
+//if(actions[i].bet[0] != actions[i].bet[1]){ stagesToUpdate.push( self.displayBetSlider(actions[i].bet[0], actions[i].bet[1]) )}
+              stagesToUpdate.push(  self.displayBetSlider(actions[i].bet[0], actions[i].bet[1]) )
 
  }
         
