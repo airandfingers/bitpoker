@@ -38,6 +38,9 @@ nonVendor: 'nonVendor'
 ,noTranslate: 'notranslate'
 ,canvas:'pokerCanvasClass'
 ,inline:'inline'
+,messageBoxButton: 'messageBoxButton'
+,okayButton: 'okayMessageBoxButton'
+,cancelButton: 'cancelMessageBoxButton'
  }
 
   this.imageData = {
@@ -760,12 +763,12 @@ console.log('leftover button removed with id = ' + options.attr.id)
 
 
 var newButton = $('<button>').attr({
-  'class': "btn-custom unselectable nonVendor"
+  'class': "nonVendor"
   ,'type':'button'
 }).css({'text-align':'center'}).css(options.css)
 //add classes if necessary
 if(_.isString(options.class)){newButton.addClass(options.class)}
-newButton.attr(options.attr)
+newButton.attr(options.attr).addClass('btn-custom unselectable')
 
 newButton.html(buttonText)
 
@@ -780,6 +783,9 @@ onClick(e)
 e.stopPropagation()
 })
 }//onclick function if necessary
+
+newButton.on('contextmenu.disable', function(e){return false})
+
 
 this.addElement(newButton[0], 'image', options)
 newButton.css(options.css)
@@ -2049,16 +2055,15 @@ if( _.isNumber(preferenceSeat) && ( preferenceSeat === 0 || preferenceSeat === s
 //confirm the choice if the preference requires it
         if(self.permanentPreferences.confirmSeatRotation.value === true) {   
           var messageInfo = {}    
+          messageInfo.style = 'qtip-youtube'
+          messageInfo.html = true
+          messageInfo.modal = false
                        messageInfo.title = 'Perspective Changed'
                      messageInfo.okayText = 'OK, this is fine'
                      messageInfo.cancelText = 'Change view'
                      messageInfo.cancel = true
                      messageInfo.checkBox = true
-                     messageInfo.checkBoxUncheckedEvent = function(e){
-                     }
-                     messageInfo.checkBoxCheckedEvent = function(e){
 
-                     }
           messageInfo.okayEvent = function(e){
      console.log('ok event called of confirmseatrotation')
      var checked = messageBoxAPI.getStatus(e.target.parentOfImageObject.position.z.stage).checkBox
@@ -2068,12 +2073,14 @@ if( _.isNumber(preferenceSeat) && ( preferenceSeat === 0 || preferenceSeat === s
 
 console.log(checked)
 
-               messageBoxAPI.hide()//hide message box
+               
            self.sessionPreferences.changeUserSeatViewTo.value = self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber
          console.log('setting seat view preference to '+ self.sessionPreferences.changeUserSeatViewTo.value)
 
      //    self.savePermanentPreferences()
          self.saveSessionPreferences()
+
+         messageBoxAPI.hide()//hide message box
          }
           messageInfo.cancelEvent = function (){
            if(self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber !== self.gameState.userSeatNumber ){
@@ -2083,7 +2090,7 @@ console.log(checked)
          
          //messageBoxAPI.hide()
          }
-          var messageString = 'Your table viewpoint has been changed so that you appear at the bottom middle.  Your position relative to other players remains the same. Click '+messageInfo.cancelText+ ' to change your view back.  At the table, you may also right click ---> Show Me Here to change your view.'  
+          var messageString = 'You now appear at the bottom middle.  Click '+messageInfo.cancelText + ' to change your view back.  At the table, right click a seat ---> click "Show Me Here" to change your view.'  
               messageBoxAPI.display(messageString, messageInfo)
          }//if we want to display popup, display it
          }//rotate seat to display user as seat 0, then check if we need to confirm the change with the user
@@ -7669,8 +7676,7 @@ var data =  {
   x:imageOrText.x
   ,y:imageOrText.y
   ,extraWidth:0
-  ,extraHeight :0
-
+  ,extraHeight:0
 }
 
 }
@@ -11416,7 +11422,6 @@ $(parentOfStage.div).children().not(parentOfStage.stage.canvas).remove()
 
 messageBoxAPI.display = function(messageString, messageInfo, hideOrDisplayChildrenOptions){
 
-  messageInfo.modal = true
 return self.displayMessageBox(messageString, messageInfo, hideOrDisplayChildrenOptions)
 /*
 if(messageInfo && messageInfo.modal === true){
@@ -11602,6 +11607,7 @@ defaults.checkBoxText = 'Dont show this message again.'
  defaults.checkBoxTextColor = messageInfo.messageColor
 defaults.checkBoxFontSize = 10
 defaults.checkboxFontType = self.permanentPreferences.defaultFontType.value
+defaults.modal = false
 
 //defaults.checkBoxCheckedEvent = function(){}
 //defaults.checkBoxUncheckedEvent = function(){}
@@ -11691,21 +11697,21 @@ createBlankItems()
 
 
 //**************************************************DISPLAY MODAL MESSAGEBOX****************************************
-if(messageInfo.modal === true){
+if(messageInfo.html === true){
 
-console.log('displaying modal')
+console.log('displaying qtip message box')
 var additionalContent = []
 var onRenderFunctions = []
 var onShowFunctions = []
 
 
-var content = $('<p>').addClass(self.css.unselectable).css({
+var messageCSS = {'text-align':'center'}
+if(!_.isString(messageInfo.style)){
+  messageCSS['font'] = messageInfo.messageSizeAndFont
+ messageCSS['color'] = messageInfo.messageColor
+}
 
-'text-align':'center'
-,'font': messageInfo.messageSizeAndFont
-,'color':messageInfo.messageColor
-
-})
+var content = $('<p>').addClass(self.css.unselectable).css(messageCSS)
 
 content.html(messageString)
 $(div).append(content)
@@ -11719,17 +11725,19 @@ if(messageBoxItems.okay instanceof self.images.Item || messageBoxItems.cancel in
   var bootstrapOptions = {
     css:{
   'font':messageInfo.buttonSizeAndFont
-  ,'color':  messageInfo.buttonTextColor
-,'background-color': messageInfo.buttonBackgroundColor
-,'margin':0
-,'padding':0
-,'border':0
 ,'position':'relative'
 }//okay button css
-,attr:{'class':''}//eliminate default classes
+,attr:{'class':''}//eliminate default classes and make id
 ,position:false//prevent bootstrap from positioning
-,class:self.css.unselectable
+,class:self.css.unselectable + ' ' + self.css.messageBoxButton
 }//bootstrap options
+
+if(!_.isString(messageInfo.style)){
+
+bootstrapOptions.css['color'] =  messageInfo.buttonTextColor
+bootstrapOptions.css['background-color'] =  messageInfo.buttonBackgroundColor
+
+}
 
 
 }//if we are going to display at least one bootstrap button, assign default options so we dont have to do it again
@@ -11737,15 +11745,38 @@ if(messageBoxItems.okay instanceof self.images.Item || messageBoxItems.cancel in
 //OK
 if(messageBoxItems.okay instanceof self.images.Item){
 
+//recalibrate inner width
+bootstrapOptions.css.width = messageBoxItems.okay.size.x + 'px'
+bootstrapOptions.css.height = messageBoxItems.okay.size.y + 'px'
+
+bootstrapOptions.attr.id = self.css.okayButton
 bootstrapOptions.onClick = messageInfo.okayEvent
 messageBoxItems.okay.addBootstrapButton(messageInfo.okayText, bootstrapOptions)
+//increase width and height of item
+var okayPositionData = getDisplayObjectPositionData(messageBoxItems.okay)
+messageBoxItems.okay.size.x = messageBoxItems.okay.size.x + okayPositionData.extraWidth
+messageBoxItems.okay.size.y = messageBoxItems.okay.size.y + okayPositionData.extraHeight
+
+
 additionalContent.push(messageBoxItems.okay.image)
 }//if displaying OK button
 
 if(messageBoxItems.cancel instanceof self.images.Item){
 
+//recalibrate inner width and height
+bootstrapOptions.css.width = messageBoxItems.cancel.size.x + 'px'
+bootstrapOptions.css.height = messageBoxItems.cancel.size.y + 'px'
+
+bootstrapOptions.attr.id = self.css.cancelButton
 bootstrapOptions.onClick = messageInfo.cancelEvent
 messageBoxItems.cancel.addBootstrapButton(messageInfo.cancelText, bootstrapOptions)
+
+//increase width and height of item
+var cancelPositionData = getDisplayObjectPositionData(messageBoxItems.cancel)
+messageBoxItems.cancel.size.x = messageBoxItems.cancel.size.x + cancelPositionData.extraWidth
+messageBoxItems.cancel.size.y = messageBoxItems.cancel.size.y + cancelPositionData.extraHeight
+
+
 additionalContent.push(messageBoxItems.cancel.image)
 }//if displaying cancel button
 
@@ -11755,7 +11786,6 @@ if(messageInfo.checkBox){
 //destroy canvas type checkboxes
   messageBoxItems.checkBoxUnchecked = null
   messageBoxItems.checkBoxChecked = null
-
 
 //get font-size of message, we will use that for checkbox dimensions:
 var checkBoxSize = parseInt  ($(messageBoxItems.message.text).css('font-size')) + 1
@@ -11776,10 +11806,14 @@ jqueryCheckBox.addClass(self.css.unselectable)
 //ADD ONCLICK EVENTS
 jqueryCheckBox.on('click', function(e){
 //unchecked
-if(jqueryCheckBox.prop('checked') === true){messageInfo.checkBoxUncheckedEvent(e)}
+if(jqueryCheckBox.prop('checked') === true && _.isFunction(messageInfo.checkBoxUncheckedEvent)){
+  messageInfo.checkBoxUncheckedEvent(e)
+}
 
 //checked
-else if(jqueryCheckBox.prop('checked') === false){messageInfo.checkBoxCheckedEvent(e)}
+else if(jqueryCheckBox.prop('checked') === false && _.isFunction(messageInfo.checkBoxCheckedEvent) ){
+  messageInfo.checkBoxCheckedEvent(e)
+}
 
 })
 
@@ -11788,13 +11822,19 @@ messageBoxItems.htmlCheckBox.addElement(jqueryCheckBox[0], 'image', {position:fa
 additionalContent.push(jqueryCheckBox)
 
 
-//TEXT of the checkbox
-var jqueryCheckBoxText = $('<p>').css({
+var checkBoxCSS = {
   'text-align':'left'
-  ,'font':messageInfo.checkboxFontType
-  ,'color':messageInfo.checkBoxTextColor
 ,'font-size':messageInfo.checkBoxFontSize
-}).addClass(self.css.unselectable)
+}
+if(!_.isString(messageInfo.style)){
+
+checkBoxCSS.font =  messageInfo.checkboxFontType
+checkBoxCSS.color =  messageInfo.checkBoxTextColor
+
+}
+
+//TEXT of the checkbox
+var jqueryCheckBoxText = $('<p>').css(checkBoxCSS).addClass(self.css.unselectable)
 
 jqueryCheckBoxText.text(messageInfo.checkBoxText)
 
@@ -11817,9 +11857,12 @@ content = content.add(value)
 //create qtip on the div
 
 var messageBoxQtipOptions = {
-        content: {
-            text:  content
-            ,close:true
+  overwrite:false
+        ,content: {
+            text: content
+           // ,attr: ''
+            ,button:true
+           // ,close:true
             ,title: messageInfo.title
         }//content
         ,position: {
@@ -11833,19 +11876,25 @@ var messageBoxQtipOptions = {
             ,fixed:true
             
             ,modal: {
-                on: true
-                ,blur: false
+                on: messageInfo.modal
+               ,blur: false
             }//show.modal
-           
-
+          
             
         }//show
         ,hide: false
-        ,style: 'qtip-light'
+        ,style: messageInfo.style
         ,events: {
             render: function(event, api) {
               console.log('render event called')
 
+//keep all items within the max width of the main tooltip div
+              api.elements.tooltip.find('*').add(api.elements.tooltip).css({
+                'max-width': messageBoxWindowWidth*0.72 + 'px'
+//,'max-height':'none'
+              }).addClass(self.css.unselectable)     
+//THIS REMOVES the close tooltip from our close button and any other tooltips inside the box
+.removeAttr('title')
 
 //PLACE OVERLAY BELOW EVERYTHING ELSE
 if(_.isObject(api.elements.overlay)){
@@ -11907,9 +11956,10 @@ setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(newStag
 
 
 
+
+
 //APPEND OVERLAY TO OUR DIV
 if(_.isObject(api.elements.overlay)){$(self.getParentOfStageObject(newStageNumber).div).append(api.elements.overlay)}
-
 
 //THIS KEEPS OUR BUTTONS AND CHECKBOX ON THE SAME LINE
 $('button', api.elements.content).css('display', 'inline')
@@ -11917,19 +11967,16 @@ $('button', api.elements.content).css('display', 'inline')
 //THIS KEEPS OUR TEXT FROM CHANGING CURSORS
 $('p', api.elements.content).css('pointer-events','none')
 
-//keep all items within the max width of the main tooltip div
-              api.elements.tooltip.find('*').add(api.elements.tooltip).css({
-                'max-width': messageBoxWindowWidth*0.72 + 'px'
-//,'max-height':'none'
-              }).addClass(self.css.unselectable)     
 
 //THIS EDITS OUR TITLE CSS
-api.elements.title.css({
+if(_.isObject(api.elements.title)){
+var titleCSS = {
   'text-align':'center'
-  ,'font': messageInfo.titleSizeAndFont
-,'color':messageInfo.titleColor
-})
-console.log(api.elements)
+,'font': messageInfo.titleSizeAndFont
+}
+if(!_.isString(messageInfo.style)){titleCSS.color = messageInfo.titleColor}
+api.elements.title.css(titleCSS)
+}//if we have a title element
 
 _.each(onShowFunctions, function(value, element, list){
 
