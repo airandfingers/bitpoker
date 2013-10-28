@@ -23,8 +23,8 @@ self.isIframe = function(){
 
 var getPlayZoneLandingPage = function(){
 
- if (self.isIframe()){var page = window}
-else{var page = parent}
+ if (self.isIframe()){var page = parent}
+else{var page = window}
   return page
 }
 
@@ -37,6 +37,7 @@ nonVendor: 'nonVendor'
 ,unselectable: 'unselectable'
 ,noTranslate: 'notranslate'
 ,canvas:'pokerCanvasClass'
+,inline:'inline'
  }
 
   this.imageData = {
@@ -45,6 +46,7 @@ nonVendor: 'nonVendor'
       chatBoxAlpha:0.75,
       maxChipColumns:3,
       numberOfPlayersSet:false
+      ,defaultDisplayCSS:'inline'
   }
 
   //============PREFERENCES================
@@ -730,6 +732,10 @@ self.updateStages(stagesToUpdate)
 }
 
 this.images.Item.prototype.addBootstrapButton = function (buttonText, bootstrapButtonOptions){
+//options
+//size, position, css, attr
+
+
 if(!bootstrapButtonOptions){var bootstrapButtonOptions = {}}
   var options = _.clone(bootstrapButtonOptions)
 
@@ -740,8 +746,6 @@ if(_.isString(options.loadingText) || _.isNumber(options.loadingText)){options.a
   else{options.attr['data-loading-text'] = buttonText}
 
 if(!options.css){options.css = {}}
-
-var stageNumber = this.position.z.stage
 
 //remove any other possible images
 this.removeChild('image')
@@ -755,28 +759,30 @@ console.log('leftover button removed with id = ' + options.attr.id)
 }
 
 
-
 var newButton = $('<button>').attr({
   'class': "btn-custom unselectable nonVendor"
   ,'type':'button'
-}).css({'text-align':'center'}).css(options.css).attr(options.attr)
+}).css({'text-align':'center'}).css(options.css)
+//add classes if necessary
+if(_.isString(options.class)){newButton.addClass(options.class)}
+newButton.attr(options.attr)
 
 newButton.html(buttonText)
 
-//add classes if necessary
-if(_.isString(options.class)){newButton.addClass(options.class)}
 
-if(!_.isFunction(options.onClick)){var onClick = self.events.onButtonClick}
+
+if(!_.isFunction(options.onClick) && this.messages){var onClick = self.events.onButtonClick}
   else{var onClick = options.onClick}
 
+if(_.isFunction(onClick)){
 newButton.on('click', function(e){
 onClick(e)
 e.stopPropagation()
 })
+}//onclick function if necessary
 
-
-this.addElement(newButton[0], 'image', {confineChildSizeToItem:true})
-
+this.addElement(newButton[0], 'image', options)
+newButton.css(options.css)
 
 }//addBootstrapButton 
 
@@ -804,19 +810,18 @@ else if(_.isObject(source)){
   //update width and height of parent if necessary
  if(source.width > item.size.x){item.size.x = source.width}
   if(source.height > item.size.y){item.size.y = source.height}
+
+
 }//if image source is an Image object
 
 else{
 console.log('itemAsBitmap passed non source paramater');console.log(source instanceof playZoneLandingPage.window.Image);console.log(source);throw '';
 
 }
-  self.positionItemImage(item, {update:false}) 
-
+  
+item.positionChild('image', {update:false}) 
     item.image.parentOfImageObject = item
-    item.bitmapSource = source
-    if(item.messages){
-        item.image.addEventListener('click', self.events.onButtonClick)
-    }
+    if(item.messages){        item.image.addEventListener('click', self.events.onButtonClick)    }
  stagesToUpdate.push(  self.easelJSDisplayObjectChanged(item))
 
  options.update = update
@@ -825,12 +830,25 @@ console.log('itemAsBitmap passed non source paramater');console.log(source insta
 
             }
 
+this.images.Item.prototype.updateChildLocationAndSize = function(options){
+
+  if(!options){var options = {}}
+var positionOptions = _.clone(options)
+var defaultOptions = {size:true}
+positionOptions = _.defaults(positionOptions, defaultOptions)
+
+
+var asdf = self.positionItemImage(this, positionOptions)
+return asdf
+}
+
 this.images.Item.prototype.updateImageLocationAndSize = function(options){
   if(!options){var options = {}}
 var positionOptions = _.clone(options)
-positionOptions.confineChildSizeToItem = true
+var defaultOptions = {size:true}
+positionOptions = _.defaults(positionOptions, defaultOptions)
 
-var asdf = self.positionItemImage(this, positionOptions)
+var asdf = this.positionChild('image', positionOptions)
 return asdf
 }
 
@@ -2037,14 +2055,8 @@ if( _.isNumber(preferenceSeat) && ( preferenceSeat === 0 || preferenceSeat === s
                      messageInfo.cancel = true
                      messageInfo.checkBox = true
                      messageInfo.checkBoxUncheckedEvent = function(e){
-
-
-
                      }
                      messageInfo.checkBoxCheckedEvent = function(e){
-
-
-
 
                      }
           messageInfo.okayEvent = function(e, checkBoxStatus){
@@ -2092,7 +2104,8 @@ socket.emit('stand')
 if(!_.isNumber(self.gameState.userSeatNumber)){self.events.exit();return}
 
       console.log('exittable clicked')
-      console.log(event)
+      if(_.isObject(event)){console.log(event)}
+
        var  messageInfo = {}
        messageInfo.title = 'Leave Table?'
        messageInfo.cancel = true
@@ -2100,11 +2113,11 @@ if(!_.isNumber(self.gameState.userSeatNumber)){self.events.exit();return}
 self.events.userStands()
       self.events.exit()
       }
-        self.displayMessageBox("Are you sure you want to leave?",messageInfo)
+        messageBoxAPI.display("Are you sure you want to leave?", messageInfo)
 
     }
 
-  if (_.isObject(playZoneLandingPage.iframes)) {
+  if (_.isObject(playZoneLandingPage.iframes) && self.isIframe()) {
     playZoneLandingPage.iframes.setIframeCloseHandler($('#server_values').data('table_name'), this.events.exitTableClick);
   }
 
@@ -4231,7 +4244,7 @@ betSliderHandle.qtip({
     }
     ,hide: {
          event:'mouseup unfocus'
-        ,delay: 250
+        ,delay: 220
     }
     ,events:{
       //function that updates the content when the qtip is shown
@@ -4321,7 +4334,7 @@ this.cashierButton.button = new createjs.ButtonHelper(this.cashierButton.bitmapA
 */
 
   //--------------upper right side button---------------------
-        this.standUp = new this.Item(canvasWidth - standUpWidth,0,standUpWidth,standUpHeight,getZ('staticItems','buttons'),{ messages:['stand']})
+        this.standUp = new this.Item(canvasWidth - standUpWidth,0,standUpWidth,standUpHeight,getZ('staticItems','buttons'))
            this.itemAsBitmap(this.standUp, self.permanentPreferences.sourceObjects.value.standUp)
    //define shape for hit area of  stand
    var standUpHit = new createjs.Shape()
@@ -4868,7 +4881,7 @@ console.log('positioncashier buttons called displayDisableAutoRebuy = '+displayD
 
 if(!theseOptions){var options = {}}
   else{var options = _.clone(theseOptions)}
-options.confineChildSizeToItem = true
+options.size = true
 options.update = false
 
 var stagesToUpdate = []
@@ -5809,42 +5822,58 @@ createjs.Ticker.setFPS(12)
 
 }
 
+self.images.Item.prototype.positionChild = function(childType, options){
 
-
-
-    this.positionItemImage = function (item, options) {
 if(!options){var options = {}}
   var stagesToUpdate = []
 
-if(_.isObject(item.image)){
+var child = this[childType]
 
-var newLocationData = {x:item.position.x, y:item.position.y}
-if(options.confineChildSizeToItem === true){
-  newLocationData.width = item.size.x
-newLocationData.height = item.size.y
+if(_.isObject(child)){
+
+var newLocationData = {}
+if(options.position !== false){
+  newLocationData.x = this.position.x 
+  newLocationData.y = this.position.y
+}
+
+if(options.size === true || (childType === 'image' && options.size !== false) ){
+  newLocationData.width = this.size.x
+newLocationData.height = this.size.y
 }
 
  // console.log('setting display object position through positionitemimage')
- if (setDisplayObjectPositionData(item.image, newLocationData, options ) === true){
-  if(self.isItemAddedToStage(item)){
+ if (setDisplayObjectPositionData(child, newLocationData, options ) === true){
+  if(self.isItemAddedToStage(this)){
 stagesToUpdate.push(self.easelJSDisplayObjectChanged(item))
   }//if image was added to stage
  }//if image location was changed
 }
 
 //z-index
-if(_.isElement(item.image)){
-  $(item.image).css({
-    'z-index': item.position.z.container
+if(_.isElement(child)){
+
+if(childType === 'text'){var zIndex = this.position.z.container + 1}
+  else{ var zIndex = this.position.z.container }
+
+  $(child).css({
+    'z-index': zIndex
   })
 }//if item.image is an element
 
 
 
 
-if(options.update !== false){this.updateStages(stagesToUpdate)}
+if(options.update !== false){self.updateStages(stagesToUpdate)}
   else{return stagesToUpdate}
 
+
+
+}
+
+
+    this.positionItemImage = function (item, options) {
+item.positionChild('image',options)
     }
 
   //define function to get width of string
@@ -5950,6 +5979,7 @@ if(!itemA.image && !itemB.image && itemA.text && itemB.text){
   //  console.log(itemA);console.log(itemB)
    itemA.position.x = itemB.position.x
 itemA.position.y = itemB.position.y
+itemA.position.displayCSS = itemB.position.displayCSS
 
 var itemAPosition = getDisplayObjectPositionData(itemA.text)
 var itemBPosition = getDisplayObjectPositionData(itemB.text)
@@ -6495,17 +6525,11 @@ this.imageData.numberOfPlayersSet = true
 
 var setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault = function(stageNumberOrItem, status){
 
-if(stageNumberOrItem instanceof self.images.Item){
-var stageNumber = stageNumberOrItem.position.z.stage
-}
-else if(_.isNumber(stageNumberOrItem)){var stageNumber = stageNumberOrItem}
-
-  var divElement = self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].div
-
 if(status === true){var display = 'inline'}
   else{var display = 'none'}
-
-$(divElement).css('display',display)
+var div = self.getParentOfStageObject(stageNumberOrItem).div
+if(!_.isObject(div)){console.log(stageNumberOrItem);throw'display status error'}
+$(div).css('display', display)
 
 }
 
@@ -7636,7 +7660,7 @@ if( newOuterWidth < imageOrText.image.width){  newWidth = newOuterWidth}
 
 
 if(_.isNumber(newOuterHeight) ){
-if(!_.isNumber(newWidth)){newWidth =imageOrText.image.width } //assign default width
+if(!_.isNumber(newWidth)){newWidth = imageOrText.image.width } //assign default width
 if (newOuterHeight < imageOrText.image.height){ newHeight = newOuterHeight}
 else{
    newHeight = imageOrText.image.height
@@ -7886,10 +7910,9 @@ community2Animation.item=self.images.community[2]
  var setFlags = function(flagsObject, callUserOptionUpdateDefaultsToTrue, optionsParameter){
   if(!optionsParameter){var optionsParameter = {}}
     var options = _.clone(optionsParameter)
-var update = options.update
 options.update = false
 
-if(!_.isObject(flagsObject)){console.error(flagsObject)}
+if(!_.isObject(flagsObject)){console.error(flagsObject);return}
 
   _.each(flagsObject, function(value, key, list){
  setOneFlagOrPreference(key, value, options)
@@ -7976,6 +7999,7 @@ if(!options){var options = {}}
 else if(!_.isNumber(options.seat)) {var gameStateSeatObject = self.gameState.seats[this.gameState.userSeatNumber]}
   else{var gameStateSeatObject = self.gameState.seats[options.seat]}
 
+if(!_.isObject(gameStateSeatObject)){return}
 
 
 //var preactionOptions = self.getPreactionOptionValues()
@@ -8090,6 +8114,8 @@ else{var seat = options.seat}
 
 if(!_.isNumber(seat)){var gameStateSeatObject = self.gameState}
   else{var gameStateSeatObject = self.gameState.seats[seat]}
+
+    if(!_.isObject(gameStateSeatObject)){return}
 
 if(!_.isFunction(options.checkFunction)){
   var checkFunction = function(value, flagsObject){
@@ -9171,7 +9197,13 @@ var container = parentOfImageObject.position.z.container
 
         if(parentOfImageObject.image){
 //if html element
-         if(_.isElement(parentOfImageObject.image)){$(parentOfImageObject.image).css('display','inline')}
+         if(_.isElement(parentOfImageObject.image)){
+          //get default css display
+          var display = self.imageData.defaultDisplayCSS
+          if(_.isString(options.displayCSS)){display  = options.displayCSS}
+            else if(_.isString(parentOfImageObject.position.displayCSS)){display = parentOfImageObject.position.displayCSS}
+          $(parentOfImageObject.image).css('display', display)
+        }
         
          else if (this.arrayOfParentsOfStageAndOfContainerArray[optionsWithCondom.stageNumber].containers[container].contains(parentOfImageObject.image) !==true){
 this.addChildToContainer(parentOfImageObject.image, container, optionsWithCondom)
@@ -9207,7 +9239,15 @@ var container = parentOfTextObject.position.z.container
                                if(parentOfTextObject.text){
 
         // if html element
-         if(_.isString(parentOfTextObject.text.innerHTML)){$(parentOfTextObject.text).css('display','inline')}
+         if(_.isElement(parentOfTextObject.text)){
+           //get default css display
+          var display = self.imageData.defaultDisplayCSS
+          if(_.isString(options.displayCSS)){display  = options.displayCSS}
+            else if(_.isString(parentOfTextObject.position.displayCSS)){display = parentOfTextObject.position.displayCSS}
+
+          $(parentOfTextObject.text).css('display', display)
+
+        }
         
 //if easeljs
       else if(this.arrayOfParentsOfStageAndOfContainerArray[optionsWithCondom.stageNumber].containers[container+1].contains(parentOfTextObject.text) !==true)   {
@@ -9305,7 +9345,10 @@ var container = parentOfTextObject.position.z.container
         if(parentOfTextObject.text) {
 
  // if html element
-         if(_.isString(parentOfTextObject.text.innerHTML)){$(parentOfTextObject.text).css('display','none')}
+         if(_.isElement(parentOfTextObject.text)){
+parentOfTextObject.saveDisplayCSS()
+          $(parentOfTextObject.text).css('display','none')
+        }
 //if easeljs
       else  if(this.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[container+1].contains(parentOfTextObject.text))  {
 
@@ -9343,7 +9386,10 @@ var container = parentOfImageObject.position.z.container
 
         if(parentOfImageObject.image) {
  // if html element
-         if(_.isString(parentOfImageObject.image.innerHTML)){$(parentOfImageObject.image).css('display','none')}
+         if(_.isElement(parentOfImageObject.image)){
+parentOfImageObject.saveDisplayCSS()
+          $(parentOfImageObject.image).css('display','none')
+        }
 //if easeljs
       else  if(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[container].contains(parentOfImageObject.image))  {
         self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[container].removeChild(parentOfImageObject.image)
@@ -10591,6 +10637,7 @@ else{
             break;
 
             case 'openSeat':
+            /*
        //     console.log('updating seatNumber '+seatNumber+ ' as openSeat')
                      if(_.isNumber(this.gameState.userSeatNumber) && !_.isNaN(this.gameState.userSeatNumber)) {
               
@@ -10613,7 +10660,7 @@ else{
       stagesToUpdate.push(           this.hideText(this.images.seats[seatNumber].winner, options))
      stagesToUpdate.push(            this.hideText(this.images.seats[seatNumber].countdown, options))
             break;
-
+*/
             default:
 
              if(_.isNumber(this.gameState.userSeatNumber)) {
@@ -10924,8 +10971,6 @@ var countDownText = 'Time: '+ Math.ceil(remainingTimeToAct/1000)
          }//if we did NOT clear the countdown
 
 
-
-
  //decrement time to act
       self.setPreactionData('hand','timeToAct', remainingTimeToAct - interval,{seat:seatNumber})
                     
@@ -10939,40 +10984,6 @@ var countDownText = 'Time: '+ Math.ceil(remainingTimeToAct/1000)
 
     }
 
-
-
-    /*
-
- this.startCountdown = function(seatNumber, secondsToAct){
-secondsToAct = parseInt(secondsToAct)
-     if(self.gameState.seats[seatNumber].toAct == true) {this.gameState.seats[seatNumber].displayMessageType = 'countdown'
-         self.images.seats[seatNumber].countdown.text.text = 'Time: '+secondsToAct
-     }
-               
- //hide other messages on the seat box
-var interval = 1000
-      var countdown = setInterval(function() {
-
-          if(self.gameState.seats[seatNumber].displayMessageType != 'countdown'|| self.gameState.seats[seatNumber].toAct != true){clearInterval(countdown)}
-
-   else if ( secondsToAct>= 0){
-        self.images.seats[seatNumber].countdown.text.text = 'Time: '+secondsToAct
-       secondsToAct=secondsToAct-1
-         self.updateStages(self.images.seats[seatNumber].countdown.position.z.stage)
-   }
-
-   else{
-        if(self.gameState.seats[seatNumber].displayMessageType == 'countdown'){self.gameState.seats[seatNumber].displayMessageType = 'seat'}
-        clearInterval(countdown)
-       }
-       
-     self.displayCorrectSeatItems(seatNumber)
-   
-}, interval)
-
-}
-
-*/
 this.updateTableChatFullDisplay = function(displayOrHideChildrenOptions){
 if(!displayOrHideChildrenOptions){var displayOrHideChildrenOptions = {}}
   var update = displayOrHideChildrenOptions.update
@@ -11089,57 +11100,29 @@ stagesToUpdate.push(this.hideChildren(this.images.tableChatFull, options))
 
 var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.images.tableChatFull.htmlStageElement.position.z.stage].stage.canvas
 
-//$(tableChatFullCanvas).css('display','none')
 setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(this.images.tableChatFull.window, false)
-//self.jQueryObjects.tableChatFullParagraph.css('display','none')
+
 if(update!== false){this.updateStages(stagesToUpdate)}
   else{stagesToUpdate}
 }
 
-/*
-this.displayTableChatFull = function(){
-//update what is showing and what isnt from current preferences
+this.images.Item.prototype.saveDisplayCSS = function(options){
 
-if(this.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages.value === false){
-  this.gameState.tableChatFull.currentlyDisplayingDealerMessages = false
-}
-else{this.gameState.tableChatFull.currentlyDisplayingDealerMessages = true}
-
-  if(this.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages.value === false){
-  this.gameState.tableChatFull.currentlyDisplayingPlayerMessages = false
-}
-else{this.gameState.tableChatFull.currentlyDisplayingPlayerMessages = true}
-
-  if(this.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages.value === false){
-  this.gameState.tableChatFull.scurrentlyDisplayingObserverMessages = false
-}
-else{this.gameState.tableChatFull.currentlyDisplayingObserverMessages = true}
-
-this.displayChildren(this.images.hideTableChatFull,{update:false})
-this.hideChildren(this.images.showTableChatFull,{update:false})
-this.displayChildren(this.images.tableChatFull, { update:false})
-this.displayChildren(this.images.tableChatFull.chatMessageText,{update:false})
-console.log('getting ready to update stages')
-
-
-this.updateTableChatFullDisplay({update:false})
-
-//console.log(this.images.tableChatFull)
-this.updateStages(this.images.hideTableChatFull.position.z.stage)
-this.updateStages(this.images.tableChatFull.htmlStageElement.position.z.stage)
-
-var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.images.tableChatFull.htmlStageElement.position.z.stage].stage.canvas
-
-$(tableChatFullCanvas).css('display','inline')
-self.jQueryObjects.tableChatFullParagraph.css('display','inline ')
-//console.log(this.images.tableChatFull)
-//console.log(this.images.tableChatFull.stage.contains(this.images.tableChatFull.window.image))
-//console.log(this.images.tableChatFull.window.image.isVisible())
+if(_.isElement(this.image)){
+var displayCSS = $(this.image).css('display')
+if(displayCSS !== 'none' && displayCSS !== 'hidden' && _.isString(displayCSS)){this.position.displayCSS = displayCSS;return}
 }
 
-*/
+if(_.isElement(this.text)){
+var displayCSS = $(this.text).css('display')
+if(displayCSS !== 'none' && displayCSS !== 'hidden' && _.isString(displayCSS)){this.position.displayCSS = displayCSS;return}
+}
+
+
+} 
 
 this.images.Item.prototype.addElement = function(element, textOrImage, options){
+// options: size, position, container
 if(!options){var options = {}}
   else{var options = _.clone(options)}
     options.update = false
@@ -11161,22 +11144,21 @@ if(type === 'text'){var z = this.position.z.container + 1}
 //CHECK TO MAKE SURE MAX WIDTH HEIGHT AND WIDTH ARE NOT TOO HIGH
 //if(parseFloat($(element).css('max-width'))
 
-$(element).css({
-'z-index':z
-,'display':'none'
-})
+
 
 element.parentOfImageObject = this
 
+//if container specified append to it
+if(options.container){$(options.container).append(element)}
 //check if element is already a descendent of div
-if($(parentDiv).find(element).length !== 1){$(parentDiv).append(element)}
+else if($(parentDiv).find(element).length !== 1){  $(parentDiv).append(element)}
+
+//assign element as child of Item
 this[type] = element
 
-if(type === 'image'){
+ this.positionChild(type, options)
 
-  //self.positionItemImage(this, options)
-
-  this.updateImageLocationAndSize(options)
+if(type === 'image' && options.position !== false){
 
 var location = getDisplayObjectPositionData(this.image, options)
 if(location.x > this.position.x + 1 || location.x < this.position.x -1){console.log(location);console.log(this);throw 'location not matching'}
@@ -11185,6 +11167,13 @@ if(location.x > this.position.x + 1 || location.x < this.position.x -1){console.
 
 }
 
+
+this.saveDisplayCSS(options)
+
+$(element).css({
+'z-index':z
+,'display':'none'
+})
 
 
 }
@@ -11386,7 +11375,7 @@ var current = this.getRawCurrentStageNumber()
 var min = this.getInitialStageNumber()
 var max = this.getFinalStageNumber()
 
-if(!_.isNumber(current) || current < min || current > max){return}
+if(!_.isNumber(current) || _.isNaN(current) || current < min || current > max){return}
   else {return current}
 
 
@@ -11398,7 +11387,7 @@ var current = this.getCurrent()
 var min = this.getInitialStageNumber()
 var max = this.getFinalStageNumber()
 
-if(!_.isNumber(current)){return min} 
+if(!_.isNumber(current) || _.isNaN(current)){return min} 
   else if(current < min){return min}
   else if (current >= max){return}
     else{return current}
@@ -11412,7 +11401,7 @@ var current = this.getCurrent()
 var min = this.getInitialStageNumber()
 var max = this.getFinalStageNumber()
 
-if(!_.isNumber(current)){return} 
+if(!_.isNumber(current) || _.isNaN(current)){return} 
   else if(current <= min){return}
   else if (current > max + 1){return}
     else{return current - this.getStageNumberIncrement()}
@@ -11440,25 +11429,73 @@ if(_.isNumber(stageNumber)){}
   else if(stageNumber === 'next'){var stageNumber = this.getNext()}
     else if(stageNumber === 'previous'){var stageNumber = this.getPrevious()}
   else{var stageNumber = this.getCurrent()}
+if(!_.isNumber(stageNumber)){return}
 
-if(!_.isObject(self.images.messageBox[stageNumber])){this.clearItemsObject(stageNumber)}
+if(!_.isObject(self.images.messageBox[stageNumber])){this.deleteMessageBoxItems(stageNumber)}
 return self.images.messageBox[stageNumber]
 }
 
-messageBoxAPI.clearItemsObject = function(stageNumber){
+messageBoxAPI.deleteMessageBoxItems = function(stageNumber){
 
+//clear 
 if(_.isNumber(stageNumber)){}
   else if(stageNumber === 'next'){var stageNumber = this.getNext()}
     else if(stageNumber === 'previous'){var stageNumber = this.getPrevious()}
   else{stageNumber = this.getCurrent()}
 
+    if(!_.isNumber(stageNumber)){return}
+console.log('deleting messagebox items stagenumber = ' + stageNumber)
+
+self.hideChildren(self.images.messageBox[stageNumber] )
 self.images.messageBox[stageNumber] = {}
+
+var parentOfStage = self.getParentOfStageObject(stageNumber)
+
+//remove any extra elements we have created also
+$(parentOfStage.div).children().not(parentOfStage.stage.canvas).remove()
+
 }
 
 messageBoxAPI.display = function(messageString, messageInfo, hideOrDisplayChildrenOptions){
 
-
+  messageInfo.modal = true
 return self.displayMessageBox(messageString, messageInfo, hideOrDisplayChildrenOptions)
+/*
+if(messageInfo && messageInfo.modal === true){
+return messageBoxAPI.displayModal(messageString, messageInfo, hideOrDisplayChildrenOptions)
+}
+else{return self.displayMessageBox(messageString, messageInfo, hideOrDisplayChildrenOptions)}
+*/
+}
+
+messageBoxAPI.displayModal = function(messageString, messageInfo, hideOrDisplayChildrenOptions){
+
+}
+
+messageBoxAPI.getStatus = function(){
+
+var current = this.getCurrent()
+if(!_.isNumber(current)){return}
+
+var status = {}
+var items = this.getItemsObject(current)
+var div = self.getParentOfStageObject(current)
+//check whether checked or unchecked box
+
+//check for easeljs
+if(self.isItemAddedToStage(items.checkBoxChecked) === true){status.checkBox = 'checked'}
+else if(self.isItemAddedToStage(items.checkBoxUnchecked) === true){status.checkBox = 'unchecked'}
+
+//check for html
+var checkBox = $(div).find('input [type=checkbox]')
+console.log('found checkBox = ');console.log(checkBox)
+if(checkBox.length != 1){}
+  else if(checkBox.prop('checked') === true){status.checkBox = 'checked'}
+    else if(checkBox.prop('checked') === false){status.checkBox = 'unchecked'}
+
+
+
+return status
 
 }
 
@@ -11472,21 +11509,18 @@ return
 }
 
 var itemsToHide = this.getItemsObject(current)
-this.decrementCurrent()
 setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(current, false)
+this.decrementCurrent()//reduce current
   return  self.hideChildren(itemsToHide, options)
 
 }
 
-messageBoxAPI.display = function(messageString, messageInfo, hideOrDisplayChildrenOptions){
-
-return self.displayMessageBox (messageString, messageInfo, hideOrDisplayChildrenOptions)
-
-}
 
 
 
     this.displayMessageBox = function(messageString, messageInfo, hideOrDisplayChildrenOptions){
+      console.log('displaymessagebox called')
+
       if(!hideOrDisplayChildrenOptions){var hideOrDisplayChildrenOptions = {}}
         var update = hideOrDisplayChildrenOptions.update
         hideOrDisplayChildrenOptions.update = false
@@ -11497,10 +11531,10 @@ var newStageNumber = messageBoxAPI.getNext()
 if(!_.isNumber(newStageNumber)){return}//if we can't display anymore dont
 
 messageBoxAPI.incrementCurrent()//increase current
-messageBoxAPI.clearItemsObject()
+messageBoxAPI.deleteMessageBoxItems()
 
 var messageBoxItems = messageBoxAPI.getItemsObject(newStageNumber)
-
+var div = self.getParentOfStageObject(newStageNumber).div
 
         var messageBoxWindowSource = self.permanentPreferences.sourceObjects.value.messageBoxBackground
      var messageBoxWindowWidth = messageBoxWindowSource.width  //  var messageBoxWindowWidth = 516
@@ -11553,9 +11587,6 @@ var backgroundContainer = 0
 var textContainer = 1
 var buttonContainer = 2
 
-
-
-
          //-------------------set defaults---------------------------
          if(_.isNull(messageInfo)||_.isUndefined(messageInfo)){messageInfo = {}}
          //set default font sizes and colors
@@ -11601,7 +11632,7 @@ if(messageInfo.sameSizeButtons === true){
        //set button locations
     if(messageInfo.cancel !== true){ var okayX = stageWidth/2 - messageInfo.okayWidth/2}//ok in middle if no cancel button
         else{//if cancel button, then we want to center the two buttons
-     var okayX =    stageWidth/2 - messageInfo.distanceBetweenButtons/2 - messageInfo.okayWidth    
+     var okayX   =  stageWidth/2 - messageInfo.distanceBetweenButtons/2 - messageInfo.okayWidth    
      var cancelX =  stageWidth/2 + messageInfo.distanceBetweenButtons/2 
         }
   
@@ -11609,9 +11640,10 @@ if(messageInfo.sameSizeButtons === true){
 
 var defaults = {}
 defaults.checkBox = false
-defaults.checkBoxText = 'Dont show this message again (this option is currently bugged).'
+defaults.checkBoxText = 'Dont show this message again.'
  defaults.checkBoxTextColor = messageInfo.messageColor
 defaults.checkBoxFontSize = 10
+defaults.checkboxFontType = self.permanentPreferences.defaultFontType.value
 
 //defaults.checkBoxCheckedEvent = function(){}
 //defaults.checkBoxUncheckedEvent = function(){}
@@ -11619,6 +11651,350 @@ defaults.checkBoxFontSize = 10
 _.defaults(messageInfo, defaults)
 
 
+//**************************************ASSIGN DEFAULT EVENTS*******************:
+
+//OK
+   if(_.isString(messageInfo.okayEvent) ){ messageInfo.okayEvent = eval(messageInfo.okayEvent) }
+         //set default okayEvent
+      if(!_.isFunction(messageInfo.okayEvent)){messageInfo.okayEvent = function(e) { self.events.onButtonClick(e);  messageBoxAPI.hide()} }
+
+//CANCEL
+if(_.isString(messageInfo.cancelEvent) ){messageInfo.cancelEvent = eval(messageInfo.cancelEvent)}
+       //set default cancelEvent
+      if(!_.isFunction(messageInfo.cancelEvent)){messageInfo.cancelEvent = function(e) { self.events.onButtonClick(e);  messageBoxAPI.hide()} }
+
+//CHECKBOX
+  if(_.isString(messageInfo.checkBoxUncheckedEvent) ){ messageInfo.checkBoxUncheckedEvent =  eval(messageInfo.checkBoxUncheckedEvent)}
+  if(_.isString(messageInfo.checkBoxCheckedEvent) ){ messageInfo.checkBoxCheckedEvent =  eval(messageInfo.checkBoxCheckedEvent)}
+
+//CLOSE X
+if(_.isString(messageInfo.closeWindowEvent) ){ messageInfo.closeWindowEvent = eval(messageInfo.closeWindowEvent)      }
+ if(!_.isFunction(messageInfo.closeWindowEvent)){messageInfo.closeWindowEvent = function(e) {   self.events.onButtonClick(e);  messageBoxAPI.hide()} }
+
+
+
+//===================================CREATE BLANK ITEMS=============================================
+
+var createBlankItems = function(){
+        //background bitmap and closeX image are in the this.setDefaults() function
+        //set proper x, y, width, and height of background and closeX image
+
+     //background bitmap 
+        messageBoxItems.window = new self.images.Item(messageBoxWindowX,messageBoxWindowY,messageBoxWindowWidth,messageBoxWindowHeight, getZ(newStageNumber,'background'))
+
+ //---------------------------------title---------------------------------
+        messageBoxItems.windowTitle = new self.images.Item (messageBoxWindowX,messageBoxWindowY, messageBoxWindowWidth,outerTopHeight,getZ(newStageNumber,'text'))
+
+         //----------------------------message---------------------------
+         var textHeight = innerMessageBoxHeight - textTopOffset - buttonButtomOffset - buttonHeight - textBottomOffset - maxDistanceFromButtonsToCheckOption
+
+        messageBoxItems.message = new self.images.Item (textX,innerMessageBoxY+textTopOffset, innerMessageBoxWidth -textLeftOffset*2 ,textHeight, getZ(newStageNumber,'text'))
+       
+
+    //-----------------------add closeX Image----------------------------------------------
+            var closeX = messageBoxWindowX+messageBoxWindowWidth - closeXRightOffset - closeXWidth
+        var closeY =  messageBoxWindowY+ closeXTopOffset 
+
+            //add closeX Image
+         messageBoxItems.closeWindow =  new self.images.Item (closeX,closeY,closeXWidth,closeXHeight, getZ(newStageNumber,'background')) 
+//closex messages
+if(messageInfo.closeWindowMessages){  messageBoxItems.closeWindow.messages = messageInfo.closeWindowMessages}
+     
+   //--------------------------------OK button--------------------------------
+        messageBoxItems.okay =  new self.images.Item (okayX, buttonY, messageInfo.okayWidth,buttonHeight,getZ(newStageNumber, 'buttons')) 
+          //asign messages if okaymessages exists
+            if(messageInfo.okayMessages){  messageBoxItems.okay.messages = messageInfo.okayMessages}
+
+  
+//--------------------------------cancel button--------------------------------
+        if(messageInfo.cancel){
+        messageBoxItems.cancel =  new self.images.Item (cancelX,buttonY, messageInfo.cancelWidth,buttonHeight, getZ(newStageNumber, 'buttons')) 
+     
+             //add message to cancel if available
+        if(messageInfo.cancelMessages){ messageBoxItems.cancel.messages = messageInfo.cancelMessages }
+          
+          }//if we are going to display cancel
+
+//--------------------checkbox option------------------------------
+if(messageInfo.checkBox){
+
+   messageBoxItems.checkBoxUnchecked = new self.images.Item(0, 0, 0, 0, getZ(newStageNumber, 'buttons'))
+ messageBoxItems.checkBoxChecked = new self.images.Item(0, 0, 0, 0, getZ(newStageNumber,'buttons'))
+ messageBoxItems.htmlCheckBox = new self.images.Item(0, 0, 0, 0, getZ(newStageNumber,'buttons'))
+
+}//if we need checkBox
+
+}//create blank items private function
+
+
+createBlankItems()
+
+
+
+
+//**************************************************DISPLAY MODAL MESSAGEBOX****************************************
+if(messageInfo.modal === true){
+
+console.log('displaying modal')
+var additionalContent = []
+var onRenderFunctions = []
+var onShowFunctions = []
+
+
+var content = $('<p>').addClass(self.css.unselectable).css({
+
+'text-align':'center'
+,'font': messageInfo.messageSizeAndFont
+,'color':messageInfo.messageColor
+
+})
+
+content.html(messageString)
+$(div).append(content)
+
+messageBoxItems.message.addElement(content[0], 'text', {position:false, size:false})
+
+
+//button defaults:
+if(messageBoxItems.okay instanceof self.images.Item || messageBoxItems.cancel instanceof self.images.Item){
+
+  var bootstrapOptions = {
+    css:{
+  'font':messageInfo.buttonSizeAndFont
+  ,'color':  messageInfo.buttonTextColor
+,'background-color': messageInfo.buttonBackgroundColor
+,'margin':0
+,'padding':0
+,'border':0
+,'position':'relative'
+}//okay button css
+,attr:{'class':''}//eliminate default classes
+,position:false//prevent bootstrap from positioning
+,class:self.css.unselectable
+}//bootstrap options
+
+
+}//if we are going to display at least one bootstrap button, assign default options so we dont have to do it again
+
+//OK
+if(messageBoxItems.okay instanceof self.images.Item){
+
+bootstrapOptions.onClick = messageInfo.okayEvent
+messageBoxItems.okay.addBootstrapButton(messageInfo.okayText, bootstrapOptions)
+additionalContent.push(messageBoxItems.okay.image)
+}//if displaying OK button
+
+if(messageBoxItems.cancel instanceof self.images.Item){
+
+bootstrapOptions.onClick = messageInfo.cancelEvent
+messageBoxItems.cancel.addBootstrapButton(messageInfo.cancelText, bootstrapOptions)
+additionalContent.push(messageBoxItems.cancel.image)
+}//if displaying cancel button
+
+
+if(messageInfo.checkBox){
+
+//destroy canvas type checkboxes
+  messageBoxItems.checkBoxUnchecked = null
+  messageBoxItems.checkBoxChecked = null
+
+
+//get font-size of message, we will use that for checkbox dimensions:
+var checkBoxSize = parseInt  ($(messageBoxItems.message.text).css('font-size')) + 1
+//var checkBoxSize = 10
+
+//CHECKBOX input (image)
+var jqueryCheckBox = $('<input>').attr({
+  'type':'checkbox'
+  ,'class': self.css.unselectable
+}).css({
+
+'width':checkBoxSize
+,'height':checkBoxSize
+
+})
+jqueryCheckBox.addClass(self.css.unselectable)
+
+//ADD ONCLICK EVENTS
+jqueryCheckBox.on('click', function(e){
+//unchecked
+if(jqueryCheckBox.prop('checked') === true){messageInfo.checkBoxUncheckedEvent(e)}
+
+//checked
+else if(jqueryCheckBox.prop('checked') === false){messageInfo.checkBoxCheckedEvent(e)}
+
+})
+
+
+messageBoxItems.htmlCheckBox.addElement(jqueryCheckBox[0], 'image', {position:false, size:false})
+additionalContent.push(jqueryCheckBox)
+
+
+//TEXT of the checkbox
+var jqueryCheckBoxText = $('<p>').css({
+  'text-align':'left'
+  ,'font':messageInfo.checkboxFontType
+  ,'color':messageInfo.checkBoxTextColor
+,'font-size':messageInfo.checkBoxFontSize
+}).addClass(self.css.unselectable)
+
+jqueryCheckBoxText.text(messageInfo.checkBoxText)
+
+
+
+messageBoxItems.htmlCheckBox.addElement(jqueryCheckBoxText[0], 'text', {position:false, size:false})
+additionalContent.push(jqueryCheckBoxText)
+onShowFunctions.push(function(e, api){jqueryCheckBoxText.css('display','inline')})
+}//if we are going to display the checkbox
+
+
+//add the content into the jquery item, and then we can load it into the qtip
+_.each(additionalContent, function(value, element, list){
+
+content = content.add(value)
+
+})
+
+
+//create qtip on the div
+
+var messageBoxQtipOptions = {
+        content: {
+            text:      content
+            ,close:true
+            ,title: messageInfo.title
+        }//content
+        ,position: {
+            my: 'center', at: 'center'
+            ,target: $(div)
+          ,container:$(div)
+        }//position
+
+        ,show: {
+            ready: true
+            ,fixed:true
+            
+            ,modal: {
+              //  on: true
+               // ,blur: false
+            }//show.modal
+            
+
+            
+        }//show
+        ,hide: false
+        ,style: 'qtip-light'
+        ,events: {
+            render: function(event, api) {
+              console.log('render event called')
+
+
+//PLACE OVERLAY BELOW EVERYTHING ELSE
+api.elements.overlay.css({
+'height':'100%'
+,'width':'100%'
+ , 'z-index': 0
+ ,'position':'absolute'
+})
+
+
+                api.elements.tooltip.css({
+'max-width': messageBoxWindowWidth + 'px'
+//,'max-height':'none'
+
+                })
+
+_.each(onRenderFunctions, function(value, element, list){
+
+value(e, api)
+
+})
+                
+            }//events.render
+            //make sure to DESTROY the messagebox data on hide
+            ,hide: function(event, api) { api.destroy();messageBoxAPI.hide(newStageNumber)}//events.hide
+            ,show:  function(e, api){
+
+createjs.Tween.get(api.elements.content).wait(0)
+.call(function(){
+//display div to allow positioning
+
+              //POSITION CANCEL AND OKAY LEFT LOCATIONS
+//get innerWidth of content div
+var innerContentWidth = api.elements.content.width()
+console.log('innerconten width: ' +innerContentWidth)
+console.log('distance bettn button: '+messageInfo.distanceBetweenButtons)
+console.log(messageBoxItems.okay.size.x)
+//if both cancel and OK we position them
+if(messageBoxItems.cancel && messageBoxItems.cancel.image && messageBoxItems.okay && messageBoxItems.okay.image){
+messageInfo.distanceBetweenButtons
+$(messageBoxItems.okay.image).css('left', innerContentWidth/2 - messageInfo.distanceBetweenButtons/2 - messageBoxItems.okay.size.x)
+$(messageBoxItems.cancel.image).css('left', innerContentWidth/2 + messageInfo.distanceBetweenButtons/2 - messageBoxItems.okay.size.x)
+
+}
+//if only 1 we position in center
+else if (messageBoxItems.okay && messageBoxItems.okay.image){var onlyButton = messageBoxItems.okay}
+  else if(messageBoxItems.cancel && messageBoxItems.cancel.image){var onlyButton = messageBoxItems.cancel}
+
+if(onlyButton instanceof self.images.Item){
+
+$(onlyButton.image).css('left', innerContentWidth/2 - onlyButton.size.x/2)
+
+}
+
+console.log('displaying messagebox div')
+setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(newStageNumber, true)
+})//delay to adjust x of our bttons
+
+
+//APPEND OVERLAY TO OUR DIV
+$(self.getParentOfStageObject(newStageNumber).div).append(api.elements.overlay)
+
+
+//THIS KEEPS OUR BUTTONS AND CHECKBOX ON THE SAME LINE
+$('button', api.elements.content).css('display', 'inline')
+
+//THIS KEEPS OUR TEXT FROM CHANGING CURSORS
+$('p', api.elements.content).css('pointer-events','none')
+
+//keep all items within the max width of the main tooltip div
+              api.elements.tooltip.find('*').add(api.elements.tooltip).css({
+                'max-width': messageBoxWindowWidth + 'px'
+//,'max-height':'none'
+              }).addClass(self.css.unselectable)     
+
+//THIS EDITS OUR TITLE CSS
+api.elements.title.css({
+  'text-align':'center'
+  ,'font': messageInfo.titleSizeAndFont
+,'color':messageInfo.titleColor
+})
+console.log(api.elements)
+
+_.each(onShowFunctions, function(value, element, list){
+
+value(e, api)
+
+})
+
+//DISPLAY DIV AT LATEST POSSIBLE MOMENT
+setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(newStageNumber, true)
+
+ }//events.show
+            }//events
+            
+
+}//qtip options
+
+$(div).qtip(messageBoxQtipOptions)
+//self.displayChildren(messageBoxItems)
+
+console.log('modal completed')
+
+
+}//IF DISPLAY MODAL MESSAGEBOX
+
+else{
         //background bitmap and closeX image are in the this.setDefaults() function
         //set proper x, y, width, and height of background and closeX image
 
@@ -11626,7 +12002,6 @@ _.defaults(messageInfo, defaults)
         messageBoxItems.window = new self.images.Item(messageBoxWindowX,messageBoxWindowY,messageBoxWindowWidth,messageBoxWindowHeight, getZ(newStageNumber,'background'))
         self.images.itemAsBitmap(messageBoxItems.window, self.permanentPreferences.sourceObjects.value.messageBoxBackground, hideOrDisplayChildrenOptions)
         
-
 
    //MAKE WINDOW DRAGGABLE
                   messageBoxItems.window.image.addEventListener('mousedown',function(e){
@@ -11656,7 +12031,7 @@ var messageTextOptions = {
 
 
     //-----------------------add closeX Image----------------------------------------------
-            var closeX =messageBoxWindowX+messageBoxWindowWidth - closeXRightOffset - closeXWidth
+            var closeX =  messageBoxWindowX+messageBoxWindowWidth - closeXRightOffset - closeXWidth
         var closeY =  messageBoxWindowY+ closeXTopOffset 
 
             //add closeX Image
@@ -11664,23 +12039,9 @@ var messageTextOptions = {
        self.images.itemAsBitmap(messageBoxItems.closeWindow, self.permanentPreferences.sourceObjects.value.messageBoxCloseX, hideOrDisplayChildrenOptions)
 
 
-if(messageInfo.closeWindowMessages){
-  messageBoxItems.closeWindow.messages = messageInfo.closeWindowMessages
-}
-        if(messageInfo.closeWindowEvent){
-          //check if is a string submitted via server
-          if(_.isString(messageInfo.closeWindowEvent) ){
-            messageBoxItems.closeWindow.image.addEventListener('click', eval(messageInfo.closeWindowEvent) )
-          }
-          else{messageBoxItems.closeWindow.image.addEventListener('click', messageInfo.closeWindowEvent)}
-        } //end check if messageInfo.closeWindowEvent exists
-        else{
- messageBoxItems.closeWindow.image.addEventListener('click', function(event){
-  self.events.onButtonClick(event)
-  messageBoxAPI.hide()
-})
+if(messageInfo.closeWindowMessages){ messageBoxItems.closeWindow.messages = messageInfo.closeWindowMessages}
+messageBoxItems.closeWindow.image.addEventListener('click', messageInfo.closeWindowEvent)
 
-}
 
    //--------------------------------OK button--------------------------------
         messageBoxItems.okay =  new self.images.Item (okayX,buttonY, messageInfo.okayWidth,buttonHeight,getZ(newStageNumber, 'buttons')) 
@@ -11688,31 +12049,9 @@ if(messageInfo.closeWindowMessages){
         self.images.addItemText( messageBoxItems.okay, messageInfo.okayText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
             //asign messages if okaymessages exists
             if(messageInfo.okayMessages){  messageBoxItems.okay.messages = messageInfo.okayMessages}
+                
                 //assign event if assigned
-
-       if(messageInfo.okayEvent){
-        //check if is a string submitted via server
-          if(_.isString(messageInfo.okayEvent) ){ var okayEvent = eval(messageInfo.okayEvent) }
-            // or if its a function
-          else if (_.isFunction(messageInfo.okayEvent)){ var okayEvent =   messageInfo.okayEvent }
-           }//end check if messageInfo.okayEvent exists
-
-         //set default okayEvent
-      if(!_.isFunction(okayEvent)){ var  okayEvent = function(e) { self.events.onButtonClick(e);  messageBoxAPI.hide()} }
-
-      //assign okay.image.onClick
-                    messageBoxItems.okay.image.addEventListener('click', function(e){
-
-if(messageBoxItems.checkBoxUnchecked && self.isItemAddedToStage(messageBoxItems.checkBoxUnchecked))
-{
-  var checkBoxStatus = 'unchecked'
-}
-  else if(messageBoxItems.checkBoxChecked && self.isItemAddedToStage(messageBoxItems.checkBoxChecked) )
-  {
-  var checkBoxStatus = 'checked'
-}
-                      okayEvent(e, checkBoxStatus)
-                    })//okay.image.onClick
+messageBoxItems.okay.image.addEventListener('click', messageInfo.okayEvent)
   
 //--------------------------------cancel button--------------------------------
         if(messageInfo.cancel){
@@ -11720,25 +12059,10 @@ if(messageBoxItems.checkBoxUnchecked && self.isItemAddedToStage(messageBoxItems.
         self.images.itemAsRectangle( messageBoxItems.cancel, messageInfo.buttonBackgroundColor )
         self.images.addItemText( messageBoxItems.cancel, messageInfo.cancelText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
         //add message to cancel if available
-        if(messageInfo.cancelMessages){
-          messageBoxItems.cancel.messages = messageInfo.cancelMessages
-          }
-          //add cancel event if availble
-           if(messageInfo.cancelEvent){
-             //check if is a string submitted via server
-          if(_.isString(messageInfo.cancelEvent) ){
-            messageBoxItems.cancel.image.addEventListener('click', eval(messageInfo.cancelEvent))
-          }
-          else{messageBoxItems.cancel.image.addEventListener('click', messageInfo.cancelEvent)}
-             }//end check if messageInfo.cancelEvent exists
-       else{  //use default cancel event
-        messageBoxItems.cancel.image.addEventListener('click', function(event){
- self.events.onButtonClick(event)
-      messageBoxAPI.hide()
-        })//onclick event
-       }
-     }//end checking if messageInfo.cancel is true
-       //remove previous instances of cancel if it doesn't exist
+        if(messageInfo.cancelMessages){ messageBoxItems.cancel.messages = messageInfo.cancelMessages  }
+messageBoxItems.cancel.image.addEventListener('click', messageInfo.cancelEvent)
+}//if displaying cancel button
+
     else{messageBoxItems.cancel = null}
 
 
@@ -11784,10 +12108,15 @@ if(_.isNumber(checkBoxY) && !_.isNaN(checkBoxY)){return checkBoxY}
 }//getCheckBoxY function
 
 
+//assign Y of checkbox according to messageText
+var checkBoxY = getCheckBoxY()
+  self.setImageItemPositionAndTextBasedOnImageChange(  messageBoxItems.checkBoxUnchecked, checkBoxX, checkBoxY )
+  self.setImageItemPositionAndTextBasedOnImageChange(  messageBoxItems.checkBoxChecked,  checkBoxX, checkBoxY)
+
+
 //assign onClick functions
  messageBoxItems.checkBoxUnchecked.image.addEventListener('click', function(e){
 if(_.isFunction(messageInfo.checkBoxUncheckedEvent)){messageInfo.checkBoxUncheckedEvent(e)}
-   else if(_.isString(messageInfo.checkBoxUncheckedEvent) ){   eval(messageInfo.checkBoxUncheckedEvent)(e)}
 console.log('unchecked mesagebox checkbox clicked')
  var stagesToUpdate = [] 
  stagesToUpdate.push (self.hideChildren(messageBoxItems.checkBoxUnchecked, {update:false} ) )
@@ -11797,8 +12126,6 @@ console.log('unchecked mesagebox checkbox clicked')
  })//unchecked.image.onClick
 messageBoxItems.checkBoxChecked.image.addEventListener('click', function(e){
 if(_.isFunction(messageInfo.checkBoxCheckedEvent)){messageInfo.checkBoxCheckedEvent(e)}
-  else if(_.isString(messageInfo.checkBoxCheckedEvent) ){  eval(messageInfo.checkBoxCheckedEvent)(e)}
-
  var stagesToUpdate = [ self.hideChildren(messageBoxItems.checkBoxChecked, {update:false}), self.displayChildren(messageBoxItems.checkBoxUnchecked, {update:false})]
  self.updateStages(stagesToUpdate)
 })//checked.image.onClick
@@ -11812,21 +12139,15 @@ else{
 }
 
 
-//assign Y of checkbox according to messageText
-if(messageInfo.checkBox){
-var checkBoxY = getCheckBoxY()
-  self.setImageItemPositionAndTextBasedOnImageChange(  messageBoxItems.checkBoxUnchecked, checkBoxX, checkBoxY )
-  self.setImageItemPositionAndTextBasedOnImageChange(  messageBoxItems.checkBoxChecked,  checkBoxX, checkBoxY)
-}//assign textbox Y
-
-
-
            stagesToUpdate.push(self.displayChildren(messageBoxItems, hideOrDisplayChildrenOptions))
 stagesToUpdate.push(self.hideChildren(  messageBoxItems.checkBoxChecked, hideOrDisplayChildrenOptions))
 
+//display messageBoxCanvas
+setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(newStageNumber, true )
+}//if we are displaying the traditional canvas
 
 //display messageBoxCanvas
-setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(messageBoxItems.window, true )
+//setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(newStageNumber, true )
 
 messageBoxAPI.setCurrent( newStageNumber)
 
@@ -13546,11 +13867,7 @@ var stagesToUpdate = []
 //player sits, checks if player is the user
        socket.on('player_sits', function(player, is_you){
     
-     self.clearExpirationData('act', player.seat)  
-self.clearExpirationData('once', player.seat)
-self.clearExpirationData('street', player.seat)
-self.clearExpirationData('hand', player.seat)
-self.clearExpirationData('permanent', player.seat)
+self.clearExpirationData('permanent', player.seat) //this will clear everything else about the player
 
         if(is_you == true){
             self.gameState.userSeatNumber = player.seat
