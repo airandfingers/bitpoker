@@ -39,8 +39,6 @@ nonVendor: 'nonVendor'
 ,canvas:'pokerCanvasClass'
 ,inline:'inline'
 ,messageBoxButton: 'messageBoxButton'
-,okayButton: 'okayMessageBoxButton'
-,cancelButton: 'cancelMessageBoxButton'
  }
 
   this.imageData = {
@@ -11738,7 +11736,7 @@ if(messageBoxItems.okay instanceof self.images.Item || messageBoxItems.cancel in
 }//okay button css
 ,attr:{'class':''}//eliminate default classes and make id
 ,position:false//prevent bootstrap from positioning
-,class:self.css.unselectable + ' ' + self.css.messageBoxButton
+,class:self.css.unselectable
 }//bootstrap options
 
 if(!_.isString(messageInfo.style)){
@@ -11750,44 +11748,6 @@ bootstrapOptions.css['background-color'] =  messageInfo.buttonBackgroundColor
 
 
 }//if we are going to display at least one bootstrap button, assign default options so we dont have to do it again
-
-//OK
-if(messageBoxItems.okay instanceof self.images.Item){
-
-//recalibrate inner width
-bootstrapOptions.css.width = messageBoxItems.okay.size.x + 'px'
-bootstrapOptions.css.height = messageBoxItems.okay.size.y + 'px'
-
-bootstrapOptions.attr.id = self.css.okayButton
-bootstrapOptions.onClick = messageInfo.okayEvent
-messageBoxItems.okay.addBootstrapButton(messageInfo.okayText, bootstrapOptions)
-//increase width and height of item
-var okayPositionData = getDisplayObjectPositionData(messageBoxItems.okay)
-messageBoxItems.okay.size.x = messageBoxItems.okay.size.x + okayPositionData.extraWidth
-messageBoxItems.okay.size.y = messageBoxItems.okay.size.y + okayPositionData.extraHeight
-
-
-additionalContent.push(messageBoxItems.okay.image)
-}//if displaying OK button
-
-if(messageBoxItems.cancel instanceof self.images.Item){
-
-//recalibrate inner width and height
-bootstrapOptions.css.width = messageBoxItems.cancel.size.x + 'px'
-bootstrapOptions.css.height = messageBoxItems.cancel.size.y + 'px'
-
-bootstrapOptions.attr.id = self.css.cancelButton
-bootstrapOptions.onClick = messageInfo.cancelEvent
-messageBoxItems.cancel.addBootstrapButton(messageInfo.cancelText, bootstrapOptions)
-
-//increase width and height of item
-var cancelPositionData = getDisplayObjectPositionData(messageBoxItems.cancel)
-messageBoxItems.cancel.size.x = messageBoxItems.cancel.size.x + cancelPositionData.extraWidth
-messageBoxItems.cancel.size.y = messageBoxItems.cancel.size.y + cancelPositionData.extraHeight
-
-
-additionalContent.push(messageBoxItems.cancel.image)
-}//if displaying cancel button
 
 
 if(messageInfo.checkBox){
@@ -11826,6 +11786,12 @@ else if(jqueryCheckBox.prop('checked') === false && _.isFunction(messageInfo.che
 
 })
 
+onShowFunctions.push(function(e, api){
+
+jqueryCheckBox.css('display','inline')
+
+})
+
 
 messageBoxItems.htmlCheckBox.addElement(jqueryCheckBox[0], 'image', {position:false, size:false})
 additionalContent.push(jqueryCheckBox)
@@ -11834,6 +11800,7 @@ additionalContent.push(jqueryCheckBox)
 var checkBoxCSS = {
   'text-align':'left'
 ,'font-size':messageInfo.checkBoxFontSize
+,'overflow-x':'hidden'
 }
 if(!_.isString(messageInfo.style)){
 
@@ -11854,6 +11821,48 @@ additionalContent.push(jqueryCheckBoxText)
 onShowFunctions.push(function(e, api){jqueryCheckBoxText.css('display','inline')})
 }//if we are going to display the checkbox
 
+//OK
+if(messageBoxItems.okay instanceof self.images.Item){
+
+//recalibrate inner width
+bootstrapOptions.css.width = messageBoxItems.okay.size.x + 'px'
+bootstrapOptions.css.height = messageBoxItems.okay.size.y + 'px'
+
+//bootstrapOptions.attr.id = self.css.okayButton
+bootstrapOptions.onClick = messageInfo.okayEvent
+messageBoxItems.okay.addBootstrapButton(messageInfo.okayText, bootstrapOptions)
+$(messageBoxItems.okay.image).attr('id', self.css.messageBoxButton)
+//increase width and height of item
+var okayPositionData = getDisplayObjectPositionData(messageBoxItems.okay)
+messageBoxItems.okay.size.x = messageBoxItems.okay.size.x + okayPositionData.extraWidth
+messageBoxItems.okay.size.y = messageBoxItems.okay.size.y + okayPositionData.extraHeight
+
+//THIS IS CALlED LATER AND WE CAN HAVE BUTTONS ON THE SAME LINE
+onShowFunctions.push(function(e, api){$(messageBoxItems.okay.image).css('display','inline')})
+additionalContent.push(messageBoxItems.okay.image)
+}//if displaying OK button
+
+if(messageBoxItems.cancel instanceof self.images.Item){
+
+//recalibrate inner width and height
+bootstrapOptions.css.width = messageBoxItems.cancel.size.x + 'px'
+bootstrapOptions.css.height = messageBoxItems.cancel.size.y + 'px'
+
+//bootstrapOptions.attr.id = self.css.cancelButton
+bootstrapOptions.onClick = messageInfo.cancelEvent
+messageBoxItems.cancel.addBootstrapButton(messageInfo.cancelText, bootstrapOptions)
+$(messageBoxItems.cancel.image).attr('id', self.css.messageBoxButton)
+
+//increase width and height of item
+var cancelPositionData = getDisplayObjectPositionData(messageBoxItems.cancel)
+messageBoxItems.cancel.size.x = messageBoxItems.cancel.size.x + cancelPositionData.extraWidth
+messageBoxItems.cancel.size.y = messageBoxItems.cancel.size.y + cancelPositionData.extraHeight
+
+//THIS IS CALlED LATER AND WE CAN HAVE BUTTONS ON THE SAME LINE
+onShowFunctions.push(function(e, api){$(messageBoxItems.cancel.image).css('display','inline')})
+
+additionalContent.push(messageBoxItems.cancel.image)
+}//if displaying cancel button
 
 //add the content into the jquery item, and then we can load it into the qtip
 _.each(additionalContent, function(value, element, list){
@@ -11969,9 +11978,6 @@ setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(newStag
 
 //APPEND OVERLAY TO OUR DIV
 if(_.isObject(api.elements.overlay)){$(self.getParentOfStageObject(newStageNumber).div).append(api.elements.overlay)}
-
-//THIS KEEPS OUR BUTTONS AND CHECKBOX ON THE SAME LINE
-$('button', api.elements.content).css('display', 'inline')
 
 //THIS KEEPS OUR TEXT FROM CHANGING CURSORS
 $('p', api.elements.content).css('pointer-events','none')

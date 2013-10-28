@@ -341,11 +341,13 @@ user-select: none;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.33);
   -webkit-font-smoothing: antialiased;
 }
-#okayMessageBoxButton{}
 
-.messageBoxButton.btn-custom button{
 
-  background-color: hsl(328, 100%, 5%) !important;
+#pokerCanvasDiv .messageBoxButton .btn-custom button [type=button]{}
+
+#okayMessageBoxButton{
+
+background-color: hsl(328, 100%, 5%) !important;
   background-repeat: repeat-x;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#d1006f", endColorstr="#19000d");
   background-image: -khtml-gradient(linear, left top, left bottom, from(#d1006f), to(#19000d));
@@ -359,12 +361,13 @@ user-select: none;
   color: #fff !important;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.59);
   -webkit-font-smoothing: antialiased;
+  
 
 }
 
-#cancelMessageBoxButton{
+#messageBoxButton{
 
-  background-color: hsl(328, 100%, 5%) !important;
+background-color: hsl(328, 100%, 5%) !important;
   background-repeat: repeat-x;
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#d1006f", endColorstr="#19000d");
   background-image: -khtml-gradient(linear, left top, left bottom, from(#d1006f), to(#19000d));
@@ -378,6 +381,7 @@ user-select: none;
   color: #fff !important;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.59);
   -webkit-font-smoothing: antialiased;
+  
 
 }
 

@@ -13,7 +13,6 @@ this[language].id = text
 var incrementID = function(){numEntries ++}
 
 var Language = function(languageAbbreviation){
-
 	this = {}
 }
 
