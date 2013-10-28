@@ -665,8 +665,8 @@ desktopCardFolder: 'img/fourcolordeck/'
 //-----------START CONSTRUCTORS----------------
 this.images.Item = function (x,y,width,height, zIndexOrStageAndContainerObject,options){
      this.position = {}
-this.position.x = Math.floor(x)
-this.position.y = Math.floor(y)
+this.position.x = x//Math.floor(x)
+this.position.y = y//Math.floor(y)
 this.position.z = {}
 if(!_.isObject(zIndexOrStageAndContainerObject)){throw 'z data not given for Item constructor'}
 if(_.isObject(zIndexOrStageAndContainerObject)){this.position.z = zIndexOrStageAndContainerObject}
@@ -677,7 +677,7 @@ for(var i = 0;i<=zIndexOrStageAndContainerObject;i++){
 //find stage number
 for(var stageNumber = 0;stageNumber<self.arrayOfParentsOfStageAndOfContainerArray.length;stageNumber++){
   //if isnt correct stage, increment i by total number of containers in that stage
-if((i+self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers.length)<zIndexOrStageAndContainerObject){
+if((i+self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers.length) < zIndexOrStageAndContainerObject){
   i=i+self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers.length
 }
  //if stageNumber is correct, assign the value
@@ -707,8 +707,9 @@ this.image.graphics.beginFill(fillColor).drawRoundRect(0, 0, this.size.x, this.s
 
 }
 
-this.images.Item.prototype.removeChild = function(imageOrText){
+this.images.Item.prototype.removeChild = function(imageOrText, options){
   var stagesToUpdate = []
+  if(!options){var options = {}}
 var removeChild = function(textOrImageString){
 
 if(_.isElement(this[textOrImageString])){$(this[textOrImageString]).remove()}
@@ -723,6 +724,7 @@ if(textOrImageString === 'text'){stagesToUpdate.push (self.hideText(this, {updat
 
 
 }//eliminate function
+
 if(imageOrText === 'text' || imageOrText === 'image'){removeChild(imageOrText)}
   else{
     removeChild('text')
@@ -730,7 +732,8 @@ if(imageOrText === 'text' || imageOrText === 'image'){removeChild(imageOrText)}
   }
 
 
-self.updateStages(stagesToUpdate)
+if(options.update !== false) {self.updateStages(stagesToUpdate)}
+  else{return stagesToUpdate}
 
 }
 
@@ -3469,7 +3472,7 @@ var showTableChatFullHitAreaOffsetTopRight =5
 var showTableChatFullHitAreaOffsetBottomRight = 27
 
 
-            var openSeatOuterStrokeWidth = 1.5
+            var seatOuterStrokeWidth = 1.5
 
         //    var tableX = 0
             var tableY = 88
@@ -3806,20 +3809,25 @@ this.seats[i].seat.image.addEventListener('click', self.events.onDisabledOrNonUs
          this.seats[i].openSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,seatZ)
           this.seats[i].disabledSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y, seatZ)
 
+var seatTextX =  this.seats[i].seat.position.x + seatOuterStrokeWidth 
+var seatTopTextY  = this.seats[i].seat.position.y + seatOuterStrokeWidth
+var seatTextWidth = this.seats[i].seat.size.x - seatOuterStrokeWidth*2
+var seatTextHeight = (this.seats[i].seat.size.y - seatOuterStrokeWidth*2)/2
+var seatBottomTextY = seatTopTextY + seatTextHeight; 
 
-         this.seats[i].action = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
-         this.seats[i].countdown = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
-         this.seats[i].winner = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
+         this.seats[i].action = new this.Item(seatTextX, seatTopTextY, seatTextWidth, seatTextHeight, seatZ)
+         this.seats[i].countdown = new this.Item(seatTextX, seatTopTextY, seatTextWidth, seatTextHeight, seatZ)
+         this.seats[i].winner = new this.Item(seatTextX, seatTopTextY, seatTextWidth, seatTextHeight, seatZ)
 
        
-         this.seats[i].playerName = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
-         this.seats[i].status = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y + this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
+         this.seats[i].playerName = new this.Item(seatTextX, seatTopTextY, seatTextWidth,seatTextHeight, seatZ)
+         this.seats[i].status = new this.Item(seatTextX, seatBottomTextY, seatTextWidth,seatTextHeight, seatZ)
  
 
 //throw''
- this.seats[i].stackSize = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
- this.seats[i].gettingChips = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
-this.seats[i].sittingOut = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y+this.seats[i].seat.size.y/2,this.seats[i].seat.size.x,this.seats[i].seat.size.y/2, seatZ)
+ this.seats[i].stackSize = new this.Item(seatTextX, seatBottomTextY, seatTextWidth,seatTextHeight, seatZ)
+ this.seats[i].gettingChips = new this.Item(seatTextX, seatBottomTextY, seatTextWidth,seatTextHeight, seatZ)
+this.seats[i].sittingOut = new this.Item(seatTextX, seatBottomTextY, seatTextWidth,seatTextHeight, seatZ)
 
      //------------------hole cards-----------------------------
             var middleOfSeat = this.seats[i].seat.position.x +this.seats[i].seat.size.x/2
@@ -3839,7 +3847,7 @@ this.seats[i].sittingOut = new this.Item(this.seats[i].seat.position.x, this.sea
             var openSeatMiddle = openSeatMiddle
             var openSeatBorder = '#FFFFFF'
 
-self.images.drawSeat(this.seats[i].openSeat, openSeatBorder, openSeatFill, openSeatMiddle, {outerStrokeWidth: openSeatOuterStrokeWidth})
+self.images.drawSeat(this.seats[i].openSeat, openSeatBorder, openSeatFill, openSeatMiddle, {outerStrokeWidth: seatOuterStrokeWidth})
 this.seats[i].openSeat.image.parentOfImageObject = this.seats[i].openSeat  
 
                 this.seats[i].openSeat.text = new createjs.Text('Open Seat', '15px ' + self.permanentPreferences.defaultFontType.value, "#FFFFFF")
@@ -3855,7 +3863,7 @@ this.seats[i].openSeat.textColor = "#FFFFFF"
             var disabledBorder = "#544E4F"
             var disabledFill = 'black'
             var disabledMiddle = disabledFill
-            self.images.drawSeat (this.seats[i].disabledSeat, disabledBorder, disabledFill, disabledMiddle, {outerStrokeWidth: openSeatOuterStrokeWidth})
+            self.images.drawSeat (this.seats[i].disabledSeat, disabledBorder, disabledFill, disabledMiddle, {outerStrokeWidth: seatOuterStrokeWidth})
    this.seats[i].disabledSeat.image.parentOfImageObject = this.seats[i].disabledSeat     
 
 //openSeat onclick event
@@ -3889,7 +3897,7 @@ this.cardAsBitmap(this.seats[i].hiddenCards[1],  null)
             this.addItemText(this.seats[i].shownCards[0],'','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
             this.addItemText(this.seats[i].shownCards[1],'','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
             //player name
-            this.addItemText(this.seats[i].playerName,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF' , {html:true} )
+            this.addItemText(this.seats[i].playerName,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF' , {html:true, class:self.css.noTranslate} )
             //action
             this.addItemText(this.seats[i].action,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF')
             //countdown
@@ -3897,6 +3905,7 @@ this.cardAsBitmap(this.seats[i].hiddenCards[1],  null)
             //winner
              this.addItemText(this.seats[i].winner,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF')
         
+
                     //player's status
             this.addItemText(this.seats[i].status,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true})
             this.seats[i].stackSize.addItemText('','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
