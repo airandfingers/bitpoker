@@ -2059,20 +2059,19 @@ if( _.isNumber(preferenceSeat) && ( preferenceSeat === 0 || preferenceSeat === s
                      messageInfo.checkBoxCheckedEvent = function(e){
 
                      }
-          messageInfo.okayEvent = function(e, checkBoxStatus){
-     
-           if(checkBoxStatus === 'checked'){
-            self.permanentPreferences.confirmSeatRotation.value = false}
-            else if(checkBoxStatus === 'unchecked'){
-            self.permanentPreferences.confirmSeatRotation.value = true}
+          messageInfo.okayEvent = function(e){
+     console.log('ok event called of confirmseatrotation')
+     var checked = messageBoxAPI.getStatus(e.target.parentOfImageObject.position.z.stage).checkBox
+
+           if(checked === 'checked'){            self.permanentPreferences.confirmSeatRotation.value = false}
+            else if(checked === 'unchecked'){            self.permanentPreferences.confirmSeatRotation.value = true}
+
+console.log(checked)
 
                messageBoxAPI.hide()//hide message box
            self.sessionPreferences.changeUserSeatViewTo.value = self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber
          console.log('setting seat view preference to '+ self.sessionPreferences.changeUserSeatViewTo.value)
 
-if(checkBoxStatus === 'unchecked'){ self.permanentPreferences.confirmSeatRotation.value = true}
-       
-     else if(checkBoxStatus === 'checked'){ self.permanentPreferences.confirmSeatRotation.value = false}
      //    self.savePermanentPreferences()
          self.saveSessionPreferences()
          }
@@ -11445,14 +11444,14 @@ var div = self.getParentOfStageObject(current)
 if(self.isItemAddedToStage(items.checkBoxChecked) === true){status.checkBox = 'checked'}
 else if(self.isItemAddedToStage(items.checkBoxUnchecked) === true){status.checkBox = 'unchecked'}
 
+else if(items.htmlCheckBox instanceof self.images.Item){
 //check for html
-var checkBox = $(div).find('input [type=checkbox]')
+var checkBox = $(items.htmlCheckBox.image)
 console.log('found checkBox = ');console.log(checkBox)
-if(checkBox.length != 1){}
-  else if(checkBox.prop('checked') === true){status.checkBox = 'checked'}
+ if(checkBox.prop('checked') === true){status.checkBox = 'checked'}
     else if(checkBox.prop('checked') === false){status.checkBox = 'unchecked'}
 
-
+}
 
 return status
 
