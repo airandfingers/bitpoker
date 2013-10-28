@@ -5979,7 +5979,7 @@ if(!itemA.image && !itemB.image && itemA.text && itemB.text){
   //  console.log(itemA);console.log(itemB)
    itemA.position.x = itemB.position.x
 itemA.position.y = itemB.position.y
-itemA.position.displayCSS = itemB.position.displayCSS
+if(_.isString(itemB.position.displayCSS)){itemA.position.displayCSS = itemB.position.displayCSS}
 
 var itemAPosition = getDisplayObjectPositionData(itemA.text)
 var itemBPosition = getDisplayObjectPositionData(itemB.text)
@@ -5993,45 +5993,6 @@ else {//if adjusting not only text
 }
 //move our object and all data to the new location
   self.setImageItemPositionAndTextBasedOnImageChange(itemA, deltaX, deltaY, options)
-
-/*
-if((_.isObject(itemA.image) && !_.isObject(itemB.image))||(_.isObject(itemA.text)&&!_.isObject(itemB.text))){
- var deltaX = itemB.position.x - itemA.position.x; var deltaY = itemB.position.y - itemA.position.y
-  self.setImageItemPositionAndTextBasedOnImageChange(itemA, deltaX, deltaY, options)
-}
-*/
-
-/*
-else{
-if(itemA.image&&itemB.image){ changed = true; itemA.image.x = itemB.image.x;itemA.image.y = itemB.image.y}
-if(itemA.text&&itemB.text){changed = true; itemA.text.x = itemB.text.x; itemA.text.y = itemB.text.y}
-}
-
-if(_.isObject(itemB.position)){
-
-//position
-  if(!_.isObject(itemA.position)){
-  itemA.position = {}//make empty object if doesnt exist in itemA
-itemA.position.x = itemB.position.x
-itemA.position.y = itemB.position.y
-}
-
-
-//z position
-if(_.isObject(itemB.position.z)){
-  if(!_.isObject(itemA.position.z)){itemA.position.z = {}}//make empty object if doesnt exist in itemA
-    itemA.position.z.stage =  itemB.position.z.stage
-   itemA.position.z.container =  itemB.position.z.container
-  }//z position
-}//position
-
-if(_.isObject(itemB.size)){
-  if(!_.isObject(itemA.size)){itemA.size = {}}//make empty object if doesnt exist in itemA
-itemA.size.x = itemB.size.x
-itemA.size.y = itemB.size.y
-}//size
-
-*/
 
  options.permanent = permanent 
    options.movementType = movementType 
@@ -6342,20 +6303,20 @@ console.log(self.images.seats[self.images.seats.length-1].nonRotatedSeatNumber)
 
         var centerBottomAndTopSeats = function(){
             var totalLength = self.images.seats[0].seat.size.x*3+(self.images.seats[0].seat.position.x - self.images.seats[1].seat.position.x - self.images.seats[1].seat.size.x)*2
-            var absoluteDistanceX = (totalLength - self.images.seats[0].seat.size.x*2)/6
+            var distanceX = (totalLength - self.images.seats[0].seat.size.x*2)/6
 
 self.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray(self.images.seats[1], addAbsoluteDistanceX)
 self.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray(self.images.seats[4], addAbsoluteDistanceX)
-absoluteDistanceX = absoluteDistanceX*-1
+distanceX = distanceX*-1
 self.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray(self.images.seats[6], addAbsoluteDistanceX)
 self.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray(self.images.seats[9], addAbsoluteDistanceX)
 
 
 function addAbsoluteDistanceX (value, indexes){
+
  if(value instanceof self.images.Item){
-                   value.position.x =  value.position.x + absoluteDistanceX
-                   if(value.image){value.image.x = value.image.x + absoluteDistanceX}
-               if(value.text){value.text.x = value.text.x + absoluteDistanceX}
+  self.setImageItemPositionAndTextBasedOnImageChange(value, distanceX, 0, {permanent:true, movementType:'relative'})
+
              }
 }
 
@@ -6375,9 +6336,7 @@ self.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray(self.images.seat
 if(value instanceof self.images.Item){
 
 self.setImageItemPositionAndTextBasedOnImageChange(value, 0, -sideYDistance , {movementType:'relative',permanent:true})
-    //               value.position.y =  value.position.y - sideYDistance
- //                  if(value.image){value.image.y = value.position.y }
-    //           if(value.text){value.text.y = value.position.y}
+
              }//if value insance of Item
 
  }
@@ -11860,7 +11819,7 @@ content = content.add(value)
 
 var messageBoxQtipOptions = {
         content: {
-            text:      content
+            text:  content
             ,close:true
             ,title: messageInfo.title
         }//content
@@ -11875,10 +11834,10 @@ var messageBoxQtipOptions = {
             ,fixed:true
             
             ,modal: {
-              //  on: true
-               // ,blur: false
+                on: true
+                ,blur: false
             }//show.modal
-            
+           
 
             
         }//show
@@ -11890,13 +11849,14 @@ var messageBoxQtipOptions = {
 
 
 //PLACE OVERLAY BELOW EVERYTHING ELSE
+if(_.isObject(api.elements.overlay)){
 api.elements.overlay.css({
 'height':'100%'
 ,'width':'100%'
  , 'z-index': 0
  ,'position':'absolute'
 })
-
+}
 
                 api.elements.tooltip.css({
 'max-width': messageBoxWindowWidth + 'px'
@@ -11947,8 +11907,9 @@ setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(newStag
 })//delay to adjust x of our bttons
 
 
+
 //APPEND OVERLAY TO OUR DIV
-$(self.getParentOfStageObject(newStageNumber).div).append(api.elements.overlay)
+if(_.isObject(api.elements.overlay)){$(self.getParentOfStageObject(newStageNumber).div).append(api.elements.overlay)}
 
 
 //THIS KEEPS OUR BUTTONS AND CHECKBOX ON THE SAME LINE
@@ -11959,7 +11920,7 @@ $('p', api.elements.content).css('pointer-events','none')
 
 //keep all items within the max width of the main tooltip div
               api.elements.tooltip.find('*').add(api.elements.tooltip).css({
-                'max-width': messageBoxWindowWidth + 'px'
+                'max-width': messageBoxWindowWidth*0.72 + 'px'
 //,'max-height':'none'
               }).addClass(self.css.unselectable)     
 
@@ -12155,7 +12116,7 @@ messageBoxAPI.setCurrent( newStageNumber)
 if(update !== false){this.updateStages(stagesToUpdate)}
       else{return stagesToUpdate}
 
-    }
+    }//display messagebox
 
 
     this.displayCashier = function(info, hideOrDisplayChildrenOptions){
