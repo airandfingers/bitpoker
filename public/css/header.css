@@ -105,7 +105,7 @@ h3 {
     z-index: 10;
 }
 
-#login, #register, #report_bug{
+.dropdown_form {
     background-color: rgba(0,0,0,.88);
     color: #CCCCCC;
     min-width: 200px;

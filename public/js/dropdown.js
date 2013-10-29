@@ -1,4 +1,5 @@
-<!-- Hide/Show Login functionality -->
+<!-- Hide/Show Login functionality (OLD VERSION) -->
+/*
 var $login = $('#login');
 $(function() {
   $login.hide();
@@ -42,8 +43,10 @@ $(function() {
     });
 });
 
-<!-- Hide/Show Register functionality -->
-var $register = $('#register');
+*/
+
+<!-- Hide/Show Register functionality: OLD VERSION -->
+/*var $register = $('#register');
 $(function() {
   $register.hide();
   $('#register_trigger').click(function() {
@@ -83,10 +86,10 @@ $(function() {
       .prev('a')
       .click();
     });
-});
+}); */
 
-<!-- Hide/Show Bugs/Feedback functionality -->
-var $report_bug = $('#report_bug');
+<!-- Hide/Show Bugs/Feedback functionality: OLD VERSION -->
+/*var $report_bug = $('#report_bug');
 $(function() {
   // on page load
   $report_bug.hide();
@@ -113,8 +116,8 @@ $(function() {
       $report_bug
         .hide('slide', { direction: 'up' }, 500);
     }
-  });
-           
+  }); */
+
 <!-- Hide/Show Lobby functionality -->
 var $lobby = $('#lobby')
   , $lobby_trigger = $('#lobby_trigger');
@@ -183,15 +186,25 @@ $(function() {
     }
   });
 
-  
 
-  if ($('#server_values').data('current_table_names').length === 0) {
+  if ($('#server_values').data('current_table_names') && $('#server_values').data('current_table_names').length === 0) {
     $lobby_trigger.click();
   }
 
 });
 
-
+/*This is not working yet */
+/*
+$(function() {
+  var $lobby_trigger = $('#lobby_trigger')
+    , $lobby_dropdown = $('#lobby');
+  $lobby_trigger.click(function() {
+    toggleDropdown($lobby_trigger, $lobby_dropdown,
+                   { top: 0
+                   , toggle_args: ['slide', { direction: 'right' }, 400] });
+  });
+});
+*/
 
 $(function() {
   var $account_trigger = $('#account_trigger')
@@ -203,28 +216,38 @@ $(function() {
   });
 });
 
-function toggleDropdown($trigger, $dropdown, options) {
-  console.log('toggleDropdown called with', $trigger, $dropdown);
-  //console.log('$dropdown\'s top and left are', $dropdown.position().top, $dropdown.position().left);
-  if (true) {
-    // calculate and set position of $dropdown
-    var left = (! _.isUndefined(options.left)) ? options.left : calculateLeft($trigger, $dropdown)
-      , top = (! _.isUndefined(options.top)) ? options.top : calculateTop($trigger)
-      , toggle_args = options.toggle_args || ['fade']
-    $dropdown.css({
-      left: left
-    , top: top
-    });
-  }
-  // add or remove active class
-  $trigger.toggleClass('active');
-  // show or hide dropdown
-  $dropdown.stop(true, true)
-           .toggle.apply($dropdown, toggle_args);
-}
+$(function() {
+  var $login_trigger = $('#login_trigger')
+    , $login_dropdown = $('#login');
+  $login_trigger.click(function() {
+    toggleDropdown($login_trigger, $login_dropdown,
+                   { top: 0
+                   , toggle_args: ['slide', { direction: 'up' }, 400] });
+  });
+});
+
+$(function() {
+  var $register_trigger = $('#register_trigger')
+    , $register_dropdown = $('#register');
+  $register_trigger.click(function() {
+    toggleDropdown($register_trigger, $register_dropdown,
+                   { top: 0
+                   , toggle_args: ['slide', { direction: 'up' }, 400] });
+  });
+});
+
+
+$(function() {
+  var $report_bug_trigger = $('#report_bug_trigger')
+    , $report_bug_dropdown = $('#report_bug');
+  $report_bug_trigger.click(function() {
+    toggleDropdown($report_bug_trigger, $report_bug_dropdown,
+                   { top: 0
+                   , toggle_args: ['slide', { direction: 'up' }, 400] });
+  });
 
   // ajax form submission
-  $report_bug.find('form').submit(function(e) {
+  $('#report_bug').find('form').submit(function(e) {
     console.log($(this).attr('id'));
     var empty_form = $(this).html(); //$(this) is $report_bug
     // form has been submitted; $(this) is the form
@@ -254,7 +277,7 @@ function toggleDropdown($trigger, $dropdown, options) {
       setInterval(function() {
         delay--;
         if (delay === 0) {
-          $report_bug.effect('explode', { pieces: 16 }, 500, function() {
+          $('#report_bug').effect('explode', { pieces: 16 }, 500, function() {
             $(this).find('form').html(empty_form);
           });
         }
@@ -268,10 +291,30 @@ function toggleDropdown($trigger, $dropdown, options) {
   });
 });
 
+function toggleDropdown($trigger, $dropdown, options) {
+  console.log('toggleDropdown called with', $trigger, $dropdown);
+  //console.log('$dropdown\'s top and left are', $dropdown.position().top, $dropdown.position().left);
+  if (true) {
+    // calculate and set position of $dropdown
+    var left = (! _.isUndefined(options.left)) ? options.left : calculateLeft($trigger, $dropdown)
+      , top = (! _.isUndefined(options.top)) ? options.top : calculateTop($trigger)
+      , toggle_args = options.toggle_args || ['fade']
+    $dropdown.css({
+      left: left
+    , top: top
+    });
+  }
+  // add or remove active class
+  $trigger.toggleClass('active');
+  // show or hide dropdown
+  $dropdown.stop(true, true)
+           .toggle.apply($dropdown, toggle_args);
+}
+
 function calculateLeft($trigger, $dropdown) {
   // calculate trigger's left and maximum left
   var trigger_left = $trigger.position().left
-    , max_left = $(window).width() - $dropdown.width()
+    , max_left = $(window).width() - $dropdown.width() - 12.5
   // return whichever is less
     , left = trigger_left < max_left ? trigger_left : max_left;
   return left;
