@@ -5,11 +5,29 @@ title += '/' + game.BIG_BLIND  * game.CURRENCY_PER_CHIP + ' ' + game.CURRENCY_AB
 title += ' - Logged in as ' + username;
 %>
 <% include head_start %>
+
+<!-- YAHOO YUI
+Fonts CSS - Recommended but not required
+<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.9.0/build/fonts/fonts-min.css">
+ 
+Core + Skin CSS
+<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.9.0/build/menu/assets/skins/sam/menu.css">
+ -->
+
+
         <link type="text/css" rel="stylesheet" href="/css/pokertable.css" />
             <link type="text/css" rel="stylesheet" href="/css/vendor/bootstrap.min.css" />
-         <!--          <link type="text/css" rel="stylesheet" href="/css/vendor/bootstrap.1.1.1.min.css" />   -->
-    <link type="text/css" rel="stylesheet" href="/css/vendor/jquery.qtip.min.css" />
+ <!--   <link type="text/css" rel="stylesheet" href="/css/vendor/jquery.qtip.min.css" />   -->
+    <link type="text/css" rel="stylesheet" href="/css/vendor/jquery.qtip.nightly.css" />   
+
+
+<link type="text/css" rel="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" /> 
+
+
   <!--  <link type="text/css" rel="stylesheet" href="/css/vendor/jquery.mCustomScrollbar.css" /> -->
+       <!--          <link type="text/css" rel="stylesheet" href="/css/vendor/bootstrap.1.1.1.min.css" />   -->
+    <!--   <link type="text/css" rel="stylesheet" href="/css/vendor/jquery.contextmenu.css" />   -->
+
 
 <% include head_end_and_header %>
 
@@ -61,15 +79,12 @@ title += ' - Logged in as ' + username;
                 </form>
              </div> <!-- chatDiv-->
 
-             <!-- bet size DIV-->
 
-            <div id="betSizeDiv">
                 <form id='betSizeForm'>
            <input type = 'text' id="betSize">
                 <input type = 'text' id="trololol" style ="display :none">
                 </form>
-             </div> 
-             <!-- bet size DIV-->
+
                
         </div> <!-- poker table wrapper -->
 
@@ -87,31 +102,35 @@ title += ' - Logged in as ' + username;
         <script src="/socket.io/socket.io.js"></script>
         <script src="/js/chat.js"></script>
 
-  
+<!-- <script src="/js/vendor/jquery.ui-contextmenu.min.js"></script>  -->
+    <script src="/js/vendor/jquery.contextmenu.js"></script>
   <script src="/js/vendor/jquery.numeric.js"></script>
   <script src="/js/vendor/bootstrap.min.js"></script>
-    <script src="/js/vendor/jquery.qtip.min.js"></script>
+<!--   <script src="/js/vendor/jquery.qtip.min.js"></script>  -->
+     <script src="/js/vendor/jquery.qtip.nightly.js"></script> 
+  <!--   <script src="http://qtip2.com/v/nightly/jquery.qtip.js"></script>  -->
+  <script src="/js/vendor/jquery.actual.min.js"></script> 
+  
 
+        <script src="js/vendor/async.js"></script>
         <script src="/js/vendor/easeljs-0.6.1.min.js"></script>
             <script src="/js/vendor/soundjs-0.4.1.min.js"></script>
          <script src="/js/vendor/soundjs.flashplugin-0.4.1.min.js"></script>
         <script src="/js/vendor/tweenjs-0.4.0.min.js"></script>
         <script src="/js/vendor/preloadjs-0.3.0.min.js"></script>
-          <script src="/js/vendor/imagesloaded.pkgd.min.js"></script>
+
+       <!--   <script src="/js/vendor/imagesloaded.pkgd.min.js"></script>   -->
+
  
+<!--YUI YAHOO
+Dependencies  for YUI MENU
+<script src="http://yui.yahooapis.com/2.9.0/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script src="http://yui.yahooapis.com/2.9.0/build/container/container_core-min.js"></script>
+ 
+Source File for YUI MENU
+<script src="http://yui.yahooapis.com/2.9.0/build/menu/menu-min.js"></script>
 
-<!--
-<script src="/js/vendor/easeljs-0.6.0.min.js"></script>
-        <script src="/js/vendor/easeljs/AlphaMapFilter.js"></script>
-    <script src="/js/vendor/easeljs/AlphaMaskFilter.js"></script>
-        <script src="/js/vendor/easeljs/BoxBlurFilter.js"></script>
-            <script src="/js/vendor/easeljs/ColorFilter.js"></script>
-                <script src="/js/vendor/easeljs/ColorMatrix.js"></script>
-                <script src="/js/vendor/easeljs/ColorMatrixFilter.js"></script>
-                <script src="/js/vendor/easeljs/EventDispatcher.js"></script>
-                <script src="/js/vendor/easeljs/Filter.js"></script>
 -->
-
 
 
         
@@ -129,18 +148,16 @@ title += ' - Logged in as ' + username;
       <script src="/js/vendor/jquery.mCustomScrollbar.concat.min.js"></script>    -->
 
 
-        <!--
-          <script src="/js/vendor/easeljs-0.6.0.min.js"></script>
+        <!-- PREloading things
         <script src="/js/vendor/preloadjs/AbstractLoader.js"></script>
         <script src="/js/vendor/preloadjs/LoadQueue.js"></script>
         <script src="/js/vendor/preloadjs/TagLoader.js"></script>
         <script src="/js/vendor/preloadjs/XHRLoader.js"></script>
         <script src="/js/vendor/easeljs/EventDispatcher.js"></script>
-        <script src="/js/vendor/easeljs/container.js"></script>
         -->
 
 <script src="js/vendor/bootstrap.min.js"></script>
-        <script src="js/vendor/async.js"></script>
+
    <script src="/js/pokertable.min.js"></script>
 
 
