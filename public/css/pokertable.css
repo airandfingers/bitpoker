@@ -1,4 +1,28 @@
 
+head{
+  display:none;
+width:0px;
+height:0px;
+}
+body{
+  position:absolute;
+left:0px;
+right:0px;
+width:0px;
+height:0px;
+}
+
+#pokerTableWrapper {
+  position:absolute;
+    width: 690px;
+    height:450px;
+    left:0px;
+    top:0px;
+    overflow:none;
+}
+
+
+
 
 #pokerTableWrapper *{
     box-sizing: content-box
@@ -41,14 +65,7 @@
 }
 
 
-#pokerTableWrapper {
-  position:inherit;
-    width: 690px;
-    height:450px;
-    left:0px;
-    top:0px;
-    overflow:none;
-}
+
 
 .unselectable{
             -webkit-touch-callout: none;
@@ -107,7 +124,16 @@ user-select: none;
     position: absolute;
     width:inherit;
     height:inherit;
+    overflow:hidden;
 }
+
+
+#pokerCanvasDiv > div{
+    position: absolute;
+left:0px;
+top:0px;
+}
+
 #canvas{
 position:absolute;
   z-index: 0;

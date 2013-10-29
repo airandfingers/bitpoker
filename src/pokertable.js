@@ -444,7 +444,8 @@ var disabledOptions = {
 enableDOMEvents : false,
 mouseOverFrequency:0,//disabled mousever
 touchEnabled:false
-,newCanvas:true}
+,newCanvas:true
+}
 
 stageOptionData.staticItems = {
 mouseEnabled : true,
@@ -1439,6 +1440,7 @@ if(!options){var options = {}}
 //set defaults
   var defaultOptions = { }
   defaultOptions.permanent = false
+  defaultOptions.movementType = 'relative'
 if(event.target.parentOfImageObject instanceof self.images.Item){defaultOptions.animationTarget = event.target.parentOfImageObject}
 _.defaults(options, defaultOptions)//assign defaults
 
@@ -1446,10 +1448,10 @@ var initialX = event.stageX;var initialY = event.stageY
 
 event.onMouseMove = function(e){
  // console.log(e)
-  var moveX = e.stageX - initialX; var moveY = e.stageY -initialY
+  var moveX = e.stageX - initialX; var moveY = e.stageY - initialY
    initialX = initialX + moveX; initialY = initialY + moveY
 
- self.setImageItemPositionAndTextBasedOnImageChange(options.animationTarget, moveX  ,moveY , options)
+ self.setImageItemPositionAndTextBasedOnImageChange(options.animationTarget, moveX , moveY , options)
 }
 
 
@@ -4532,8 +4534,7 @@ var cashierWindowContainer = 0
                 */
 
           this.cashier.window.image.addEventListener('mousedown',function(e){
-          var options = {animationTarget:self.images.cashier}
-                  self.events.mouseDownClickAndDrag(e,options)
+                  self.events.mouseDownClickAndDrag(e, {animationTarget:self.images.cashier})
                 }
                 )
    
@@ -4700,52 +4701,66 @@ $("#autoRebuyDiv").children().css()
 
 //assign item
 this.cashier.maxRadio = new this.Item(radioX, maxRadioY, radioWidth, radioHeight, {stage:cashierStageNumber,container:  cashierImageContainerIndex})
+this.cashier.maxRadio.addElement($('#maxRadio')[0] , 'image', {position:true})
+/*
 this.cashier.maxRadio.image = $('#maxRadio')[0]
 //position max radio
      $('#maxRadio').css('left', radioX+'px')
        $('#maxRadio').css('top', maxRadioY+'px')
-      
+      */
+
       //assign item
 this.cashier.maxText = new this.Item(textX, maxRadioY, htmlTextWidth, textBoxHeight, {stage:cashierStageNumber,container:  cashierImageContainerIndex})
+this.cashier.maxText.addElement($('#maxText')[0] , 'text', {position:true})
+/*
 this.cashier.maxText.image = $('#maxText')[0] 
        //position max text 
          $('#maxText').css('left', textX+'px')
        $('#maxText').css('top', maxRadioY+'px')
+*/
 
       //assign item
 this.cashier.maxAmount = new this.Item(textBoxX, maxTextBoxY, textBoxWidth, textBoxHeight, {stage:cashierStageNumber,container:  cashierImageContainerIndex})
-this.cashier.maxAmount.image = $('#maxAmount')[0] 
+this.cashier.maxAmount.addElement($('#maxAmount')[0], 'image', {position:true})
+/*this.cashier.maxAmount.image = $('#maxAmount')[0] 
         //position max textbox
                 $('#maxAmount').css('left', textBoxX+'px')
         $('#maxAmount').css('top', maxTextBoxY+'px')
+
+*/
 
         var otherTextBoxY = maxTextBoxY + textBoxHeight + distanceBetweenTextBoxY
         var otherRadioY = otherTextBoxY + textBoxHeight/2 - radioHeight/2
 
 
 
-
 //assign item
 this.cashier.otherAmountRadio = new this.Item(radioX, otherRadioY, radioWidth, radioHeight, {stage:cashierStageNumber,container:  cashierImageContainerIndex})
-this.cashier.otherAmountRadio.image = $('#otherAmountRadio')[0]
+this.cashier.otherAmountRadio.addElement($('#otherAmountRadio')[0] , 'image', {position:true})
+/*this.cashier.otherAmountRadio.image = $('#otherAmountRadio')[0]
         //position other amount radio
          $('#otherAmountRadio').css('left', radioX+'px')
         $('#otherAmountRadio').css('top', otherRadioY+'px')
+        */
 
             //assign item
 this.cashier.otherAmountText = new this.Item(textX, otherRadioY, htmlTextWidth, textBoxHeight, {stage:cashierStageNumber,container:  cashierImageContainerIndex})
-this.cashier.otherAmountText.image = $('#otherAmountText')[0] 
+this.cashier.otherAmountText.addElement($('#otherAmountText')[0] , 'text', {position:true})
+
+/*this.cashier.otherAmountText.image = $('#otherAmountText')[0] 
          //position other amount text
          $('#otherAmountText').css('left', textX+'px')
        $('#otherAmountText').css('top', otherRadioY+'px')
-       
+     */
+
        //assign item
 this.cashier.otherAmount = new this.Item(textBoxX, otherTextBoxY, textBoxWidth, textBoxHeight, {stage:cashierStageNumber,container:  cashierImageContainerIndex})
-this.cashier.otherAmount.image = $('#otherAmount')[0] 
+this.cashier.otherAmount.addElement($('#otherAmount')[0] , 'image')
+/*this.cashier.otherAmount.image = $('#otherAmount')[0] 
         //position other amount textbox
                 $(this.cashier.otherAmount.image).css('left', textBoxX+'px')
         $(this.cashier.otherAmount.image).css('top', otherTextBoxY+'px')
-
+*/
          var autoRebuyTextBoxY = otherTextBoxY + textBoxHeight + distanceBetweenTextBoxY
         var autoRebuyRadioY = autoRebuyTextBoxY + textBoxHeight/2 - radioHeight/2
 
@@ -4771,10 +4786,11 @@ this.cashier.autoRebuyText.image = $('#autoRebuyText')[0]
         
                //assign item
 this.cashier.autoRebuyAmount = new this.Item(textBoxX, autoRebuyTextBoxY, textBoxWidth, textBoxHeight, {stage:cashierStageNumber,container:  cashierImageContainerIndex})
-this.cashier.autoRebuyAmount.image = $('#autoRebuyAmount')[0] 
+//this.cashier.autoRebuyAmount.image = $('#autoRebuyAmount')[0] 
+this.cashier.autoRebuyAmount.addElement($('#autoRebuyAmount')[0], 'image')
         //postion autorebuy textbox
-                $('#autoRebuyAmount').css('left', textBoxX+'px')
-        $('#autoRebuyAmount').css('top', autoRebuyTextBoxY+'px')
+       //         $('#autoRebuyAmount').css('left', textBoxX+'px')
+      //  $('#autoRebuyAmount').css('top', autoRebuyTextBoxY+'px')
 
 
 
@@ -5512,14 +5528,13 @@ $('#'+newDivID).append('<canvas id = '+'\''+newCanvasID+'\'' + ' width = '+'\''+
 //set proper z-index
 //$('#'+newCanvasID).css('z-index',parseInt(newCanvasIDNumber*zIndexesPerCanvas)+initialZIndex)
 //$('#'+newCanvasID).css('z-index',initialZIndex)
-$('#'+newCanvasID).addClass(canvasClass)
-$('#'+newCanvasID).addClass(self.css.unselectable)
+$('#'+newCanvasID).addClass(canvasClass + ' ' + self.css.unselectable + ' ' + self.css.nonVendor)
 //$('#'+newCanvasID).css('z-index',0)
 $('#'+newDivID).css({
   'z-index': newCanvasIDNumber*zIndexesPerDiv
 ,'width':canvasWidth
 ,'height':canvasHeight
-  })
+  }).addClass(self.css.nonVendor)
 
 }//if we want to create a new canvas
 
@@ -5837,6 +5852,7 @@ createjs.Ticker.setFPS(12)
 
 self.images.Item.prototype.positionChild = function(childType, options){
 
+
 if(!options){var options = {}}
   var stagesToUpdate = []
 
@@ -5855,6 +5871,10 @@ if(options.size === true || (childType === 'image' && options.size !== false) ){
 newLocationData.height = this.size.y
 }
 
+
+
+
+
  // console.log('setting display object position through positionitemimage')
  if (setDisplayObjectPositionData(child, newLocationData, options ) === true){
   if(self.isItemAddedToStage(this)){
@@ -5865,7 +5885,6 @@ stagesToUpdate.push(self.easelJSDisplayObjectChanged(item))
 
 //z-index
 if(_.isElement(child)){
-
 if(childType === 'text'){var zIndex = this.position.z.container + 1}
   else{ var zIndex = this.position.z.container }
 
@@ -5875,6 +5894,23 @@ if(childType === 'text'){var zIndex = this.position.z.container + 1}
 }//if item.image is an element
 
 
+if(_.isElement(child) && _.isNumber(newLocationData.x) && _.isNumber(newLocationData.y)){
+
+var location = getDisplayObjectPositionData(child)
+if(location.x > this.position.x + 2 || location.x < this.position.x - 2){console.log(location);console.log(this);throw 'location not matching'}
+  if(location.y > this.position.y+ 2 || location.x < this.position.x - 2 ){console.log(location);console.log(this);throw 'location not matching'}
+
+}
+
+/*
+if(childType === 'image' && _.isElement(child)){
+console.log('positioned element image')
+console.log(newLocationData)
+console.log($(child).css('left'))
+console.log($(child).css('top'))
+
+}
+*/
 
 
 if(options.update !== false){self.updateStages(stagesToUpdate)}
@@ -5883,6 +5919,7 @@ if(options.update !== false){self.updateStages(stagesToUpdate)}
 
 
 }
+
 
 
     this.positionItemImage = function (item, options) {
@@ -5987,7 +6024,7 @@ if(!itemA.image && !itemB.image && itemA.text && itemB.text && !_.isNaN(parseInt
 }
 
 //if adjusting only text, we adjust the position values separately from the text location values
-if(!itemA.image && !itemB.image && itemA.text && itemB.text){
+if(!itemA.image && !itemB.image && _.isObject(itemA.text) && _.isObject(itemB.text)){
 // if(!_.isNaN(parseInt(itemA.text.text)) ){ console.log('setitemlocations changing location of text: '+itemA.text.text)}
   //  console.log(itemA);console.log(itemB)
    itemA.position.x = itemB.position.x
@@ -7666,18 +7703,20 @@ var cssOptions = {}
 
 if(_.isNumber(x)){cssOptions['left'] = x + data.extraWidth/2}
 if(_.isNumber(y)){cssOptions['top'] = y + data.extraHeight/2}
-if(_.isNumber(newOuterWidth)){cssOptions['width'] = newOuterWidth - data.extraWidth + 'px'}
-if(_.isNumber(newOuterHeight)){cssOptions['height'] = newOuterHeight - data.extraHeight + 'px'}
+if(_.isNumber(newOuterWidth)){cssOptions['width'] = (newOuterWidth - data.extraWidth) + 'px'}
+if(_.isNumber(newOuterHeight)){cssOptions['height'] = (newOuterHeight - data.extraHeight) + 'px'}
 
     $(imageOrText).css(cssOptions)
 
+if(_.isNumber(x) && _.isNaN(parseInt($(imageOrText).css('left')))){console.log(x);console.log(imageOrText)}
+if(_.isNumber(y) && _.isNaN(parseInt($(imageOrText).css('left')))){console.log(y);console.log(imageOrText)}
 
 }//if html element
 
 }//function to set displayobject position
 
 var getDisplayObjectPositionData = function(imageOrText){
-if(!_.isElement(imageOrText)){
+if(imageOrText instanceof createjs.DisplayObject){
 //  console.log('getting location of nonelement displayobejct posiion')
 var data =  {
   x:imageOrText.x
@@ -7687,20 +7726,23 @@ var data =  {
 }
 
 }
-else{// var location = {x:  parseFloat($(imageOrText).css('left')), y: parseFloat($(imageOrText).css('top'))}
+else if (_.isElement(imageOrText)){// var location = {x:  parseFloat($(imageOrText).css('left')), y: parseFloat($(imageOrText).css('top'))}
 //var topLeftLocation  = $(imageOrText).position()
 //var location = {x:topLeftLocation.left , y:topLeftLocation.top}
 var getExtraWidthAndHeightOfElement = function(element){
 
 var initialDisplay = $(element).css('display')
+var initialPointerEvents = $(element).css('pointer-events')
 var initialX = $(element).css('left')
 var initialY = $(element).css('top')
 if(initialDisplay === 'none'){
 //move item way off screen
 $(element).css({
-  'left':-99999
-,'top':-999999
-,'display':'inline'
+  'display':'hidden'
+  ,'pointer-events':'none'
+ // ,'left':-99999
+//,'top':-999999
+
 })
 
 
@@ -7708,23 +7750,30 @@ $(element).css({
 
 var extraWidth  = $(element).outerWidth(true) - $(element).width()
 var extraHeight = $(element).outerHeight(true) - $(element).height()
+//var position = $(element).position()
 
-if(initialDisplay === 'none'){
+if(initialDisplay === 'none' || initialPointerEvents !== 'none'){
 
 $(element).css({
-  'left':initialX
-,'top':initialY
-,'display': initialDisplay
+  'display': initialDisplay
+  ,'pointer-events':initialPointerEvents
+ // ,'left':initialX
+//,'top':initialY
+,
 })
 
 
 }//restore the element to its original position and visibility
 
 
-return {width:extraWidth, height:extraHeight}
+return {
+  extraWidth:extraWidth, extraHeight:extraHeight
+ // ,   x:position.left, y:position.top
+}
 
 }//function that gets extra width and height of element
 
+/*
 var extraFat = getExtraWidthAndHeightOfElement(imageOrText)
 var data = {
   x:  parseFloat($(imageOrText).css('left')) - extraFat.width/2
@@ -7733,11 +7782,22 @@ var data = {
 ,extraHeight:extraFat.height
 
 }
-}
-//console.log(imageOrText);console.log(location)
+*/
+
+var data = getExtraWidthAndHeightOfElement(imageOrText)
+
+if(!_.isObject(data)){console.log('getDisplayObjectPositionData error');console.log(imageOrText);throw''}
+
+
+//if(!data.x && !data.y || true === true){
+  data.x = parseFloat($(imageOrText).css('left')) - data.extraWidth/2
+  data.y = parseFloat($(imageOrText).css('top')) - data.extraHeight/2
+//}
+//else{console.log('getDisplayObjectPositionData retrieved using jquery .position() function')}
+
 
 if(_.isNaN(data.x) || _.isNaN(data.y)){
-  console.log('nan of get display object position')
+  console.log('nan of get display object element position')
   console.log($(imageOrText) )
   console.log(data)
   console.log($(imageOrText).css('left'))
@@ -7745,7 +7805,22 @@ if(_.isNaN(data.x) || _.isNaN(data.y)){
 //  throw 'nan of get display object position'
 }
 
-if(!_.isObject(data)){console.log('getDisplayObjectPositionData error');console.log(imageOrText)}
+
+
+}//if element
+//console.log(imageOrText);console.log(location)
+
+else if(_.isObject(imageOrText)){
+
+var data =  {
+  x:imageOrText.x
+  ,y:imageOrText.y
+  ,extraWidth:0
+  ,extraHeight:0
+}
+
+}
+
 return data
 
 }//get display object position function
@@ -11129,14 +11204,7 @@ this[type] = element
 
  this.positionChild(type, options)
 
-if(type === 'image' && options.position !== false){
 
-var location = getDisplayObjectPositionData(this.image, options)
-if(location.x > this.position.x + 1 || location.x < this.position.x -1){console.log(location);console.log(this);throw 'location not matching'}
-  if(location.y > this.position.y+ 1 || location.x < this.position.x - 1 ){console.log(location);console.log(this);throw 'location not matching'}
-
-
-}
 
 
 this.saveDisplayCSS(options)
@@ -12028,7 +12096,7 @@ else{
    //MAKE WINDOW DRAGGABLE
                   messageBoxItems.window.image.addEventListener('mousedown',function(e){
           var options = {animationTarget:messageBoxItems}
-                  self.events.mouseDownClickAndDrag(e,options)
+                  self.events.mouseDownClickAndDrag(e, options)
                 }
                 )
 
