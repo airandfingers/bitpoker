@@ -4191,13 +4191,17 @@ this.rebuy.addBootstrapButton ('Get Chips', actionButtonOptions)
 actionButtonOptions.attr.id = 'fold'
           this.fold.addBootstrapButton ('Fold', actionButtonOptions)
 
-          actionButtonOptions.attr.id = 'call'
-          this.call.addBootstrapButton ('Call', actionButtonOptions)
+
 
           actionButtonOptions.attr.id = 'check'
           this.check.addBootstrapButton ('Check', actionButtonOptions)
 
-          actionButtonOptions.attr.id = 'raise'      
+
+actionButtonOptions.css['line-height'] = 1  
+          actionButtonOptions.attr.id = 'call'
+          this.call.addBootstrapButton ('Call', actionButtonOptions)
+
+          actionButtonOptions.attr.id = 'raise' 
           this.raise.addBootstrapButton ('Raise', actionButtonOptions)
 
           actionButtonOptions.attr.id = 'bet'
@@ -11979,7 +11983,7 @@ checkBoxCSS.color =  messageInfo.checkBoxTextColor
 //TEXT of the checkbox
 var jqueryCheckBoxText = $('<p>').css(checkBoxCSS).addClass(self.css.unselectable)
 
-jqueryCheckBoxText.text(messageInfo.checkBoxText)
+jqueryCheckBoxText.html(messageInfo.checkBoxText+'<br>')
 
 
 
