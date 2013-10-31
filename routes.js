@@ -315,21 +315,26 @@ module.exports = (function () {
 
     // don't let guest users set an email address (they can't log in anyway)
     if (User.isGuest(username)) {
+      console.log('You cannot register an email address to a guest account');      
+      var error = 'You cannot register an email address to a guest account';  
+      console.error(error); 
+      res.json({ error: error });       
       req.flash('error', 'You cannot register an email address to a guest account.');
-      res.redirect('/account');
-      return;
     }
-    console.log('POST /set_email called ' + req.body.email +'req.user is ', req.user);
-    //if email is valid, save it to MondoDB
-    req.user.sendConfirmationEmail(email, function(err) {
-      if (err) {
-        res.json({ error : err });
-      }
-      else {
-        res.redirect('/account');
-      }
-    });
+    else {
+      console.log('POST /set_email called ' + req.body.email +'req.user is ', req.user);
+      //if email is valid, save it to MondoDB
+      req.user.sendConfirmationEmail(email, function(err) {
+        if (err) {
+          res.json({ error : err });
+        }
+        else {
+          res.json({ email: email });
+        }
+      });
+    }
   });
+
 
   //delete account
   app.post('/delete_account', function (req, res) {
@@ -338,14 +343,13 @@ module.exports = (function () {
         if (_.isEmpty(err)) {
           console.log('Account deleted!');
           req.flash('error', 'Account deleted. Play again soon!');
-          res.redirect(base_page);
         }
         else {
           console.error('Error when attempting to delete account:', err);
           req.flash('error', 'Error when attempting to delete account:' + err);
-          res.redirect(base_page)
         }
     });
+    res.redirect('back');
   });
 
   //Guest Login Route
@@ -486,12 +490,13 @@ module.exports = (function () {
     User.update({_id: req.user._id}, { $unset: { email: undefined }, $set: { email_confirmed: false } }, function(err) {
       if (err) {
         console.error('error when removing email from database.'); 
+        res.json({error:err});
       }
       else {
-      console.log('Removed email from ' + req.user.username +'\'s account.');
+        console.log('Removed email from ' + req.user.username +'\'s account.');
+        res.json({ success: true});
       }
     });
-    res.redirect('back');
   });
 
   // update funbucks
@@ -501,12 +506,22 @@ module.exports = (function () {
     User.update({_id: req.user._id}, { $inc: { funbucks: funbucks_to_add } }, function(err) {
       if (err) {
         console.error('Error when changing user\'s funbucks balance:', err); 
+        res.json({error: err});
       }
       else {
         console.log('Added ' + funbucks_to_add + ' to '+ req.user.username + '\'s account.');
+        req.user.checkBalance('funbucks', function(err, funbucks_balance){
+          if (err) {
+            console.error('Error when checking new funbucks balance', err);
+            res.json({error:err});
+          }
+          else {
+            res.json({funbucks: funbucks_balance});              
+          }
+        });
       }
     });
-    res.redirect('back');
+
   });
 
   app.post('/login',

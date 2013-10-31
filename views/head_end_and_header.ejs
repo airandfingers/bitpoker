@@ -73,7 +73,6 @@
                             <img src="/img/bug.png" />
                         </a>
                     </li>
-                    <% include bug_report %>
 
                     <!-- SIGN UP dropdown Link -->
                     <li class="right">
@@ -88,27 +87,6 @@
                     <li class="right">
                       <a href="#" id="register_trigger">SIGN UP</a>
                     </li>
-                    <div id="register" class="dropdown_form">
-                        <form action="/register" method="post">
-                            <div class="username">
-                                <label for="register_username">Username:</label>
-                                <input id="register_username" name="username" type="text" placeholder="username" required remote="/check_username" />
-                            </div>
-                            <div class="password">
-                                <label for="register_new_password">Password:</label>
-                                <input id="register_new_password" name="new_password" type="password"  placeholder="password" required />
-                            </div>
-                            <div class="password">
-                                <label for="register_new_password_confirm">Confirm Password:</label>
-                                <input id="register_new_password_confirm" name="new_password_confirm" type="password" placeholder="password (again)" required equalTo="#register_new_password" />
-                            </div>
-                            <div class="email">
-                                <label for="register_email">Email (optional):</label>
-                                <input id="register_email" name="email" type="email" placeholder="name@domain.com" />
-                            </div>
-                            <input type="submit" value="Sign Up" class="btn btn-inverse"/>
-                        </form>
-                    </div>
                     <% } %>
 
                     <!--Login or Logout Link-->
@@ -136,11 +114,35 @@
             </nav>
 
                 <!-- dropdowns -->
+                <% include bug_report %>
+
                 <% if ( locals.username) { %>
                 <div id="account" class="dropdown_form inverse">
                     <% include account_base %>
                 </div>
                 <% } else { %>
+                    <div id="register" class="dropdown_form">
+                        <form action="/register" method="post">
+                            <div class="username">
+                                <label for="register_username">Username:</label>
+                                <input id="register_username" name="username" type="text" placeholder="username" required remote="/check_username" />
+                            </div>
+                            <div class="password">
+                                <label for="register_new_password">Password:</label>
+                                <input id="register_new_password" name="new_password" type="password"  placeholder="password" required />
+                            </div>
+                            <div class="password">
+                                <label for="register_new_password_confirm">Confirm Password:</label>
+                                <input id="register_new_password_confirm" name="new_password_confirm" type="password" placeholder="password (again)" required equalTo="#register_new_password" />
+                            </div>
+                            <div class="email">
+                                <label for="register_email">Email (optional):</label>
+                                <input id="register_email" name="email" type="email" placeholder="name@domain.com" />
+                            </div>
+                            <input type="submit" value="Sign Up" class="btn btn-inverse"/>
+                        </form>
+                    </div>
+
                     <div id="login" class="dropdown_form">
                       <form action="/login" method="post">
                         <div class="username">
