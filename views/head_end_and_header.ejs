@@ -106,8 +106,8 @@
                     <!-- Funbucks/Satoshi Chip Count -->
                     <li class="right unselectable">
                         <% if(locals.username) { %>
-                            Fb <%= funbucks %>
-                            Sat <%= satoshi %>
+                            Fb <span id="funbucks_balance"><%= funbucks %></span>
+                            Sat <span id="satoshi_balance"><%= satoshi %></span>
                         <% } %>
                     </li>
                 </ul>

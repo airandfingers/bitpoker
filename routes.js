@@ -516,7 +516,8 @@ module.exports = (function () {
             res.json({error:err});
           }
           else {
-            res.json({funbucks: funbucks_balance});              
+            req.user.broadcastBalanceUpdate('funbucks', funbucks_balance);
+            res.json({funbucks: funbucks_balance});
           }
         });
       }

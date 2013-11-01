@@ -12,7 +12,9 @@ module.exports = (function() {
     
     , db = require('./db') // make sure db is connected
 
-    , mailer = require('../mailer'); // used to send emails
+    , mailer = require('../mailer') // used to send emails
+
+    , io = require('../sockets'); // used to send server-initiated messages
 
   /* the schema - defines the "shape" of the documents:
    *   gets compiled into one or more models */
@@ -364,6 +366,12 @@ module.exports = (function() {
       }
       cb(user);
     });
+  };
+
+  UserSchema.methods.broadcastBalanceUpdate = function(currency, balance) {
+    var Room = require('./room')
+      , socket_list = io.sockets.in(Room.USER_ROOM_PREFIX + this.username);
+    socket_list.emit('new_balance', currency, balance);
   };
 
   /* the model - a fancy constructor compiled from the schema:

@@ -17,14 +17,12 @@
         else { %>
             <h1></h1>
             
-            <!--
             <% include users %>
             <div class="chat_container row-fluid">
                 <div id="chat_lobby" class="row-fluid">
                     <% include chat %>
                 </div>
             </div>
-            -->
             <!-- include values to expose to scripts -->
             <input type="hidden" id="server_values"
                 data-room_state="<%= room_state %>"
@@ -47,7 +45,8 @@
     <script src="/js/iframes.js"></script>
 
     <script src="/socket.io/socket.io.js"></script>
-    <!--<script src="/js/chat.js"></script>-->
+    <script src="/js/socket.js"></script>
+    <script src="/js/chat.js"></script>
 
 <% include foot %>
 

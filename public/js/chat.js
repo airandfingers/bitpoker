@@ -1,12 +1,4 @@
-var socket = io.connect(window.location.origin, {
-    transports: [
-      'websocket'
-    , 'xhr-multipart'
-    , 'htmlfile'
-    , 'xhr-polling'
-    ]
-  })
-  , $chat_form = $('#chat_form')
+var $chat_form = $('#chat_form')
   , $chat_sender = $('#chat_sender')
   , $chat_message = $('#chat_message')
   , chat_message_template = 
@@ -21,13 +13,13 @@ var socket = io.connect(window.location.origin, {
 
 var emit = socket.emit;
 socket.emit = function() {
-  console.log('Sending message:', Array.prototype.slice.call(arguments));
+  console.error('Sending message:', Array.prototype.slice.call(arguments));
   emit.apply(socket, arguments);
 };
 
 var $emit = socket.$emit;
 socket.$emit = function() {
-  console.log('Message received:', Array.prototype.slice.call(arguments));
+  console.error('Message received:', Array.prototype.slice.call(arguments));
   $emit.apply(socket, arguments);
 };
 

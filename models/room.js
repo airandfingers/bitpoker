@@ -35,6 +35,8 @@ module.exports = (function () {
       chat: { handler: 'broadcastChatMessage', pass_socket: true }
     , fold: 'broadcast'
     }
+    // text to prepend to names of user rooms
+  , USER_ROOM_PREFIX: 'user_'
   };
 
   // static methods - Model.method()
@@ -60,35 +62,9 @@ module.exports = (function () {
 
   // instance methods - document.method()
   RoomSchema.methods.join = function(socket) {
-    var self = this
-      , user_id = socket.handshake.session.passport.user;
-    if (! _.isUndefined(user_id)) {
-      User.getByIdWithoutPassword(user_id, function(err, user) {
-        if (err) { console.error(err); }
-        else if (! user) {
-          console.error( 'No user found with id', user_id, '!' );
-          user = {};
-        }
-        //else {
-        socket.user = user;
-        // notify all users, including this one
-        socket.emitToOthers('user_joins', user, false);
-        socket.emit('user_joins', user, true);
-        // notify any interested server-side objects (the corresponding table)
-        self.emit('socket_join', socket);
-        //}
-      });
-    }
-    else {
-      // unauthenticated socket joining
-      var user = {};
-      socket.user = user;
-      // notify all users, including this one
-      socket.emitToOthers('user_joins', user, false);
-      socket.emit('user_joins', user, true);
-      // notify any interested server-side objects (the corresponding table)
-      self.emit('socket_join', socket);
-    }
+    var self = this;
+
+    self.emit('socket_join', socket);
     //console.log('Socket joining ' + self.room_id + ':', socket.user_id);
     socket.join(self.room_id);
     socket.room_id = self.room_id;
@@ -202,12 +178,69 @@ module.exports = (function () {
           _socket.emit.apply(_socket, args_array);
         }
       });
+    };
+
+    var user_id = socket.handshake.session.passport.user
+      , user;
+    if (! _.isUndefined(user_id)) {
+      User.getByIdWithoutPassword(user_id, function(err, _user) {
+        if (err) { console.error(err); }
+        else if (! _user) {
+          console.error( 'No user found with id', user_id, '!' );
+          _user = {};
+        }
+        else {
+          user = _user;
+        }
+        finishSocketSetup();
+      });
+    }
+    else {
+      user = {};
+      finishSocketSetup();
     }
 
-    room.join(socket);
-    socket.on('disconnect', function() {
-      room.leave(socket);
-    });
+    function finishSocketSetup() {
+      socket.user = user;
+      // notify all users, including this one
+      socket.emitToOthers('user_joins', user, false);
+      socket.emit('user_joins', user, true);
+      // TODO notify any interested server-side objects (the corresponding table)
+
+      room.join(socket);
+
+      var username;
+
+      console.log('user is', user);
+
+      if (user instanceof User && _.isString(username = user.username)) {
+        var user_room_name = Room.USER_ROOM_PREFIX + username
+          , user_room = Room.getRoom(user_room_name);
+        
+        if (user_room === undefined) {
+          user_room = Room.createRoom({
+            room_id: user_room_name
+          });
+        }
+
+        console.log('user joins', user_room);
+        user_room.join(socket);
+      }
+
+      socket.on('disconnect', function() {
+        room.leave(socket);
+        if (user_room instanceof Room) {
+          user_room.leave(socket);
+          var remaining_user_sockets = io.sockets.clients(user_room_name);
+          if (_.isEmpty(remaining_user_sockets)) {
+            console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~ ' + username + ' has left the building!!!!!');
+          }
+          else {
+            console.log('remaining:', remaining_user_sockets);
+          }
+        }
+      });
+    }
   });
 
   return Room;

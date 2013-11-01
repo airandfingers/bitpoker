@@ -339,3 +339,7 @@ $(function() {
   $('#register form[action="/register"]').validate();
   $('#login form[action="/login"]').validate();
 });
+
+socket.on('new_balance', function(currency, balance) {
+  $('#' + currency + '_balance').text(balance);
+});
