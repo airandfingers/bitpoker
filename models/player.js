@@ -787,29 +787,29 @@ module.exports = (function () {
     // call handleAutoActionFlag instead
     if (value !== false && _.contains(Player.action_list, name)) {
       this.handleAutoActionFlag(name, value);
+      return;
     }
-    else {  
+    if (name === 'autorebuy') {
       // check autorebuy flag value
-      if (name === 'autorebuy') {
-        var game = this.game;
-        if (! _.isNumber(value) || value < game.MIN_CHIPS) {
-          console.error('Received set_flag message with invalid auto-rebuy amount:', value);
-          value = false;
-          this.flags.autorebuy = value;
-        }
-        else if (value > game.MAX_CHIPS) {
-          console.error('Received set_flag message with auto-rebuy amount > MAX_CHIPS:', value);
-          value = game.MAX_CHIPS;
-          this.flags.autorebuy = value;
-        }
-        this.autoRebuy();
-      }
-      else {
-        //all other flags
-        this.flags[name] = value;
-      }
-      this.sendMessage('flag_set', name, value);
+      value = this.handleAutoRebuyFlag(value);
     }
+    this.flags[name] = value;
+    this.sendMessage('flag_set', name, value);
+  };
+
+  PlayerSchema.methods.handleAutoRebuyFlag = function(value) {
+    var game = this.game;
+    if (value !== false && value < game.MIN_CHIPS) {
+      console.error('Received set_flag message with invalid auto-rebuy value:', value);
+      value = false;
+    }
+    else if (value > game.MAX_CHIPS) {
+      console.error('Received set_flag message with auto-rebuy amount > MAX_CHIPS:', value);
+      value = game.MAX_CHIPS;
+    }
+    this.flags.autorebuy = value;
+    this.autoRebuy();
+    return value;
   };
 
   PlayerSchema.methods.handleAutoActionFlag = function(action, value) {

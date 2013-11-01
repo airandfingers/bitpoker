@@ -244,6 +244,7 @@ $(function() {
     toggleDropdown($report_bug_trigger, $report_bug_dropdown,
                    { top: 0
                    , toggle_args: ['slide', { direction: 'up' }, 400] });
+    $report_bug_dropdown.find('textarea').focus();
   });
 
   // ajax form submission

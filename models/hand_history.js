@@ -334,8 +334,7 @@ module.exports = (function () {
       console.log('Returned from hand_history.save:', err, result);
     });
   };
-//HandHistory:
-//HandHistory.appendToHistoryString: call broadcastAndSave instead of broadcast
+
   HandHistorySchema.methods.appendToHistoryString = function(line_to_append, broadcast) {
     this.history_string += line_to_append + '\n';
     if (broadcast !== false) {
