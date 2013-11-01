@@ -36,7 +36,7 @@
                         page_dropdown = pages[i].dropdown;
                     %>
                         <% if (! locals.username) { %>
-                            <li>
+                            <li class="unselectable">
                                 <a href="<%= page_href %>"
                                    <%= title === page_title ? 'class=current_page' : '' %>
                                 >
@@ -48,7 +48,7 @@
 
                             <% if (typeof table_games !=='undefined') { %>
                               <div id="lobbyWrapperDiv">
-                                <li>
+                                <li class="unselectable">
                                   <a href = "#" id="lobby_trigger">
                                   LOBBY
                                   </a>
@@ -63,19 +63,19 @@
                                 />
                                 <% } %>
 
-                                <div id="lobby">
+                                <div id="lobby" class="unselectable">
                                   <% include table_list %>
                                 </div>
                               </div> <!-- wrapperDiv: This is to help with hoverIntent -->
                             <%  } %>
-                    <li>
+                    <li class="unselectable">
                         <a href="#" id="report_bug_trigger" title="Submit bugs or feedback">
                             <img src="/img/bug.png" />
                         </a>
                     </li>
 
                     <!-- SIGN UP dropdown Link -->
-                    <li class="right">
+                    <li class="right unselectable">
                         <% if (locals.username) { %>
                           <a id="logout_trigger"href="/logout">LOGOUT</a>
                         <% } %>
@@ -84,13 +84,13 @@
                     if (typeof locals.username !== 'string' ||
                         locals.username.substring(0, 5) === 'guest') {
                     %>
-                    <li class="right">
+                    <li class="right unselectable">
                       <a href="#" id="register_trigger">SIGN UP</a>
                     </li>
                     <% } %>
 
                     <!--Login or Logout Link-->
-                    <li class="right">
+                    <li class="right unselectable">
                         <% if (locals.username) { %>
                           <a id= "account_trigger" href="#" title="My Account"
                              <%= title === 'Account' ? 'class=current_page' : '' %>
@@ -104,7 +104,7 @@
                     </li>
 
                     <!-- Funbucks/Satoshi Chip Count -->
-                    <li class="right">
+                    <li class="right unselectable">
                         <% if(locals.username) { %>
                             Fb <%= funbucks %>
                             Sat <%= satoshi %>
@@ -117,7 +117,7 @@
                 <% include bug_report %>
 
                 <% if ( locals.username) { %>
-                <div id="account" class="dropdown_form inverse">
+                <div id="account" class="dropdown_form inverse unselectable">
                     <% include account_base %>
                 </div>
                 <% } else { %>

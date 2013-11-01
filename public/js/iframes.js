@@ -22,8 +22,8 @@
 
   var id_prefix = 'iframe_'
     , iframe_template =
-  '<div id="iframe_<%= table_name %>" class="iframe">' +
-    '<div class="iframe_header">' +
+  '<div id="iframe_<%= table_name %>" class="iframe unselectable">' +
+    '<div class="iframe_header unselectable">' +
       '<span class="iframe_header_title"></span>' +
       '<a href="#" class="iframe_refresh pull-left">' +
         '<i class="icon-refresh"></i>' +
