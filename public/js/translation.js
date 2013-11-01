@@ -1,4 +1,3 @@
-
 function TRANSLATIONS(){
 
 var numEntries = 0
@@ -21,9 +20,6 @@ this.en = new Language() //english
 this.chs = new Language() //chinese simplified (mainland china)
 this.sp = new Language() //espanol
 this.fr = new Language() //french
-
-
-
 
 
 this.translatedText = function (text, translationOptions){
@@ -116,7 +112,6 @@ translationArray.push({
 en: 'Chinese'
 ,chs: '中文'
 ,sp: 'Chino'
-
 
 })
 
