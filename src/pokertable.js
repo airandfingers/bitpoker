@@ -456,11 +456,11 @@ touchEnabled:true,
 mouseOverFrequency:30
 ,newCanvas:true
             }//staticItems stage options
-stageContainers.staticItems = ['background', 'table', 'buttons chat', null, 'holeCards', 'seats', null, 'bubbleChat']
+stageContainers.staticItems = ['background', 'table', 'buttons chat', null, 'holeCards', 'seats', null, 'bubbleChat', 'betSlider']
 
 stageOptionData.animatedAndMiddleTableItems = _.clone(disabledOptions)
 stageOptionData.animatedAndMiddleTableItems.newCanvas = true
-stageContainers.animatedAndMiddleTableItems = ['dealerChip', 'community', 'chips', null, 'chipAnimation', null,  'cardAnimation']
+stageContainers.animatedAndMiddleTableItems = ['dealerChip', 'chips', null, 'community',  'chipAnimation', null,  'cardAnimation']
 divOptionData.animatedAndMiddleTableItems = {mouseDisabled:true}
 
 stageOptionData.tableChatFull = _.clone(stageOptionData.staticItems)
@@ -742,57 +742,32 @@ this.images.Item.prototype.addBootstrapButton = function (buttonText, bootstrapB
 //options
 //size, position, css, attr
 
-
+//CREATE EMPTY OBJECTS AS NECESSARY
 if(!bootstrapButtonOptions){var bootstrapButtonOptions = {}}
   var options = _.clone(bootstrapButtonOptions)
+    if(_.isObject(options.css )){options.css = _.clone(options.css)}
+      else{options.css = {}}
+  if(_.isObject(options.attr)){options.attr = _.clone(options.attr)}
+    else{options.attr = {}}
+    if(!options.class){options.class = ''}
+    options.update = false
 
-//default properties
-if(!options.attr){options.attr = {}}
+//DEFAULT OPTIONS
+var defaultOptions = {disableContextMenu:true}
+options = _.defaults(options, defaultOptions)
 
-if(_.isString(options.loadingText) || _.isNumber(options.loadingText)){options.attr['data-loading-text'] = options.loadingText}
-  else{options.attr['data-loading-text'] = buttonText}
+//DEFAULT ATTRIBUTES
+var defaultAttr = {  'data-loading-text': buttonText  ,'type':'button'}
+options.attr = _.defaults(options.attr, defaultAttr)
 
-if(!options.css){options.css = {}}
-if(!_.isString(options.class)){options.class = ''}
-
-//remove any other possible images
-this.removeChild('image')
-
-//REMOVE PREVIOUS elements with same id
-var leftoverButtons = $('#'+options.attr.id)
-//remove any previous instances of this ID 
-if(leftoverButtons.length > 0){
-console.log('leftover button removed with id = ' + options.attr.id)
-  leftoverButtons.remove()
-}
-
-
-var newButton = $('<button>').attr({
-'type':'button'
-}).css({'text-align':'center'}).css(options.css)
-.addClass(self.css.bootstrapButton)
-.attr(options.attr)
-.addClass('unselectable' + ' ' + options.class)
+//DEFAULT CSS
+var defaultCSS = {  'text-align':'center'}
+var newButton = $('<button>').addClass(self.css.unselectable + ' ' + self.css.bootstrapButton)
 
 newButton.html(buttonText)
 
-
-
-if(!_.isFunction(options.onClick) && this.messages){var onClick = self.events.onButtonClick}
-  else{var onClick = options.onClick}
-
-if(_.isFunction(onClick)){
-newButton.on('click', function(e){
-onClick(e)
-e.stopPropagation()
-})
-}//onclick function if necessary
-
-newButton.on('contextmenu.disable', function(e){return false})
-
-
 this.addElement(newButton[0], 'image', options)
-newButton.css(options.css)
+//newButton.css(options.css)
 
 }//addBootstrapButton 
 
@@ -1079,6 +1054,9 @@ if(!_.isObject(value) && !_.isUndefined(value) && !_.isFunction(parentOfImageObj
 
 else{//if we want to create an HTML text
 
+if(!_.isObject(options.css)){options.css = {}}
+  if(_.isUndefined(options.size)){options.size = true}
+  if(_.isUndefined(options.position)){options.position = true}
 
 var x = parentOfImageObject.position.x; var y = parentOfImageObject.position.y
 var width = parentOfImageObject.size.x; var height = parentOfImageObject.size.y;
@@ -1086,31 +1064,25 @@ var width = parentOfImageObject.size.x; var height = parentOfImageObject.size.y;
 if(!options.numLines){options.numLines = 1}
 var lineHeight = (height/options.numLines) + 'px'
 
-var newText = $('<p>').text(text).css({
-  'font':sizeAndFont
+var cssDefaults = {
+  'line-height': lineHeight
+  ,'font':sizeAndFont
   ,'color':color
-  ,'width':width
-  ,'height':height
-  ,'max-width':width
-  ,'max-height':height
     ,'left':x
     ,'top':y
   ,'text-align':'center'
-  ,'line-height':lineHeight
   ,'pointer-events':'none'
   ,'display':'none'
   ,'font-weight':400
-}).addClass(self.css.unselectable + ' ' + self.css.noFat)
+}
 
-if(_.isObject(options.css)){newText.css(options.css)}
-  if(options.textAlign){newText.css('text-align', options.textAlign)}
+options.css = _.defaults(options.css, cssDefaults)
+ if(_.isString(options.textAlign)) {options.css['text-align'] = options.textAlign}
 
-    if(options.class){newText.addClass(options.class)}
-      if(options.attr){newText.attr(options.attr)}
+var newText = $('<p>').addClass(self.css.unselectable + ' ' + self.css.noFat)
+newText.html(text)
 
-        parentOfImageObject.addElement(newText[0], 'text')
-//console.log('addItemText completed for html = true')
-//console.log(parentOfImageObject)
+ parentOfImageObject.addElement(newText[0], 'text', options)
 
 }// make HTML element
 
@@ -2860,6 +2832,7 @@ for(var i =0;i<flashArray.length;i++){
 //-----------functions below this line ---------------------
 this.loadImageSources = function(backgroundLoad){
 
+
 if(self.isIframe()){
 var preferencesRetreived = false
 
@@ -3399,7 +3372,7 @@ var dealerButtonSource = self.permanentPreferences.sourceObjects.value.dealerBut
             var horizontalBetSliderOffsetBottom =  19
             var distanceBetweenBetSizeAndHorizontalSlider = 15
             var betSizeWidth = 80
-            var betSizeHeight = 20
+            var betSizeHeight = 25
 
             //space between player chat and seat
             var chatBoxWidth = seatWidth*1.4
@@ -4196,8 +4169,8 @@ actionButtonOptions.attr.id = 'fold'
           actionButtonOptions.attr.id = 'check'
           this.check.addBootstrapButton ('Check', actionButtonOptions)
 
+actionButtonOptions.css['line-height'] = '50%'
 
-actionButtonOptions.css['line-height'] = 1  
           actionButtonOptions.attr.id = 'call'
           this.call.addBootstrapButton ('Call', actionButtonOptions)
 
@@ -4249,7 +4222,7 @@ var jquerySlider = $('<div>').addClass(self.css.noFat + ' ' + self.css.unselecta
 
 var sliderX = betSliderX
 var sliderY = betSliderMiddleY - verticalBetSliderHeight/2
-this.betSlider.slider = new this.Item(sliderX, sliderY, horizontalBetSliderWidth, horizontalBetSliderHeight, getZ('staticItems','buttons'))
+this.betSlider.slider = new this.Item(sliderX, sliderY, horizontalBetSliderWidth, horizontalBetSliderHeight, getZ('staticItems','betSlider'))
 this.betSlider.slider.addElement(jquerySlider[0], 'image')
 console.log('jquery slider added')
 console.log(this.betSlider.slider)
@@ -4294,10 +4267,20 @@ api.set('content.text', '' + $(self.images.betSlider.slider.image).slider('optio
 
 var betSizeX = sliderX + this.betSlider.slider.size.x + distanceBetweenBetSizeAndHorizontalSlider
 var betSizeY = sliderY + horizontalBetSliderHeight/2 - betSizeHeight/2
-      this.betSlider.betSize = new this.Item(betSizeX, betSizeY, betSizeWidth, betSizeHeight, getZ('staticItems','buttons'))
-this.betSlider.betSize.addElement(document.getElementById('betSize'), 'image' )
+      this.betSlider.betSize = new this.Item(betSizeX, betSizeY, betSizeWidth, betSizeHeight, getZ('staticItems','betSlider'))
+this.betSlider.betSize.addElement(document.getElementById('betSize'), 'image' , {css:{
+
+ 'position' :  'absolute'
+// 'left'  : this.betSlider.betSize.position.x + 'px',
+//'top'  : this.betSlider.betSize.position.y + 'px',
+//'width' : this.betSlider.betSize.size.x + 'px',
+//'height' : this.betSlider.betSize.size.y +'px',
+,'padding': '0px'
+,'margin':'0px'
+}//options.css
 
 
+})
 
 
 self.updateBetSize('')
@@ -4322,13 +4305,7 @@ $('#betSize').focus(function(){
 
 
 $('#betSize').css({
- 'position' :  'absolute',
- 'left'  : this.betSlider.betSize.position.x + 'px',
-'top'  : this.betSlider.betSize.position.y + 'px',
-'width' : this.betSlider.betSize.size.x + 'px',
-'height' : this.betSlider.betSize.size.y +'px',
-'padding': '0px',
-'margin':'0px'
+
 })
 
 
@@ -4364,7 +4341,24 @@ this.cashierButton.button = new createjs.ButtonHelper(this.cashierButton.bitmapA
 */
 
   //--------------upper right side button---------------------
-        this.standUp = new this.Item(canvasWidth - standUpWidth,0,standUpWidth,standUpHeight,getZ('staticItems','buttons'))
+
+var upperButtonTextCSS = {
+'font-size':'13px'
+,'text-shadow': '0px 2px 1px rgba(0, 0, 0, 1), 0px -2px 1px rgba(0, 0, 0, 1), 2px 0px 1px rgba(0, 0, 0, 1), -2px 0px 1px rgba(0, 0, 0, 1)' //black outline
++', 5px 8px 10px rgba(0, 0, 0, 0.7), 3.5px 5.5px 6px rgba(0, 0, 0, 0.7)'// ', 1px 7px 4px rgba(0, 0, 0, 0.8), 5px 2px 3px rgba(0, 0, 0, 0.7), 4.5px 4.5px 3px rgba(0, 0, 0, 0.7)' //drop shadow
++', 5px 8px 10px rgba(0, 0, 0, 0.7), 3.5px 5.5px 6px rgba(0, 0, 0, 0.7)'
+
+//'3px 4px 2px rgba(50, 50, 50, 0.5), 0 0 0.2px #87F,        0 0 1px #87F, 2px 0 0 #000, 0 2px 0 #000, 0 2px 0 #000, 2px 0 0 #000'
+,'text-align':'left'
+,'font-weight':700
+//,'overflow-y':'auto'
+,'pointer-events':'none'
+}
+
+var upperButtonFontType = 'Myriad Pro'
+
+
+        this.standUp = new this.Item(canvasWidth - standUpWidth,0, standUpWidth, standUpHeight, getZ('staticItems','buttons'))
            this.itemAsBitmap(this.standUp, self.permanentPreferences.sourceObjects.value.standUp)
    //define shape for hit area of  stand
    var standUpHit = new createjs.Shape()
@@ -4379,8 +4373,21 @@ standUpHit.graphics.beginFill('#000000').setStrokeStyle(0)
 .lineTo(standUpHitAreaUpperLeftOffsetX, topY)
 this.standUp.image.hitArea = standUpHit
 
-//disable overlay
+ var standUpTextLeftOffset = 73; var standUpTextTopOffset = 6; var standUpTextRightOffset = 21; var standUpTextBottomOffset = 10
+var standUpTextWidth = standUpWidth - standUpTextLeftOffset - standUpTextRightOffset
+var standUpTextHeight = standUpHeight - standUpTextTopOffset - standUpTextBottomOffset
 
+this.standUp.addItemText('STAND UP', upperButtonFontType, 'white', {html:true, css:upperButtonTextCSS, textAlign:'left'})
+setDisplayObjectPositionData(this.standUp.text, {x:standUpTextLeftOffset + this.standUp.position.x
+  ,  y: this.standUp.position.y + standUpTextTopOffset
+ // ,width:getChipsTextWidth
+  , height:standUpTextHeight
+}, {update:false})
+
+
+
+
+//disable overlay
    this.standUpDisabledShape = new this.Item(this.standUp.position.x + standUpHitAreaUpperLeftOffsetX,this.standUp.position.y+topY,this.standUp.size.x - standUpHitAreaUpperLeftOffsetX - standUpHitAreaRightOffset,this.standUp.size.y - topY - bottomY,{container:getZ('staticItems','buttons').container, stage:getZ('staticItems','buttons').stage +1}) 
    this.standUpDisabledShape.image = standUpHit.clone(true)
    this.standUpDisabledShape.image.x =  this.standUp.position.x 
@@ -4390,6 +4397,17 @@ this.standUpDisabledShape.image.alpha = disabledButtonOverlayAlpha
 //-------------------------upper left Get Chips-------
  this.getChips = new this.Item(0, 0, getChipsWidth, getChipsHeight, getZ('staticItems','buttons'), {messages:['get_add_chips_info']})
  this.itemAsBitmap(this.getChips, getChipsSource)
+ var getChipsTextLeftOffset = 37; var getChipsTextTopOffset = 9; var getChipsTextRightOffset = 46; var getChipsTextBottomOffset = 21
+var getChipsTextWidth = getChipsWidth - getChipsTextLeftOffset - getChipsTextRightOffset
+var getChipsTextHeight = getChipsHeight - getChipsTextTopOffset - getChipsTextBottomOffset
+
+
+this.getChips.addItemText('GET CHIPS', upperButtonFontType, 'white', {html:true, css:upperButtonTextCSS, textAlign:'left'})
+setDisplayObjectPositionData(this.getChips.text, {x:getChipsTextLeftOffset + this.getChips.position.x - 1
+  ,  y: this.getChips.position.y + getChipsTextTopOffset
+ // ,width:getChipsTextWidth
+  , height:getChipsTextHeight
+}, {update:false})
 
 
   //define shape of hit area
@@ -5038,9 +5056,30 @@ this.showTableChatFull = new this.Item(this.getChips.position.x, this.getChips.p
 this.itemAsBitmap(this.showTableChatFull, showTableChatFullSource)
 this.showTableChatFull.image.addEventListener('click', self.events.showTableChatFullOnClick)
 
+ var showTableChatFullTextLeftOffset = 4; var showTableChatFullTextTopOffset = 6; var standUpTextRightOffset = 30; var showTableChatFullTextBottomOffset = 15
+//var showTableChatFullTextWidth = showTableChatFullWidth - showTableChatFullTextLeftOffset - showTableChatFullTextRightOffset
+var showTableChatFullTextHeight = showTableChatFullHeight - showTableChatFullTextTopOffset - showTableChatFullTextBottomOffset
+
+this.showTableChatFull.addItemText('SHOW CHAT', upperButtonFontType, 'white', {html:true, css:upperButtonTextCSS, textAlign:'left'})
+setDisplayObjectPositionData(this.showTableChatFull.text, {x:showTableChatFullTextLeftOffset + this.showTableChatFull.position.x
+  ,  y: this.showTableChatFull.position.y + showTableChatFullTextTopOffset
+ // ,width:getChipsTextWidth
+  , height:showTableChatFullTextHeight
+}, {update:false})
+
+
+
 this.hideTableChatFull = new this.Item(this.getChips.position.x, this.getChips.position.y+this.getChips.size.y+showTableChatFullOffsetY, showTableChatFullWidth, showTableChatFullHeight, getZ('staticItems','buttons') )
 this.itemAsBitmap(this.hideTableChatFull, self.permanentPreferences.sourceObjects.value.hideTableChatFull)
 this.hideTableChatFull.image.addEventListener('click', self.events.hideTableChatFullOnClick)
+
+this.hideTableChatFull.addItemText('HIDE CHAT', upperButtonFontType, 'white', {html:true, css:upperButtonTextCSS, textAlign:'left'})
+setDisplayObjectPositionData(this.showTableChatFull.text, {x:showTableChatFullTextLeftOffset + this.showTableChatFull.position.x
+  ,  y: this.showTableChatFull.position.y + showTableChatFullTextTopOffset
+ // ,width:getChipsTextWidth
+  , height:showTableChatFullTextHeight
+}, {update:false})
+
 
 //define shape of hit area
     var showTableChatFullHitArea = new createjs.Shape()
@@ -6578,7 +6617,8 @@ var setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault = f
 
 if(status === true){var display = 'inline'}
   else{var display = 'none'}
-var div = self.getParentOfStageObject(stageNumberOrItem).div
+    var stageParent = self.getParentOfStageObject(stageNumberOrItem)
+var div = stageParent.div
 if(!_.isObject(div)){console.log(stageNumberOrItem);throw'display status error'}
 $(div).css('display', display)
 
@@ -7746,8 +7786,31 @@ var cssOptions = {}
 if(_.isNumber(x)){cssOptions['left'] = x /*- data.paddingWidth/2 - data.borderWidth/2*/ ; var setPosition = true}
 if(_.isNumber(y)){cssOptions['top'] = y /*- data.paddingHeight/2 - data.borderHeight/2*/; var setPosition = true}
 if(setPosition){cssOptions['position'] = 'absolute'}
-if(_.isNumber(newOuterWidth)){cssOptions['width'] = (newOuterWidth - data.extraWidth) + 'px'}
-if(_.isNumber(newOuterHeight)){cssOptions['height'] = (newOuterHeight - data.extraHeight) + 'px'}
+if(_.isNumber(newOuterWidth)){
+  cssOptions['width'] = (newOuterWidth - data.extraWidth) + 'px'
+//cssOptions['max-width'] = (newOuterWidth - data.extraWidth) + 'px'
+}
+if(_.isNumber(newOuterHeight)){
+  cssOptions['height'] = (newOuterHeight - data.extraHeight) + 'px'
+ // cssOptions['max-height'] = (newOuterHeight - data.extraHeight) + 'px'
+
+//NOW ADJUST LINE HEIGHT
+var oldLineHeight = $(imageOrText).css('line-height')
+console.log('checking if we need to adjust line-height, old value = ' + oldLineHeight)
+//MAKE SURE old line height is pixel based
+if(_.isString(oldLineHeight) && oldLineHeight.indexOf('px') !== -1){
+  
+ cssOptions['line-height'] = parseInt(oldLineHeight)*((newOuterHeight - data.extraHeight)/ data.contentHeight) + 'px'
+
+ if($(imageOrText).attr('type') === 'button'){
+
+  console.log('we are going to adjust line-height of button to '+  cssOptions['line-height'])
+  console.log(imageOrText)}
+
+
+}
+
+}//of adjusting height, we also ned to adjust line-height
 
     $(imageOrText).css(cssOptions)
 
@@ -8812,7 +8875,7 @@ console.log(canPlayerActDefaultsToUser())
 
 
   //we need to hide if we are to act
-if(!_.isNumber(seat) ||   self.getPreactionData('toAct',{seat:'table'})  === seat 
+if(!_.isNumber(seat) ||   self.getPreactionData('toAct', {seat:'table'})  === seat 
   || self.getPreactionData('inHand', {seat:seat}) !== true 
 || currentStackSizes[seat] <= 0 || canPlayerActDefaultsToUser() === false
  /*||  _.without(currentStackSizes, 0).length <=1 */){
@@ -10934,7 +10997,7 @@ var options = {update:false, seat:seatNumber, server:false }
 
     }
 
-    this.playerToAct =function(seatNumber, timeoutInMS){
+    this.playerToAct = function(seatNumber, timeoutInMS){
 
   self.setPreactionData('hand','timeToAct', timeoutInMS,{seat:seatNumber})
       self.setPreactionData('hand','toAct', seatNumber,{seat:'table'})
@@ -10993,7 +11056,7 @@ var toActBorderColor = originalBorderColor
 var toActMiddleDividerColor = '#FFFFFF'
 
         var timeToChangeColors = 3000
-        var ticksPerColorChange = 20
+        var ticksPerColorChange = 40
         var interval = timeToChangeColors/ticksPerColorChange
         var lastTick = ticksPerColorChange-1
          var tick = 0
@@ -11007,6 +11070,8 @@ var toActMiddleDividerColor = '#FFFFFF'
  //console.log(self.playerToAct.caller)
 
  var options = {server:false, seat:seatNumber, update:false}
+
+
 //-----------start swapping colors until toAct becomes false----------------
               var countdown = setInterval(function() {
 var stagesToUpdate = []
@@ -11104,11 +11169,14 @@ var nextCounter = lastCompletedFillColorCounter+1
            if(self.getPreactionData('displayMessageType', options) === 'countdown'){self.setPreactionData('permanent', 'displayMessageType', 'seat', options)}
                       }
 else{
+
+var remainingTimeToAct = self.getPreactionData('timeToAct', options)
+
 //UPDATE GRAPHIC AROUND THE TABLE SEAT
- stagesToUpdate.push(  self.images.drawSeat(self.images.seats[seatNumber].seat, toActBorderColor, newFillColor, toActMiddleDividerColor, {borderFillRatio: self.initial_table_state.act_timeout/timeoutInMS, newFillColor:toActTimeLeftBorderColor}) )
+ stagesToUpdate.push(  self.images.drawSeat(self.images.seats[seatNumber].seat, toActBorderColor, newFillColor, toActMiddleDividerColor, {borderFillRatio: remainingTimeToAct/self.initial_table_state.act_timeout, newFillColor:toActTimeLeftBorderColor}) )
     
     //================COUNTDOWN TEXT START================================================================
-var remainingTimeToAct = self.getPreactionData('timeToAct', options)
+
 var countDownText = 'Time: '+ Math.ceil(remainingTimeToAct/1000)
 
    if ( remainingTimeToAct >= 0){
@@ -11121,7 +11189,7 @@ var countDownText = 'Time: '+ Math.ceil(remainingTimeToAct/1000)
 
 
  //decrement time to act
-      self.setPreactionData('hand','timeToAct', remainingTimeToAct - interval,{seat:seatNumber})
+      self.setPreactionData('hand','timeToAct', remainingTimeToAct - interval, {seat:seatNumber})
                     
                     //correct posible failed seatitems
                        stagesToUpdate.push(   self.displayCorrectSeatItems(seatNumber, options) 
@@ -11256,24 +11324,31 @@ if(update!== false){this.updateStages(stagesToUpdate)}
 }
 
 this.images.Item.prototype.saveDisplayCSS = function(options){
+if(!_.isObject(options)){var options = {}}
+if(_.isString(options.display)){var displayCSS = options.display}
 
 if(_.isElement(this.image)){
-var displayCSS = $(this.image).css('display')
+if(!displayCSS){var displayCSS = $(this.image).css('display')}
 if(displayCSS !== 'none' && displayCSS !== 'hidden' && _.isString(displayCSS)){this.position.displayCSS = displayCSS;return}
 }
 
 if(_.isElement(this.text)){
-var displayCSS = $(this.text).css('display')
+if(!displayCSS){var displayCSS = $(this.text).css('display')}
 if(displayCSS !== 'none' && displayCSS !== 'hidden' && _.isString(displayCSS)){this.position.displayCSS = displayCSS;return}
 }
 
 
 } 
 
-this.images.Item.prototype.addElement = function(element, textOrImage, options){
+this.images.Item.prototype.addElement = function(element, textOrImage, functionOptions){
 // options: size, position, container
-if(!options){var options = {}}
-  else{var options = _.clone(options)}
+if(!functionOptions){var options = {}}
+  else{var options = _.clone(functionOptions)}
+    if(_.isObject(options.css )){options.css = _.clone(options.css)}
+      else{options.css = {}}
+  if(_.isObject(options.attr)){options.attr = _.clone(options.attr)}
+    else{options.attr = {}}
+    if(!options.class){options.class = ''}
     options.update = false
 
 var parentDiv = self.getParentOfStageObject(this).div
@@ -11290,32 +11365,68 @@ else if(elementType === 'p'){var type = 'text'}
 if(type === 'text'){var z = this.position.z.container + 1}
   else{var z = this.position.z.container}
 
+
+//REMOVE PREVIOUS VERSIONS OF SAME ID
+this.removeChild(type)
+if(options.attr.id){
+var leftoverButtons = $('#'+options.attr.id)
+//remove any previous instances of this ID 
+if(leftoverButtons.length > 0){
+console.log('leftover button removed with id = ' + options.attr.id)
+  leftoverButtons.remove()
+}
+}
+
+
+
+
+
+
+
+
+
+
 //CHECK TO MAKE SURE MAX WIDTH HEIGHT AND WIDTH ARE NOT TOO HIGH
 //if(parseFloat($(element).css('max-width'))
 
+//MODIFY DISPLAY CSS
+if(_.isString(options.css.display)){
+  options.display  = options.css.display
+this.saveDisplayCSS(options) //THIS SAVES OUR DISPLAY VARIABLE FOR WHEN WE WANT IT
+}
 
+  options.css.display = 'none'
+options.css['z-index'] = z
+
+$(element).css(options.css).attr(options.attr).addClass(options.class)
 
 element.parentOfImageObject = this
 
 //if container specified append to it
 if(options.container){$(options.container).append(element)}
 //check if element is already a descendent of div
-else if($(parentDiv).find(element).length !== 1){  $(parentDiv).append(element)}
+else if($(parentDiv).find(element).length < 1){  $(parentDiv).append(element)}
 
 //assign element as child of Item
 this[type] = element
 
+//position the child
  this.positionChild(type, options)
 
+//************EVENTS***************
 
+//right click
+if(options.disableContextMenu === true){  $(element).on('contextmenu.disable', function(e){return false})}
 
+//left click
+if(!_.isFunction(options.onClick) && this.messages && type === 'image'){var onClick = self.events.onButtonClick}
+  else{var onClick = options.onClick}
 
-this.saveDisplayCSS(options)
-
-$(element).css({
-'z-index':z
-,'display':'none'
+if(_.isFunction(onClick)){
+$(element).on('click', function(e){
+onClick(e)
 })
+}//onclick function if necessary
 
 
 }
@@ -11657,8 +11768,6 @@ this.decrementCurrent()//reduce current
 }
 
 
-
-
     this.displayMessageBox = function(messageString, messageInfo, hideOrDisplayChildrenOptions){
       console.log('displaymessagebox called')
 
@@ -11883,7 +11992,7 @@ var onRenderFunctions = []
 var onShowFunctions = []
 
 
-var messageCSS = {'text-align':'center'}
+var messageCSS = {'text-align':'center', 'pointer-events':'none'}
 if(!_.isString(messageInfo.style)){
   messageCSS['font'] = messageInfo.messageSizeAndFont
  messageCSS['color'] = messageInfo.messageColor
@@ -11968,22 +12077,35 @@ messageBoxItems.htmlCheckBox.addElement(jqueryCheckBox[0], 'image', {position:fa
 additionalContent.push(jqueryCheckBox)
 
 
-var checkBoxCSS = {
+var checkBoxTextCSS = {
   'text-align':'left'
 ,'font-size':messageInfo.checkBoxFontSize
 ,'overflow-x':'hidden'
+,'position': 'relative'
+,'left' : checkBoxSize + 'px'
+,'cursor':'pointer'
 }
 if(!_.isString(messageInfo.style)){
 
-checkBoxCSS.font =  messageInfo.checkboxFontType
-checkBoxCSS.color =  messageInfo.checkBoxTextColor
+checkBoxTextCSS.font =  messageInfo.checkboxFontType
+checkBoxTextCSS.color =  messageInfo.checkBoxTextColor
 
 }
 
+
+
 //TEXT of the checkbox
-var jqueryCheckBoxText = $('<p>').css(checkBoxCSS).addClass(self.css.unselectable)
+var jqueryCheckBoxText = $('<p>').css(checkBoxTextCSS).addClass(self.css.unselectable)
 
 jqueryCheckBoxText.html(messageInfo.checkBoxText+'<br>')
+
+
+//MAKE IT SO CLICKING THE TEXT WILL CHECK THE BOX ALSO
+jqueryCheckBoxText.on('click.triggerBox', function(e){
+console.log(e)
+jqueryCheckBox.trigger('click')
+
+})
 
 
 
@@ -12144,21 +12266,15 @@ setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(newStag
 })//delay to adjust x of our bttons
 
 
-
-
-
 //APPEND OVERLAY TO OUR DIV
 if(_.isObject(api.elements.overlay)){$(self.getParentOfStageObject(newStageNumber).div).append(api.elements.overlay)}
-
-//THIS KEEPS OUR TEXT FROM CHANGING CURSORS
-$('p', api.elements.content).css('pointer-events','none')
-
 
 //THIS EDITS OUR TITLE CSS
 if(_.isObject(api.elements.title)){
 var titleCSS = {
   'text-align':'center'
 ,'font': messageInfo.titleSizeAndFont
+,'pointer-events':'none'
 }
 if(!_.isString(messageInfo.style)){titleCSS.color = messageInfo.titleColor}
 api.elements.title.css(titleCSS)
