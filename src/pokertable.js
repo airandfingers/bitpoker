@@ -33,12 +33,13 @@ if(!_.isObject(playZoneLandingPage.sourceObjects)){playZoneLandingPage.sourceObj
 
             this.events = {}
             this.css = {
-nonVendor: 'nonVendor'
+noFat: 'noFat'
 ,unselectable: 'unselectable'
 ,noTranslate: 'notranslate'
 ,canvas:'pokerCanvasClass'
 ,inline:'inline'
 ,messageBoxButton: 'messageBoxButton'
+,bootstrapButton: 'btn'
  }
 
   this.imageData = {
@@ -176,6 +177,7 @@ self.updateTableChatFullDisplay(options)}
 
 //defaultFontType:{value:'Planer_Reg'},
 ,defaultFontType:{value:'arial'}
+//,defaultFontType:{value: 'MonoxilRegularRegular'}
 
         ,sourceObjects:{value:playZoneLandingPage.sourceObjects, updateValue:function(newValue){
 var newerValue = newValue
@@ -751,6 +753,7 @@ if(_.isString(options.loadingText) || _.isNumber(options.loadingText)){options.a
   else{options.attr['data-loading-text'] = buttonText}
 
 if(!options.css){options.css = {}}
+if(!_.isString(options.class)){options.class = ''}
 
 //remove any other possible images
 this.removeChild('image')
@@ -765,12 +768,11 @@ console.log('leftover button removed with id = ' + options.attr.id)
 
 
 var newButton = $('<button>').attr({
-  'class': "nonVendor"
-  ,'type':'button'
+'type':'button'
 }).css({'text-align':'center'}).css(options.css)
-//add classes if necessary
-if(_.isString(options.class)){newButton.addClass(options.class)}
-newButton.attr(options.attr).addClass('btn-custom unselectable')
+.addClass(self.css.bootstrapButton)
+.attr(options.attr)
+.addClass('unselectable' + ' ' + options.class)
 
 newButton.html(buttonText)
 
@@ -1098,7 +1100,7 @@ var newText = $('<p>').text(text).css({
   ,'pointer-events':'none'
   ,'display':'none'
   ,'font-weight':400
-}).addClass(self.css.unselectable + ' ' + self.css.nonVendor)
+}).addClass(self.css.unselectable + ' ' + self.css.noFat)
 
 if(_.isObject(options.css)){newText.css(options.css)}
   if(options.textAlign){newText.css('text-align', options.textAlign)}
@@ -3420,8 +3422,8 @@ var dealerButtonSource = self.permanentPreferences.sourceObjects.value.dealerBut
             //cashier Button width and height
 
             var cashierButtonSource =  self.permanentPreferences.sourceObjects.value.cashierButton
-           var minCashierButtonWidth = 132
-           var cashierButtonHeight = 52
+           var minCashierButtonTextWidth = 132
+
 
 //distance between upper buttons
 var distanceBetweenUpperButtonHitAreasY = 3
@@ -4090,7 +4092,7 @@ var seatDiv = self.arrayOfParentsOfStageAndOfContainerArray[playerSeatObject.sea
 $(seatDiv).append('<div id = \"' + divID + '\"></div>')
 
 playerSeatObject.bubbleChats[0].image = $('#'+divID)[0]
-$(playerSeatObject.bubbleChats[0].image).addClass(self.css.nonVendor + ' ' + self.css.unselectable)
+$(playerSeatObject.bubbleChats[0].image).addClass(self.css.noFat + ' ' + self.css.unselectable)
 
 self.positionItemImage(playerSeatObject.bubbleChats[0])
 
@@ -4173,24 +4175,36 @@ var actionButtonCanvasElement = self.arrayOfParentsOfStageAndOfContainerArray[ac
 var actionButtonClass = 'actionButton'
 var actionButtonCSS = {
       'font': '11px ' + self.permanentPreferences.defaultFontType.value
+      ,'position':'absolute'
 }
-var actionButtonOptions = {class:actionButtonClass, css:actionButtonCSS}
+var actionButtonOptions = {class:actionButtonClass, css:actionButtonCSS, attr:{
+  'class':self.css.bootstrapButton
+}}
+//actionButtonOptions.attr = {}
 
-actionButtonOptions.attr = {id:'sitIn'}
+actionButtonOptions.attr.id = 'sitIn'
 this.sitIn.addBootstrapButton('Sit In', actionButtonOptions)
 
-actionButtonOptions.attr = {id:'rebuy'}
+actionButtonOptions.attr.id ='rebuy'
 this.rebuy.addBootstrapButton ('Get Chips', actionButtonOptions)
 
-actionButtonOptions.attr = {id:'fold'}
+actionButtonOptions.attr.id = 'fold'
           this.fold.addBootstrapButton ('Fold', actionButtonOptions)
-          actionButtonOptions.attr = {id:'call'}
-          this.call.addBootstrapButton ('Call', actionButtonOptions)
-          actionButtonOptions.attr = {id:'check'}
+
+
+
+          actionButtonOptions.attr.id = 'check'
           this.check.addBootstrapButton ('Check', actionButtonOptions)
-          actionButtonOptions.attr = {id:'raise'}      
+
+
+actionButtonOptions.css['line-height'] = 1  
+          actionButtonOptions.attr.id = 'call'
+          this.call.addBootstrapButton ('Call', actionButtonOptions)
+
+          actionButtonOptions.attr.id = 'raise' 
           this.raise.addBootstrapButton ('Raise', actionButtonOptions)
-          actionButtonOptions.attr = {id:'bet'}
+
+          actionButtonOptions.attr.id = 'bet'
           this.bet.addBootstrapButton ('Bet', actionButtonOptions)
 
 
@@ -4227,7 +4241,7 @@ slide: function(e, ui) {
     }//when user uses mouse to slide the slider
 
 }
-var jquerySlider = $('<div>').addClass(self.css.nonVendor + ' ' + self.css.unselectable).css({
+var jquerySlider = $('<div>').addClass(self.css.noFat + ' ' + self.css.unselectable).css({
   'overflow':'visible'
   ,'margin':'0px'
 }).slider(sliderOptions)
@@ -4322,8 +4336,8 @@ $('#betSize').css({
 
 
        
-
- this.cashierButton = new this.Item(canvasWidth-80,0, minCashierButtonWidth, cashierButtonHeight, getZ('staticItems','buttons'))
+/*
+ this.cashierButton = new this.Item(canvasWidth-80,0, minCashierButtonTextWidth, cashierButtonHeight, getZ('staticItems','buttons'))
   
   var cashierButtonSpriteData = {
 
@@ -4338,6 +4352,7 @@ $('#betSize').css({
          mouseDown: 2
      }
 }
+*/
 /*
 var spriteSheet = new createjs.SpriteSheet(cashierButtonSpriteData)
 this.cashierButton.bitmapAnimation = new createjs.BitmapAnimation(spriteSheet)
@@ -4830,10 +4845,10 @@ var disableAutoRebuyFontSize = 9
 var disableAutoRebuyTextSizeAndFont = disableAutoRebuyFontSize + 'px '+ self.permanentPreferences.defaultFontType.value
 var cashierButtonFontSize = 11
 var cashierButtonTextSizeAndFont = cashierButtonFontSize +'px ' + self.permanentPreferences.defaultFontType.value
-var cashierButtonHeight = 23
+var cashierButtonHeight = 28
 var cashierButtonTextColor = 'white'
 var cashierButtonColor = 'blue'
-var cashierRatioOfTextWidthToButtonWidth = 0.70
+var cashierRatioOfTextWidthToButtonWidth = 0.88
 //var cashierWindowYOffsetFromInnerCashier = 15 //calculated using middle of bottom of grayox and bottom of innercahiser
 //var distanceBetweenCashierButtons = innerCashierWidth / 9
 
@@ -4842,28 +4857,52 @@ var cashierButtonOptions = {
   class:'cashierButton'
   ,css:{
   'font': cashierButtonTextSizeAndFont
-      , 'color' : cashierButtonTextColor
+//      , 'color' : cashierButtonTextColor
   }//css
+  ,attr:{
+  //  'class':self.css.bootstrapButton
+  }
   ,onClick :function(e){
   console.log(e)
   }//onClick function
 }//end options for creating bootstrap buttons
 
+
+
+//enableAutoRebuyTextWidth
+/*
+//var enableAutoRebuyTextWidth = self.getStringWidth(enableAutoRebuyText, cashierButtonTextSizeAndFont)/cashierRatioOfTextWidthToButtonWidth
+if(enableAutoRebuyTextWidth > htmlTextWidth){var enableAutoRebuyWidth = enableAutoRebuyTextWidth}
+  else{var enableAutoRebuyWidth = htmlTextWidth }
+*/
+//set autorebuy equal to the textwidth
+    var enableAutoRebuyWidth = htmlTextWidth + radioWidth
+
+this.cashier.enableAutoRebuy = new this.Item (radioX, autoRebuyRadioY + radioHeight/2 - cashierButtonHeight/2, enableAutoRebuyWidth, textBoxHeight, getZ('cashier', 'buttons')) 
+ this.cashier.enableAutoRebuy.addBootstrapButton(enableAutoRebuyText, cashierButtonOptions)
+
+ var cashierButtonSizeData = getDisplayObjectPositionAndSizeData(this.cashier.enableAutoRebuy.image, {position:false})
+var cashierButtonExtraWidth = cashierButtonSizeData.extraWidth
+var cashierButtonExtraHeight = cashierButtonSizeData.extraHeight
+//this.cashier.enableAutoRebuy.size.x = this.cashier.enableAutoRebuy.size.x + cashierButtonExtraWidth
+//this.cashier.enableAutoRebuy.size.y = this.cashier.enableAutoRebuy.size.y + cashierButtonExtraHeight
+//this.cashier.enableAutoRebuy.positionChild('image',{position:true, size:true})
+
+$(this.cashier.enableAutoRebuy.image).button()
+
 var disableAutoRebuyOptions = {
-  class: 'cashierButton'
+  class: cashierButtonOptions.class
   ,css:{
   'font': disableAutoRebuyTextSizeAndFont
-      , 'color' : cashierButtonTextColor
+  ,'line-height': (cashierButtonHeight - cashierButtonExtraHeight)/2 +'px'
+ // ,'line-height': '50%'
+    //  , 'color' : cashierButtonTextColor
 
   }//css
   ,attr:{id:'disableAutoRebuy'}
 }
 
-//enableAutoRebuyWidth
-var enableAutoRebuyWidth = self.getStringWidth(enableAutoRebuyText, cashierButtonTextSizeAndFont)/cashierRatioOfTextWidthToButtonWidth
-this.cashier.enableAutoRebuy = new this.Item (radioX, autoRebuyRadioY, enableAutoRebuyWidth, cashierButtonHeight, getZ('cashier', 'buttons')) 
- this.cashier.enableAutoRebuy.addBootstrapButton(enableAutoRebuyText, cashierButtonOptions)
-$(this.cashier.enableAutoRebuy.image).button()
+
 
 //click events
 $(this.cashier.enableAutoRebuy.image).off('click')
@@ -4873,12 +4912,12 @@ e.stopPropagation() //stop propagation and other bullshit
 })//autorebuy button onclick event
 
 //calculate button width
-var addChipsWidth = self.getStringWidth(addChipsText, cashierButtonTextSizeAndFont)/cashierRatioOfTextWidthToButtonWidth
-var cancelWidth = self.getStringWidth(cancelText, cashierButtonTextSizeAndFont)/cashierRatioOfTextWidthToButtonWidth
-var disableAutoRebuyWidth = self.getStringWidth('Auto-Rebuy', disableAutoRebuyTextSizeAndFont)/cashierRatioOfTextWidthToButtonWidth
+var addChipsTextWidth = self.getStringWidth(addChipsText, cashierButtonTextSizeAndFont)/cashierRatioOfTextWidthToButtonWidth
+var cancelTextWidth = self.getStringWidth(cancelText, cashierButtonTextSizeAndFont)/cashierRatioOfTextWidthToButtonWidth
+var disableAutoRebuyTextWidth = self.getStringWidth('Auto-Rebuy', disableAutoRebuyTextSizeAndFont)/cashierRatioOfTextWidthToButtonWidth
 
-if (addChipsWidth >= cancelWidth){var minCashierButtonWidth = addChipsWidth}
-else{var minCashierButtonWidth = cancelWidth} 
+if (addChipsTextWidth >= cancelTextWidth){var minCashierButtonTextWidth = addChipsTextWidth}
+else{var minCashierButtonTextWidth = cancelTextWidth} 
 
 //get cashierButtonX and Y
 var innerCashierBottomY = innerCashierY + innerCashierHeight
@@ -4886,16 +4925,18 @@ var cashierButtonY = innerCashierBottomY - grayBoxOffsetBottom + (grayBoxOffsetB
 
 //create items, and we will change the X and width values later
 
-  this.cashier.disableAutoRebuy =  new this.Item (0, cashierButtonY, 0,cashierButtonHeight, getZ('cashier','buttons') , {messages:['set_flag','autorebuy',false]}) 
+  this.cashier.disableAutoRebuy =  new this.Item (0, cashierButtonY, disableAutoRebuyTextWidth, cashierButtonHeight, getZ('cashier','buttons') , {messages:['set_flag','autorebuy',false]}) 
  this.cashier.disableAutoRebuy.addBootstrapButton(disableAutoRebuyText, disableAutoRebuyOptions)
 
-      this.cashier.addChips =  new this.Item (0, cashierButtonY, 0,cashierButtonHeight, getZ('cashier','buttons')) 
+
+
+      this.cashier.addChips =  new this.Item (0, cashierButtonY, addChipsTextWidth, cashierButtonHeight, getZ('cashier','buttons')) 
  this.cashier.addChips.addBootstrapButton(addChipsText, cashierButtonOptions)
   $(this.cashier.addChips.image).button()
          $(this.cashier.addChips.image).off('click')
         $(this.cashier.addChips.image).on('click', function(e) {self.events.onAddChipsClick(e)})
       
-        this.cashier.cancel =  new this.Item (0, cashierButtonY, 0,cashierButtonHeight, getZ('cashier','buttons')) 
+        this.cashier.cancel =  new this.Item (0, cashierButtonY, cancelTextWidth  ,cashierButtonHeight, getZ('cashier','buttons')) 
       this.cashier.cancel.addBootstrapButton(cancelText, cashierButtonOptions)  
       $( this.cashier.cancel.image).off('click')
 $( this.cashier.cancel.image).on('click', function(e){self.hideCashier()})
@@ -4906,7 +4947,7 @@ $( this.cashier.cancel.image).on('click', function(e){self.hideCashier()})
      $( this.cashier.disableAutoRebuy.image).on('contextmenu', function(e){return false})
 
 self.images.positionCashierButtons = function(displayDisableAutoRebuy, theseOptions){
-console.log('positioncashier buttons called displayDisableAutoRebuy = '+displayDisableAutoRebuy)
+console.log('positioncashier buttons called extraWidthFat = ' + cashierButtonExtraWidth)
 
 if(!theseOptions){var options = {}}
   else{var options = _.clone(theseOptions)}
@@ -4920,9 +4961,11 @@ if(displayDisableAutoRebuy === true || displayDisableAutoRebuy === false){goingT
 else if($(this.cashier.disableAutoRebuy.image).css('display') === 'none'){var disableAutoRebuyDisplayed = false}
  else{var disableAutoRebuyDisplayed = true}
 
-var cashierButtonWidth = minCashierButtonWidth; var addChipsX; var cancelX; 
+var cashierButtonWidth = minCashierButtonTextWidth + cashierButtonExtraWidth; var addChipsX; var cancelX; 
+var disableRebuyWidth = disableAutoRebuyTextWidth + cashierButtonExtraWidth
+
 //get cashierWindow location
-var cashierWindowLocation = getDisplayObjectPositionData(self.images.cashier.window.image)
+var cashierWindowLocation = getDisplayObjectPositionAndSizeData(self.images.cashier.window.image, {size:false})
 var cashierOffsetX = cashierWindowLocation.x - self.images.cashier.window.position.x
 var cashierOffsetY = cashierWindowLocation.y - self.images.cashier.window.position.y
 
@@ -4930,8 +4973,8 @@ var cashierOffsetY = cashierWindowLocation.y - self.images.cashier.window.positi
 
 if(goingToDisplayDisableAutoRebuy === true){
 
-//update width
-if (cashierButtonWidth < disableAutoRebuyWidth){var cashierButtonWidth = disableAutoRebuyWidth}
+//update widthd
+if (cashierButtonWidth < disableRebuyWidth){var cashierButtonWidth = disableAutoRebuyTextWidth}
 
 //console.log('dispaying disableautorebuy, buttonwidth = ' + cashierButtonWidth)
 //update distance between buttons
@@ -4954,13 +4997,12 @@ else{
 //console.log('hiding disableautorebuy, buttonwidth = ' + cashierButtonWidth)
 stagesToUpdate.push(self.hideChildren(this.cashier.disableAutoRebuy, options))
 
-var distanceBetweenCashierButtons = (innerCashierWidth - minCashierButtonWidth*2)/3
+var distanceBetweenCashierButtons = (innerCashierWidth - minCashierButtonTextWidth*2)/3
 
 var addChipsX =  cashierWindowX  + cashierWindowWidth/2 - distanceBetweenCashierButtons/2 - cashierButtonWidth
 var cancelX = cashierWindowX  + cashierWindowWidth/2 + distanceBetweenCashierButtons/2
 
 }//if we gonna NOT display autorebuy option
-
 
 
 this.cashier.addChips.position.x = addChipsX
@@ -5358,14 +5400,14 @@ for (var i = 0 ; i <  this.seats.length; i++) {
 
 self.createPreactionOptionItems()
 
-//insert class of nonVendor to all items that have been custom created by us
-var allNonVendorJqueryObject = self.jQueryObjects.pokerTableDiv.find("*")
-//console.log(allNonVendorJqueryObject)
-allNonVendorJqueryObject.addClass(self.css.nonVendor)
+//insert class of noFat to all items that have been custom created by us
+//var allnoFatJqueryObject = self.jQueryObjects.pokerTableDiv.find("*")
+//console.log(allnoFatJqueryObject)
+//allnoFatJqueryObject.addClass(self.css.noFat)
 
 /*
-self.jQueryObjects.chatBoxDiv.find("*").removeClass(self.css.nonVendor)
-self.jQueryObjects.chatBoxDiv.removeClass(self.css.nonVendor)
+self.jQueryObjects.chatBoxDiv.find("*").removeClass(self.css.noFat)
+self.jQueryObjects.chatBoxDiv.removeClass(self.css.noFat)
 */
 
 console.log('all createjs images have been created')
@@ -5528,13 +5570,13 @@ $('#'+newDivID).append('<canvas id = '+'\''+newCanvasID+'\'' + ' width = '+'\''+
 //set proper z-index
 //$('#'+newCanvasID).css('z-index',parseInt(newCanvasIDNumber*zIndexesPerCanvas)+initialZIndex)
 //$('#'+newCanvasID).css('z-index',initialZIndex)
-$('#'+newCanvasID).addClass(canvasClass + ' ' + self.css.unselectable + ' ' + self.css.nonVendor)
+$('#'+newCanvasID).addClass(canvasClass + ' ' + self.css.unselectable + ' ' + self.css.noFat)
 //$('#'+newCanvasID).css('z-index',0)
 $('#'+newDivID).css({
   'z-index': newCanvasIDNumber*zIndexesPerDiv
 ,'width':canvasWidth
 ,'height':canvasHeight
-  }).addClass(self.css.nonVendor)
+  }).addClass(self.css.noFat)
 
 }//if we want to create a new canvas
 
@@ -5867,12 +5909,9 @@ if(options.position !== false){
 }
 
 if(options.size === true || (childType === 'image' && options.size !== false) ){
-  newLocationData.width = this.size.x
+ newLocationData.width = this.size.x
 newLocationData.height = this.size.y
 }
-
-
-
 
 
  // console.log('setting display object position through positionitemimage')
@@ -5896,9 +5935,12 @@ if(childType === 'text'){var zIndex = this.position.z.container + 1}
 
 if(_.isElement(child) && _.isNumber(newLocationData.x) && _.isNumber(newLocationData.y)){
 
-var location = getDisplayObjectPositionData(child)
+var location = getDisplayObjectPositionAndSizeData(child, {size:false})
+
+
 if(location.x > this.position.x + 2 || location.x < this.position.x - 2){console.log(location);console.log(this);throw 'location not matching'}
   if(location.y > this.position.y+ 2 || location.x < this.position.x - 2 ){console.log(location);console.log(this);throw 'location not matching'}
+
 
 }
 
@@ -5952,13 +5994,13 @@ this.getSeatImageIndex  = function (seatNum, seatNumberVariableName){
 var itemCopyWithOnlyLocationData = {}
 if(item.image){
 itemCopyWithOnlyLocationData.image = {}
-var itemImageLocation = getDisplayObjectPositionData(item.image)
+var itemImageLocation = getDisplayObjectPositionAndSizeData(item.image, {size:false})
   itemCopyWithOnlyLocationData.image.x = itemImageLocation.x
   itemCopyWithOnlyLocationData.image.y = itemImageLocation.y
 }
 if(item.text){
 itemCopyWithOnlyLocationData.text={}
-var itemTextLocation = getDisplayObjectPositionData(item.text)
+var itemTextLocation = getDisplayObjectPositionAndSizeData(item.text, {size:false})
   itemCopyWithOnlyLocationData.text.x = itemTextLocation.x
   itemCopyWithOnlyLocationData.text.y = itemTextLocation.y
 }
@@ -6031,8 +6073,8 @@ if(!itemA.image && !itemB.image && _.isObject(itemA.text) && _.isObject(itemB.te
 itemA.position.y = itemB.position.y
 if(_.isString(itemB.position.displayCSS)){itemA.position.displayCSS = itemB.position.displayCSS}
 
-var itemAPosition = getDisplayObjectPositionData(itemA.text)
-var itemBPosition = getDisplayObjectPositionData(itemB.text)
+var itemAPosition = getDisplayObjectPositionAndSizeData(itemA.text, {size:false})
+var itemBPosition = getDisplayObjectPositionAndSizeData(itemB.text, {size:false})
  var deltaX = itemBPosition.x - itemAPosition.x; 
  var deltaY = itemBPosition.y - itemAPosition.y
  options.permanent = false //not goint to adjust position values with setitem function
@@ -7426,8 +7468,7 @@ var defaultPositions  =  {}
 //console.log('animationInfo = ');console.log(animationInfo)
 //console.log('imageOrText=  ');console.log(imageOrText)
 
-  var currentPosition =  getDisplayObjectPositionData(imageOrText)
-
+  var currentPosition =  getDisplayObjectPositionAndSizeData(imageOrText, {size:false})
 
 //INITIAL POSITIONS
      if(animationInfo.movementType === 'relative'){
@@ -7528,10 +7569,8 @@ if(options.movementType === 'relative' && _.isObject(item.text) && !item.image &
  // console.log(item.text.text + 'going to be moved ' + newX +' to the right and '+ newY + ' down')
 }
 
-
-if(_.isObject(item.image) ){var hasImage = true;  var previousImageLocation = getDisplayObjectPositionData(item.image)}
-  if(_.isObject(item.text) ){var hasText = true;  var previousTextLocation = getDisplayObjectPositionData(item.text)}
-
+if(_.isObject(item.image) ){var hasImage = true;  var previousImageLocation = getDisplayObjectPositionAndSizeData(item.image, {size:false})}
+  if(_.isObject(item.text) ){var hasText = true;  var previousTextLocation = getDisplayObjectPositionAndSizeData(item.text, {size:false})}
 
 if(!_.isNumber(newX)){
 if(hasImage){var deltaX = item.position.x - previousImageLocation.x}
@@ -7697,44 +7736,101 @@ return true
 else if (_.isElement(imageOrText)){//if html element
 //console.log('display object position set as element')
 
-var data = getDisplayObjectPositionData(imageOrText, options)
+var getDataOptions = _.clone(options)
+getDataOptions.position = false
+
+var data = getDisplayObjectPositionAndSizeData(imageOrText, getDataOptions)
 
 var cssOptions = {}
 
-if(_.isNumber(x)){cssOptions['left'] = x + data.extraWidth/2}
-if(_.isNumber(y)){cssOptions['top'] = y + data.extraHeight/2}
+if(_.isNumber(x)){cssOptions['left'] = x /*- data.paddingWidth/2 - data.borderWidth/2*/ ; var setPosition = true}
+if(_.isNumber(y)){cssOptions['top'] = y /*- data.paddingHeight/2 - data.borderHeight/2*/; var setPosition = true}
+if(setPosition){cssOptions['position'] = 'absolute'}
 if(_.isNumber(newOuterWidth)){cssOptions['width'] = (newOuterWidth - data.extraWidth) + 'px'}
 if(_.isNumber(newOuterHeight)){cssOptions['height'] = (newOuterHeight - data.extraHeight) + 'px'}
 
     $(imageOrText).css(cssOptions)
 
-if(_.isNumber(x) && _.isNaN(parseInt($(imageOrText).css('left')))){console.log(x);console.log(imageOrText)}
-if(_.isNumber(y) && _.isNaN(parseInt($(imageOrText).css('left')))){console.log(y);console.log(imageOrText)}
+
+
+if(_.isNumber(x)){
+  var left = parseInt($(imageOrText).css('left'))
+  if(_.isNaN(left) || left < x - 12 || x > x + 12 || left < 0){
+    console.log('cssleft =  ' + left + ', assigned x = ' + x)
+    console.log(imageOrText)
+    console.log(cssOptions)
+    throw 'getDisplayObjectPositionAndSizeData failed X'}
+}
+if(_.isNumber(y)){
+  var top = parseInt($(imageOrText).css('top'))
+  if(_.isNaN(top) || top < y - 12 || top > y + 12 || top < 0){
+    console.log('csstop =  ' + top + ', assigned y = ' + y)
+    console.log(imageOrText)
+    console.log(cssOptions)
+    throw'getDisplayObjectPositionAndSizeData failed Y'}
+
+}
 
 }//if html element
 
 }//function to set displayobject position
 
-var getDisplayObjectPositionData = function(imageOrText){
+var getDisplayObjectPositionAndSizeData = function(imageOrText, options){
+if(!options){var options = {}}
+
 if(imageOrText instanceof createjs.DisplayObject){
 //  console.log('getting location of nonelement displayobejct posiion')
 var data =  {
   x:imageOrText.x
   ,y:imageOrText.y
   ,extraWidth:0
+  ,paddingWidth:0
+  ,marginWidth:0
+  ,borderWidth:0
+   ,contentWidth:0
+
   ,extraHeight:0
+  ,contentHeight:0
+  ,paddingHeight:0
+  ,borderHeight:0
+  ,marginHeight:0
+
 }
 
 }
 else if (_.isElement(imageOrText)){// var location = {x:  parseFloat($(imageOrText).css('left')), y: parseFloat($(imageOrText).css('top'))}
-//var topLeftLocation  = $(imageOrText).position()
-//var location = {x:topLeftLocation.left , y:topLeftLocation.top}
-var getExtraWidthAndHeightOfElement = function(element){
 
+var data = {}
+var element = imageOrText
+
+if(options.position !== false){
+
+data.x = parseFloat($(element).css('left'))
+data.y = parseFloat($(element).css('top'))
+
+if(_.isNaN(data.x) || _.isNaN(data.y)){var invalidLocation = true}//check to see if our location is invalid
+
+}
+
+var elementClass = $(element).attr('class')
+
+//CHECK TO SEE IF ITS NON VENDOR
+if(_.isString(elementClass) && elementClass.indexOf(self.css.noFat) !== -1){
+  data.extraWidth = 0
+ // data.outerWidth = 0
+//data.contentWidth = 0
+  data.extraHeight = 0
+ // data.outerHeight = 0
+//data.contentHeight = 0
+  var foundSize = true
+}
+
+if(invalidLocation || (options.size !== false || !foundSize)){
+//'DISPLAY' the element in order to do get data on it from jquery functions
 var initialDisplay = $(element).css('display')
 var initialPointerEvents = $(element).css('pointer-events')
-var initialX = $(element).css('left')
-var initialY = $(element).css('top')
+//var initialX = $(element).css('left')
+//var initialY = $(element).css('top')
 if(initialDisplay === 'none'){
 //move item way off screen
 $(element).css({
@@ -7744,13 +7840,37 @@ $(element).css({
 //,'top':-999999
 
 })
+}//if we need to 'DISPLAY' the element
+data.outerWidth = $(element).outerWidth(true)
+data.contentWidth = $(element).width()
+data.extraWidth  =  data.outerWidth - data.contentWidth 
+//data.paddingWidth = $(element).innerWidth() - data.contentWidth 
+//data.marginWidth = data.outerWidth - $(element).outerWidth()
+
+data.outerHeight = $(element).outerHeight(true)
+data.contentHeight = $(element).height()
+data.extraHeight =  data.outerHeight - data.contentHeight
+//data.paddingHeight = $(element).innerHeight() - data.contentHeight
+//data.marginHeight = data.outerHeight - $(element).outerHeight()
+
+if(invalidLocation){
+  console.log('nan of get display object element position, using jquery position function')
+  console.log($(element) )
+  console.log(data)
+
+//  throw 'nanof get display object position'
+
+var location = $(element).position()
+console.log(location)
+if(_.isNaN(data.x)){data.x = location.left - data.extraWidth/2}
+//else if(left !== location.left){console.log(location);console.log(left); throw 'position.left and cssleft dont match'}
 
 
-}//if we need to "display" to calculate width/height
+if(_.isNaN(data.y)){data.y = location.top  - data.extraHeight/2}
+//else if(data.y !== location.top){console.log(location);console.log(top); throw 'position.top and csstop dont match'}
 
-var extraWidth  = $(element).outerWidth(true) - $(element).width()
-var extraHeight = $(element).outerHeight(true) - $(element).height()
-//var position = $(element).position()
+
+} //if x or y is not a number/or is nan
 
 if(initialDisplay === 'none' || initialPointerEvents !== 'none'){
 
@@ -7759,56 +7879,29 @@ $(element).css({
   ,'pointer-events':initialPointerEvents
  // ,'left':initialX
 //,'top':initialY
-,
+
 })
 
 
 }//restore the element to its original position and visibility
 
+}//if we need to display, then hide the item
 
-return {
-  extraWidth:extraWidth, extraHeight:extraHeight
- // ,   x:position.left, y:position.top
+
+if(_.isNaN(data.x) || _.isNaN(data.y) || _.isNaN(data.extraWidth) || _.isNaN(data.extraHeight) 
+  || !_.isNumber(data.extraWidth) || !_.isNumber(data.extraHeight)){
+
+console.log('invalidlocation = ' + invalidLocation)
+console.log('foundsize = ' + foundSize)
+console.log(options)
+console.log(data)
+console.log(element)
+//console.error('failed at getting position data')
+throw 'failed at getting position data'
 }
-
-}//function that gets extra width and height of element
-
-/*
-var extraFat = getExtraWidthAndHeightOfElement(imageOrText)
-var data = {
-  x:  parseFloat($(imageOrText).css('left')) - extraFat.width/2
-,y: parseFloat($(imageOrText).css('top')) - extraFat.height/2
-,extraWidth:extraFat.width
-,extraHeight:extraFat.height
-
-}
-*/
-
-var data = getExtraWidthAndHeightOfElement(imageOrText)
-
-if(!_.isObject(data)){console.log('getDisplayObjectPositionData error');console.log(imageOrText);throw''}
-
-
-//if(!data.x && !data.y || true === true){
-  data.x = parseFloat($(imageOrText).css('left')) - data.extraWidth/2
-  data.y = parseFloat($(imageOrText).css('top')) - data.extraHeight/2
-//}
-//else{console.log('getDisplayObjectPositionData retrieved using jquery .position() function')}
-
-
-if(_.isNaN(data.x) || _.isNaN(data.y)){
-  console.log('nan of get display object element position')
-  console.log($(imageOrText) )
-  console.log(data)
-  console.log($(imageOrText).css('left'))
-   console.log($(imageOrText).css('top'))
-//  throw 'nan of get display object position'
-}
-
 
 
 }//if element
-//console.log(imageOrText);console.log(location)
 
 else if(_.isObject(imageOrText)){
 
@@ -7816,7 +7909,17 @@ var data =  {
   x:imageOrText.x
   ,y:imageOrText.y
   ,extraWidth:0
+  ,paddingWidth:0
+  ,marginWidth:0
+  ,borderWidth:0
+   ,contentWidth:0
+
   ,extraHeight:0
+  ,contentHeight:0
+  ,paddingHeight:0
+  ,borderHeight:0
+  ,marginHeight:0
+
 }
 
 }
@@ -9996,7 +10099,7 @@ var seatDiv = self.arrayOfParentsOfStageAndOfContainerArray[self.images.seats[ch
 $(seatDiv).append('<div id = \"' + divID + '\"></div>')
 
 playerSeatObject.bubbleChatBase.image = $('#'+divID)[0]
-$(playerSeatObject.bubbleChatBase.image).addClass(self.css.nonVendor)
+$(playerSeatObject.bubbleChatBase.image).addClass(self.css.noFat)
 
 console.log(playerSeatObject.bubbleChatBase)
 self.positionItemImage(playerSeatObject.bubbleChatBase)
@@ -11880,7 +11983,7 @@ checkBoxCSS.color =  messageInfo.checkBoxTextColor
 //TEXT of the checkbox
 var jqueryCheckBoxText = $('<p>').css(checkBoxCSS).addClass(self.css.unselectable)
 
-jqueryCheckBoxText.text(messageInfo.checkBoxText)
+jqueryCheckBoxText.html(messageInfo.checkBoxText+'<br>')
 
 
 
@@ -11901,7 +12004,7 @@ bootstrapOptions.onClick = messageInfo.okayEvent
 messageBoxItems.okay.addBootstrapButton(messageInfo.okayText, bootstrapOptions)
 $(messageBoxItems.okay.image).attr('id', self.css.messageBoxButton)
 //increase width and height of item
-var okayPositionData = getDisplayObjectPositionData(messageBoxItems.okay)
+var okayPositionData = getDisplayObjectPositionAndSizeData(messageBoxItems.okay, {position:false})
 messageBoxItems.okay.size.x = messageBoxItems.okay.size.x + okayPositionData.extraWidth
 messageBoxItems.okay.size.y = messageBoxItems.okay.size.y + okayPositionData.extraHeight
 
@@ -11922,7 +12025,7 @@ messageBoxItems.cancel.addBootstrapButton(messageInfo.cancelText, bootstrapOptio
 $(messageBoxItems.cancel.image).attr('id', self.css.messageBoxButton)
 
 //increase width and height of item
-var cancelPositionData = getDisplayObjectPositionData(messageBoxItems.cancel)
+var cancelPositionData = getDisplayObjectPositionAndSizeData(messageBoxItems.cancel, {position:false})
 messageBoxItems.cancel.size.x = messageBoxItems.cancel.size.x + cancelPositionData.extraWidth
 messageBoxItems.cancel.size.y = messageBoxItems.cancel.size.y + cancelPositionData.extraHeight
 
@@ -12173,7 +12276,7 @@ var checkBoxX = messageBoxWindowX + messageBoxWindowWidth/2 - checkBoxWidth/2
 var getCheckBoxY = function(){
   //first check for the bottom of the messageBoxText
 var messageBoxMessage = messageBoxItems.message
-var messageBoxTextBottom = getDisplayObjectPositionData(messageBoxMessage.text)  + messageBoxMessage.text.getMeasuredHeight()
+var messageBoxTextBottom = getDisplayObjectPositionAndSizeData(messageBoxMessage.text, {size:false}).x  + messageBoxMessage.text.getMeasuredHeight()
 
 var defaultCheckBoxY = messageBoxItems.okay.position.y - maxDistanceFromButtonsToCheckOption -  messageBoxItems.checkBoxUnchecked.size.y
 
