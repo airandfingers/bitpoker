@@ -281,8 +281,7 @@ module.exports = (function () {
   };
 
   TableSchema.methods.getTableState = function(user, hand_include, cb) {
-    var self = this
-      , table_state;
+    var self = this;
     async.parallel({
       messages: function(acb) {
         Message.getMessagesByHandNum(self.getCurrentHand().hand_num, acb);
@@ -290,26 +289,23 @@ module.exports = (function () {
     , balance: function(acb) {
         user.checkBalance('funbucks', acb);
       }
-    , table_state: function(acb) {
-        var username = user.username
-          , player = self.players[username];
-        table_state = self.getCurrentHand().serialize(username, hand_include);
-        _.extend(table_state, {
-          table_name: self.name
-        , preferences: user.preferences
-        });
-        if (player instanceof Player) {
-          table_state.num_chips = player.num_chips;
-        }
-        else {
-          console.error('No player currently exists for username', username);
-        }
-        acb();
-      }
     }, function(err, results) {
       if (err) { 
         console.error('Error while looking up messages or balance:', err);
         return cb(err);
+      }
+      var username = user.username
+        , player = self.players[username]
+        , table_state = self.getCurrentHand().serialize(username, hand_include);
+      _.extend(table_state, {
+        table_name: self.name
+      , preferences: user.preferences
+      });
+      if (player instanceof Player) {
+        table_state.num_chips = player.num_chips;
+      }
+      else {
+        console.error('No player currently exists for username', username);
       }
       //Add messages field to table_state object
       table_state.messages = results.messages;
