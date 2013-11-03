@@ -645,7 +645,7 @@ module.exports = (function () {
     else if (add_chips_info.min === -1) {
       error = 'add_chips message received when player after -1 add_chips_info!';
     }
-    // validate the amount and that a get_add_chips_info was sent
+    // validate the amount
     if (! _.isNumber(amount)) {
       error = 'add_chips message received with non-Number amount: ' + amount;
     }
@@ -808,7 +808,9 @@ module.exports = (function () {
       value = game.MAX_CHIPS;
     }
     this.flags.autorebuy = value;
-    this.autoRebuy();
+    if (! this.in_hand) {
+      this.autoRebuy();
+    }
     return value;
   };
 
