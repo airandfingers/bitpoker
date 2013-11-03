@@ -381,6 +381,7 @@ module.exports = (function () {
     });
     async.series(actions, function onComplete() {
       console.log('Pending actions completed for', self.username, actions.length);
+      console.log('sitting out?', self.sitting_out, ', seat:', self.seat, ', idle:', self.idle);
       if (! self.sitting_out && _.isNumber(self.seat)) {
         self.autoRebuy();
         if (self.idle) {
@@ -692,7 +693,7 @@ module.exports = (function () {
     else if (num_chips < sent_min) {
       error = 'cannot add fewer than ' + sent_min + ' chips!';
     }
-    else if (num_chips > num_to_max) {
+    else if (num_chips > num_to_max && num_chips !== sent_min) {
       //self.sendMessage('error', 'cannot add more than ' + num_to_max + ' chips!');
       console.error('cannot add more than ' + num_to_max + ' chips, so limiting to ' + num_to_max);
       num_chips = num_to_max;
@@ -739,6 +740,7 @@ module.exports = (function () {
 
     var stack = self.chips
       , chips_to_add = auto_rebuy_amount - stack;
+    console.log('autoRebuy called for', self.username, auto_rebuy_amount, stack, chips_to_add);
 
     if (chips_to_add <= 0) {
       // stack is already >= auto_rebuy_amount
@@ -746,6 +748,7 @@ module.exports = (function () {
     }
 
     self.socket.user.fetch(function(fetch_err, user) {
+      console.log('user fetched!', fetch_err, user);
       if (fetch_err) {
         console.error('error while looking up user: ' + fetch_err.message || fetch_err);
         return;
