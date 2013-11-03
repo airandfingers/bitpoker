@@ -460,7 +460,7 @@ stageContainers.staticItems = ['background', 'table', 'buttons chat', null, 'hol
 
 stageOptionData.animatedAndMiddleTableItems = _.clone(disabledOptions)
 stageOptionData.animatedAndMiddleTableItems.newCanvas = true
-stageContainers.animatedAndMiddleTableItems = ['dealerChip', 'chips', null, 'community',  'chipAnimation', null,  'cardAnimation']
+stageContainers.animatedAndMiddleTableItems = ['dealerChip',  'community', 'chips', null, 'chipAnimation', null,  'cardAnimation']
 divOptionData.animatedAndMiddleTableItems = {mouseDisabled:true}
 
 stageOptionData.tableChatFull = _.clone(stageOptionData.staticItems)
@@ -556,17 +556,19 @@ this.images.sourceObjects.cardObjectParent = {}
        //     call: 'img/call.jpg',
        //     check: 'img/check.jpg',
        //     raise: 'img/raise.jpg',
-            cardBackFileNameWithoutExtension: 'back',
+            cardBackFileNameWithoutExtension: 'back'
+            ,cardSpriteFileNameWithoutExtension:'sprite'
        //     seat: 'img/empty_seat.jpg',
       //      blankSeat : 'img/blank_seat.jpg',
        //     bet: 'img/bet.jpg',
       //      community: 'img/card_back.jpg',
      //       fold: 'img/fold.jpg',
       //      sideButton :'img/side_button.jpg',
-          background: 'img/jpoker_bg_brown.png',
+         , background: 'img/jpoker_bg_brown.png',
       //   background:'img/gray_bg.jpg',
             table: 'img/jpoker_table.png',
      //       fourColorDeck: 'img/sheet4color.png',
+
             dealerButton: 'img/dealer_button_red.png',
             verticalSlider: 'img/raise_slider.png',
             horizontalSlider: 'img/small_slider_bg.png',
@@ -772,7 +774,7 @@ this.addElement(newButton[0], 'image', options)
 }//addBootstrapButton 
 
 
- this.images.itemAsBitmap = function (item,source, options){
+ this.images.itemAsBitmap = function (item, source, options){
   //console.log(this.itemAsBitmap.caller)
 if(!options){var options = {}}
   var update = options.update
@@ -805,7 +807,7 @@ console.log('itemAsBitmap passed non source paramater');console.log(source insta
 }
   
 item.positionChild('image', {update:false}) 
-    item.image.parentOfImageObject = item
+    item.image.parentItem = item
     if(item.messages){        item.image.addEventListener('click', self.events.onButtonClick)    }
  stagesToUpdate.push(  self.easelJSDisplayObjectChanged(item))
 
@@ -879,7 +881,7 @@ else{
  item.image = new createjs.Shape()
   self.positionItemImage(item,{update:false})
 item.drawRoundedRectangle(fillColor)
-item.image.parentOfImageObject = item
+item.image.parentItem = item
 item.fillColor = fillColor
 if(item.messages){
     item.image.addEventListener('click', self.events.onButtonClick )
@@ -890,7 +892,7 @@ if(item.messages){
                   this.images.drawSeat = function (parent, borderColor, fillColor, middleDividerColor, options){
           if(parent.image instanceof createjs.Shape === false){
                    parent.image = new createjs.Shape()
-              parent.image.parentOfImageObject = parent
+              parent.image.parentItem = parent
           }
 
 
@@ -998,55 +1000,52 @@ return stage
       }
 
 
-this.images.Item.prototype.addItemText = function( text, sizeAndFont, color, options){
-self.images.addItemText (this, text, sizeAndFont, color, options)
+this.images.Item.prototype.addText = function( text, sizeAndFont, color, options){
 
-}
 
-            //for example: (parentOfImageObject, fold, "13px " + self.permanentPreferences.defaultFontType.value, "#100D08")
-            this.images.addItemText = function(parentOfImageObject, text, sizeAndFont, color, options){
+ var addItemText = function(item, text, sizeAndFont, color, options){
                 if(!options){var options = {}}
 
 //remove any previous html texts that might be here
-if(_.isElement(parentOfImageObject.text)){$(parentOfImageObject.text).remove()}
+if(_.isElement(item.text)){$(item.text).remove()}
 
 if(options.html !== true){
-   if(parentOfImageObject.text instanceof createjs.Text !== true) {parentOfImageObject.text = new createjs.Text('', '', '')}
+   if(item.text instanceof createjs.Text !== true) {item.text = new createjs.Text('', '', '')}
 
-parentOfImageObject.text.text = text
-parentOfImageObject.text.color = color
-parentOfImageObject.text.font = sizeAndFont
+item.text.text = text
+item.text.color = color
+item.text.font = sizeAndFont
 
 if(options.textAlign === 'left'){
-parentOfImageObject.text.x = parentOfImageObject.position.x
-parentOfImageObject.text.textAlign = options.textAlign
+item.text.x = item.position.x
+item.text.textAlign = options.textAlign
 
 }//if left align
 else{//center align by default
-parentOfImageObject.text.x = parentOfImageObject.position.x + parentOfImageObject.size.x/2 
-  parentOfImageObject.text.textAlign = 'center'
+item.text.x = item.position.x + item.size.x/2 
+  item.text.textAlign = 'center'
 }//align center by default
 
 if(options.centerTextY !== false){
-var textHeight = parentOfImageObject.text.getMeasuredHeight()
-var textY = parentOfImageObject.position.y + (parentOfImageObject.size.y - textHeight)/2}
+var textHeight = item.text.getMeasuredHeight()
+var textY = item.position.y + (item.size.y - textHeight)/2}
 
-else {textY = parentOfImageObject.position.y + 1}
+else {textY = item.position.y + 1}
 
-if(textY < parentOfImageObject.position.y){textY = parentOfImageObject.position.y}
-parentOfImageObject.text.y = textY
+if(textY < item.position.y){textY = item.position.y}
+item.text.y = textY
 
-parentOfImageObject.text.baseline = 'top'
+item.text.baseline = 'top'
 
-parentOfImageObject.text.maxWidth = parentOfImageObject.size.x*.9
-parentOfImageObject.textColor = color
+item.text.maxWidth = item.size.x*.9
+item.textColor = color
 
-assignObjectPropertiesAsPropertiesOfDisplayObject(parentOfImageObject.text, options)
+assignObjectPropertiesAsPropertiesOfDisplayObject(item.text, options)
 
 /*
 //assign option variables to text
 _.each(options, function(value, index, list){
-if(!_.isObject(value) && !_.isUndefined(value) && !_.isFunction(parentOfImageObject.text[index])){parentOfImageObject.text[index] = value}
+if(!_.isObject(value) && !_.isUndefined(value) && !_.isFunction(item.text[index])){item.text[index] = value}
 })//iterate through options
 */
 }//make createjs text
@@ -1058,8 +1057,8 @@ if(!_.isObject(options.css)){options.css = {}}
   if(_.isUndefined(options.size)){options.size = true}
   if(_.isUndefined(options.position)){options.position = true}
 
-var x = parentOfImageObject.position.x; var y = parentOfImageObject.position.y
-var width = parentOfImageObject.size.x; var height = parentOfImageObject.size.y;
+var x = item.position.x; var y = item.position.y
+var width = item.size.x; var height = item.size.y;
 
 if(!options.numLines){options.numLines = 1}
 var lineHeight = (height/options.numLines) + 'px'
@@ -1082,12 +1081,19 @@ options.css = _.defaults(options.css, cssDefaults)
 var newText = $('<p>').addClass(self.css.unselectable + ' ' + self.css.noFat)
 newText.html(text)
 
- parentOfImageObject.addElement(newText[0], 'text', options)
+ item.addElement(newText[0], 'text', options)
 
 }// make HTML element
 
+            }//var addItemText
 
-            }
+
+addItemText (this, text, sizeAndFont, color, options)
+
+}
+
+            //for example: (item, fold, "13px " + self.permanentPreferences.defaultFontType.value, "#100D08")
+           
 
 
 
@@ -1097,22 +1103,22 @@ newText.html(text)
 this.events.buttonMouseDown = function(event){
      if(event.target instanceof createjs.Shape) {
          event.target.graphics.clear()
-  event.target.graphics.beginFill('red').drawRoundRect(0, 0, event.target.parentOfImageObject.size.x, event.target.parentOfImageObject.size.y,event.target.parentOfImageObject.size.y*.15)
-  event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.text.y + 2
-     self.updateStages(event.target.parentOfImageObject.position.z.stage)
+  event.target.graphics.beginFill('red').drawRoundRect(0, 0, event.target.parentItem.size.x, event.target.parentItem.size.y,event.target.parentItem.size.y*.15)
+  event.target.parentItem.text.y = event.target.parentItem.text.y + 2
+     self.updateStages(event.target.parentItem.position.z.stage)
      event.onMouseUp = function(event){
          event.target.graphics.clear()       
-        event.target.graphics.beginFill(event.target.parentOfImageObject.fillColor).drawRoundRect(0, 0, event.target.parentOfImageObject.size.x, event.target.parentOfImageObject.size.y,event.target.parentOfImageObject.size.y*.15); 
-event.target.parentOfImageObject.text.y = event.target.parentOfImageObject.text.y - 2 
-    self.updateStages(event.target.parentOfImageObject.position.z.stage)
+        event.target.graphics.beginFill(event.target.parentItem.fillColor).drawRoundRect(0, 0, event.target.parentItem.size.x, event.target.parentItem.size.y,event.target.parentItem.size.y*.15); 
+event.target.parentItem.text.y = event.target.parentItem.text.y - 2 
+    self.updateStages(event.target.parentItem.position.z.stage)
      }
      }
      }
       
   this.events.onButtonClick = function(event){
   // console.log('button clicked')
-        if(event.target.parentOfImageObject.messages){
-          var messages = event.target.parentOfImageObject.messages
+        if(event.target.parentItem.messages){
+          var messages = event.target.parentItem.messages
           //if 1 depth messages array then just do it normally
           if(!_.isArray(messages[0])){  socket.emit.apply(socket, messages)   }
 else{//multiple depth array
@@ -1415,7 +1421,7 @@ if(!options){var options = {}}
   var defaultOptions = { }
   defaultOptions.permanent = false
   defaultOptions.movementType = 'relative'
-if(event.target.parentOfImageObject instanceof self.images.Item){defaultOptions.animationTarget = event.target.parentOfImageObject}
+if(event.target.parentItem instanceof self.images.Item){defaultOptions.animationTarget = event.target.parentItem}
 _.defaults(options, defaultOptions)//assign defaults
 
 var initialX = event.stageX;var initialY = event.stageY
@@ -1439,8 +1445,8 @@ this.events.seatMouseEvent = function(event, options){
 //  console.log('seatmouse event called')
   if(!options){var options = {}}
     var defaults = {}
-  if(_.isObject(event.target.parentOfImageObject)&& _.isObject(event.target.parentOfImageObject.seatObjectAncestor)){
-    defaults.seatObject =  event.target.parentOfImageObject.seatObjectAncestor
+  if(_.isObject(event.target.parentItem)&& _.isObject(event.target.parentItem.seatObjectAncestor)){
+    defaults.seatObject =  event.target.parentItem.seatObjectAncestor
 defaults.seatNum =  defaults.seatObject.nonRotatedSeatNumber
 defaults.animationTime = 600
   }
@@ -1459,7 +1465,7 @@ console.log('seat mouse over event called for seat ' + options.seatNum)
 
 //console.log(event)
 var animationTime = options.animationTime
-var seatObject =  options.seatObject //event.target.parentOfImageObject.seatObjectAncestor
+var seatObject =  options.seatObject //event.target.parentItem.seatObjectAncestor
 var seatNum =    options.seatNum   //seatObject.nonRotatedSeatNumber
 var getHoleCardAnimationArray  = function(){return self.gameState.seats[seatNum].hand.holeCardsPopupAnimation} //this will be an array of hole cards
 var animationBottomY = seatObject.seat.position.y
@@ -2043,7 +2049,7 @@ if( _.isNumber(preferenceSeat) && ( preferenceSeat === 0 || preferenceSeat === s
 
           messageInfo.okayEvent = function(e){
      console.log('ok event called of confirmseatrotation')
-     var checked = messageBoxAPI.getStatus(e.target.parentOfImageObject.position.z.stage).checkBox
+     var checked = messageBoxAPI.getStatus(e.target.parentItem.position.z.stage).checkBox
 
            if(checked === 'checked'){            self.permanentPreferences.confirmSeatRotation.value = false}
             else if(checked === 'unchecked'){            self.permanentPreferences.confirmSeatRotation.value = true}
@@ -2134,7 +2140,7 @@ if(e.nativeEvent.button !== 2){return}//make sure its a right click
 //e.nativeEvent.preventDefault()
    
 
-      var seatObject = e.target.parentOfImageObject.seatObjectAncestor
+      var seatObject = e.target.parentItem.seatObjectAncestor
 var rotatedSeatNumber = seatObject.rotatedSeatNumber
 var nonRotatedSeatNumber  = seatObject.nonRotatedSeatNumber
 var seatStageNumber = seatObject.seat.position.z.stage
@@ -2157,7 +2163,7 @@ var showMeHere = new self.images.Item(0,0,buttonWidth, buttonHeight, {stage:butt
  showMeHere.image.graphics.setStrokeStyle(1,'round').beginStroke('black')
  .beginFill('#C8C8C8').drawRect(0, 0, buttonWidth, buttonHeight)
 
- self.images.addItemText(showMeHere, 'Show Me Here', buttonFontSize+'px '+ buttonFont, 'black' )
+ showMeHere.addText( 'Show Me Here', buttonFontSize+'px '+ buttonFont, 'black' )
 
 showMeHere.image.addEventListener('click', function(e){
 self.hideChildren(showMeHere)
@@ -2624,7 +2630,7 @@ return stage
      }
 
      //define title text
-     this.images.addItemText(introScreen.title, titleText, titleSizeAndFont, titleColor)
+     introScreen.title.addText(titleText, titleSizeAndFont, titleColor)
      //define statusText
      introScreen.status.text = new createjs.Text('', statusSizeAndFont, statusColor)
  introScreen.status.text.x= introScreen.status.position.x
@@ -2997,7 +3003,6 @@ var backgroundZ = getZ('loadingScreen','background')
     introScreen.title = new this.images.Item(0, preloadBarY-titleAndPreloadBarDistanceY-titleHeight, canvasWidth, titleHeight,animationZ)
      introScreen.status = new this.images.Item(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y - statusHeight, canvasWidth-introScreen.preloadBar.x, statusHeight,animationZ)
   
-
      //define function for drawing the loading bar graphic
      introScreen.preloadBar.image  = new createjs.Shape()
      introScreen.preloadBar.drawBar = function (progressRatio){
@@ -3043,7 +3048,7 @@ return self.easelJSDisplayObjectChanged(introScreen.preloadBar)
      }
 
      //define title text
-     this.images.addItemText(introScreen.title, titleText, titleSizeAndFont, titleColor)
+     introScreen.title.addText( titleText, titleSizeAndFont, titleColor)
      //define statusText
      introScreen.status.text = new createjs.Text('', statusSizeAndFont, statusColor)
  introScreen.status.text.x= introScreen.status.position.x
@@ -3469,7 +3474,7 @@ var showTableChatFullHitAreaOffsetBottomRight = 27
 
             //------------------------------------dealerButton------------------------------------
            this.dealerButton = new this.Item(0,0,dealerButtonWidth, dealerButtonHeight,getZ('animatedAndMiddleTableItems'))
-            this.itemAsBitmap(this.dealerButton, self.permanentPreferences.sourceObjects.value.dealerButton)
+           this.dealerButton.addBitmap( self.permanentPreferences.sourceObjects.value.dealerButton)
 
 var chipAndPotZ = getZ('animatedAndMiddleTableItems', 'chips')
 
@@ -3495,7 +3500,7 @@ if(options.columnDirection !== 'left'){
                    else{
                     self.images.pots[potNumber].potSize = new self.images.Item(firstChipX + chipDiameter - betSizeWidth,firstChipY+chipDiameter, betSizeWidth, potHeight, chipAndPotZ) 
                   }//if we want to go left
-             self.images.addItemText(self.images.pots[potNumber].potSize, '' ,potSizeAndFont, potTextColor, {textAlign:'left'})
+             self.images.pots[potNumber].potSize.addText( '' ,potSizeAndFont, potTextColor, {textAlign:'left'})
 self.images.pots[potNumber].potSize.text.maxWidth = 999999
 //console.log('created pot items for pot number: '+potNumber);console.log(self.images.pots[potNumber])
 }
@@ -3513,7 +3518,7 @@ createPotItems(0, pot0X, pot0Y)
  
 
             this.pots[0].potSize = new this.Item(this.pots[0].firstChip.position.x, this.pots[0].firstChip.position.y+potHeight,potWidth,potHeight,getZ('animatedAndMiddleTableItems'))
-             this.addItemText(this.pots[0].potSize, 0,potSizeAndFont, potTextColor)
+             this.addText(this.pots[0].potSize, 0,potSizeAndFont, potTextColor)
        */                
 
 
@@ -3526,7 +3531,7 @@ createPotItems(0, pot0X, pot0Y)
 
                   
            this.totalPotSize  = new this.Item(this.pots[0].firstChip.position.x, this.pots[0].firstChip.position.y+chipDiameter-chipColumnHeight-potHeight*2,potWidth,potHeight, chipAndPotZ)
-             this.addItemText( this.totalPotSize, '',potSizeAndFont, potTextColor)
+          this.totalPotSize.addText( '',potSizeAndFont, potTextColor)
             this.totalPotSize.text.maxWidth = null
 
 var pot1X = pot0X + totalPotWidth + distanceBetweenPots;var pot1Y = pot0Y
@@ -3562,7 +3567,7 @@ createPotItems(8, pot8X, pot8Y)
               this.pots[i].secondColumnChip = new this.Item(this.pots[0].secondColumnChip.position.x+i*distanceBetweenPots,this.pots[0].secondColumnChip.position.y,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems'))
 
                    this.pots[i].potSize = new this.Item(this.pots[0].potSize.position.x+i*distanceBetweenPots,this.pots[0].potSize.position.y,potWidth,potHeight,getZ('animatedAndMiddleTableItems'))
-             this.addItemText(this.pots[i].potSize, 0,potSizeAndFont, potTextColor)
+             this.addText(this.pots[i].potSize, 0,potSizeAndFont, potTextColor)
               }
 
 */
@@ -3631,13 +3636,13 @@ self.jQueryObjects.chatBoxInput.css({
           this.sitOutNextHandOn = new  this.Item(this.sitOutNextHand.position.x,this.sitOutNextHand.position.y, this.sitOutNextHand.size.x,this.sitOutNextHand.size.y,getZ('staticItems','buttons'),{messages: ['sit_in']})
         this.sitOutNextBlindOn = new  this.Item(this.sitOutNextBlind.position.x,this.sitOutNextBlind.position.y, this.sitOutNextBlind.size.x,this.sitOutNextBlind.size.y,getZ('staticItems','buttons'), {messages:['set_flag', 'post_blind', true]})
         
-        this.itemAsBitmap(this.foldToAnyBet, self.permanentPreferences.sourceObjects.value.checkBox)
-this.itemAsBitmap(this.sitOutNextHand, self.permanentPreferences.sourceObjects.value.checkBox)
-this.itemAsBitmap(this.sitOutNextBlind, self.permanentPreferences.sourceObjects.value.checkBox)
+this.foldToAnyBet.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
+this.sitOutNextHand.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
+this.sitOutNextBlind.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
 
-        this.itemAsBitmap(this.foldToAnyBetOn, self.permanentPreferences.sourceObjects.value.checkBoxChecked)
-this.itemAsBitmap(this.sitOutNextHandOn, self.permanentPreferences.sourceObjects.value.checkBoxChecked)
-this.itemAsBitmap(this.sitOutNextBlindOn, self.permanentPreferences.sourceObjects.value.checkBoxChecked)
+this.foldToAnyBetOn.addBitmap (self.permanentPreferences.sourceObjects.value.checkBoxChecked)
+this.sitOutNextHandOn.addBitmap(self.permanentPreferences.sourceObjects.value.checkBoxChecked)
+this.sitOutNextBlindOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
 
   //hitAreas for buttons
       
@@ -3704,10 +3709,10 @@ else{return stagesToUpdate}
 }
 
 self.images.itemsAsCheckBoxes = function(uncheckedItem,checkedItem, text, options){
-  self.images.itemAsBitmap(uncheckedItem, checkBoxButtonSource)
+uncheckedItem.addBitmap( checkBoxButtonSource)
 self.images.addCheckBoxButtonText(uncheckedItem, text, options)
 
-  self.images.itemAsBitmap(checkedItem, checkBoxButtonCheckedSource)
+checkedItem.addBitmap (checkBoxButtonCheckedSource)
 self.images.addCheckBoxButtonText(checkedItem, text, options)
 }
 
@@ -3760,7 +3765,7 @@ var playerSeatObject = self.images.seats[i]
           var width = playerSeatObject.seat.size.x
           var height = playerSeatObject.seat.size.y
           playerSeatObject.seat.image = new createjs.Shape()
- playerSeatObject.seat.image.parentOfImageObject = playerSeatObject.seat
+ playerSeatObject.seat.image.parentItem = playerSeatObject.seat
 
 
 
@@ -3823,7 +3828,7 @@ this.seats[i].sittingOut = new this.Item(seatTextX, seatBottomTextY, seatTextWid
             var openSeatBorder = '#FFFFFF'
 
 self.images.drawSeat(this.seats[i].openSeat, openSeatBorder, openSeatFill, openSeatMiddle, {outerStrokeWidth: seatOuterStrokeWidth})
-this.seats[i].openSeat.image.parentOfImageObject = this.seats[i].openSeat  
+this.seats[i].openSeat.image.parentItem = this.seats[i].openSeat  
 
                 this.seats[i].openSeat.text = new createjs.Text('Open Seat', '15px ' + self.permanentPreferences.defaultFontType.value, "#FFFFFF")
 this.seats[i].openSeat.text.x=this.seats[i].openSeat.position.x + this.seats[i].openSeat.size.x/2 
@@ -3839,7 +3844,7 @@ this.seats[i].openSeat.textColor = "#FFFFFF"
             var disabledFill = 'black'
             var disabledMiddle = disabledFill
             self.images.drawSeat (this.seats[i].disabledSeat, disabledBorder, disabledFill, disabledMiddle, {outerStrokeWidth: seatOuterStrokeWidth})
-   this.seats[i].disabledSeat.image.parentOfImageObject = this.seats[i].disabledSeat     
+   this.seats[i].disabledSeat.image.parentItem = this.seats[i].disabledSeat     
 
 //openSeat onclick event
 
@@ -3850,7 +3855,7 @@ self.images.seats[i].disabledSeat.image.addEventListener('click', self.events.on
             this.seats[i].disabledSeat.image = new createjs.Shape()
 this.seats[i].disabledSeat.image.snapToPixel = true
 this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke("#544E4F").beginFill('black').drawRect(this.seats[i].disabledSeat.position.x, this.seats[i].disabledSeat.position.y, this.seats[i].disabledSeat.size.x, this.seats[i].disabledSeat.size.y)
-         this.seats[i].disabledSeat.image.parentOfImageObject = this.seats[i].disabledSeat       
+         this.seats[i].disabledSeat.image.parentItem = this.seats[i].disabledSeat       
          */
 
 //console.log(self.permanentPreferences.sourceObjects.value)
@@ -3869,24 +3874,24 @@ this.cardAsBitmap(this.seats[i].hiddenCards[1],  null)
 
          //   this.itemAsRectangle(this.seats[i].shownCards[0], "#00FFFF")
           //  this.itemAsRectangle(this.seats[i].shownCards[1], "#00FFFF")
-            this.addItemText(this.seats[i].shownCards[0],'','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
-            this.addItemText(this.seats[i].shownCards[1],'','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
+            this.seats[i].shownCards[0].addText('','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
+            this.seats[i].shownCards[1].addText('','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
             //player name
-            this.addItemText(this.seats[i].playerName,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF' , {html:true, class:self.css.noTranslate} )
+            this.seats[i].playerName.addText('','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF' , {html:true, class:self.css.noTranslate} )
             //action
-            this.addItemText(this.seats[i].action,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF')
+            this.seats[i].action.addText('','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF')
             //countdown
-            this.addItemText(this.seats[i].countdown,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF')
+           this.seats[i].countdown.addText('','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF')
             //winner
-             this.addItemText(this.seats[i].winner,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF')
+            this.seats[i].winner.addText('','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF')
         
 
                     //player's status
-            this.addItemText(this.seats[i].status,'','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true})
-            this.seats[i].stackSize.addItemText('','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
+            this.seats[i].status.addText('','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true})
+            this.seats[i].stackSize.addText('','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
 
- this.seats[i].gettingChips.addItemText ('Adding Chips','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
- this.seats[i].sittingOut.addItemText('Sitting Out','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
+ this.seats[i].gettingChips.addText ('Adding Chips','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
+ this.seats[i].sittingOut.addText('Sitting Out','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
 
 
 
@@ -3899,11 +3904,11 @@ var seatLocationMarginOfError = 1.1
         var dealerButtonX = this.seats[i].seat.position.x+topRowSeatDealerButtonX
         var dealerButtonY = this.seats[i].seat.position.y+topRowSeatDealerButtonY
 
-        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,getZ('animatedAndMiddleTableItems'))
+        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,getZ('animatedAndMiddleTableItems', 'dealerChip'))
 
-        this.seats[i].firstChip = new this.Item(this.seats[i].seat.position.x+topChipOffsetX,this.seats[i].seat.position.y+topChipOffsetY,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems'))
+        this.seats[i].firstChip = new this.Item(this.seats[i].seat.position.x+topChipOffsetX,this.seats[i].seat.position.y+topChipOffsetY,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems', 'chips'))
 
-         this.seats[i].secondColumnChip = new this.Item( this.seats[i].firstChip.position.x-chipDiameter-self.imageData.distanceBetweenChipColumns,this.seats[i].firstChip.position.y,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems'))
+         this.seats[i].secondColumnChip = new this.Item( this.seats[i].firstChip.position.x-chipDiameter-self.imageData.distanceBetweenChipColumns,this.seats[i].firstChip.position.y,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems', 'chips'))
 
         
         //determine location of theoretical upper right most chip
@@ -3914,17 +3919,17 @@ var seatLocationMarginOfError = 1.1
         var betX = upperRightChipX + chipDiameter + absoluteDistanceBetweenBetTextAndChipImages
         var betY = upperRightChipY
         //bet size
-        this.seats[i].bet = new this.Item(betX,betY,betTextWidth,betTextHeight,getZ('animatedAndMiddleTableItems'))
+        this.seats[i].bet = new this.Item(betX, betY, betTextWidth, betTextHeight, getZ('animatedAndMiddleTableItems', 'chips'))
     }
     else if(this.seats[i].seat.position.x < firstColumnX + seatLocationMarginOfError && this.seats[i].seat.position.x > firstColumnX - seatLocationMarginOfError){
         
         var dealerButtonX = this.seats[i].seat.position.x+leftColumnSeatDealerButtonX
         var dealerButtonY = this.seats[i].seat.position.y+leftColumnSeatDealerButtonY
 
-        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,getZ('animatedAndMiddleTableItems'))
+        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,getZ('animatedAndMiddleTableItems', 'dealerChip'))
 
-        this.seats[i].firstChip = new this.Item(this.seats[i].seat.position.x+leftChipOffsetX,this.seats[i].seat.position.y+leftChipOffsetY,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems'))
-       this.seats[i].secondColumnChip = new this.Item( this.seats[i].firstChip.position.x+chipDiameter+self.imageData.distanceBetweenChipColumns,this.seats[i].firstChip.position.y,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems'))
+        this.seats[i].firstChip = new this.Item(this.seats[i].seat.position.x+leftChipOffsetX,this.seats[i].seat.position.y+leftChipOffsetY,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems', 'chips'))
+       this.seats[i].secondColumnChip = new this.Item( this.seats[i].firstChip.position.x+chipDiameter+self.imageData.distanceBetweenChipColumns,this.seats[i].firstChip.position.y,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems', 'chips'))
 
        
         //determine location of upperleft
@@ -3935,13 +3940,13 @@ var seatLocationMarginOfError = 1.1
         var betX = upperLeftChipX - betTextWidth - absoluteDistanceBetweenBetTextAndChipImages
         var betY = upperLeftChipY - betTextHeight - absoluteDistanceBetweenBetTextAndChipImages
         //bet size
-        this.seats[i].bet = new this.Item(betX,betY,betTextWidth,betTextHeight,getZ('animatedAndMiddleTableItems'))
+        this.seats[i].bet = new this.Item(betX,betY,betTextWidth,betTextHeight,getZ('animatedAndMiddleTableItems', 'chips'))
     }
 
     else if(this.seats[i].seat.position.y < fourthRowY + seatLocationMarginOfError && this.seats[i].seat.position.y > fourthRowY - seatLocationMarginOfError){
        
-        this.seats[i].firstChip = new this.Item(this.seats[i].seat.position.x+bottomChipOffsetX,this.seats[i].seat.position.y+bottomChipOffsetY,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems'))
-        this.seats[i].secondColumnChip = new this.Item( this.seats[i].firstChip.position.x+chipDiameter+self.imageData.distanceBetweenChipColumns,this.seats[i].firstChip.position.y,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems'))
+        this.seats[i].firstChip = new this.Item(this.seats[i].seat.position.x+bottomChipOffsetX,this.seats[i].seat.position.y+bottomChipOffsetY,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems', 'chips'))
+        this.seats[i].secondColumnChip = new this.Item( this.seats[i].firstChip.position.x+chipDiameter+self.imageData.distanceBetweenChipColumns,this.seats[i].firstChip.position.y,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems', 'chips'))
 
         
         //determine location of lower left most chip
@@ -3955,9 +3960,9 @@ var seatLocationMarginOfError = 1.1
 
 
 
-        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,getZ('animatedAndMiddleTableItems'))
+        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,getZ('animatedAndMiddleTableItems', 'dealerChip'))
  //bet size
-        this.seats[i].bet = new this.Item(betX,betY,betTextWidth,betTextHeight,getZ('animatedAndMiddleTableItems'))
+        this.seats[i].bet = new this.Item(betX,betY,betTextWidth,betTextHeight,getZ('animatedAndMiddleTableItems', 'chips'))
 
    
     }
@@ -3966,10 +3971,10 @@ var seatLocationMarginOfError = 1.1
         var dealerButtonX = this.seats[i].seat.position.x+rightColumnSeatDealerButtonX
         var dealerButtonY = this.seats[i].seat.position.y+rightColumnSeatDealerButtonY
 
-        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,getZ('animatedAndMiddleTableItems'))
+        this.seats[i].dealerButton = new this.Item(dealerButtonX,dealerButtonY,dealerButtonWidth,dealerButtonHeight,getZ('animatedAndMiddleTableItems', 'dealerChip'))
 
-        this.seats[i].firstChip = new this.Item(this.seats[i].seat.position.x+rightChipOffsetX,this.seats[i].seat.position.y+rightChipOffsetY,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems'))
-        this.seats[i].secondColumnChip = new this.Item( this.seats[i].firstChip.position.x-chipDiameter-self.imageData.distanceBetweenChipColumns,this.seats[i].firstChip.position.y,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems'))
+        this.seats[i].firstChip = new this.Item(this.seats[i].seat.position.x+rightChipOffsetX,this.seats[i].seat.position.y+rightChipOffsetY,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems', 'chips'))
+        this.seats[i].secondColumnChip = new this.Item( this.seats[i].firstChip.position.x-chipDiameter-self.imageData.distanceBetweenChipColumns,this.seats[i].firstChip.position.y,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems', 'chips'))
  
          
          //determine location bottom right most chip
@@ -3978,19 +3983,19 @@ var seatLocationMarginOfError = 1.1
         var betX = bottomRightChipX - betTextWidth
         var betY = bottomRightChipY  + chipDiameter + absoluteDistanceBetweenBetTextAndChipImages 
         //bet size
-        this.seats[i].bet = new this.Item(betX,betY,betTextWidth,betTextHeight,getZ('animatedAndMiddleTableItems'))
+        this.seats[i].bet = new this.Item(betX,betY,betTextWidth,betTextHeight,getZ('animatedAndMiddleTableItems', 'chips'))
     }
 
     //add second chip (same for all seats relative to first chip)
     var distanceBetweenChipsY = this.pots[0].secondChip.position.y-this.pots[0].firstChip.position.y
-    this.seats[i].secondChip = new this.Item(this.seats[i].firstChip.position.x, this.seats[i].firstChip.position.y+distanceBetweenChipsY,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems'))
+    this.seats[i].secondChip = new this.Item(this.seats[i].firstChip.position.x, this.seats[i].firstChip.position.y+distanceBetweenChipsY,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems', 'chips'))
     
     // bet size text
-     this.addItemText(this.seats[i].bet,'', "12px " + self.permanentPreferences.defaultFontType.value, "#FFFFFF", {textAlign:'left'})
+     this.seats[i].bet.addText('', "12px " + self.permanentPreferences.defaultFontType.value, "#FFFFFF", {textAlign:'left'})
      this.seats[i].bet.text.maxWidth = null
    
     if(this.seats[i].dealerButton instanceof this.Item){
-     this.itemAsBitmap(this.seats[i].dealerButton, self.permanentPreferences.sourceObjects.value.dealerButton)
+this.seats[i].dealerButton.addBitmap( self.permanentPreferences.sourceObjects.value.dealerButton)
      }
      else{console.log(i+' is not a seat')}
       }  
@@ -4015,7 +4020,7 @@ playerSeatObject.chat.image.drawChat = function(width, numLines){
    //clear previous graphicss
    playerSeatObject.chat.image.graphics.clear()
    //define parent
-playerSeatObject.chat.image.parentOfImageObject = playerSeatObject.chat
+playerSeatObject.chat.image.parentItem = playerSeatObject.chat
 
 //get new relative X coordinates of chat box
 var x =   (playerSeatObject.chat.size.x - width)/2
@@ -4169,7 +4174,7 @@ actionButtonOptions.attr.id = 'fold'
           actionButtonOptions.attr.id = 'check'
           this.check.addBootstrapButton ('Check', actionButtonOptions)
 
-actionButtonOptions.css['line-height'] = '50%'
+actionButtonOptions.css['line-height'] = '5px'
 
           actionButtonOptions.attr.id = 'call'
           this.call.addBootstrapButton ('Call', actionButtonOptions)
@@ -4214,10 +4219,11 @@ slide: function(e, ui) {
     }//when user uses mouse to slide the slider
 
 }
-var jquerySlider = $('<div>').addClass(self.css.noFat + ' ' + self.css.unselectable).css({
-  'overflow':'visible'
-  ,'margin':'0px'
-}).slider(sliderOptions)
+var jquerySlider = $('<div>').addClass(self.css.unselectable).css({
+ // 'overflow':'visible'
+ // ,'margin':'0px'
+})
+//.slider(sliderOptions)
 
 
 var sliderX = betSliderX
@@ -4228,6 +4234,7 @@ console.log('jquery slider added')
 console.log(this.betSlider.slider)
 console.log($(this.betSlider.slider.image) )
 
+$(this.betSlider.slider.image).slider(sliderOptions)
 
    var betSliderHandle = $('.ui-slider-handle', jquerySlider)
 
@@ -4309,36 +4316,23 @@ $('#betSize').css({
 })
 
 
+var cardSpriteData = {
+
+
+
+
+
+  
+}
 
 
 
        
-/*
- this.cashierButton = new this.Item(canvasWidth-80,0, minCashierButtonTextWidth, cashierButtonHeight, getZ('staticItems','buttons'))
-  
-  var cashierButtonSpriteData = {
 
-     images: [self.permanentPreferences.sourceObjects.value.cashierButtonSprite],
-     frames:{
-         width: 80,
-         height:31
-     },
-     animations: {
-         mouseOut:0,
-         mouseOver: 1,
-         mouseDown: 2
-     }
-}
-*/
-/*
-var spriteSheet = new createjs.SpriteSheet(cashierButtonSpriteData)
-this.cashierButton.bitmapAnimation = new createjs.BitmapAnimation(spriteSheet)
-this.cashierButton.bitmapAnimation.x = this.cashierButton.position.x
-this.cashierButton.bitmapAnimation.y = this.cashierButton.position.y
-// this.cashierButton.bitmapAnimation.gotoAndStop(0)
-this.cashierButton.button = new createjs.ButtonHelper(this.cashierButton.bitmapAnimation, 'mouseOut', 'mouseOver', 'mouseDown', false)
-//this.cashierButton.button.initialize()
-*/
+
+var spriteSheet = new createjs.SpriteSheet(cardSpriteData)
+
+
 
   //--------------upper right side button---------------------
 
@@ -4359,7 +4353,7 @@ var upperButtonFontType = 'Myriad Pro'
 
 
         this.standUp = new this.Item(canvasWidth - standUpWidth,0, standUpWidth, standUpHeight, getZ('staticItems','buttons'))
-           this.itemAsBitmap(this.standUp, self.permanentPreferences.sourceObjects.value.standUp)
+this.standUp.addBitmap( self.permanentPreferences.sourceObjects.value.standUp)
    //define shape for hit area of  stand
    var standUpHit = new createjs.Shape()
    var topY = standUpHitAreaTopOffset
@@ -4377,7 +4371,7 @@ this.standUp.image.hitArea = standUpHit
 var standUpTextWidth = standUpWidth - standUpTextLeftOffset - standUpTextRightOffset
 var standUpTextHeight = standUpHeight - standUpTextTopOffset - standUpTextBottomOffset
 
-this.standUp.addItemText('STAND UP', upperButtonFontType, 'white', {html:true, css:upperButtonTextCSS, textAlign:'left'})
+this.standUp.addText('STAND UP', upperButtonFontType, 'white', {html:true, css:upperButtonTextCSS, textAlign:'left'})
 setDisplayObjectPositionData(this.standUp.text, {x:standUpTextLeftOffset + this.standUp.position.x
   ,  y: this.standUp.position.y + standUpTextTopOffset
  // ,width:getChipsTextWidth
@@ -4396,13 +4390,13 @@ this.standUpDisabledShape.image.alpha = disabledButtonOverlayAlpha
 
 //-------------------------upper left Get Chips-------
  this.getChips = new this.Item(0, 0, getChipsWidth, getChipsHeight, getZ('staticItems','buttons'), {messages:['get_add_chips_info']})
- this.itemAsBitmap(this.getChips, getChipsSource)
+this.getChips.addBitmap(getChipsSource)
  var getChipsTextLeftOffset = 37; var getChipsTextTopOffset = 9; var getChipsTextRightOffset = 46; var getChipsTextBottomOffset = 21
 var getChipsTextWidth = getChipsWidth - getChipsTextLeftOffset - getChipsTextRightOffset
 var getChipsTextHeight = getChipsHeight - getChipsTextTopOffset - getChipsTextBottomOffset
 
 
-this.getChips.addItemText('GET CHIPS', upperButtonFontType, 'white', {html:true, css:upperButtonTextCSS, textAlign:'left'})
+this.getChips.addText('GET CHIPS', upperButtonFontType, 'white', {html:true, css:upperButtonTextCSS, textAlign:'left'})
 setDisplayObjectPositionData(this.getChips.text, {x:getChipsTextLeftOffset + this.getChips.position.x - 1
   ,  y: this.getChips.position.y + getChipsTextTopOffset
  // ,width:getChipsTextWidth
@@ -4434,7 +4428,7 @@ this.getChipsDisabledShape.image.alpha = disabledButtonOverlayAlpha
 var exitTableOffsetY = distanceBetweenUpperButtonHitAreasY - exitTableHitAreaTopOffset - standUpHitAreaBottomOffset
 
  this.exitTable = new this.Item(canvasWidth - exitTableWidth, standUpHeight, exitTableWidth, exitTableHeight, getZ('staticItems','buttons'))
-   this.itemAsBitmap(this.exitTable, self.permanentPreferences.sourceObjects.value.exitTable)
+this.exitTable.addBitmap( self.permanentPreferences.sourceObjects.value.exitTable)
    //define shape of hit area
 
    var exitTableHit = new createjs.Shape()
@@ -4455,7 +4449,7 @@ this.exitTable.image.addEventListener('click', self.events.exitTableClick)
 var currencyDisplayX = canvasWidth/2 - currencyDisplayWidth/2
 
 this.currencyDisplay = new this.Item(currencyDisplayX, currencyDisplayTopOffset, currencyDisplayWidth, currencyDisplayHeight, getZ('staticItems', 'background'))
-this.addItemText(this.currencyDisplay, '', currencyDisplaySizeAndFont, currencyDisplayColor)
+this.currencyDisplay.addText('', currencyDisplaySizeAndFont, currencyDisplayColor)
 //========================4 color deck sprite sheet=============================
 
 var fourColorDeckData = {
@@ -4478,7 +4472,7 @@ self.images.messageBox = []
 
 //table image
 this.table = new this.Item(0,tableY, 0,0, getZ('staticItems', 'table'))
-this.itemAsBitmap(this.table, self.permanentPreferences.sourceObjects.value.table)
+this.table.addBitmap( self.permanentPreferences.sourceObjects.value.table)
 //console.log('table item');console.log(this.table)
 var tableX = canvasWidth/2 - this.table.size.x/2
 self.setImageItemPositionAndTextBasedOnImageChange(this.table, tableX, null, {update:false})
@@ -4552,11 +4546,11 @@ var cashierWindowContainer = 0
         var grayBoxOffsetBottom = 49 //from inner cashier
 
     this.cashier.closeWindow =  new this.Item (closeWindowX, closeWindowY, closeWindowWidth,closeWindowHeight,{stage:cashierStageNumber, container:cashierImageContainerIndex}) 
-       this.itemAsBitmap(this.cashier.closeWindow, self.permanentPreferences.sourceObjects.value.cashierCloseX)
+this.cashier.closeWindow.addBitmap( self.permanentPreferences.sourceObjects.value.cashierCloseX)
        this.cashier.closeWindow.image.addEventListener('click', self.hideCashier)
 
         this.cashier.window = new this.Item(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight,{stage:cashierStageNumber,container:cashierWindowContainer})
-        this.itemAsBitmap(this.cashier.window, self.permanentPreferences.sourceObjects.value.cashierBackground)
+this.cashier.window.addBitmap( self.permanentPreferences.sourceObjects.value.cashierBackground)
         var clickAndDragHitArea = new createjs.Rectangle(this.cashier.window.position.x, this.cashier.window.y, cashierWindowWidth, outerTopHeight)
      //   this.cashier.window.hitArea = clickAndDragHitArea
       this.cashier.window.image.removeAllEventListeners()
@@ -5053,14 +5047,14 @@ self.images.positionCashierButtons(true,{update:false})
 var showTableChatFullOffsetY = distanceBetweenUpperButtonHitAreasY - showTableChatFullHitAreaOffsetTop - getChipsHitAreaBottomOffset
 
 this.showTableChatFull = new this.Item(this.getChips.position.x, this.getChips.position.y+this.getChips.size.y+showTableChatFullOffsetY, showTableChatFullWidth, showTableChatFullHeight, getZ('staticItems','buttons') )
-this.itemAsBitmap(this.showTableChatFull, showTableChatFullSource)
+this.showTableChatFull.addBitmap(showTableChatFullSource)
 this.showTableChatFull.image.addEventListener('click', self.events.showTableChatFullOnClick)
 
  var showTableChatFullTextLeftOffset = 4; var showTableChatFullTextTopOffset = 6; var standUpTextRightOffset = 30; var showTableChatFullTextBottomOffset = 15
 //var showTableChatFullTextWidth = showTableChatFullWidth - showTableChatFullTextLeftOffset - showTableChatFullTextRightOffset
 var showTableChatFullTextHeight = showTableChatFullHeight - showTableChatFullTextTopOffset - showTableChatFullTextBottomOffset
 
-this.showTableChatFull.addItemText('SHOW CHAT', upperButtonFontType, 'white', {html:true, css:upperButtonTextCSS, textAlign:'left'})
+this.showTableChatFull.addText('SHOW CHAT', upperButtonFontType, 'white', {html:true, css:upperButtonTextCSS, textAlign:'left'})
 setDisplayObjectPositionData(this.showTableChatFull.text, {x:showTableChatFullTextLeftOffset + this.showTableChatFull.position.x
   ,  y: this.showTableChatFull.position.y + showTableChatFullTextTopOffset
  // ,width:getChipsTextWidth
@@ -5070,10 +5064,10 @@ setDisplayObjectPositionData(this.showTableChatFull.text, {x:showTableChatFullTe
 
 
 this.hideTableChatFull = new this.Item(this.getChips.position.x, this.getChips.position.y+this.getChips.size.y+showTableChatFullOffsetY, showTableChatFullWidth, showTableChatFullHeight, getZ('staticItems','buttons') )
-this.itemAsBitmap(this.hideTableChatFull, self.permanentPreferences.sourceObjects.value.hideTableChatFull)
+this.hideTableChatFull.addBitmap(self.permanentPreferences.sourceObjects.value.hideTableChatFull)
 this.hideTableChatFull.image.addEventListener('click', self.events.hideTableChatFullOnClick)
 
-this.hideTableChatFull.addItemText('HIDE CHAT', upperButtonFontType, 'white', {html:true, css:upperButtonTextCSS, textAlign:'left'})
+this.hideTableChatFull.addText('HIDE CHAT', upperButtonFontType, 'white', {html:true, css:upperButtonTextCSS, textAlign:'left'})
 setDisplayObjectPositionData(this.showTableChatFull.text, {x:showTableChatFullTextLeftOffset + this.showTableChatFull.position.x
   ,  y: this.showTableChatFull.position.y + showTableChatFullTextTopOffset
  // ,width:getChipsTextWidth
@@ -5150,32 +5144,32 @@ var hideDealerMessagesOffsetRight =  hideDealerMessagesOffsetLeft//checkBoxButto
 var hideDealerMessagesOffsetTop =  checkBoxButtonDistanceY
 
 this.tableChatFull.hideDealerMessages = new this.Item(hideDealerMessagesOffsetLeft, hideDealerMessagesOffsetTop, this.tableChatFull.window.size.x - checkBoxButtonOffSetLeft*2, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
-this.itemAsBitmap(this.tableChatFull.hideDealerMessages, self.permanentPreferences.sourceObjects.value.checkBox)
+this.tableChatFull.hideDealerMessages.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
 self.images.addCheckBoxButtonText(this.tableChatFull.hideDealerMessages, 'Hide dealer messages')
 this.tableChatFull.hideDealerMessages.image.addEventListener('click', self.events.hideDealerMessagesClicked)
 
 this.tableChatFull.hideDealerMessagesOn = new this.Item(hideDealerMessagesOffsetLeft, this.tableChatFull.hideDealerMessages.position.y, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
-this.itemAsBitmap(this.tableChatFull.hideDealerMessagesOn, self.permanentPreferences.sourceObjects.value.checkBoxChecked)
+this.tableChatFull.hideDealerMessagesOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
 self.images.addCheckBoxButtonText(this.tableChatFull.hideDealerMessagesOn, 'Hide dealer messages')
 this.tableChatFull.hideDealerMessagesOn.image.addEventListener('click', self.events.hideDealerMessagesOnClicked)
 
 this.tableChatFull.hidePlayerMessages = new this.Item(hideDealerMessagesOffsetLeft, hideDealerMessagesOffsetTop*2+checkBoxButtonHeight, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
-this.itemAsBitmap(this.tableChatFull.hidePlayerMessages, self.permanentPreferences.sourceObjects.value.checkBox)
+this.tableChatFull.hidePlayerMessages.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
 self.images.addCheckBoxButtonText(this.tableChatFull.hidePlayerMessages, 'Hide player messages')
 this.tableChatFull.hidePlayerMessages.image.addEventListener('click', self.events.hidePlayerMessagesClicked)
 
 this.tableChatFull.hidePlayerMessagesOn = new this.Item(hideDealerMessagesOffsetLeft, this.tableChatFull.hidePlayerMessages.position.y, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
-this.itemAsBitmap(this.tableChatFull.hidePlayerMessagesOn, self.permanentPreferences.sourceObjects.value.checkBoxChecked)
+this.tableChatFull.hidePlayerMessagesOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
 self.images.addCheckBoxButtonText(this.tableChatFull.hidePlayerMessagesOn, 'Hide player messages')
 this.tableChatFull.hidePlayerMessagesOn.image.addEventListener('click', self.events.hidePlayerMessagesOnClicked)
 
 this.tableChatFull.hideObserverMessages = new this.Item(hideDealerMessagesOffsetLeft, checkBoxButtonDistanceY*3+checkBoxButtonHeight*2, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
-this.itemAsBitmap(this.tableChatFull.hideObserverMessages, self.permanentPreferences.sourceObjects.value.checkBox)
+this.tableChatFull.hideObserverMessages.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
 self.images.addCheckBoxButtonText(this.tableChatFull.hideObserverMessages, 'Hide observer messages')
 this.tableChatFull.hideObserverMessages.image.addEventListener('click', self.events.hideObserverMessagesClicked)
 
 this.tableChatFull.hideObserverMessagesOn = new this.Item(hideDealerMessagesOffsetLeft, this.tableChatFull.hideObserverMessages.position.y, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
-this.itemAsBitmap(this.tableChatFull.hideObserverMessagesOn, self.permanentPreferences.sourceObjects.value.checkBoxChecked)
+this.tableChatFull.hideObserverMessagesOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
 self.images.addCheckBoxButtonText(this.tableChatFull.hideObserverMessagesOn, 'Hide observer messages')
 this.tableChatFull.hideObserverMessagesOn.image.addEventListener('click', self.events.hideObserverMessagesOnClicked)
 
@@ -5189,12 +5183,12 @@ var rightSideCheckBoxX = this.tableChatFull.hideDealerMessages.position.x + long
 var rightSideCheckBoxY = this.tableChatFull.hideDealerMessages.position.y
 
 this.tableChatFull.disableTouchScroll = new this.Item(rightSideCheckBoxX, rightSideCheckBoxY, 0, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
-this.itemAsBitmap(this.tableChatFull.disableTouchScroll, self.permanentPreferences.sourceObjects.value.checkBox)
+this.tableChatFull.disableTouchScroll.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
 self.images.addCheckBoxButtonText(this.tableChatFull.disableTouchScroll, 'Disable touch scroll')
 this.tableChatFull.disableTouchScroll.image.addEventListener('click', self.events.disableTouchScrollClicked)
 
 this.tableChatFull.disableTouchScrollOn = new this.Item(this.tableChatFull.disableTouchScroll.position.x, this.tableChatFull.disableTouchScroll.position.y, this.tableChatFull.disableTouchScroll.size.x, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
-this.itemAsBitmap(this.tableChatFull.disableTouchScrollOn, self.permanentPreferences.sourceObjects.value.checkBoxChecked)
+this.tableChatFull.disableTouchScrollOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
 self.images.addCheckBoxButtonText(this.tableChatFull.disableTouchScrollOn, 'Disable touch scroll')
 this.tableChatFull.disableTouchScrollOn.image.addEventListener('click', self.events.disableTouchScrollOnClicked)
 
@@ -5670,7 +5664,7 @@ this.initializeStagesAndCanvasCallThisFirst = function(){
        console.log(getZ('staticItems', 'background'))
 
         this.images.background = new this.images.Item(0,0,canvasWidth,canvasHeight, getZ('staticItems', 'background'))
-        this.images.itemAsBitmap(this.images.background, self.permanentPreferences.sourceObjects.value.background)
+this.images.background.addBitmap( self.permanentPreferences.sourceObjects.value.background)
 this.displayChildren(this.images.background)
 /*
  var matrix = new createjs.ColorMatrix().adjustHue(-100)
@@ -5702,11 +5696,11 @@ console.log(this.images.background.image.isVisible())
              for (var i = 0; i < this.seats.length; i = i + 1){
          this.seats[i].openSeat.image.addEventListener('click', function(event){
           //clear the message array
-if(_.isArray(event.target.parentOfImageObject.messages)){event.target.parentOfImageObject.messages.splice(0)}//splice if arry
-else{event.target.parentOfImageObject.messages = []}//declare new array if not already an array
+if(_.isArray(event.target.parentItem.messages)){event.target.parentItem.messages.splice(0)}//splice if arry
+else{event.target.parentItem.messages = []}//declare new array if not already an array
 
 
-event.target.parentOfImageObject.messages.push('sit',event.target.parentOfImageObject.seatObjectAncestor.rotatedSeatNumber)
+event.target.parentItem.messages.push('sit',event.target.parentItem.seatObjectAncestor.rotatedSeatNumber)
           self.events.onButtonClick(event)
         })//openSeat.image.onClick event
         }
@@ -5928,6 +5922,14 @@ createjs.Ticker.setFPS(12)
          self.updateStages()
      }
  }
+
+}
+
+self.images.Item.prototype.getChildPositionAndSizeData = function(childType, options){
+
+
+getDisplayObjectPositionAndSizeData(this[childType], options)
+
 
 }
 
@@ -6207,10 +6209,10 @@ else if(!seatObjectA[indexes[0]][indexes[1]].position){console.log('seatObjectA 
 //move the chips to the appropriate point useing our referenceChips array
 if(indexes[0] === 'referenceChips' && _.isObject(seatObjectA['chips'][indexes[1]])){
 //if we are copying chip (premade) locations, we want to copy them to actual chip stack in addition to reference
-console.log('changing chips locations from chipReference array: ');console.log(value)
-console.log('pre change position: '+seatObjectA['chips'][indexes[1]].position.x+', '+seatObjectA['chips'][indexes[1]].position.y)
+//console.log('changing chips locations from chipReference array: ');console.log(value)
+//console.log('pre change position: '+seatObjectA['chips'][indexes[1]].position.x+', '+seatObjectA['chips'][indexes[1]].position.y)
 stagesToUpdate.push (self.setItemLocationsInItemAEqualToOnesInItemB(seatObjectA['chips'][indexes[1]], value, options ))
-console.log('post change position: '+seatObjectA['chips'][indexes[1]].position.x+', '+seatObjectA['chips'][indexes[1]].position.y)
+//console.log('post change position: '+seatObjectA['chips'][indexes[1]].position.x+', '+seatObjectA['chips'][indexes[1]].position.y)
 }//if copying from chipReference array
 
 
@@ -6624,9 +6626,9 @@ $(div).css('display', display)
 
 }
 
-    this.displayShownCard = function (cardText, parentOfImageObject, options){
+    this.displayShownCard = function (cardText, parentItem, options){
         
-      //  parentOfImageObject.text.text= cardText
+      //  parentItem.text.text= cardText
       //sprite sheet order numerical first starting with 2, then the same order as bridge suits
 
       /*
@@ -6669,11 +6671,11 @@ $(div).css('display', display)
       var cardFrameNumber = (rank-2)*4+suitOrder
       var cardImage = this.images.fourColorSprite.getFrame(cardFrameNumber)
 
-      parentOfImageObject.bitmapAnimation = new createjs.BitmapAnimation(this.images.fourColorSprite)
-      parentOfImageObject.bitmapAnimation.x = parentOfImageObject.position.x
-      parentOfImageObject.bitmapAnimation.y = parentOfImageObject.position.y
+      parentItem.bitmapAnimation = new createjs.BitmapAnimation(this.images.fourColorSprite)
+      parentItem.bitmapAnimation.x = parentItem.position.x
+      parentItem.bitmapAnimation.y = parentItem.position.y
 
-      parentOfImageObject.bitmapAnimation.gotoAndStop()
+      parentItem.bitmapAnimation.gotoAndStop()
 
       */
       if(!options){var options = {}}
@@ -6681,8 +6683,8 @@ $(div).css('display', display)
       options.update = false
 var stagesToUpdate = []
 
-   stagesToUpdate.push(   this.images.cardAsBitmap(parentOfImageObject,cardText) )
- stagesToUpdate.push( this.displayChildren(parentOfImageObject, options) )
+   stagesToUpdate.push(   this.images.cardAsBitmap(parentItem,cardText) )
+ stagesToUpdate.push( this.displayChildren(parentItem, options) )
 options.update = update
       if(update!== false){self.updateStages(stagesToUpdate) }
      else{ return stagesToUpdate}
@@ -6910,7 +6912,7 @@ return stagesToUpdate
           if(_.isNumber(options.stageNumber)){var stageNumber = options.stageNumber}//if options does not exist
    
 }//if options
-      else{var stageNumber= child.parentOfImageObject.position.z.stage}
+      else{var stageNumber= child.parentItem.position.z.stage}
 
         this.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[containerIndex].addChild(child)
 
@@ -6958,11 +6960,11 @@ defaultOptions.z = parentOfChipArray.firstChip.position.z
   //get default item to display size of chip stack
 if(parentOfChipArray.potSize instanceof this.images.Item){
   defaultOptions.chipStackSizeItem = parentOfChipArray.potSize 
-   defaultOptions.z = defaultOptions.chipStackSizeItem.position.z
+  if(!defaultOptions.z) {defaultOptions.z = defaultOptions.chipStackSizeItem.position.z}
 }
   else if(parentOfChipArray.bet instanceof this.images.Item){
     defaultOptions.chipStackSizeItem = parentOfChipArray.bet 
- defaultOptions.z = defaultOptions.chipStackSizeItem.position.z
+ if(!defaultOptions.z){defaultOptions.z = defaultOptions.chipStackSizeItem.position.z}
   }
 
 //get defaultZ position
@@ -7260,7 +7262,7 @@ var chipImageSource = self.permanentPreferences.sourceObjects.value.chips['10']
 
 
        chipArray.push(new this.images.Item(x,y,diameter, diameter, z))
-        this.images.itemAsBitmap(_.last(chipArray), chipImageSource) 
+        _.last(chipArray).addBitmap(chipImageSource) 
  
 _.last(chipArray).text =  new createjs.Text(chipValue, '7px ' + self.permanentPreferences.defaultFontType.value, 'white')
 _.last(chipArray).text.x = _.last(chipArray).position.x + parentOfChipArray[options.chipArrayName][parentOfChipArray[options.chipArrayName].length-1].size.x/2
@@ -7724,43 +7726,93 @@ if(_.isNumber(y)){imageOrText.y = y}
 
 
 //set width/height
-if(imageOrText instanceof createjs.Text){
-
-if(_.isNumber(newOuterWidth)  ){imageOrText.maxWidth =  newOuterWidth}
-  //something to implemenet later, set max height of text
-if(_.isNumber(newOuterHeight)){             }
-
-}//if text
-
-else if(imageOrText instanceof createjs.Bitmap){
+if(imageOrText instanceof createjs.DisplayObject){
 
 var restoreWidth = false; var restoreHeight = false
-var newWidth; var newHeight
+var newWidth; var newHeight; var maxWidth; var maxHeight
+var currentWidth; var currentHeight
+var maskX; var maskY
 
+//GET CURRENT MASKS for current width/heights
+var currentMask = imageOrText.mask
+if(imageOrText.sourceRect instanceof createjs.Rectangle){currentMask = imageOrText.sourceRect}
+
+if(currentMask instanceof createjs.Rectangle){
+
+ currentWidth = currentMask.width
+ currentHeight = currentMask.height
+ maskX = currentMask.x
+ maskY = currentMask.y
+
+}//if we have defaults from mask
+
+//============GET MAX WIDTH/HEIGHTS==========
+
+//RECTANGLE/BITMAP width/heights
+if(imageOrText instanceof createjs.Rectangle || imageOrText instanceof createjs.Bitmap){maxWidth = imageOrText.width; maxHeight = imageOrText.height}
+
+
+//SHAPE width/heights
+else if(imageOrText instanceof createjs.Shape){
+  //IF PARENT WE USE GIVEN DATA
+if(imageOrText.parentItem instanceof self.images.Item){maxWidth = imageOrText.parentItem.size.x; maxHeight = imageOrText.parentItem.size.y}
+ //if not parent, we give the default infinite height/width
+ else{ maxWidth = self.getParentOfStageObject(0).stage.canvas.width; maxHeight = self.getParentOfStageObject(0).stage.canvas.height}
+
+ }//if non-rectangle shape
+
+ //TEXT width/heights
+ else if(imageOrText instanceof createjs.Text){
+
+  maxWidth = self.getParentOfStageObject(0).stage.canvas.width
+    maxHeight = self.getParentOfStageObject(0).stage.canvas.height
+ }
+
+ //OTHER DISPAYOBJECT width/heights
+ else{//if other type of display object
+var bounds = imageOrText.getBounds()
+if(bounds instanceof createjs.DisplayObject != true){console.log(imageOrText)}
+maxWidth = bounds.width
+maxHeight = bounds.height
+ }//if other type of display object
+
+
+}//if we do NOT have a current mask
+
+//WIDTH
 if(_.isNumber(newOuterWidth) ){
- newHeight = imageOrText.image.height//assign default height
-if( newOuterWidth < imageOrText.image.width){  newWidth = newOuterWidth}
+  //assign default height
+  if(_.isNumber(currentHeight)){newHeight = currentHeight}
+    else{ newHeight = maxHeight}
+
+if( newOuterWidth < maxWidth){  newWidth = newOuterWidth}
   else{
-     newWidth = imageOrText.image.width
+     newWidth = maxWidth
     restoreWidth = true
-  }
 }//if width specified
 
-
+//HEIGHT
 if(_.isNumber(newOuterHeight) ){
-if(!_.isNumber(newWidth)){newWidth = imageOrText.image.width } //assign default width
-if (newOuterHeight < imageOrText.image.height){ newHeight = newOuterHeight}
+  //assign default width
+if(!_.isNumber(newWidth)){newWidth = currentWidth} 
+  if(!_.isNumber(newWidth)){newWidth = maxWidth}
+if (newOuterHeight < maxHeight){ newHeight = newOuterHeight}
 else{
-   newHeight = imageOrText.image.height
+   newHeight = maxHeight
   restoreHeight = true
 }
 }//if height specified
 
+if(_.isNumber(maskX)){var x = maskX}
+  else{var x = 0}
+
+    if(_.isNumber(maskY)){var y = maskY}
+  else{var y = 0}
 
 //if values too high or invalid for both make a null rectangle
-if(restoreWidth === true && restoreHeight === true){imageOrText.sourceRect = null}
+if(restoreWidth === true && restoreHeight === true){imageOrText.mask = null}
 else if(!_.isNumber(newWidth) && !_.isNumber(newHeight)){}
-else if(_.isNumber(newWidth) && _.isNumber(newHeight) ){imageOrText.sourceRect = new createjs.Rectangle(0,0,newWidth, newHeight)}
+else if(_.isNumber(newWidth) && _.isNumber(newHeight) ){imageOrText.mask = new createjs.Rectangle(x, y, newWidth, newHeight)}
 
 
 }//if bitmap/graphic type of image
@@ -7796,7 +7848,6 @@ if(_.isNumber(newOuterHeight)){
 
 //NOW ADJUST LINE HEIGHT
 var oldLineHeight = $(imageOrText).css('line-height')
-console.log('checking if we need to adjust line-height, old value = ' + oldLineHeight)
 //MAKE SURE old line height is pixel based
 if(_.isString(oldLineHeight) && oldLineHeight.indexOf('px') !== -1){
   
@@ -7804,7 +7855,7 @@ if(_.isString(oldLineHeight) && oldLineHeight.indexOf('px') !== -1){
 
  if($(imageOrText).attr('type') === 'button'){
 
-  console.log('we are going to adjust line-height of button to '+  cssOptions['line-height'])
+  console.log('we are going to adjust line-height of button from: ' + oldLineHeight + ' to '+  cssOptions['line-height'])
   console.log(imageOrText)}
 
 
@@ -8544,8 +8595,8 @@ var height = self.images.foldToAnyBet.size.y
     var preactionItem = new self.images.Item(0, 0,0, height, getZ('staticItems','buttons'))
     var preactionItemOn = new self.images.Item(0, 0, 0, height,  getZ('staticItems','buttons'))
 
-self.images.itemAsBitmap(preactionItem, self.permanentPreferences.sourceObjects.value.checkBox )
-self.images.itemAsBitmap(preactionItemOn, self.permanentPreferences.sourceObjects.value.checkBoxChecked)
+preactionItem.addBitmap (self.permanentPreferences.sourceObjects.value.checkBox )
+preactionItemOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
 
       self.images.addCheckBoxButtonText(preactionItem, text)
       self.images.addCheckBoxButtonText(preactionItemOn, text)
@@ -9285,7 +9336,7 @@ this.adjustHoleCardImageSourceRectangle = function(holeCards, options){
 if(_.isArray(holeCards)){cardArray = holeCards}
 else if(_.isNumber(holeCards)){cardArray = _.flatten(this.images.seats[holeCards].hiddenCards, this.images.seats[holeCards].shownCards)}
 else if(holeCards instanceof this.images.Item){cardArray = [holeCards]}
-  else{throw 'adjusthole cards source rectangle given insufficient parameter'}
+  else{throw 'adjusthole cards source rectangle (mask) given insufficient parameter'}
 
 
 //check if it is protruding
@@ -9295,7 +9346,7 @@ if( _.isNumber(options.seatNumber)){var seatNum = options.seatNumber}
   var distanceFromCardTopToSeatBottom =  this.images.seats[seatNum].seat.position.y + this.images.seats[seatNum].seat.size.y  -   cardArray[i].image.y
 if(cardArray[i].size.y > distanceFromCardTopToSeatBottom){
   //check if last iteration
- cardArray[i].image.sourceRect = createRectangle(cardArray[i], cardArray[i+1], distanceFromCardTopToSeatBottom)
+ cardArray[i].image.mask = createRectangle(cardArray[i], cardArray[i+1], distanceFromCardTopToSeatBottom)
  stagesToUpdate.push(this.easelJSDisplayObjectChanged(cardArray[i]))
 }
 
@@ -9307,7 +9358,7 @@ function createRectangle(currentCard, nextCard, height){
   var currentX = currentCard.image.x
   if(nextCard instanceof self.images.Item){var width = nextCard.image.x - currentX}
     else{var width = currentCard.size.x}
-//console.log('sourceRect width: '+width+' height: '+height)
+//console.log('mask width: '+width+' height: '+height)
   var rectangle = new createjs.Rectangle(0,0,width, height)
   return rectangle
 }
@@ -9391,34 +9442,34 @@ this.updateBetSize = function(betSize, options){
 }
  
     //parameter is parent of the actual Image object
-    this.displayImage = function (parentOfImageObject, options){
+    this.displayImage = function (parentItem, options){
  if(!_.isObject(options)){var optionsWithCondom = {}}
     else{var optionsWithCondom = _.clone(options)}
 
 if(!_.isNumber(optionsWithCondom.stageNumber)){
-  optionsWithCondom.stageNumber = parentOfImageObject.position.z.stage
+  optionsWithCondom.stageNumber = parentItem.position.z.stage
 }
 if(optionsWithCondom.container){
   var container = optionsWithCondom.container
 }//if options.conainer
 
   else {
-var container = parentOfImageObject.position.z.container
+var container = parentItem.position.z.container
 }//if no optoins.container specified
 
 
-        if(parentOfImageObject.image){
+        if(parentItem.image){
 //if html element
-         if(_.isElement(parentOfImageObject.image)){
+         if(_.isElement(parentItem.image)){
           //get default css display
           var display = self.imageData.defaultDisplayCSS
           if(_.isString(options.displayCSS)){display  = options.displayCSS}
-            else if(_.isString(parentOfImageObject.position.displayCSS)){display = parentOfImageObject.position.displayCSS}
-          $(parentOfImageObject.image).css('display', display)
+            else if(_.isString(parentItem.position.displayCSS)){display = parentItem.position.displayCSS}
+          $(parentItem.image).css('display', display)
         }
         
-         else if (this.arrayOfParentsOfStageAndOfContainerArray[optionsWithCondom.stageNumber].containers[container].contains(parentOfImageObject.image) !==true){
-this.addChildToContainer(parentOfImageObject.image, container, optionsWithCondom)
+         else if (this.arrayOfParentsOfStageAndOfContainerArray[optionsWithCondom.stageNumber].containers[container].contains(parentItem.image) !==true){
+this.addChildToContainer(parentItem.image, container, optionsWithCondom)
 this.arrayOfParentsOfStageAndOfContainerArray[optionsWithCondom.stageNumber].upToDate = false
 var changedWithoutUpdate = optionsWithCondom.stageNumber
         } //if easeljs object
@@ -9578,12 +9629,12 @@ return changedWithoutUpdate
         }
 
  
- this.hideImage = function(parentOfImageObject, options){
+ this.hideImage = function(parentItem, options){
  if(!_.isObject(options)){var optionsWithCondom = {}}
     else{var optionsWithCondom = _.clone(options)}
 
 if( !_.isNumber(optionsWithCondom.stageNumber)){
-  var stageNumber = parentOfImageObject.position.z.stage
+  var stageNumber = parentItem.position.z.stage
 }//if options.parentofstage
 else{
   var stageNumber = optionsWithCondom.stageNumber 
@@ -9593,18 +9644,18 @@ if(_.isNumber(optionsWithCondom.container)){
 }//if options.conainer
 
   else {
-var container = parentOfImageObject.position.z.container
+var container = parentItem.position.z.container
 }//if no optoins.container specified
 
-        if(parentOfImageObject.image) {
+        if(parentItem.image) {
  // if html element
-         if(_.isElement(parentOfImageObject.image)){
-parentOfImageObject.saveDisplayCSS()
-          $(parentOfImageObject.image).css('display','none')
+         if(_.isElement(parentItem.image)){
+parentItem.saveDisplayCSS()
+          $(parentItem.image).css('display','none')
         }
 //if easeljs
-      else  if(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[container].contains(parentOfImageObject.image))  {
-        self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[container].removeChild(parentOfImageObject.image)
+      else  if(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[container].contains(parentItem.image))  {
+        self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[container].removeChild(parentItem.image)
 this.arrayOfParentsOfStageAndOfContainerArray[stageNumber].upToDate = false
 var changedWithoutUpdate = stageNumber
       }
@@ -10518,7 +10569,7 @@ textTween.setPaused(false)
   }//playerChats function
 
 this.appendTableChatFullMessageText = function(messageArray, options){
-  console.log('this.appendTableChatFullMessageText called' + 'messageArray parameter = '+messageArray)
+//  console.log('this.appendTableChatFullMessageText called' + 'messageArray parameter = '+messageArray)
 if(!options){var options = {}}
 
 var isAtBottom = this.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText() 
@@ -11400,7 +11451,7 @@ options.css['z-index'] = z
 
 $(element).css(options.css).attr(options.attr).addClass(options.class)
 
-element.parentOfImageObject = this
+element.parentItem = this
 
 //if container specified append to it
 if(options.container){$(options.container).append(element)}
@@ -12309,7 +12360,7 @@ else{
 
      //background bitmap 
         messageBoxItems.window = new self.images.Item(messageBoxWindowX,messageBoxWindowY,messageBoxWindowWidth,messageBoxWindowHeight, getZ(newStageNumber,'background'))
-        self.images.itemAsBitmap(messageBoxItems.window, self.permanentPreferences.sourceObjects.value.messageBoxBackground, hideOrDisplayChildrenOptions)
+messageBoxItems.window.addBitmap(self.permanentPreferences.sourceObjects.value.messageBoxBackground, hideOrDisplayChildrenOptions)
         
 
    //MAKE WINDOW DRAGGABLE
@@ -12323,7 +12374,7 @@ else{
 
  //---------------------------------title---------------------------------
         messageBoxItems.windowTitle = new self.images.Item (messageBoxWindowX,messageBoxWindowY, messageBoxWindowWidth,outerTopHeight,getZ(newStageNumber,'text'))
-         self.images.addItemText(messageBoxItems.windowTitle, messageInfo.title, messageInfo.titleSizeAndFont, messageInfo.titleColor)
+         messageBoxItems.windowTitle.addText(messageInfo.title, messageInfo.titleSizeAndFont, messageInfo.titleColor)
 
          //----------------------------message---------------------------
          var textHeight = innerMessageBoxHeight - textTopOffset - buttonButtomOffset - buttonHeight - textBottomOffset - maxDistanceFromButtonsToCheckOption
@@ -12335,7 +12386,7 @@ var messageTextOptions = {
   ,  lineWidth :messageBoxItems.message.size.x*.9 
 ,maxWidth : null
 }
-        self.images.addItemText(messageBoxItems.message, messageString, messageInfo.messageSizeAndFont, messageInfo.messageColor, messageTextOptions)
+        messageBoxItems.message.addText( messageString, messageInfo.messageSizeAndFont, messageInfo.messageColor, messageTextOptions)
 
 
 
@@ -12345,7 +12396,7 @@ var messageTextOptions = {
 
             //add closeX Image
          messageBoxItems.closeWindow =  new self.images.Item (closeX,closeY,closeXWidth,closeXHeight, getZ(newStageNumber,'background')) 
-       self.images.itemAsBitmap(messageBoxItems.closeWindow, self.permanentPreferences.sourceObjects.value.messageBoxCloseX, hideOrDisplayChildrenOptions)
+messageBoxItems.closeWindow.addBitmap (self.permanentPreferences.sourceObjects.value.messageBoxCloseX, hideOrDisplayChildrenOptions)
 
 
 if(messageInfo.closeWindowMessages){ messageBoxItems.closeWindow.messages = messageInfo.closeWindowMessages}
@@ -12355,7 +12406,7 @@ messageBoxItems.closeWindow.image.addEventListener('click', messageInfo.closeWin
    //--------------------------------OK button--------------------------------
         messageBoxItems.okay =  new self.images.Item (okayX,buttonY, messageInfo.okayWidth,buttonHeight,getZ(newStageNumber, 'buttons')) 
         self.images.itemAsRectangle( messageBoxItems.okay, messageInfo.buttonBackgroundColor )
-        self.images.addItemText( messageBoxItems.okay, messageInfo.okayText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
+        messageBoxItems.okay.addText(messageInfo.okayText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
             //asign messages if okaymessages exists
             if(messageInfo.okayMessages){  messageBoxItems.okay.messages = messageInfo.okayMessages}
                 
@@ -12366,7 +12417,7 @@ messageBoxItems.okay.image.addEventListener('click', messageInfo.okayEvent)
         if(messageInfo.cancel){
         messageBoxItems.cancel =  new self.images.Item (cancelX,buttonY, messageInfo.cancelWidth,buttonHeight, getZ(newStageNumber, 'buttons')) 
         self.images.itemAsRectangle( messageBoxItems.cancel, messageInfo.buttonBackgroundColor )
-        self.images.addItemText( messageBoxItems.cancel, messageInfo.cancelText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
+        messageBoxItems.cancel.addText(messageInfo.cancelText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
         //add message to cancel if available
         if(messageInfo.cancelMessages){ messageBoxItems.cancel.messages = messageInfo.cancelMessages  }
 messageBoxItems.cancel.image.addEventListener('click', messageInfo.cancelEvent)
@@ -13709,7 +13760,7 @@ for(var i = 0;i<self.gameState.numSeats;i++){
  //console.log(self.isItemAddedToStage(self.images.showTableChatFull))
  //self.adjustHoleCardImageSourceRectangle(self.images.background, {seatNumber:4})
  
- //self.images.showTableChatFull.image.sourceRect = new createjs.Rectangle(0,0,30,30)
+ //self.images.showTableChatFull.image.mask = new createjs.Rectangle(0,0,30,30)
  //self.updateStages(0, {forceUpdate:true})
 
 }
@@ -13718,16 +13769,15 @@ for(var i = 0;i<self.gameState.numSeats;i++){
 
 this.getInitialPermanentPreferences = function(callback){
 
-   socket.once('table_state', function(table_state){
-             console.log('one time table_state message received solely for the purpose of getting permanent preferences')
- self.updatePreference(self.permanentPreferences, table_state.preferences, {updateEqualValues:true})  
+   socket.once('preferences', function(preferences){
+             console.log('preferences received')
+ self.updatePreference(self.permanentPreferences, preferences, {updateEqualValues:true})  
 
 if(_.isFunction(callback)){callback()}
    
     })
 
-//if(_.isFunction(callback)){callback()}
-    socket.emit('get_table_state')
+    socket.emit('get_preferences')
 }
 
 
