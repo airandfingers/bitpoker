@@ -1,13 +1,6 @@
  //  $("#chat_table").css('display','none')
 //   $("#chat_table").css('top','1000px')
-     /* function onKeyDown(event) {
-event.preventDefault() } 
 
-window.onKeydown = onKeyDown
-*/
-
-
- // $(window).on('mousewheel', function(e){e.stopPropagation()})
 
     //default canvas size is 690x480
     //all numbers are in base 0, including variable names and documentation
@@ -774,48 +767,7 @@ this.addElement(newButton[0], 'image', options)
 }//addBootstrapButton 
 
 
- this.images.itemAsBitmap = function (item, source, options){
-  //console.log(this.itemAsBitmap.caller)
-if(!options){var options = {}}
-  var update = options.update
-options.update = false
-  var stagesToUpdate = []
-
-  if(_.isString(source)){
-    var tempImage= new Image()
-    tempImage.src = source
- item.image = new createjs.Bitmap(tempImage)
-  }//if source is string
-
-else if(_.isObject(source)){
- // console.log(source)
-//if already an Image instance, just use it
-
-//creating new createJS bitmap based on Image object
-  item.image = new createjs.Bitmap(source)
-
-  //update width and height of parent if necessary
- if(source.width > item.size.x){item.size.x = source.width}
-  if(source.height > item.size.y){item.size.y = source.height}
-
-
-}//if image source is an Image object
-
-else{
-console.log('itemAsBitmap passed non source paramater');console.log(source instanceof playZoneLandingPage.window.Image);console.log(source);throw '';
-
-}
-  
-item.positionChild('image', {update:false}) 
-    item.image.parentItem = item
-    if(item.messages){        item.image.addEventListener('click', self.events.onButtonClick)    }
- stagesToUpdate.push(  self.easelJSDisplayObjectChanged(item))
-
- options.update = update
-    if(options.update !== false){self.updateStages(stagesToUpdate)}
-      else{return stagesToUpdate}
-
-            }
+ 
 
 this.images.Item.prototype.updateChildLocationAndSize = function(options){
 
@@ -839,11 +791,74 @@ var asdf = this.positionChild('image', positionOptions)
 return asdf
 }
 
+
 this.images.Item.prototype.addBitmap = function(source, options){
-  self.images.itemAsBitmap(this, source, options)
+ 
+var addItemBitmap = function (item, source, options){
+if(!options){var options = {}}
+  var update = options.update
+options.update = false
+  var stagesToUpdate = []
+
+
+var restOfFunction = function(source){
+
+ var bitmap = new createjs.Bitmap(source)
+if(options.sourceRect instanceof createjs.Rectangle){bitmap.sourceRect = options.sourceRect}
+
+
+if(options.size !== false){var adoptionOptions = {size:true}}
+  else{var adoptionOptions = {}}
+
+      //THIS sets the created bitmap as child, and will increase parent size as necessary to match child's
+   item.adoptChild(bitmap, 'image', adoptionOptions)
+item.positionChild('image', {update:false}) 
+   
+ stagesToUpdate.push(  self.easelJSDisplayObjectChanged(item))
+
+ options.update = update
+    if(options.update !== false){self.updateStages(stagesToUpdate)}
+      else{
+if(_.isFunction(options.callback)){options.callback(stagesToUpdate)}
+        return stagesToUpdate
+    }
+}//rest of function
+
+//remove previous bitmaps
+if(_.isObject(item.image)){
+  stagesToUpdate.push(item.hide({update:false, text:false}))
 }
 
-            this.images.cardAsBitmap = function(item,card, options){
+
+  if(_.isString(source)){
+    var tempImage= new Image()
+    tempImage.src = source
+    //FINISH the rest of the function AFTER image has loaded from the SRC
+    tempImage.onload = function(e){restOfFunction(tempImage)    }
+
+  }//if source is string
+
+else if(_.isObject(source)){
+
+//creating new createJS bitmap based on Image object
+ restOfFunction(source)
+
+}//if image source is an Image object
+
+else{
+console.log('itemAsBitmap passed non source paramater');console.log(source instanceof playZoneLandingPage.window.Image);console.log(source);throw '';
+
+}
+
+
+            }//item as bitmap
+
+  return addItemBitmap(this, source, options)
+
+
+}
+
+            this.images.cardAsBitmap = function(item, card, options){
              /*   var cardImage = new Image()
                  
                  if(_.isString(cardText)){
@@ -859,33 +874,41 @@ if(!options){var options = {}}
  if(self.sessionPreferences.displaySize.value !== 'mobile'){var sourceParent = self.permanentPreferences.sourceObjects.value.cardObjectParent   }
       else{var sourceParent = self.permanentPreferences.sourceObjects.value.cardObjectParent }
 
-        if(card instanceof Image){var source = card}
- else if(_.isString(card)){
-   
-var source  = sourceParent[card]}
+        if(_.isObject(card)){var source = card}
+          else if(!_.isString(card) || card === ''){var card = 'back'}
+
+  if(_.isString(card)){
+  var animationData = sourceParent.spriteSheet.getAnimation(card)
+  var frame = sourceParent.spriteSheet.getFrame(animationData.frames[0])
+   var source = frame.image
+   options.sourceRect = frame.rect
+//var source  = sourceParent[card]
+}
+
+  /*
 else{
   var source = sourceParent.cardBack
 }
 //console.log(source)
 //console.log(sourceParent)
-  //else{throw 'invalid parameter passed to create a card'}
+  //
+*/
 
-    stagesToUpdate.push(  this.itemAsBitmap(item,source, options))
+    stagesToUpdate.push(  item.addBitmap(source, options))
 
     if(options.update !== false){self.updateStages(stagesToUpdate)}
       else{return stagesToUpdate}
             }
     
             //actually a rectangle with rounded edges
-             this.images.itemAsRectangle = function (item,fillColor){
- item.image = new createjs.Shape()
-  self.positionItemImage(item,{update:false})
+             this.images.itemAsRectangle = function (item, fillColor){
+ var rect = new createjs.Shape()
+ item.adoptChild(rect, 'image')
+  self.positionItemImage(item, {update:false})
 item.drawRoundedRectangle(fillColor)
-item.image.parentItem = item
 item.fillColor = fillColor
-if(item.messages){
-    item.image.addEventListener('click', self.events.onButtonClick )
-}
+
+
             }
 
             //draws a seat
@@ -1120,7 +1143,14 @@ event.target.parentItem.text.y = event.target.parentItem.text.y - 2
         if(event.target.parentItem.messages){
           var messages = event.target.parentItem.messages
           //if 1 depth messages array then just do it normally
-          if(!_.isArray(messages[0])){  socket.emit.apply(socket, messages)   }
+          if(!_.isArray(messages[0])){  
+            //debug for butotn failure
+            if($(event.target).attr('type') == 'button'){
+              console.log('element type button onbuttonclick event fired')
+              console.log(event)
+            }
+            socket.emit.apply(socket, messages)   
+          }
 else{//multiple depth array
 for(var i = 0;i<messages.length;i++){
  socket.emit.apply(socket, messages[i])
@@ -2165,7 +2195,7 @@ var showMeHere = new self.images.Item(0,0,buttonWidth, buttonHeight, {stage:butt
 
  showMeHere.addText( 'Show Me Here', buttonFontSize+'px '+ buttonFont, 'black' )
 
-showMeHere.image.addEventListener('click', function(e){
+showMeHere.on('click', function(e){
 self.hideChildren(showMeHere)
 self.changeUserSeatView(rotatedSeatNumber)
 })
@@ -2841,10 +2871,9 @@ this.loadImageSources = function(backgroundLoad){
 
 if(self.isIframe()){
 var preferencesRetreived = false
-
+console.log('loadImageSources called from inside iframe')
 self.getInitialPermanentPreferences (function(){preferencesRetreived = true})
 }
-console.log('loadImageSources called')
 
 if(backgroundLoad !== true){this.initializeStagesAndCanvasCallThisFirst()}
 
@@ -2930,9 +2959,12 @@ var createPreloadArray = function(){
   
    //push card back mobile and desktop
   imageSourceArray.push({src:self.images.sources.desktopCardFolder+self.images.sources.cardBackFileNameWithoutExtension+'.png', id: resourceID, name: 'cardBack', sourceObjectParent: desktopCards})
+  imageSourceArray.push({src:self.images.sources.desktopCardFolder+self.images.sources.cardSpriteFileNameWithoutExtension+'.png', id: resourceID, name: self.images.sources.cardSpriteFileNameWithoutExtension, sourceObjectParent: desktopCards})
+  
   imageSourceArray.push({src:self.images.sources.mobileCardFolder+self.images.sources.cardBackFileNameWithoutExtension+'.png', id: resourceID, name: 'cardBack', sourceObjectParent: mobileCards})
   
 
+/*
   //push individual cards
       for(var i = 2;i<=14;i++){
           var cardRank
@@ -2950,17 +2982,17 @@ var createPreloadArray = function(){
           resourceID++
           imageSourceArray.push({src:self.images.sources.desktopCardFolder+cardRank+'s.png', id: resourceID, name: cardRank+'s', sourceObjectParent: desktopCards})
           resourceID++
-    /*     imageSourceArray.push({src: self.images.sources.mobileCardFolder+cardRank+'c.png', id: resourceID, name: cardRank+'c', sourceObjectParent: mobileCards})
+        imageSourceArray.push({src: self.images.sources.mobileCardFolder+cardRank+'c.png', id: resourceID, name: cardRank+'c', sourceObjectParent: mobileCards})
         resourceID++
           imageSourceArray.push({src:self.images.sources.mobileCardFolder+cardRank+'d.png', id: resourceID, name: cardRank+'d', sourceObjectParent: mobileCards})
           resourceID++
           imageSourceArray.push({src:self.images.sources.mobileCardFolder+cardRank+'h.png', id: resourceID, name: cardRank+'h', sourceObjectParent: mobileCards})
           resourceID++
           imageSourceArray.push({src:self.images.sources.mobileCardFolder+cardRank+'s.png', id: resourceID, name: cardRank+'s', sourceObjectParent: mobileCards})
-   */       resourceID++
+         resourceID++
       }//push card
 
-
+*/
   totalSources = imageSourceArray.length+soundSourceArray.length+flashSoundSourceArray.length
 
   }//create preloadArray function
@@ -3261,6 +3293,24 @@ createPreloadArray()
 
 
 this.images.setDefaults = function(){
+
+//LOAD SPRITES
+var fullSizeCardSpriteData = {
+"images": ["sprite.png"], "frames": [[2080, 0, 40, 64], [2040, 0, 40, 64], [2000, 0, 40, 64], [1960, 0, 40, 64], [1920, 0, 40, 64], [1880, 0, 40, 64], [1840, 0, 40, 64], [1800, 0, 40, 64], [1760, 0, 40, 64], [1720, 0, 40, 64], [1680, 0, 40, 64], [1640, 0, 40, 64], [1600, 0, 40, 64], [1560, 0, 40, 64], [1520, 0, 40, 64], [1480, 0, 40, 64], [1440, 0, 40, 64], [1400, 0, 40, 64], [1360, 0, 40, 64], [1320, 0, 40, 64], [1280, 0, 40, 64], [1240, 0, 40, 64], [1200, 0, 40, 64], [1160, 0, 40, 64], [1120, 0, 40, 64], [1080, 0, 40, 64], [1040, 0, 40, 64], [1000, 0, 40, 64], [960, 0, 40, 64], [920, 0, 40, 64], [880, 0, 40, 64], [840, 0, 40, 64], [800, 0, 40, 64], [760, 0, 40, 64], [720, 0, 40, 64], [680, 0, 40, 64], [640, 0, 40, 64], [600, 0, 40, 64], [560, 0, 40, 64], [520, 0, 40, 64], [480, 0, 40, 64], [440, 0, 40, 64], [400, 0, 40, 64], [360, 0, 40, 64], [320, 0, 40, 64], [280, 0, 40, 64], [240, 0, 40, 64], [200, 0, 40, 64], [160, 0, 40, 64], [120, 0, 40, 64], [80, 0, 40, 64], [40, 0, 40, 64], [0, 0, 40, 64] ], "animations": {"2c":[0], "2d":[1], "2h":[2], "2s":[3], "3c":[4], "3d":[5], "3h":[6], "3s":[7], "4c":[8], "4d":[9], "4h":[10], "4s":[11], "5c":[12], "5d":[13], "5h":[14], "5s":[15], "6c":[16], "6d":[17], "6h":[18], "6s":[19], "7c":[20], "7d":[21], "7h":[22], "7s":[23], "8c":[24], "8d":[25], "8h":[26], "8s":[27], "9c":[28], "9d":[29], "9h":[30], "9s":[31], "ac":[32], "ad":[33], "ah":[34], "as":[35], "back":[36], "jc":[37], "jd":[38], "jh":[39], "js":[40], "kc":[41], "kd":[42], "kh":[43], "ks":[44], "qc":[45], "qd":[46], "qh":[47], "qs":[48], "tc":[49], "td":[50], "th":[51], "ts":[52] }
+}
+
+fullSizeCardSpriteData.images = [self.permanentPreferences.sourceObjects.value.desktopCards[self.images.sources.cardSpriteFileNameWithoutExtension]]
+self.permanentPreferences.sourceObjects.value.desktopCards.spriteSheet = new createjs.SpriteSheet(fullSizeCardSpriteData)
+
+/*
+var mobileSizeCardSpriteData = {
+"images": ["sprite.png"], "frames": [[1872, 0, 36, 45], [1836, 0, 36, 45], [1800, 0, 36, 45], [1764, 0, 36, 45], [1728, 0, 36, 45], [1692, 0, 36, 45], [1656, 0, 36, 45], [1620, 0, 36, 45], [1584, 0, 36, 45], [1548, 0, 36, 45], [1512, 0, 36, 45], [1476, 0, 36, 45], [1440, 0, 36, 45], [1404, 0, 36, 45], [1368, 0, 36, 45], [1332, 0, 36, 45], [1296, 0, 36, 45], [1260, 0, 36, 45], [1224, 0, 36, 45], [1188, 0, 36, 45], [1152, 0, 36, 45], [1116, 0, 36, 45], [1080, 0, 36, 45], [1044, 0, 36, 45], [1008, 0, 36, 45], [972, 0, 36, 45], [936, 0, 36, 45], [900, 0, 36, 45], [864, 0, 36, 45], [828, 0, 36, 45], [792, 0, 36, 45], [756, 0, 36, 45], [720, 0, 36, 45], [684, 0, 36, 45], [648, 0, 36, 45], [612, 0, 36, 45], [576, 0, 36, 45], [540, 0, 36, 45], [504, 0, 36, 45], [468, 0, 36, 45], [432, 0, 36, 45], [396, 0, 36, 45], [360, 0, 36, 45], [324, 0, 36, 45], [288, 0, 36, 45], [252, 0, 36, 45], [216, 0, 36, 45], [180, 0, 36, 45], [144, 0, 36, 45], [108, 0, 36, 45], [72, 0, 36, 45], [36, 0, 36, 45], [0, 0, 36, 45] ], "animations": {"2c":[0], "2d":[1], "2h":[2], "2s":[3], "3c":[4], "3d":[5], "3h":[6], "3s":[7], "4c":[8], "4d":[9], "4h":[10], "4s":[11], "5c":[12], "5d":[13], "5h":[14], "5s":[15], "6c":[16], "6d":[17], "6h":[18], "6s":[19], "7c":[20], "7d":[21], "7h":[22], "7s":[23], "8c":[24], "8d":[25], "8h":[26], "8s":[27], "9c":[28], "9d":[29], "9h":[30], "9s":[31], "ac":[32], "ad":[33], "ah":[34], "as":[35], "back":[36], "jc":[37], "jd":[38], "jh":[39], "js":[40], "kc":[41], "kd":[42], "kh":[43], "ks":[44], "qc":[45], "qd":[46], "qh":[47], "qs":[48], "tc":[49], "td":[50], "th":[51], "ts":[52] }
+}
+mobileSizeCardSpriteData.images = [self.permanentPreferences.sourceObjects.value.mobileCards[self.images.sources.cardSpriteFileNameWithoutExtension]]
+
+self.permanentPreferences.sourceObjects.value.mobileCards.spriteSheet = new createjs.SpriteSheet(mobileSizeCardSpriteData)
+*/
+
 
 //========================IMAGE STATIC VARIABLES ==============================
  var canvasWidth = self.getParentOfStageObject(0).stage.canvas.width  
@@ -3649,17 +3699,23 @@ this.sitOutNextBlindOn.addBitmap( self.permanentPreferences.sourceObjects.value.
 
       self.images.drawCheckBoxButtonHitSquareAndAdjustItemWidth = function(item){
           //get width of text
-        var textWidth =   self.getTextWidthAndFontSize(item)[0]
+          var data = item.getChildPositionAndSizeData('text',{maxSize:true})
+          console.log('drawCheckBoxButtonHitSquareAndAdjustItemWidth')
+          console.log(item)
+          console.log(data)
+        var textWidth =  data.outerWidth
         var totalWidth = checkBoxButtonCheckBoxWidth + checkBoxButtonDistanceFromBoxToText + textWidth
         item.size.x = totalWidth
         var textHeight = item.text.getMeasuredHeight()
         if(textHeight > checkBoxButtonHeight){var height = textHeight}
           else{var height = checkBoxButtonHeight}
-            item.size.y = textHeight
+            item.size.y = height
         //draw rectangular shape
         var hitSquare = new createjs.Shape()
         hitSquare.graphics.beginFill('#FFFFFF').beginStroke(0)
-        .drawRect(0, checkBoxButtonDistanceFromEdgeToInteriorHitAreaY, totalWidth, item.size.y - checkBoxButtonDistanceFromEdgeToInteriorHitAreaY)
+        .drawRect(0, 0, item.size.x, item.size.y)
+        console.log('drew hitsquare')
+        console.log(hitSquare)
         return hitSquare
       }
 
@@ -3696,8 +3752,9 @@ item.text.textAlign = 'left'
 item.textColor = checkBoxButtonTextColor
 
 var hit = self.images.drawCheckBoxButtonHitSquareAndAdjustItemWidth(item)
-item.text.hitArea  = hit
-item.image.hitArea  = hit
+item.text.mouseEnabled = false
+item.text.hitArea = hit
+item.image.hitArea = hit
 
 //assign options as properties
 assignObjectPropertiesAsPropertiesOfDisplayObject(item.text, options)
@@ -3726,19 +3783,7 @@ self.images.addCheckBoxButtonText(checkedItem, text, options)
       self.images.addCheckBoxButtonText(this.sitOutNextHandOn, 'Sit out next hand')
       self.images.addCheckBoxButtonText (  this.sitOutNextBlindOn,'Sit out next blind' )
 
-   
-
-/*
-      //onclick
-       this.foldToAnyBet.image.addEventListener('click',  self.events.foldToAnyBetClick  )       //self.events.onButtonClick
-        this.sitOutNextHand.image.addEventListener('click', self.events.onButtonClick )
-          this.sitOutNextBlind.image.addEventListener('click',self.events.onButtonClick )
-           //onclick for  on versions
-                  this.foldToAnyBetOn.image.addEventListener('click',  self.events.foldToAnyBetOnClick) //self.events.onButtonClick
-                  this.sitOutNextHandOn.image.addEventListener('click', self.events.onButtonClick)
-                    this.sitOutNextBlindOn.image.addEventListener('click', self.events.onButtonClick)
-*/
-
+  
   var seatZ =  getZ('staticItems','seats')
 
            //----------------------seats-------------------------------
@@ -3780,9 +3825,9 @@ for(var i =0;i<this.seats.length;i++){
 self.images.drawSeat(this.seats[i].seat, '#00008B','#000000', '#7d7d7d',{outerStrokeWidth:1})
 
 //mouseover events
-this.seats[i].seat.image.addEventListener('mouseover',  self.events.seatMouseEvent)
-this.seats[i].seat.image.addEventListener('mouseout',  self.events.seatMouseEvent)
-this.seats[i].seat.image.addEventListener('click', self.events.onDisabledOrNonUserSeatClick)
+this.seats[i].seat.on('mouseover',  self.events.seatMouseEvent)
+this.seats[i].seat.on('mouseout',  self.events.seatMouseEvent)
+this.seats[i].seat.on('click', self.events.onDisabledOrNonUserSeatClick, {cursor:false})
 
 
     //--------------------empty seats and text----------------- 
@@ -3848,7 +3893,7 @@ this.seats[i].openSeat.textColor = "#FFFFFF"
 
 //openSeat onclick event
 
-self.images.seats[i].disabledSeat.image.addEventListener('click', self.events.onDisabledOrNonUserSeatClick)
+self.images.seats[i].disabledSeat.on('click', self.events.onDisabledOrNonUserSeatClick, {cursor:false})
 
 
 /*
@@ -3931,7 +3976,6 @@ var seatLocationMarginOfError = 1.1
         this.seats[i].firstChip = new this.Item(this.seats[i].seat.position.x+leftChipOffsetX,this.seats[i].seat.position.y+leftChipOffsetY,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems', 'chips'))
        this.seats[i].secondColumnChip = new this.Item( this.seats[i].firstChip.position.x+chipDiameter+self.imageData.distanceBetweenChipColumns,this.seats[i].firstChip.position.y,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems', 'chips'))
 
-       
         //determine location of upperleft
         var distanceBetweenChipsY = this.pots[0].secondChip.position.y - this.pots[0].firstChip.position.y
         var upperLeftChipX = this.seats[i].firstChip.position.x
@@ -4148,17 +4192,19 @@ var actionButtonStageNumber = getZ('staticItems','buttons').stage
 var actionButtonDiv = self.arrayOfParentsOfStageAndOfContainerArray[actionButtonStageNumber].div
 var actionButtonCanvasElement = self.arrayOfParentsOfStageAndOfContainerArray[actionButtonStageNumber].stage.canvas
 
-
 //$(actionButtonCanvasElement).append('<button id="fold"  class = "btn actionButton">Fold</button>')
 var actionButtonClass = 'actionButton'
 var actionButtonCSS = {
-      'font': '11px ' + self.permanentPreferences.defaultFontType.value
+      'font-size': '11px ' 
+      ,'font': self.permanentPreferences.defaultFontType.value
       ,'position':'absolute'
+      ,'padding-top':'1px'
+      ,'padding-bottom': '1px'
+      ,'padding-left': '2px'
+      ,'padding-right':'2px'
+      ,'font-weight':500
 }
-var actionButtonOptions = {class:actionButtonClass, css:actionButtonCSS, attr:{
-  'class':self.css.bootstrapButton
-}}
-//actionButtonOptions.attr = {}
+var actionButtonOptions = {class:actionButtonClass, css:actionButtonCSS, attr:{}}
 
 actionButtonOptions.attr.id = 'sitIn'
 this.sitIn.addBootstrapButton('Sit In', actionButtonOptions)
@@ -4170,11 +4216,10 @@ actionButtonOptions.attr.id = 'fold'
           this.fold.addBootstrapButton ('Fold', actionButtonOptions)
 
 
-
           actionButtonOptions.attr.id = 'check'
           this.check.addBootstrapButton ('Check', actionButtonOptions)
 
-actionButtonOptions.css['line-height'] = '5px'
+actionButtonOptions.css['font-size'] = '11px'
 
           actionButtonOptions.attr.id = 'call'
           this.call.addBootstrapButton ('Call', actionButtonOptions)
@@ -4185,7 +4230,8 @@ actionButtonOptions.css['line-height'] = '5px'
           actionButtonOptions.attr.id = 'bet'
           this.bet.addBootstrapButton ('Bet', actionButtonOptions)
 
-
+var actionButtonInnerHeight = this.call.getChildPositionAndSizeData('image', {position:false, maxSize:false, size:true}).contentHeight
+$(this.call.image).add(this.raise.image).add(this.bet.image).css('line-height', actionButtonInnerHeight/2 + 'px')
 
         //-----------------bet slider-----------------------------
         /*
@@ -4214,7 +4260,7 @@ self.events.betSliderChanged(e, ui)
 ,*/
 slide: function(e, ui) {
   self.events.betSliderChanged(e, ui)
-    var betSliderHandle =     $('.ui-slider-handle', self.images.betSlider.slider.image)
+    var betSliderHandle =  $('.ui-slider-handle', self.images.betSlider.slider.image)
         betSliderHandle.qtip('option', 'content.text', '' + ui.value)
     }//when user uses mouse to slide the slider
 
@@ -4316,23 +4362,6 @@ $('#betSize').css({
 })
 
 
-var cardSpriteData = {
-
-
-
-
-
-  
-}
-
-
-
-       
-
-
-var spriteSheet = new createjs.SpriteSheet(cardSpriteData)
-
-
 
   //--------------upper right side button---------------------
 
@@ -4353,7 +4382,7 @@ var upperButtonFontType = 'Myriad Pro'
 
 
         this.standUp = new this.Item(canvasWidth - standUpWidth,0, standUpWidth, standUpHeight, getZ('staticItems','buttons'))
-this.standUp.addBitmap( self.permanentPreferences.sourceObjects.value.standUp)
+this.standUp.addBitmap(self.permanentPreferences.sourceObjects.value.standUp)
    //define shape for hit area of  stand
    var standUpHit = new createjs.Shape()
    var topY = standUpHitAreaTopOffset
@@ -4377,8 +4406,6 @@ setDisplayObjectPositionData(this.standUp.text, {x:standUpTextLeftOffset + this.
  // ,width:getChipsTextWidth
   , height:standUpTextHeight
 }, {update:false})
-
-
 
 
 //disable overlay
@@ -4441,7 +4468,7 @@ this.exitTable.addBitmap( self.permanentPreferences.sourceObjects.value.exitTabl
 //.closePath()
 
  this.exitTable.image.hitArea = exitTableHit
-this.exitTable.image.addEventListener('click', self.events.exitTableClick)
+this.exitTable.on('click', self.events.exitTableClick)
 
         
 
@@ -4547,7 +4574,7 @@ var cashierWindowContainer = 0
 
     this.cashier.closeWindow =  new this.Item (closeWindowX, closeWindowY, closeWindowWidth,closeWindowHeight,{stage:cashierStageNumber, container:cashierImageContainerIndex}) 
 this.cashier.closeWindow.addBitmap( self.permanentPreferences.sourceObjects.value.cashierCloseX)
-       this.cashier.closeWindow.image.addEventListener('click', self.hideCashier)
+       this.cashier.closeWindow.on('click', self.hideCashier)
 
         this.cashier.window = new this.Item(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight,{stage:cashierStageNumber,container:cashierWindowContainer})
 this.cashier.window.addBitmap( self.permanentPreferences.sourceObjects.value.cashierBackground)
@@ -4560,7 +4587,7 @@ this.cashier.window.addBitmap( self.permanentPreferences.sourceObjects.value.cas
                 }
                 */
 
-          this.cashier.window.image.addEventListener('mousedown',function(e){
+          this.cashier.window.on('mousedown',function(e){
                   self.events.mouseDownClickAndDrag(e, {animationTarget:self.images.cashier})
                 }
                 )
@@ -5048,7 +5075,7 @@ var showTableChatFullOffsetY = distanceBetweenUpperButtonHitAreasY - showTableCh
 
 this.showTableChatFull = new this.Item(this.getChips.position.x, this.getChips.position.y+this.getChips.size.y+showTableChatFullOffsetY, showTableChatFullWidth, showTableChatFullHeight, getZ('staticItems','buttons') )
 this.showTableChatFull.addBitmap(showTableChatFullSource)
-this.showTableChatFull.image.addEventListener('click', self.events.showTableChatFullOnClick)
+this.showTableChatFull.on('click', self.events.showTableChatFullOnClick)
 
  var showTableChatFullTextLeftOffset = 4; var showTableChatFullTextTopOffset = 6; var standUpTextRightOffset = 30; var showTableChatFullTextBottomOffset = 15
 //var showTableChatFullTextWidth = showTableChatFullWidth - showTableChatFullTextLeftOffset - showTableChatFullTextRightOffset
@@ -5065,10 +5092,10 @@ setDisplayObjectPositionData(this.showTableChatFull.text, {x:showTableChatFullTe
 
 this.hideTableChatFull = new this.Item(this.getChips.position.x, this.getChips.position.y+this.getChips.size.y+showTableChatFullOffsetY, showTableChatFullWidth, showTableChatFullHeight, getZ('staticItems','buttons') )
 this.hideTableChatFull.addBitmap(self.permanentPreferences.sourceObjects.value.hideTableChatFull)
-this.hideTableChatFull.image.addEventListener('click', self.events.hideTableChatFullOnClick)
+this.hideTableChatFull.on('click', self.events.hideTableChatFullOnClick)
 
 this.hideTableChatFull.addText('HIDE CHAT', upperButtonFontType, 'white', {html:true, css:upperButtonTextCSS, textAlign:'left'})
-setDisplayObjectPositionData(this.showTableChatFull.text, {x:showTableChatFullTextLeftOffset + this.showTableChatFull.position.x
+setDisplayObjectPositionData(this.hideTableChatFull.text, {x:showTableChatFullTextLeftOffset + this.showTableChatFull.position.x
   ,  y: this.showTableChatFull.position.y + showTableChatFullTextTopOffset
  // ,width:getChipsTextWidth
   , height:showTableChatFullTextHeight
@@ -5146,32 +5173,32 @@ var hideDealerMessagesOffsetTop =  checkBoxButtonDistanceY
 this.tableChatFull.hideDealerMessages = new this.Item(hideDealerMessagesOffsetLeft, hideDealerMessagesOffsetTop, this.tableChatFull.window.size.x - checkBoxButtonOffSetLeft*2, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
 this.tableChatFull.hideDealerMessages.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
 self.images.addCheckBoxButtonText(this.tableChatFull.hideDealerMessages, 'Hide dealer messages')
-this.tableChatFull.hideDealerMessages.image.addEventListener('click', self.events.hideDealerMessagesClicked)
+this.tableChatFull.hideDealerMessages.on('click', self.events.hideDealerMessagesClicked)
 
 this.tableChatFull.hideDealerMessagesOn = new this.Item(hideDealerMessagesOffsetLeft, this.tableChatFull.hideDealerMessages.position.y, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
 this.tableChatFull.hideDealerMessagesOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
 self.images.addCheckBoxButtonText(this.tableChatFull.hideDealerMessagesOn, 'Hide dealer messages')
-this.tableChatFull.hideDealerMessagesOn.image.addEventListener('click', self.events.hideDealerMessagesOnClicked)
+this.tableChatFull.hideDealerMessagesOn.on('click', self.events.hideDealerMessagesOnClicked)
 
 this.tableChatFull.hidePlayerMessages = new this.Item(hideDealerMessagesOffsetLeft, hideDealerMessagesOffsetTop*2+checkBoxButtonHeight, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
 this.tableChatFull.hidePlayerMessages.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
 self.images.addCheckBoxButtonText(this.tableChatFull.hidePlayerMessages, 'Hide player messages')
-this.tableChatFull.hidePlayerMessages.image.addEventListener('click', self.events.hidePlayerMessagesClicked)
+this.tableChatFull.hidePlayerMessages.on('click', self.events.hidePlayerMessagesClicked)
 
 this.tableChatFull.hidePlayerMessagesOn = new this.Item(hideDealerMessagesOffsetLeft, this.tableChatFull.hidePlayerMessages.position.y, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
 this.tableChatFull.hidePlayerMessagesOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
 self.images.addCheckBoxButtonText(this.tableChatFull.hidePlayerMessagesOn, 'Hide player messages')
-this.tableChatFull.hidePlayerMessagesOn.image.addEventListener('click', self.events.hidePlayerMessagesOnClicked)
+this.tableChatFull.hidePlayerMessagesOn.on('click', self.events.hidePlayerMessagesOnClicked)
 
 this.tableChatFull.hideObserverMessages = new this.Item(hideDealerMessagesOffsetLeft, checkBoxButtonDistanceY*3+checkBoxButtonHeight*2, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
 this.tableChatFull.hideObserverMessages.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
 self.images.addCheckBoxButtonText(this.tableChatFull.hideObserverMessages, 'Hide observer messages')
-this.tableChatFull.hideObserverMessages.image.addEventListener('click', self.events.hideObserverMessagesClicked)
+this.tableChatFull.hideObserverMessages.on('click', self.events.hideObserverMessagesClicked)
 
 this.tableChatFull.hideObserverMessagesOn = new this.Item(hideDealerMessagesOffsetLeft, this.tableChatFull.hideObserverMessages.position.y, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
 this.tableChatFull.hideObserverMessagesOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
 self.images.addCheckBoxButtonText(this.tableChatFull.hideObserverMessagesOn, 'Hide observer messages')
-this.tableChatFull.hideObserverMessagesOn.image.addEventListener('click', self.events.hideObserverMessagesOnClicked)
+this.tableChatFull.hideObserverMessagesOn.on('click', self.events.hideObserverMessagesOnClicked)
 
 
 
@@ -5185,12 +5212,12 @@ var rightSideCheckBoxY = this.tableChatFull.hideDealerMessages.position.y
 this.tableChatFull.disableTouchScroll = new this.Item(rightSideCheckBoxX, rightSideCheckBoxY, 0, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
 this.tableChatFull.disableTouchScroll.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
 self.images.addCheckBoxButtonText(this.tableChatFull.disableTouchScroll, 'Disable touch scroll')
-this.tableChatFull.disableTouchScroll.image.addEventListener('click', self.events.disableTouchScrollClicked)
+this.tableChatFull.disableTouchScroll.on('click', self.events.disableTouchScrollClicked)
 
 this.tableChatFull.disableTouchScrollOn = new this.Item(this.tableChatFull.disableTouchScroll.position.x, this.tableChatFull.disableTouchScroll.position.y, this.tableChatFull.disableTouchScroll.size.x, checkBoxButtonHeight,getZ('tableChatFull', 'text'))
 this.tableChatFull.disableTouchScrollOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
 self.images.addCheckBoxButtonText(this.tableChatFull.disableTouchScrollOn, 'Disable touch scroll')
-this.tableChatFull.disableTouchScrollOn.image.addEventListener('click', self.events.disableTouchScrollOnClicked)
+this.tableChatFull.disableTouchScrollOn.on('click', self.events.disableTouchScrollOnClicked)
 
 //chat message text
 
@@ -5694,7 +5721,7 @@ console.log(this.images.background.image.isVisible())
 
         //mouse events for clicking on empty seats
              for (var i = 0; i < this.seats.length; i = i + 1){
-         this.seats[i].openSeat.image.addEventListener('click', function(event){
+         this.seats[i].openSeat.on('click', function(event){
           //clear the message array
 if(_.isArray(event.target.parentItem.messages)){event.target.parentItem.messages.splice(0)}//splice if arry
 else{event.target.parentItem.messages = []}//declare new array if not already an array
@@ -5861,12 +5888,12 @@ var options = {
   seatNum:playerNumber,
   seatObject:self.images.seats[playerNumber]
 }
-  animationArray[i].image.addEventListener('mouseover',  function(event){
+  animationArray[i].on('mouseover',  function(event){
     console.log('animatedCard moused OVER')
   //  self.events.seatMouseEvent(event, options)
    self.events.seatMouseEvent(event, options)
  })
-    animationArray[i].image.addEventListener('mouseout',  function(event){
+    animationArray[i].on('mouseout',  function(event){
   console.log('animatedCard moused OUT')
       self.events.seatMouseEvent(event, options)
 })
@@ -5925,10 +5952,69 @@ createjs.Ticker.setFPS(12)
 
 }
 
+self.images.Item.prototype.on = function(eventType, actionFunction, options){
+
+
+if(options === 'image'){var childType = 'image'}
+  else if(options === 'text'){var childType = 'text'}
+
+if(_.isObject(options)){
+if(options.image){var childType = 'image'}
+  else if(options.text){var childType = 'text'}
+}//if options was originally an object
+
+else{var options = {}}
+if(!childType){
+    if(_.isObject(this.image)){var childType = 'image'}
+      else if(_.isObject(this.text)){var childType = 'text'}
+        else{return}
+      }
+
+var child = this[childType]
+var item = this
+//EASELJS
+if(child instanceof createjs.DisplayObject){
+
+child.addEventListener(eventType, function(e){actionFunction(e, item)})
+
+}
+//HTML ELEMENT
+else if(_.isElement(child)){$(child).on(eventType, function(e){actionFunction(e, item)})}
+
+//MAKE CURSOR POINTER IF THERE IS A CLICK EVENT
+if(_.isUndefined(options.cursor)){options.cursor = 'pointer'}
+if(eventType.indexOf('click') === 0){this.cursorHover(options)}
+
+}
+
+self.images.Item.prototype.cursorHover = function(options){
+
+if(!options){var options = {}}
+
+if(options.cursor === false){return}
+
+if(options === 'image'){var childType = 'image'}
+  else if(options === 'text'){var childType = 'text'}
+else if(options.image){var childType = 'image'}
+  else if(options.text){var childType = 'text'}
+    else if(_.isObject(this.image)){var childType = 'image'}
+      else if(_.isObject(this.text)){var childType = 'text'}
+
+var child = this[childType]
+
+//CREATEJS DISPLAYOBJECT
+if(child instanceof createjs.DisplayObject){child.cursor = options.cursor}
+
+//HTML ELEMENT
+else if(_.isElement(child)){ $(child).css('cursor', options.cursor)}
+
+
+}
+
 self.images.Item.prototype.getChildPositionAndSizeData = function(childType, options){
 
 
-getDisplayObjectPositionAndSizeData(this[childType], options)
+return getDisplayObjectPositionAndSizeData(this[childType], options)
 
 
 }
@@ -5956,11 +6042,8 @@ newLocationData.height = this.size.y
 
 
  // console.log('setting display object position through positionitemimage')
- if (setDisplayObjectPositionData(child, newLocationData, options ) === true){
-  if(self.isItemAddedToStage(this)){
-stagesToUpdate.push(self.easelJSDisplayObjectChanged(item))
-  }//if image was added to stage
- }//if image location was changed
+stagesToUpdate.push(setDisplayObjectPositionData(child, newLocationData, options ) )
+
 }
 
 //z-index
@@ -7549,23 +7632,6 @@ var defaultPositions  =  {}
  }
 
 
- //get Width of a line of text from its parent Item, returns [width, fontSize]
- this.getTextWidthAndFontSize = function (parentOfTextObject, fontSize){
-     if(parentOfTextObject instanceof this.images.Item){
-         if(!fontSize){
-           var pIndex =   parentOfTextObject.text.font.indexOf('p')
-           var PIndex =  parentOfTextObject.text.font.indexOf('P')
-           if(pIndex>=PIndex){var pLocation = PIndex}
-           else if(pIndex<PIndex){var pLocation = pIndex}
-           var fontSize = parentOfTextObject.text.font.substring(0,pLocation)
-         }//if no font size
-     }
-     var context = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.getContext('2d')
-     context.font = parentOfTextObject.text.font
-     var textData = context.measureText(parentOfTextObject.text.text)
-     return [textData.width, fontSize]
- }
-
 this.setImageItemPositionAndTextBasedOnImageChange = function(item, newX, newY, options){
 
   if (!options){var options = {}}
@@ -7707,7 +7773,7 @@ if(options.update !== false){this.updateStages(stagesToUpdate)}
 
 
 var setDisplayObjectPositionData = function(imageOrText, positionData, options){
- if(!_.isObject(imageOrText)){return}
+ if(!_.isObject(imageOrText) || !_.isObject(positionData) || _.isEmpty(positionData)){return}
   if(!options){var options  = {}}
 //console.log('setDisplayObjectPositionData called')
 //console.log(imageOrText)
@@ -7718,66 +7784,35 @@ var newOuterWidth = positionData.width
 var newOuterHeight = positionData.height
 
 if(imageOrText instanceof createjs.DisplayObject){
-  //return if no change
-  if(imageOrText.x === x && imageOrText.y === y){return}
 
-if(_.isNumber(x)){imageOrText.x = x}
-if(_.isNumber(y)){imageOrText.y = y}
+var changed = false
+
+//GET DATA
+var position = false;var size = false; var maxSize = false
+if(_.isNumber(x) || _.isNumber(y)){position = true}
+  if(_.isNumber(newOuterWidth) || _.isNumber(newOuterHeight)){ size = true;maxSize = true}
+ var data = getDisplayObjectPositionAndSizeData(imageOrText, {size:size, maxSize:maxSize, position:position})
+
+//ADJUST POSITIONS
+if(_.isNumber(x) && x != data.x){imageOrText.x = x;changed = true}
+if(_.isNumber(y) && y != data.y){imageOrText.y = y;changed = true}
 
 
-//set width/height
-if(imageOrText instanceof createjs.DisplayObject){
-
-var restoreWidth = false; var restoreHeight = false
-var newWidth; var newHeight; var maxWidth; var maxHeight
-var currentWidth; var currentHeight
-var maskX; var maskY
+ var maxWidth = data.maxWidth; var maxHeight = data.maxHeight
+var currentWidth = data.outerWidth; var currentHeight = data.outerHeight
 
 //GET CURRENT MASKS for current width/heights
 var currentMask = imageOrText.mask
-if(imageOrText.sourceRect instanceof createjs.Rectangle){currentMask = imageOrText.sourceRect}
 
 if(currentMask instanceof createjs.Rectangle){
 
- currentWidth = currentMask.width
- currentHeight = currentMask.height
- maskX = currentMask.x
- maskY = currentMask.y
+ var maskX = currentMask.x
+ var maskY = currentMask.y
 
 }//if we have defaults from mask
 
-//============GET MAX WIDTH/HEIGHTS==========
-
-//RECTANGLE/BITMAP width/heights
-if(imageOrText instanceof createjs.Rectangle || imageOrText instanceof createjs.Bitmap){maxWidth = imageOrText.width; maxHeight = imageOrText.height}
-
-
-//SHAPE width/heights
-else if(imageOrText instanceof createjs.Shape){
-  //IF PARENT WE USE GIVEN DATA
-if(imageOrText.parentItem instanceof self.images.Item){maxWidth = imageOrText.parentItem.size.x; maxHeight = imageOrText.parentItem.size.y}
- //if not parent, we give the default infinite height/width
- else{ maxWidth = self.getParentOfStageObject(0).stage.canvas.width; maxHeight = self.getParentOfStageObject(0).stage.canvas.height}
-
- }//if non-rectangle shape
-
- //TEXT width/heights
- else if(imageOrText instanceof createjs.Text){
-
-  maxWidth = self.getParentOfStageObject(0).stage.canvas.width
-    maxHeight = self.getParentOfStageObject(0).stage.canvas.height
- }
-
- //OTHER DISPAYOBJECT width/heights
- else{//if other type of display object
-var bounds = imageOrText.getBounds()
-if(bounds instanceof createjs.DisplayObject != true){console.log(imageOrText)}
-maxWidth = bounds.width
-maxHeight = bounds.height
- }//if other type of display object
-
-
-}//if we do NOT have a current mask
+var restoreWidth = false; var restoreHeight = false
+var newWidth; var newHeight;
 
 //WIDTH
 if(_.isNumber(newOuterWidth) ){
@@ -7789,6 +7824,7 @@ if( newOuterWidth < maxWidth){  newWidth = newOuterWidth}
   else{
      newWidth = maxWidth
     restoreWidth = true
+  }
 }//if width specified
 
 //HEIGHT
@@ -7812,14 +7848,30 @@ if(_.isNumber(maskX)){var x = maskX}
 //if values too high or invalid for both make a null rectangle
 if(restoreWidth === true && restoreHeight === true){imageOrText.mask = null}
 else if(!_.isNumber(newWidth) && !_.isNumber(newHeight)){}
-else if(_.isNumber(newWidth) && _.isNumber(newHeight) ){imageOrText.mask = new createjs.Rectangle(x, y, newWidth, newHeight)}
-
-
-}//if bitmap/graphic type of image
-
+else if(_.isNumber(newWidth) && _.isNumber(newHeight) && (newWidth != currentWidth || newHeight != currentHeight)){imageOrText.mask = new createjs.Rectangle(x, y, newWidth, newHeight)}
 //-------- finish setting width///height
 
-return true
+
+
+
+if(imageOrText.parent instanceof createjs.DisplayObject){
+var stage = imageOrText.getStage()
+
+
+if(stage instanceof createjs.Stage){
+
+var canvasID = stage.canvas.id
+var canvasNumber = canvasID.replace('canvas', '')
+
+setStageUpdateStatus(parseInt(canvasNumber), false)
+  return canvasNumber
+}
+
+
+}//we might return which stage needs to be updated
+
+
+
 //if(options.updateStageStatus !== false){return self.easelJSDisplayObjectChanged()}
 
 }//if easeljs DisplayObject
@@ -7893,25 +7945,138 @@ var getDisplayObjectPositionAndSizeData = function(imageOrText, options){
 if(!options){var options = {}}
 
 if(imageOrText instanceof createjs.DisplayObject){
-//  console.log('getting location of nonelement displayobejct posiion')
-var data =  {
-  x:imageOrText.x
-  ,y:imageOrText.y
-  ,extraWidth:0
-  ,paddingWidth:0
-  ,marginWidth:0
-  ,borderWidth:0
-   ,contentWidth:0
 
-  ,extraHeight:0
-  ,contentHeight:0
-  ,paddingHeight:0
-  ,borderHeight:0
-  ,marginHeight:0
+var data =  {}
+
+if(options.position !== false){data.x = imageOrText.x;data.y = imageOrText.y}
+
+if(options.size !== false){
+//REPLACE OUTER WIDTH/HEIGHT for current width/heights IF object is masked
+
+var currentBounds; var currentSourceRect
+
+if(imageOrText.mask){ currentBounds = imageOrText.mask}
+
+if(currentBounds instanceof createjs.Rectangle){
+
+
+}//if we have defaults from mask
+
+else if(currentBounds instanceof createjs.Shape){
+//  console.log('getting current bounds of current bounds')
+currentBounds = currentBounds.getBounds()
 
 }
 
+if(currentBounds instanceof createjs.Rectangle != true){currentBounds = imageOrText.getBounds()}
+  if(currentBounds instanceof createjs.Rectangle != true){
+//console.log('manually applying parent size')
+//console.log(imageOrText)
+//console.log(currentBounds)
+currentBounds = {width:imageOrText.parentItem.size.x, height:imageOrText.parentItem.size.y}
+
+  }
+  else{
+   // console.log('currentbound retreived as rectangle instance')
+  }
+
+//DECREASE CURRENT BOUNDS BY SOURCE RECT AMOUNT
+if(imageOrText instanceof createjs.Bitmap && imageOrText.sourceRect instanceof createjs.Rectangle)
+{
+  if(_.isNumber(imageOrText.sourceRect.width) && imageOrText.sourceRect.width < currentBounds.width){
+      currentBounds.width = imageOrText.sourceRect.width 
+  }
+    if(_.isNumber(imageOrText.sourceRect.height) && imageOrText.sourceRect.height < currentBounds.height){
+      currentBounds.height = imageOrText.sourceRect.height 
+  }
 }
+
+//console.log('retreived current bounds for size on getDisplayObjectPositionAndSizeData')
+//console.log(currentBounds)
+
+  data.extraWidth=0
+  data.paddingWidth=0
+  data.marginWidth=0
+  data.borderWidth=0
+   data.contentWidth=currentBounds.width
+   data.outerWidth=currentBounds.width
+
+  data.extraHeight=0
+  data.paddingHeight=0
+  data.borderHeight=0
+  data.marginHeight=0
+    data.contentHeight = currentBounds.height
+  data.outerHeight=currentBounds.height
+
+
+}
+
+
+
+if(options.maxSize){
+//============GET OUTER AND MAX WIDTH/HEIGHTS==========
+
+//RECTANGLE/BITMAP width/heights
+if(imageOrText instanceof createjs.Rectangle){
+
+  maxWidth = imageOrText.width; maxHeight = imageOrText.height
+
+
+
+}
+
+else if(imageOrText instanceof createjs.Bitmap){
+  maxWidth = imageOrText.image.width; maxHeight = imageOrText.image.height
+//decrease as necessary if source rect
+if(imageOrText.sourceRect instanceof createjs.Rectangle){
+  if(_.isNumber(imageOrText.sourceRect.width) && imageOrText.sourceRect.width < maxWidth){
+      maxWidth = imageOrText.sourceRect.width 
+  }
+    if(_.isNumber(imageOrText.sourceRect.height) && imageOrText.sourceRect.height < maxHeight){
+      maxHeight = imageOrText.sourceRect.height 
+  }
+
+}//if we have a source rectangle
+
+}
+
+//SHAPE width/heights
+else if(imageOrText instanceof createjs.Shape){
+  //IF PARENT WE USE GIVEN DATA
+if(imageOrText.parentItem instanceof self.images.Item){maxWidth = imageOrText.parentItem.size.x; maxHeight = imageOrText.parentItem.size.y}
+ //if not parent, we give the default infinite height/width
+ else{ maxWidth = self.getParentOfStageObject(0).stage.canvas.width; maxHeight = self.getParentOfStageObject(0).stage.canvas.height}
+
+ }//if non-rectangle shape
+
+ //TEXT width/heights
+ else if(imageOrText instanceof createjs.Text){
+
+  maxWidth = self.jQueryObjects.canvasDiv.outerWidth(true)
+      maxHeight = self.jQueryObjects.canvasDiv.outerHeight(true)
+
+if(_.isNumber(imageOrText.maxWidth) && imageOrText.maxWidth < maxWidth){maxWidth = imageOrText.maxWidth}
+if(_.isNumber(imageOrText.lineWidth) && imageOrText.lineWidth < maxWidth){maxWidth = imageOrText.lineWidth}
+
+ }
+
+ //OTHER DISPAYOBJECT width/heights
+ else{//if other type of display object
+var bounds = imageOrText.getBounds()
+if(bounds instanceof createjs.DisplayObject != true){console.log(imageOrText)}
+maxWidth = bounds.width
+maxHeight = bounds.height
+ }//if other type of display object
+
+
+
+  data.maxHeight = maxHeight
+   data.maxWidth = maxWidth
+}//if options.maxSize
+
+
+}//if gettin data of EASELJS displayobject
+
 else if (_.isElement(imageOrText)){// var location = {x:  parseFloat($(imageOrText).css('left')), y: parseFloat($(imageOrText).css('top'))}
 
 var data = {}
@@ -7961,9 +8126,13 @@ data.extraWidth  =  data.outerWidth - data.contentWidth
 //data.paddingWidth = $(element).innerWidth() - data.contentWidth 
 //data.marginWidth = data.outerWidth - $(element).outerWidth()
 
+
+
 data.outerHeight = $(element).outerHeight(true)
 data.contentHeight = $(element).height()
 data.extraHeight =  data.outerHeight - data.contentHeight
+
+
 //data.paddingHeight = $(element).innerHeight() - data.contentHeight
 //data.marginHeight = data.outerHeight - $(element).outerHeight()
 
@@ -8015,6 +8184,22 @@ throw 'failed at getting position data'
 }
 
 
+//GET MAXSIZE If necessarY
+if(options.maxSize){
+
+var maxWidth = $(element).css('max-width')
+if(_.isString(maxWidth) && maxWidth.indexOf('px') != -1){data.maxWidth = parseFloat(maxWidth)}
+  else{data.maxWidth = self.jQueryObjects.pokerTableWrapper.outerWidth(true)}
+
+
+var maxHeight = $(element).css('max-height')
+if(_.isString(maxHeight) && maxHeight.indexOf('px') != -1){data.maxHeight = parseFloat(maxHeight)}
+  else{data.maxHeight = self.jQueryObjects.canvasDiv.outerHeight(true)}
+}
+
+
+
+
 }//if element
 
 else if(_.isObject(imageOrText)){
@@ -8027,15 +8212,26 @@ var data =  {
   ,marginWidth:0
   ,borderWidth:0
    ,contentWidth:0
+  ,outerWidth:0
+  ,maxWidth:0
 
   ,extraHeight:0
   ,contentHeight:0
   ,paddingHeight:0
   ,borderHeight:0
   ,marginHeight:0
+ ,outerHeight:0
+ ,maxHeight:0
+}
 
 }
 
+else{console.log('getdisplayposition failed due to parameter not a display object');return {}}
+
+if(!_.isObject(data)){
+console.log(imageOrText)
+console.log(options)
+throw ''
 }
 
 return data
@@ -8602,7 +8798,7 @@ preactionItemOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBo
       self.images.addCheckBoxButtonText(preactionItemOn, text)
 
 if(_.isFunction(onClickUnchecked)) {
-preactionItem.image.addEventListener('click', function(e){
+preactionItem.on('click', function(e){
    onClickUnchecked(event, preactionItem, preactionItemOn)
     self.hideChildren(preactionItem,{update:false})
     self.displayChildren(preactionItemOn)
@@ -8611,7 +8807,7 @@ preactionItem.image.addEventListener('click', function(e){
 
    if(_.isFunction(onClickChecked)) { 
 
-    preactionItemOn.image.addEventListener('click', function(e){
+    preactionItemOn.on('click', function(e){
       onClickChecked(event, preactionItemOn, preactionItem)
       self.hideChildren(preactionItemOn,{update:false})
       self.displayChildren(preactionItem)
@@ -8672,31 +8868,31 @@ var setPreactionDataOptions = {server:true}
 //CALL
 
 
-self.images.preactions.callUnchecked.image.addEventListener('click', function(e){
+self.images.preactions.callUnchecked.on('click', function(e){
 
 self.setPreactionData('once', 'call', self.getPreactionOptionValues().call, setPreactionDataOptions)
 
 })
-self.images.preactions.callChecked.image.addEventListener('click', function(e){
+self.images.preactions.callChecked.on('click', function(e){
 
   self.setPreactionData('hand', 'call', false, setPreactionDataOptions)
 
 })
 
 //CHECK
-self.images.preactions.checkUnchecked.image.addEventListener('click', function(e){
+self.images.preactions.checkUnchecked.on('click', function(e){
 
   self.setPreactionData('hand', 'check',  self.getPreactionOptionValues().check, setPreactionDataOptions)
 
 })
-self.images.preactions.checkChecked.image.addEventListener('click', function(e){
+self.images.preactions.checkChecked.on('click', function(e){
 
     self.setPreactionData('hand', 'check', false, setPreactionDataOptions)
 
 })
 
 //ALL-IN
-self.images.preactions.allInUnchecked.image.addEventListener('click', function(e){
+self.images.preactions.allInUnchecked.on('click', function(e){
 
 /*
   var data = self.getPreactionOptionValues()
@@ -8707,33 +8903,33 @@ self.images.preactions.allInUnchecked.image.addEventListener('click', function(e
   self.setPreactionData('hand', 'all_in', true, setPreactionDataOptions)
 
 })
-self.images.preactions.allInChecked.image.addEventListener('click', function(e){
+self.images.preactions.allInChecked.on('click', function(e){
 
   self.setPreactionData('hand', 'all_in', false, setPreactionDataOptions)
 
 })
 
 //FOLD
-self.images.preactions.foldUnchecked.image.addEventListener('click', function(e){
+self.images.preactions.foldUnchecked.on('click', function(e){
 
  //self.setPreactionData('hand', 'fold', self.getPreactionOptionValues().fold, setPreactionDataOptions)
  self.setPreactionData('hand', 'fold', true, setPreactionDataOptions)
 
 })
-self.images.preactions.foldChecked.image.addEventListener('click', function(e){
+self.images.preactions.foldChecked.on('click', function(e){
 
    self.setPreactionData('hand', 'fold', false, setPreactionDataOptions)
 
 })
 
 //CALL ANY
-self.images.preactions.callAnyUnchecked.image.addEventListener('click', function(e){
+self.images.preactions.callAnyUnchecked.on('click', function(e){
 
   //  self.setPreactionData('hand', 'call', self.getPreactionOptionValues().call_any, setPreactionDataOptions)
 self.setPreactionData('hand', 'call', true, setPreactionDataOptions)
 
 })
-self.images.preactions.callAnyChecked.image.addEventListener('click', function(e){
+self.images.preactions.callAnyChecked.on('click', function(e){
 
    self.setPreactionData('hand', 'call', false, setPreactionDataOptions)
 
@@ -9682,19 +9878,23 @@ return changedWithoutUpdate
         }
 
 
-this.images.Item.prototype.hide = function(options){
+this.images.Item.prototype.hide = function(updateOptions){
+if(!options){var options = {}}
+  else{var options = _.clone(updateOptions)}
+    options.update = false
+var stagesToUpdate = []
 
-if(options.onlyText){return self.hideText(this, options)}
-  else if(options.onlyImage){return self.hideImage(this, options)}
+if(options.text !== false){stagesToUpdate.push  (self.hideText(this, options))    }
+if(options.image !== false){stagesToUpdate.push  ( self.hideImage(this, options) )}
 
-
-else {return self.hideChildren(this, options)}
+if(updateOptions.update !== false){self.updateStages(stagesToUpdate)}
+  else{return stagesToUpdate}
 
 
 }
 
 this.images.Item.prototype.display = function(options){
-
+if(!options){var options = {}}
   if(options.onlyText){return self.displayText(this, options)}
   else if(options.onlyImage){return self.displayImage(this, options)}
 
@@ -11391,6 +11591,29 @@ if(displayCSS !== 'none' && displayCSS !== 'hidden' && _.isString(displayCSS)){t
 
 } 
 
+this.images.Item.prototype.adoptChild = function(child, type, options){
+if(!options){var options = {}}
+
+this[type] = child
+child.parentItem = this
+
+if(this.messages && type === 'image'){
+    this.on('click', self.events.onButtonClick, {image:true} )
+}
+
+if(options.size === true){
+
+var data = this.getChildPositionAndSizeData(type, {position:false, size:true, maxSize:false})
+
+if(this.size.x < data.outerWidth){this.size.x = data.outerWidth}
+  if(this.size.y < data.outerHeight){this.size.y = data.outerHeight}
+
+
+}
+
+
+}
+
 this.images.Item.prototype.addElement = function(element, textOrImage, functionOptions){
 // options: size, position, container
 if(!functionOptions){var options = {}}
@@ -11418,6 +11641,8 @@ if(type === 'text'){var z = this.position.z.container + 1}
 
 
 //REMOVE PREVIOUS VERSIONS OF SAME ID
+if(options.overwrite !== false){
+
 this.removeChild(type)
 if(options.attr.id){
 var leftoverButtons = $('#'+options.attr.id)
@@ -11426,15 +11651,10 @@ if(leftoverButtons.length > 0){
 console.log('leftover button removed with id = ' + options.attr.id)
   leftoverButtons.remove()
 }
-}
+}//if we assigning an id
 
 
-
-
-
-
-
-
+}//if we want to remove previous
 
 
 //CHECK TO MAKE SURE MAX WIDTH HEIGHT AND WIDTH ARE NOT TOO HIGH
@@ -11451,7 +11671,6 @@ options.css['z-index'] = z
 
 $(element).css(options.css).attr(options.attr).addClass(options.class)
 
-element.parentItem = this
 
 //if container specified append to it
 if(options.container){$(options.container).append(element)}
@@ -11459,7 +11678,7 @@ if(options.container){$(options.container).append(element)}
 else if($(parentDiv).find(element).length < 1){  $(parentDiv).append(element)}
 
 //assign element as child of Item
-this[type] = element
+this.adoptChild(element, type)
 
 //position the child
  this.positionChild(type, options)
@@ -11484,7 +11703,7 @@ onClick(e)
 this.images.Item.prototype.isItemDisplayed = function(){
 
 
-if(this.image instanceof easeljs.DisplayObject || this.text instanceof easeljs.DisplayObject){
+if(this.image instanceof createjs.DisplayObject || this.text instanceof createjs.DisplayObject){
 
  if (self.isItemAddedToStage(this)){return true}
 
@@ -12364,7 +12583,7 @@ messageBoxItems.window.addBitmap(self.permanentPreferences.sourceObjects.value.m
         
 
    //MAKE WINDOW DRAGGABLE
-                  messageBoxItems.window.image.addEventListener('mousedown',function(e){
+                  messageBoxItems.window.on('mousedown',function(e){
           var options = {animationTarget:messageBoxItems}
                   self.events.mouseDownClickAndDrag(e, options)
                 }
@@ -12400,7 +12619,7 @@ messageBoxItems.closeWindow.addBitmap (self.permanentPreferences.sourceObjects.v
 
 
 if(messageInfo.closeWindowMessages){ messageBoxItems.closeWindow.messages = messageInfo.closeWindowMessages}
-messageBoxItems.closeWindow.image.addEventListener('click', messageInfo.closeWindowEvent)
+messageBoxItems.closeWindow.on('click', messageInfo.closeWindowEvent)
 
 
    //--------------------------------OK button--------------------------------
@@ -12411,7 +12630,7 @@ messageBoxItems.closeWindow.image.addEventListener('click', messageInfo.closeWin
             if(messageInfo.okayMessages){  messageBoxItems.okay.messages = messageInfo.okayMessages}
                 
                 //assign event if assigned
-messageBoxItems.okay.image.addEventListener('click', messageInfo.okayEvent)
+messageBoxItems.okay.on('click', messageInfo.okayEvent)
   
 //--------------------------------cancel button--------------------------------
         if(messageInfo.cancel){
@@ -12420,7 +12639,7 @@ messageBoxItems.okay.image.addEventListener('click', messageInfo.okayEvent)
         messageBoxItems.cancel.addText(messageInfo.cancelText, messageInfo.buttonSizeAndFont,  messageInfo.buttonTextColor)
         //add message to cancel if available
         if(messageInfo.cancelMessages){ messageBoxItems.cancel.messages = messageInfo.cancelMessages  }
-messageBoxItems.cancel.image.addEventListener('click', messageInfo.cancelEvent)
+messageBoxItems.cancel.on('click', messageInfo.cancelEvent)
 }//if displaying cancel button
 
     else{messageBoxItems.cancel = null}
@@ -12475,7 +12694,7 @@ var checkBoxY = getCheckBoxY()
 
 
 //assign onClick functions
- messageBoxItems.checkBoxUnchecked.image.addEventListener('click', function(e){
+ messageBoxItems.checkBoxUnchecked.on('click', function(e){
 if(_.isFunction(messageInfo.checkBoxUncheckedEvent)){messageInfo.checkBoxUncheckedEvent(e)}
 console.log('unchecked mesagebox checkbox clicked')
  var stagesToUpdate = [] 
@@ -12484,7 +12703,7 @@ console.log('unchecked mesagebox checkbox clicked')
  self.updateStages(stagesToUpdate)
 
  })//unchecked.image.onClick
-messageBoxItems.checkBoxChecked.image.addEventListener('click', function(e){
+messageBoxItems.checkBoxChecked.on('click', function(e){
 if(_.isFunction(messageInfo.checkBoxCheckedEvent)){messageInfo.checkBoxCheckedEvent(e)}
  var stagesToUpdate = [ self.hideChildren(messageBoxItems.checkBoxChecked, {update:false}), self.displayChildren(messageBoxItems.checkBoxUnchecked, {update:false})]
  self.updateStages(stagesToUpdate)
@@ -12553,7 +12772,7 @@ if(this.gameState.cashier.balance < this.gameState.cashier.min ){
 var accountBalanceColor = 'red'
   this.images.cashier.accountBalanceValue.text.text = this.images.cashier.accountBalanceValue.text.text + '//CLICK HERE'
 
-this.images.cashier.accountBalanceValue.text.addEventListener('click', function(e){
+this.images.cashier.accountBalanceValue.on('click', function(e){
 
 //POST route /increase_funbucks_by_100
 // window.open('/account', 'Account', 'width=800,height=770 ,left=200,top=200,location=0,toolbar=no,menubar=no,titlebar=no,directories=no,scrollbars=yes')
@@ -12561,7 +12780,7 @@ this.images.cashier.accountBalanceValue.text.addEventListener('click', function(
 $.post('/increase_funbucks_by_100')
 socket.emit('get_add_chips_info')
 
-})//onclick for account balance value
+}, 'text')//onclick for account balance value
 
 }
 
@@ -13052,8 +13271,8 @@ stagesToUpdate.push(setAutoRebuyValueText(autoRebuyFlagValue, options))
 stagesToUpdate.push(self.images.positionCashierButtons(displayDisableAutoRebuy, options))
 
 //enable basic seatedoptions
-   this.images.getChips.image.addEventListener('click', self.events.onButtonClick)
-     this.images.standUp.image.addEventListener('click', this.events.userStands)
+   this.images.getChips.on('click', self.events.onButtonClick)
+     this.images.standUp.on('click', this.events.userStands)
      stagesToUpdate.push (this.hideChildren(this.images.getChipsDisabledShape,options) )
 stagesToUpdate.push(  this.hideChildren(this.images.standUpDisabledShape,options))
 
@@ -13357,6 +13576,12 @@ self.gameState.seats[player.seat].chips = player.chips
 self.gameState.seats[player.seat].username = player.username
 if(_.isNumber(player.chips) && player.chips > 0){self.gameState.seats[player.seat].notEnoughChips = false}
   else{self.gameState.seats[player.seat].notEnoughChips = true}
+
+}
+
+var setStageUpdateStatus = function(numberOrItem, status){
+
+self.getParentOfStageObject(numberOrItem).upToDate = status
 
 }
 
@@ -13768,6 +13993,7 @@ for(var i = 0;i<self.gameState.numSeats;i++){
   //---------------------SOCKET CODE------------------------
 
 this.getInitialPermanentPreferences = function(callback){
+console.log('getInitialPermanentPreferences')
 
    socket.once('preferences', function(preferences){
              console.log('preferences received')
@@ -13775,7 +14001,8 @@ this.getInitialPermanentPreferences = function(callback){
 
 if(_.isFunction(callback)){callback()}
    
-    })
+    })//receive 'preferences' message
+
 
     socket.emit('get_preferences')
 }
