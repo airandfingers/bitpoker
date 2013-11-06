@@ -11,18 +11,6 @@ var $chat_form = $('#chat_form')
       '<strong><span><%= message %></span></strong>' +
     '</p>';
 
-var emit = socket.emit;
-socket.emit = function() {
-  console.error('Sending message:', Array.prototype.slice.call(arguments));
-  emit.apply(socket, arguments);
-};
-
-var $emit = socket.$emit;
-socket.$emit = function() {
-  console.error('Message received:', Array.prototype.slice.call(arguments));
-  $emit.apply(socket, arguments);
-};
-
 socket.on('user_chats', function(data) {
   console.log('user_chats message received: ', data);
   var sender = data.sender
