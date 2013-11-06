@@ -223,7 +223,9 @@ module.exports = (function () {
         }
       });
       // clear flags that need to be cleared
-      self.setFlags(flags_obj, true);
+      if (! _.isEmpty(flags_obj)) {
+        self.setFlags(flags_obj, true);
+      }
 
       self.current_prompt = undefined;
       clearTimeout(act_timeout);
