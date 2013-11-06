@@ -35,6 +35,7 @@
                         page_title = pages[i].title;
                         page_dropdown = pages[i].dropdown;
                     %>
+                        <% if (! locals.username) { %>
                             <li class="unselectable">
                                 <a href="<%= page_href %>"
                                    <%= title === page_title ? 'class=current_page' : '' %>
@@ -42,6 +43,7 @@
                                   <%= page_name.toUpperCase() %>
                                 </a>
                             </li>
+                        <% } %>
                     <% } %>
 
                             <% if (typeof table_games !=='undefined') { %>
@@ -72,13 +74,41 @@
                         </a>
                     </li>
 
+                    <!-- SIGN UP dropdown Link -->
+                    <li class="right unselectable">
+                        <% if (locals.username) { %>
+                          <a id="logout_trigger"href="/logout">LOGOUT</a>
+                        <% } %>
+                    </li>
+                    <% 
+                    if (typeof locals.username !== 'string' ||
+                        locals.username.substring(0, 5) === 'guest') {
+                    %>
                     <li class="right unselectable">
                       <a href="#" id="register_trigger">SIGN UP</a>
                     </li>
+                    <% } %>
 
                     <!--Login or Logout Link-->
                     <li class="right unselectable">
+                        <% if (locals.username) { %>
+                          <a id= "account_trigger" href="#" title="My Account"
+                             <%= title === 'Account' ? 'class=current_page' : '' %>
+                          >
+                            <i class="icon-cog icon-white"></i>
+                            <%= locals.username.toUpperCase() %> 
+                          </a>
+                        <% } else { %>
                           <a href="#" id="login_trigger">LOGIN</a>
+                        <% } %>
+                    </li>
+
+                    <!-- Funbucks/Satoshi Chip Count -->
+                    <li class="right unselectable">
+                        <% if(locals.username) { %>
+                            Fb <span id="funbucks_balance"><%= funbucks %></span>
+                            Sat <span id="satoshi_balance"><%= satoshi %></span>
+                        <% } %>
                     </li>
                 </ul>
             </nav>
@@ -86,6 +116,11 @@
                 <!-- dropdowns -->
                 <% include bug_report %>
 
+                <% if ( locals.username) { %>
+                <div id="account" class="dropdown_form inverse unselectable">
+                    <% include account_base %>
+                </div>
+                <% } else { %>
                     <div id="register" class="dropdown_form">
                         <form action="/register" method="post">
                             <div class="username">
@@ -127,5 +162,6 @@
                         <button class="btn btn-inverse">Play as Guest</button>
                       </form>
                     </div>
+                <% } %>
           <% } %>
         </header>
