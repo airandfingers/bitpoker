@@ -230,6 +230,7 @@ module.exports = (function () {
       self.current_prompt = undefined;
       clearTimeout(act_timeout);
       clearInterval(update_interval);
+      self.socket.removeAllListeners('act');
       cb(action, num_chips);
       return true;
     }
@@ -278,7 +279,7 @@ module.exports = (function () {
       console.log('prompting', self.username, 'for next action', actions, timeout);
       self.sendMessage('act_prompt', actions, timeout);
 
-      self.socket.once('act', function(action, num_chips) {
+      self.socket.on('act', function(action, num_chips) {
         console.log(self.username, 'responds with', action, num_chips);
         self.idle = false;
         respondToPrompt(action, num_chips);
@@ -287,8 +288,6 @@ module.exports = (function () {
       act_timeout = setTimeout(function() {
         console.log(self.username, 'fails to respond within', total_timeout, 'ms');
         self.idle = true;
-        self.socket.removeAllListeners('act');
-        
         respondToPrompt(default_action);
       }, total_timeout);
 
