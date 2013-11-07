@@ -728,22 +728,8 @@ module.exports = (function () {
     });
   });
 
-  app.get('/preferences/:table_id', auth.ensureAuthenticated, function(req, res) {
-    var table = Table.getTable(req.params.table_id)
-      , player;
-    if (! (table instanceof Table)) {
-      res.json({ error: 'No table with ID ' + table_id });
-      return;
-    }
-
-    username = req.user.username;
-    player = table.getPlayer(username);
-    if (player) {
-      res.json(player.preferences);
-    }
-    else {
-      res.json({ error: 'Cant get preferences when not at table!' });
-    }
+  app.get('/preferences', auth.ensureAuthenticated, function(req, res) {
+    res.json(req.user.preferences);
   });
 
   app.get('/flags/:table_id', auth.ensureAuthenticated, function(req, res) {

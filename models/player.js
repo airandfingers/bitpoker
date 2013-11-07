@@ -1016,11 +1016,6 @@ module.exports = (function () {
     });
   };
 
-  static_properties.messages.get_preferences = 'getPreferences';
-  PlayerSchema.methods.getPreferences = function() {
-    this.sendMessage('preferences', this.preferences);
-  };
-
   /* the model - a fancy constructor compiled from the schema:
    *   a function that creates a new document
    *   has static methods and properties attached to it
