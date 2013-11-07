@@ -11,6 +11,8 @@ module.exports = (function () {
 
     , async = require('async') // sync/async control flow library
 
+    , User = require('./user')
+
     /* the schema - defines the "shape" of the documents:
      *   gets compiled into one or more models */
     , PlayerSchema = new Schema({
@@ -523,6 +525,7 @@ module.exports = (function () {
             self.chips = 0;
             // emit the "stand" event
             self.emit('stand', seat_num);
+            user.broadcastBalanceUpdate(game.CURRENCY, new_balance);
           }
         });
       });
@@ -725,6 +728,8 @@ module.exports = (function () {
           else {
             self.chips += num_chips;
             self.emit('chips_added', num_chips);
+            console.log('Going to call add chips broadcastBalanceUpdate', game.CURRENCY, new_balance);
+            user.broadcastBalanceUpdate(game.CURRENCY, new_balance);
           }
         });
       }
@@ -780,6 +785,7 @@ module.exports = (function () {
         else {
           self.chips += chips_to_add;
           self.emit('chips_added', chips_to_add);
+          user.broadcastBalanceUpdate(game.CURRENCY, new_balance);
         }
       });
     });

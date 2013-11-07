@@ -47,7 +47,7 @@ module.exports = (function () {
   //Blockchain callback route to deposit bitcoins:
   app.get('/bitcoin_deposit/:username', function (req, res) {
 
-    if (req.query.confirmations ==='6') {
+    if (req.query.confirmations ==='1') {
       var username = req.params.username
         , bitcoin_update = req.query.value;
       try {
@@ -79,6 +79,7 @@ module.exports = (function () {
                 }
                 else {
                 console.log('Deposited ' + bitcoin_update + ' into ' + username + '\'s account.\nNew balance is '+ new_bitcoin_balance + ' satoshi.');
+                req.user.broadcastBalanceUpdate('satoshi', new_bitcoin_balance);
                 }
               } );          
             }
@@ -569,6 +570,10 @@ module.exports = (function () {
               req.user.update({ $set: { satoshi: new_satoshi } }, function(save_err) {
                 if (save_err) {
                   console.error('Error while updating bitcoin balance:', save_err);
+                }
+                else {
+                  console.log('User bitcoin balance update successful');
+                  req.user.broadcastBalanceUpdate('satoshi', new_satoshi);
                 }
               });
             }
