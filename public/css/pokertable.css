@@ -13,7 +13,7 @@ height:0px;
 }
 
 #pokerTableWrapper {
-  position:absolute;
+  position:fixed;
     width: 690px;
     height:450px;
     left:0px;
