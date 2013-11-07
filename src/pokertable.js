@@ -1386,6 +1386,8 @@ this.events.onCashierTextFieldFocus = function(event){
 
 
     this.events.onAddChipsClick = function(event){
+var messageInfo = {okay:true, html:true, modal:true}
+
         if($('#maxRadio').is(':checked'))
         {
           console.log('maxradio checked')
@@ -1396,10 +1398,9 @@ this.events.onCashierTextFieldFocus = function(event){
         else if($('#otherAmountRadio').is(':checked')){
             var amount = $('#otherAmount').val()
             if(isNaN(amount)){
-                var info = {}
-                info.okay = true
+
                 var message = "amount must be a number"
-                self.displayMessageBox(message,info)
+                self.displayMessageBox(message, messageInfo)
             }
             else{
                 
@@ -1410,10 +1411,9 @@ this.events.onCashierTextFieldFocus = function(event){
         else if($('#autoRebuyRadio').is(':checked')){
             var amount = $('#autoRebuy').val()
             if(isNaN(otherAmount)){
-                var info = {}
-                info.okay = true
+
                 var message = "Amount must be a number"
-                self.displayMessageBox(message, info)
+                self.displayMessageBox(message, messageInfo)
             }
             else{
                 
@@ -2128,10 +2128,16 @@ if(!_.isNumber(self.gameState.userSeatNumber)){self.events.exit();return}
        var  messageInfo = {}
        messageInfo.title = 'Leave Table?'
        messageInfo.cancel = true
+       messageInfo.html = true
+       messageInfo.modal = true
+
        messageInfo.okayEvent = function(){
 self.events.userStands()
       self.events.exit()
       }
+
+console.log('displaying are u sure u want to leave message')
+console.log(messageInfo)
         messageBoxAPI.display("Are you sure you want to leave?", messageInfo)
 
     }
@@ -11161,7 +11167,7 @@ if(update === false){return stagesToUpdate}
     }
 
 
-    this.playerActs =function(seatNumber, actionText, fadeTimeInSeconds){
+    this.playerActs =function(seatNumber, actionText, displayTime){
          //if player is current user, hide action buttons
         if(seatNumber === self.gameState.userSeatNumber){this.hideAllActionButtons(this.gameState.userSeatNumber)}
 self.setPreactionData('permanent', 'displayMessageType', 'action', {server:false})
@@ -11170,10 +11176,11 @@ self.setPreactionData('permanent', 'displayMessageType', 'action', {server:false
 
        
 
-        var interval = 100
-        var alpha
-        if(fadeTimeInSeconds && typeof fadeTimeInSeconds == 'number'){alpha = fadeTimeInSeconds}
-        else{alpha = 2}
+        var interval = 20
+        
+        if(!displayTime || typeof displayTime != 'number'){var displayTime = 2000}
+var fadeAtEndTime = displayTime/12
+
 
       var playerAction =   setInterval(function() {
 var stagesToUpdate = []
@@ -11181,23 +11188,23 @@ var options = {update:false}
 
 var displayMessageType = self.getPreactionData('displayMessageType' , {seat:seatNumber})
 
-          if(displayMessageType !== 'action'||alpha<=0)
+          if(displayMessageType !== 'action'|| displayTime <= 0)
           {
                 if(displayMessageType === 'action'){self.setPreactionData('permanent', 'displayMessageType', 'seat', {seat:seatNumber, server:false})}
                 clearInterval(playerAction)
             }
 
-        else if(alpha>1){
+        else if(displayTime >= fadeAtEndTime){
                       
         stagesToUpdate.push(   self.images.seats[seatNumber].action.updateText(actionText, options) )
                 self.images.seats[seatNumber].action.text.alpha = 1
                 }
             else{
-                self.images.seats[seatNumber].action.text.alpha = alpha
+                self.images.seats[seatNumber].action.text.alpha = displayTime/fadeAtEndTime
            stagesToUpdate.push(   self.images.seats[seatNumber].action.updateText(actionText, options) )
             }
             
-            alpha = alpha - interval/1000
+            displayTime = displayTime - interval
  //hide other messages on the seat box
        stagesToUpdate.push( self.displayCorrectSeatItems(seatNumber, options) )
        self.updateStages(stagesToUpdate)
@@ -11205,41 +11212,44 @@ var displayMessageType = self.getPreactionData('displayMessageType' , {seat:seat
 }, interval)
     }
 
-    this.playerWins =function(seatNumber, chipsWon, fadeTimeInSeconds){
+
+
+
+    this.playerWins =function(seatNumber, chipsWon, displayTime){
 
         self.images.seats[seatNumber].winner.updateText('')
 self.setPreactionData('permanent', 'displayMessageType', 'winner', {seat:seatNumber, server:false})
 
            //hide other messages on the seat box
 
-         var interval = 100
-         var alpha
-        if(_.isNumber(fadeTimeInSeconds)){alpha = fadeTimeInSeconds}
-        else{alpha = 2.5}
 
+        var interval = 40
+        if(!displayTime || typeof displayTime != 'number'){var displayTime = 2000}
+var fadeAtEndTime = displayTime/10
 
       var declareWinner =   setInterval(function() {
 
 var displayMessageType = self.getPreactionData('displayMessageType' , {seat:seatNumber})
 var stagesToUpdate = []
 var options = {update:false, seat:seatNumber, server:false }
-          if(displayMessageType != 'winner'||alpha<=0)
+
+          if(displayMessageType != 'winner'||displayTime<=0)
           {
                 if(displayMessageType === 'winner'){self.setPreactionData('permanent', 'displayMessageType', 'seat', options)}
                 
                 clearInterval(declareWinner)
             }
             
-            else if(alpha > 1){
+            else if(displayTime >= fadeAtEndTime){
               stagesToUpdate.push(self.images.seats[seatNumber].winner.updateText('Wins '+chipsWon, options) )
                 self.images.seats[seatNumber].winner.text.alpha = 1
                 }
             else{
-                self.images.seats[seatNumber].winner.text.alpha = alpha
+                self.images.seats[seatNumber].winner.text.alpha = displayTime/fadeAtEndTime
            stagesToUpdate.push(self.images.seats[seatNumber].winner.updateText('Wins '+chipsWon, options) )
             }
             
-            alpha = alpha - interval/1000
+            displayTime = displayTime - interval //decrement time remaining
 
  stagesToUpdate.push(self.displayCorrectSeatItems(seatNumber, options))
  self.updateStages(stagesToUpdate)
@@ -11981,6 +11991,9 @@ $(parentOfStage.div).children().not(parentOfStage.stage.canvas).remove()
 
 messageBoxAPI.display = function(messageString, messageInfo, hideOrDisplayChildrenOptions){
 
+console.log('displaying messagebox, messageinfo = ')
+console.log(messageInfo)
+
 return self.displayMessageBox(messageString, messageInfo, hideOrDisplayChildrenOptions)
 /*
 if(messageInfo && messageInfo.modal === true){
@@ -11990,9 +12003,6 @@ else{return self.displayMessageBox(messageString, messageInfo, hideOrDisplayChil
 */
 }
 
-messageBoxAPI.displayModal = function(messageString, messageInfo, hideOrDisplayChildrenOptions){
-
-}
 
 messageBoxAPI.getStatus = function(){
 
@@ -14057,9 +14067,11 @@ break;
             else{
            var messageInfo = {}
            messageInfo.okay = true
-            
+           messageInfo.html = true
           }
-          self.displayMessageBox(errorString, messageInfo)
+          if(_.isObject(errorString)){var errorString = errorString.toString}
+
+          messageBoxAPI.display(errorString, messageInfo)
                 
 })
         
@@ -14167,7 +14179,7 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
 var seatNum = player.seat
 //clear on act data
 self.clearExpirationData('act', seatNum)
-     if(action != 'skip') {self.playerActs(seatNum, action.toUpperCase(), 1.2)}
+     if(action != 'skip') {self.playerActs(seatNum, action.toUpperCase(), 1.5)}
         
     //display updated potsize if necessary
         if(pot && action!=='check'){self.updatePotSize(pot)}
