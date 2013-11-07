@@ -3,7 +3,7 @@
     <div id="container">
         <% if (typeof user === 'undefined') { %>
             <h1>Welcome to Bitcoin Poker</h1>
-            <div id="button_groups"> 
+            <div id="button_groups">
                 <h1>Choose one:</h1>
                 <form action="/register" method="get">
                     <button class="btn btn-success btn-large">Register</button>
@@ -17,12 +17,12 @@
         else { %>
             <h1></h1>
             
-            <% include users %>
+            <!--<% include users %>
             <div class="chat_container row-fluid">
                 <div id="chat_lobby" class="row-fluid">
                     <% include chat %>
                 </div>
-            </div>
+            </div>-->
             <!-- include values to expose to scripts -->
             <input type="hidden" id="server_values"
                 data-room_state="<%= room_state %>"
@@ -46,7 +46,7 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/socket.js"></script>
-    <script src="/js/chat.js"></script>
+    <!--<script src="/js/chat.js"></script>-->
 
 <% include foot %>
 
