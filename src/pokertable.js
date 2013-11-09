@@ -6,7 +6,7 @@
     //all numbers are in base 0, including variable names and documentation
     //seat position 0 is top middle and proceeds clockwise
 function Table () {
-self = this
+var self = this
 
 self.isIframe = function(){
 
@@ -3889,7 +3889,6 @@ var playerSeatObject = self.images.seats[i]
           var height = playerSeatObject.seat.size.y
           playerSeatObject.seat.image = new createjs.Shape()
  playerSeatObject.seat.image.parentItem = playerSeatObject.seat
-
 
 
 
