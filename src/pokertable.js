@@ -3780,10 +3780,10 @@ this.sitOutNextBlindOn.addBitmap( self.permanentPreferences.sourceObjects.value.
        //   console.log('drawCheckBoxButtonHitSquareAndAdjustItemWidth')
     //      console.log(item)
     //      console.log(data)
-        var textWidth =  data.outerWidth
+        var textWidth =  data.currentWidth
         var totalWidth = checkBoxButtonCheckBoxWidth + checkBoxButtonDistanceFromBoxToText + textWidth
         item.size.x = totalWidth
-        var textHeight = item.text.getMeasuredHeight()
+        var textHeight = data.outerHeight//item.text.getMeasuredHeight()
         if(textHeight > checkBoxButtonHeight){var height = textHeight}
           else{var height = checkBoxButtonHeight}
             item.size.y = height
@@ -3797,12 +3797,25 @@ this.sitOutNextBlindOn.addBitmap( self.permanentPreferences.sourceObjects.value.
       }
 
 //function for creating text from all fast
-    self.images.addCheckBoxButtonText = function(item, text, options){
-if(!options){var options = {}}
+    self.images.addCheckBoxButtonText = function(item, text, textOptions){
+if(!textOptions){var options = {}}
+  else{var options = _.clone(textOptions)}
   update = options.update
 options.update = false
+if(options.html !== false){options.html = true}
 
       var stagesToUpdate = []
+
+      if(options.html === true){//HTML text
+options.css = {'text-align': 'left'}
+item.addText(text, checkBoxButtonSizeAndFont, checkBoxButtonTextColor, options)
+setDisplayObjectPositionData(item.text, {x:item.position.x + checkBoxButtonCheckBoxWidth + checkBoxButtonDistanceFromBoxToText})
+
+      }//html text
+
+else{//if easeljs text
+
+
          if(item.text instanceof createjs.Text !== true)  {item.text = new createjs.Text(text, checkBoxButtonSizeAndFont, checkBoxButtonTextColor)}
           
 
@@ -3814,8 +3827,7 @@ if(item.text.text !== text
 ||item.text.x!==item.position.x + checkBoxButtonCheckBoxWidth + checkBoxButtonDistanceFromBoxToText
 ||item.text.y!==item.position.y 
 ||item.text.baseline !== 'top'
-||item.text.textAlign !== 'left'){
-  stagesToUpdate.push(self.easelJSDisplayObjectChanged(item))}
+||item.text.textAlign !== 'left'){  stagesToUpdate.push(self.easelJSDisplayObjectChanged(item))}
 
             item.text.text = text
 item.font = checkBoxButtonSizeAndFont
@@ -3828,13 +3840,18 @@ item.text.baseline = 'top'
 item.text.textAlign = 'left'
 item.textColor = checkBoxButtonTextColor
 
-var hit = self.images.drawCheckBoxButtonHitSquareAndAdjustItemWidth(item)
+
 item.text.mouseEnabled = false
 item.text.hitArea = hit
-item.image.hitArea = hit
+
 
 //assign options as properties
 assignObjectPropertiesAsPropertiesOfDisplayObject(item.text, options)
+
+}//if easeljs text
+
+var hit = self.images.drawCheckBoxButtonHitSquareAndAdjustItemWidth(item)
+item.image.hitArea = hit
 
 
 options.update = update
@@ -3842,7 +3859,11 @@ if(update !== false){self.updateStages(stagesToUpdate)}
 else{return stagesToUpdate}
 }
 
-self.images.itemsAsCheckBoxes = function(uncheckedItem,checkedItem, text, options){
+self.images.itemsAsCheckBoxes = function(uncheckedItem,checkedItem, text, checkBoxOptions){
+  if(!textOptions) {var options = {}}
+    else{var options = _.clone(textOptions)}
+      options.html = true
+
 uncheckedItem.addBitmap( checkBoxButtonSource)
 self.images.addCheckBoxButtonText(uncheckedItem, text, options)
 
@@ -8351,6 +8372,20 @@ data.outerHeight = $(element).outerHeight(true)
 data.contentHeight = $(element).height()
 data.extraHeight =  data.outerHeight - data.contentHeight
 
+//get currentHeight/currentWidth
+if($(element).is('p')){
+var dimensions = $(element).textDimensions($(element).text());
+data.currentWidth = dimensions.width   + data.outerWidth - data.contentWidth
+data.currentHeight = dimensions.height + data.outerHeight - data.contentHeight
+}
+
+else{
+
+data.currentWidth = data.outerWidth
+data.curentHeight = data.outerHeight
+
+}
+
 
 //data.paddingHeight = $(element).innerHeight() - data.contentHeight
 //data.marginHeight = data.outerHeight - $(element).outerHeight()
@@ -8408,7 +8443,7 @@ if(options.maxSize){
 
 var maxWidth = $(element).css('max-width')
 if(_.isString(maxWidth) && maxWidth.indexOf('px') != -1){data.maxWidth = parseFloat(maxWidth)}
-  else{data.maxWidth = self.jQueryObjects.pokerTableWrapper.outerWidth(true)}
+  else{data.maxWidth = self.jQueryObjects.canvasDiv.outerWidth(true)}
 
 
 var maxHeight = $(element).css('max-height')
@@ -8433,6 +8468,7 @@ var data =  {
    ,contentWidth:0
   ,outerWidth:0
   ,maxWidth:0
+  ,currentWidth:0
 
   ,extraHeight:0
   ,contentHeight:0
@@ -8441,6 +8477,7 @@ var data =  {
   ,marginHeight:0
  ,outerHeight:0
  ,maxHeight:0
+ ,currentHeight:0
 }
 
 }
