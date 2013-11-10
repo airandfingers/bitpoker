@@ -292,11 +292,7 @@ module.exports = (function () {
       , room_state = { users: users };
 
       if (_.isObject(req.user)) { 
-        console.log('req.user is an object');
-        if ( _.isString(req.query.joined_table_name) ) {
-          console.log('req.query.joined_table_name is a string');
-          req.user.current_table_names.push(req.query.joined_table_name);
-        }
+        res.redirect('/');
       }
       
     //console.log('Got table_games:', table_games);
