@@ -89,8 +89,10 @@ module.exports = (function () {
 
   app.get('/deposit_bitcoins', auth.ensureAuthenticated, function(req, res) {
     console.log(req.user.deposit_address);
+    var table_games = Table.getTableGames();
     res.render('deposit_bitcoins', {
       title: 'Deposit Bitcoins',
+      table_games: table_games,
       deposit_address: req.user.deposit_address,
       username: req.user.username
     });
@@ -102,8 +104,10 @@ module.exports = (function () {
   });
 
   app.get('/withdraw_bitcoins', auth.ensureAuthenticated, function(req, res) {
+    var table_games = Table.getTableGames();
     res.render('withdraw_bitcoins', {
      title: 'Withdraw Bitcoins',
+     table_games: table_games,
      bitcoins: req.user.satoshi / 10E8,
     });
   });
@@ -813,7 +817,11 @@ module.exports = (function () {
   //      otherwise, this route will catch all incoming requests,
   //      including requests for static files that exist.
   app.all('*', function(req, res) {
+    var table_games = Table.getTableGames();
     res.status(404);
-    res.render('404', {title: '404 Not Found'});
+    res.render('404', {
+        title: '404 Not Found'    
+      , table_games: table_games
+      });
   });
 })();
