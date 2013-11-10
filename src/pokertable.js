@@ -844,7 +844,6 @@ if(!options){var options = {}}
 options.update = false
   var stagesToUpdate = []
 
-
 var restOfFunction = function(source){
 
  var bitmap = new createjs.Bitmap(source)
@@ -1462,8 +1461,8 @@ var alreadySelected = false
               //we are going to select no matter what
    // textField.one('mouseup', function(e){e.preventDefault()}).select()
   // $(event.target).one('mouseup', function(e){e.preventDefault()})
-   console.log('selecting text field')
-   console.log(textField)
+  // console.log('selecting text field')
+ //  console.log(textField)
    textField.focus()//.select()
         }//end check if parentID exists/not false
 
@@ -1484,8 +1483,8 @@ this.events.onCashierTextFieldFocus = function(event){
 
         if($('#maxRadio').is(':checked'))
         {
-          console.log('maxradio checked')
-          console.log(self.gameState.cashier)
+     //     console.log('maxradio checked')
+      //    console.log(self.gameState.cashier)
             socket.emit('add_chips', self.gameState.cashier.max, self.initial_table_state.currency)
 
         }
@@ -1585,7 +1584,7 @@ if(!_.isNumber(options.seatNum)){
 }
 
 
-console.log('seat mouse over event called for seat ' + options.seatNum)
+//console.log('seat mouse over event called for seat ' + options.seatNum)
 
 //console.log(event)
 var animationTime = options.animationTime
