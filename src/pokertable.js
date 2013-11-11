@@ -2405,9 +2405,10 @@ console.log('possibleRaiseOrBetAttemptFromBetSize called val = ' + $('#betSize')
 if(roundedBetSize != newBetSize){
  //make adjustments to bet sliders
         self.adjustBetDisplayToInputOfUser(roundedBetSize)
+
 }
-//set raise and bet onclick events to default
-if(toggleRaiseAndBetEvents !== false ) {trueOrFalseToggleRaiseAndBet(true) }
+        //disable a bet attempt
+       trueOrFalseToggleRaiseAndBet(toggleRaiseAndBetEvents)
         
 }
 
@@ -2423,7 +2424,7 @@ console.log(data.events);
 //we will toggle raise and bet abilities on
   if(toggleBoolean === true ){
 console.log('trueOrFalseToggleRaiseAndBet called ')
-    enableRaiseAndBetEvents()  }
+    enableRaiseAndBetEvents()}
 
 //we will disable raise and bet abilities
  else if(toggleBoolean === false ){
@@ -2431,7 +2432,13 @@ console.log('trueOrFalseToggleRaiseAndBet called')
   disableOneRaiseOrBetAttempt()  }
 
 
+var failSound =  createjs.Sound.createInstance(self.images.sources.failClickSound)
+var playFailSound = function(){failSound.play()} //function that plays the failsound
+
+
+
 function disableOneRaiseOrBetAttempt (e){
+
 disableNonStaticBetAndRaiseEvents()
   console.log('disableOneRaiseOrBetAttempt called')
 
@@ -2441,13 +2448,19 @@ disableNonStaticBetAndRaiseEvents()
 //disable click on raise/bet image
 //$('#self.images.raise.image.id, #self.images.bet.image.id').prop('disabled', true)
 //$('#self.images.raise.image.id, #self.images.bet.image.id').addClass('btn-disabled')
+$(self.images.raise.image).add(self.images.bet.image).one('mousedown.disableOneRaiseOrBetClick', disableOneRaiseOrBetClick)
 
-  $('#self.images.raise.image.id, #self.images.bet.image.id').one('mousedown.disableOneRaiseOrBetClick', disableOneRaiseOrBetClick)
-$('#self.images.raise.image.id, #self.images.bet.image.id').one('click.preventOneClick', function(e){e.preventDefault})
-$('#self.images.raise.image.id, #self.images.bet.image.id').one('mouseup.restoreClick', function(e){e.preventDefault(); enableRaiseAndBetEvents()})
+$(self.images.raise.image).add(self.images.bet.image).on('click.preventOneClick', function(e){return false})
+$(self.images.raise.image).add(self.images.bet.image).on('mouseup.restoreClick', function(e){
+  createjs.Tween.get(this, {override:true}).wait(0).call(enableRaiseAndBetEvents);return false
+})
 
 //disable enter on betsize
 $(self.images.betSlider.betSize.image).on('keydown.correctRaiseAndBetAmountOnBetSizeEnter', correctRaiseAndBetAmountOnBetSizeEnter)
+
+//correct display on focusout
+$(self.images.betSlider.betSize.image).on('focusout', self.events.possibleRaiseOrBetAttemptFromBetSize)
+
 
 }//disable one raise or bet attempt, via enter or clicking the raise/bet button
 
@@ -2462,19 +2475,21 @@ $(self.images.betSlider.betSize.image).one('keydown.raiseOrBetOnBetSizeEnterPres
 
 //disables all raise, bet, and betSize events
 function disableNonStaticBetAndRaiseEvents () {
-$(self.images.betSlider.betSize.image).off('.raiseOrBetOnBetSizeEnterPress  .correctRaiseAndBetAmountOnBetSizeEnter .enableRaiseAndBetEventsOnBetSizeEnter')
-$('#self.images.raise.image.id, #self.images.bet.image.id').off('mousedown.disableOneRaiseOrBetClick click.preventOneClick mouseup.restoreClick')
+$(self.images.betSlider.betSize.image).off('.raiseOrBetOnBetSizeEnterPress  .correctRaiseAndBetAmountOnBetSizeEnter .enableRaiseAndBetEventsOnBetSizeEnter focusout')
+$(self.images.raise.image).add(self.images.bet.image).off('mousedown.disableOneRaiseOrBetClick click.preventOneClick mouseup.restoreClick')
 }
-
 
 function correctRaiseAndBetAmountOnBetSizeEnter (e) {
 //  console.log(e)
 var keycode = (event.keyCode ? event.keyCode : event.which)
-  if(keycode !== 13) {return}    //if enter key is pressed
+  if(keycode === 13) {   //if enter key is pressed
+    playFailSound()
     $(self.images.betSlider.betSize.image).one('keyup.enableRaiseAndBetEventsOnBetSizeEnter', enableRaiseAndBetEventsOnBetSizeEnter)
     $(self.images.betSlider.betSize.image).off('.correctRaiseAndBetAmountOnBetSizeEnter')
-      console.log('correcting bet display/events, event type = ' + event.type)
-    self.events.possibleRaiseOrBetAttemptFromBetSize (false)
+ //     console.log('correcting bet display/events, event type = ' + event.type)
+    self.events.possibleRaiseOrBetAttemptFromBetSize (e)
+    return false
+}//if enter key was pressed
 
 }
 
@@ -2483,7 +2498,7 @@ function enableRaiseAndBetEventsOnBetSizeEnter (e){
 var keycode = (event.keyCode ? event.keyCode : event.which)
   if(keycode !== 13) {return}    //if enter key is pressed
     console.log('enabling bet/raise, event type = ' + event.type)
-    self.events.possibleRaiseOrBetAttemptFromBetSize(e)
+    self.events.possibleRaiseOrBetAttemptFromBetSize(true)
 }
 
 
@@ -2506,10 +2521,13 @@ $(self.images.bet.image).trigger('click')
 
 
 function disableOneRaiseOrBetClick (e){
+  console.log('disableOneRaiseOrBetClick called')
   e.preventDefault()
+  playFailSound()
+  self.events.possibleRaiseOrBetAttemptFromBetSize(e)
  // this.one('focusout.preventRestore', function(e){e.preventDefault()})
-this.one('click.preventOneClick', function(e){e.preventDefault()})
-this.one('mouseup.restoreClick', function(e){e.preventDefault(); enableRaiseAndBetEvents()})
+//$(this).one('click.preventOneClick', function(e){return false})
+//$(this).one('mouseup.restoreClick', function(e){e.preventDefault(); enableRaiseAndBetEvents()})
 }//disable raise or bet onclick event once
 
 function disableEnterOnce (e){
@@ -4468,10 +4486,9 @@ self.updateBetSize('')
 $("#betSize").numeric({ negative: false }, function() {this.value = ""; /*this.focus();*/ });
 //round betSize down when unfocused
 
-$('#betSize').on ('focusout',function(event){ self.events.possibleRaiseOrBetAttemptFromBetSize(event)})
 
 //trigger checks for change in betsize values
-$('#betSize').on('change input paste', function(e){self.events.betSizeChanged()})
+$('#betSize').on('change input paste focus', function(e){self.events.betSizeChanged()})
 $('#betSize').on('contextmenu', function(e){e.preventDefault()})//disable right click
 //highlight when clicked
 $('#betSize').focus(function(){
