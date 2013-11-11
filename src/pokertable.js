@@ -761,12 +761,12 @@ console.log('removechild removing object of type = ' + textOrImageString)
 if(_.isElement(item[textOrImageString])){
 
   $(item[textOrImageString]).remove()
-console.log('child of type = ' + imageOrTextString + ' removed')
+console.log('child of type = ' + textOrImageString + ' removed')
 
   var child = item[textOrImageString]
 item[textOrImageString] = null
 
-if(_.isElement(child)){console.log(item);throw''} //check if element is still there throw error if it is
+//if(_.isElement(child)){console.log(item);throw''} //check if element is still there throw error if it is
 
 
 }
@@ -1325,7 +1325,7 @@ else if(event.type === 'focus' || event.type === 'mousedown'){selectTextBox = tr
 else if(event.type === 'focusout')                  {validate = true; updateValue = true} 
   else if (event.type === 'keyup' && keycode === 13){validate = true; updateValue = true }
   else if(event.type === 'input')                   {validate = true; updateValue = false}
-  else if (event.type === 'keydown' && keycode === 13){
+  else if (event.type === 'keydown' && keycode === 13){// if ENTER key ispressed
 
 //going to disable further keydowns
 var preventDefault = function(e){return false}
@@ -1497,6 +1497,7 @@ this.events.onCashierTextFieldFocus = function(event){
                 var info = {}
                 info.okay = true
                 info.html = true
+                info.style = 'qtip-youtube'
 
         if($('#maxRadio').is(':checked'))
         {
@@ -1510,7 +1511,7 @@ this.events.onCashierTextFieldFocus = function(event){
             if(isNaN(amount)){
 
                 var message = "amount must be a number"
-                self.displayMessageBox(message,info)
+                messageBoxAPI.display(message,info)
             }
             else{
                 
@@ -1523,7 +1524,7 @@ this.events.onCashierTextFieldFocus = function(event){
             if(isNaN(otherAmount)){
 
                 var message = "Amount must be a number"
-                self.displayMessageBox(message, info)
+                messageBoxAPI.display(message, info)
             }
             else{
                 
@@ -1536,7 +1537,7 @@ this.events.onCashierTextFieldFocus = function(event){
             var info = {}
                 info.okay = true
                 var message = "Please select either: max, other amount, or auto-rebuy"
-                self.displayMessageBox(message, info)
+                messageBoxAPI.display(message, info)
         }
 
     }
@@ -1838,13 +1839,13 @@ if(self.getPreactionData('inHand', {seat:options.seatNum}) === true){return fals
  }
     //if not user
 else if(!_.isObject(seatObject.shownCards[0].image) 
-  || self.isItemAddedToStage(seatObject.shownCards[0])
+  || seatObject.shownCards[0].isDisplayed()
  || !_.isObject(seatObject.shownCards[1].image) 
- || self.isItemAddedToStage(seatObject.shownCards[1])
+ || seatObject.shownCards[1].isDisplayed()
  || !_.isObject(seatObject.hiddenCards[0].image) 
- || self.isItemAddedToStage(seatObject.hiddenCards[0])
+ || seatObject.hiddenCards[0].isDisplayed()
  || !_.isObject(seatObject.hiddenCards[1].image) 
- || self.isItemAddedToStage(seatObject.hiddenCards[1])
+ || seatObject.hiddenCards[1].isDisplayed()
  ){return false}//if not user
 
 var animationArray = getHoleCardAnimationArray()
@@ -2210,6 +2211,7 @@ if(!_.isNumber(self.gameState.userSeatNumber)){self.events.exit();return}
        messageInfo.cancel = true
        messageInfo.html = true
        messageInfo.modal = true
+       messageInfo.style = 'qtip-youtube'
        messageInfo.okayEvent = function(){
 self.events.userStands()
       self.events.exit()
@@ -2329,7 +2331,7 @@ jqueryDiv.one('mouseup.hideShowMeHere mouseup.hideShowMeHere', function(e) {hide
 })
 */
 jqueryDiv.on('mousedown.hideShowMeHere', function(event){
-if(self.isItemAddedToStage(showMeHere)){
+if(isItemDisplayed(showMeHere)){
 jqueryDiv.one('mouseup.hideShowMeHere mouseup.hideShowMeHere', function(e) {
   var asdf = {}
   createjs.Tween.get(asdf).wait(0).call(hideShowMeHere)
@@ -2444,7 +2446,6 @@ disableNonStaticBetAndRaiseEvents()
 $('#self.images.raise.image.id, #self.images.bet.image.id').one('click.preventOneClick', function(e){e.preventDefault})
 $('#self.images.raise.image.id, #self.images.bet.image.id').one('mouseup.restoreClick', function(e){e.preventDefault(); enableRaiseAndBetEvents()})
 
-
 //disable enter on betsize
 $(self.images.betSlider.betSize.image).on('keydown.correctRaiseAndBetAmountOnBetSizeEnter', correctRaiseAndBetAmountOnBetSizeEnter)
 
@@ -2490,13 +2491,13 @@ function raiseOrBetOnBetSizeEnterPress(e){
  var keycode = (event.keyCode ? event.keyCode : event.which)
 
   if(keycode !== 13) {return}    //if enter key is pressed
-console.log('betting/raising, event type = '+event.type)
+console.log('raiseOrBetOnBetSizeEnterPress called due to enter key pressed, event type = '+event.type)
 
-if(self.isItemAddedToStage(self.images.raise)){
+if(self.images.raise.isDisplayed()){
 $(self.images.raise.image).trigger('click')
   //e.target = self.images.raise.image;self.events.onButtonClick(e)
 }
-else if(self.isItemAddedToStage(self.images.bet)){
+else if(self.images.bet.isDisplayed()){
 $(self.images.bet.image).trigger('click')
   //e.target = self.images.bet.image;self.events.onButtonClick(e)
 }
@@ -3466,7 +3467,7 @@ this.images.setDefaults = function(){
 var currencyDisplayWidth = canvasWidth
 var currencyDisplayHeight = 15
 var currencyDisplayTopOffset = 0
-var currencyDisplaySizeAndFont = '16px ' + self.permanentPreferences.defaultFontType.value
+var currencyDisplaySizeAndFont = '12px ' + self.permanentPreferences.defaultFontType.value
 var currencyDisplayColor = 'white'
 
             var communityY = 220
@@ -3937,7 +3938,7 @@ var playerSeatObject = self.images.seats[i]
 })
 
 
-  //=================-seat images=========================================
+  //=====================================seat images=========================================
 for(var i =0;i<this.seats.length;i++){
 
 //draw seated seat image
@@ -3947,7 +3948,6 @@ self.images.drawSeat(this.seats[i].seat, '#00008B','#000000', '#7d7d7d',{outerSt
 this.seats[i].seat.on('mouseover',  self.events.seatMouseEvent)
 this.seats[i].seat.on('mouseout',  self.events.seatMouseEvent)
 this.seats[i].seat.on('contextmenu', self.events.onDisabledOrNonUserSeatClick, {cursor:false})
-
 
     //--------------------empty seats and text----------------- 
          this.seats[i].openSeat = new this.Item(this.seats[i].seat.position.x, this.seats[i].seat.position.y,this.seats[i].seat.size.x,this.seats[i].seat.size.y,seatZ)
@@ -3963,12 +3963,9 @@ var seatBottomTextY = seatTopTextY + seatTextHeight
          this.seats[i].countdown = new this.Item(seatTextX, seatTopTextY, seatTextWidth, seatTextHeight, seatZ)
          this.seats[i].winner = new this.Item(seatTextX, seatTopTextY, seatTextWidth, seatTextHeight, seatZ)
 
-       
          this.seats[i].playerName = new this.Item(seatTextX, seatTopTextY, seatTextWidth,seatTextHeight, seatZ)
          this.seats[i].status = new this.Item(seatTextX, seatBottomTextY, seatTextWidth,seatTextHeight, seatZ)
  
-
-//throw''
  this.seats[i].stackSize = new this.Item(seatTextX, seatBottomTextY, seatTextWidth,seatTextHeight, seatZ)
  this.seats[i].gettingChips = new this.Item(seatTextX, seatBottomTextY, seatTextWidth,seatTextHeight, seatZ)
 this.seats[i].sittingOut = new this.Item(seatTextX, seatBottomTextY, seatTextWidth,seatTextHeight, seatZ)
@@ -5989,7 +5986,7 @@ else if (shouldCopyHoleCards === false) {//if not user
 
 for(var i = 0;i<holeCardArray.length;i++){//iterate through hole cards check if visible
 
- if(self.isItemAddedToStage(holeCardArray[i]) !== true){
+ if(holeCardArray[i].isDisplayed() !== true){
 //console.log('card '+i+'is not added to stage')
   shouldCopyHoleCards = false}
   else{
@@ -6695,7 +6692,7 @@ self.hideChildren(self.images.seats[self.gameState.userSeatNumber].seat)
 */
 var seatVisible = []
 for(var i = 0;i<this.gameState.numSeats;i++){
-seatVisible.push(self.isItemAddedToStage(self.images.seats[i].seat))
+seatVisible.push(self.images.seats[i].seat.isDisplayed())
 //seatVisible.push(self.images.seats[i].seat.image.isVisible())
 }//end iteration through this.images.seats
 //console.log('check which seats have the seat displayed ' + seatMessages)
@@ -6717,7 +6714,7 @@ console.log(nonRotatedSeatNumberArray)
  var currentBets = self.getCurrentBetSizes()
  _.each(currentBets, function(value, index, list){
 
-if(self.isItemAddedToStage(self.images.seats[index].bet)){var displayBetSize = true}
+if(self.images.seats[index].bet.isDisplayed()){var displayBetSize = true}
   else{var displayBetSize = false}
 
 if(displayBetSize){
@@ -7064,7 +7061,7 @@ itemsToHide = _.flatten(itemsToHide)
 
     this.easelJSDisplayObjectChanged = function(item, options){
       if(!options){var options  = {}}
-if(this.isItemAddedToStage(item)){
+if(item.isAddedToStage()){
 if(options.updateStageStatus !== false){this.arrayOfParentsOfStageAndOfContainerArray[item.position.z.stage].upToDate = false}
 return item.position.z.stage
 }
@@ -7101,7 +7098,7 @@ stagesToUpdate.push(     this.hideChildren(this.images.totalPotSize, options))
           if(_.isArray(potSize)){var specificPotSize = potSize[options.potNumber]}
             else{var specificPotSize = potSize}
 
-              if(parseFloat(specificPotSize) != parseFloat(this.images.pots[potNumber].potSize.text.text) ||  self.isItemAddedToStage(this.images.pots[potNumber].potSize) !==  true){
+              if(parseFloat(specificPotSize) != parseFloat(this.images.pots[potNumber].potSize.text.text) ||  sthis.images.pots[potNumber].potSize.isDisplayed() !==  true){
    /*       this.images.pots[potNumber].potSize.text.text  = specificPotSize
           stagesToUpdate.push(this.displayChildren(this.images.pots[potNumber].potSize, options))
         stagesToUpdate.push(  this. itemChanged(this.images.pots[potNumber].potSize))
@@ -7124,7 +7121,7 @@ stagesToUpdate.push(  this.displayChipStack(parseFloat(specificPotSize), this.im
 
 aggregatedPotSize = aggregatedPotSize + parseFloat(potSize[i])
 //redraw chipstack ONLY if value is different from before
-if(parseFloat(potSize[i]) != parseFloat(this.images.pots[i].potSize.text.text) ||  self.isItemAddedToStage(this.images.pots[i].potSize) !== true){
+if(parseFloat(potSize[i]) != parseFloat(this.images.pots[i].potSize.text.text) ||  this.images.pots[i].potSize.isDisplayed() !== true){
   console.log('updating pot size '+i+'with value '+ potSize[i])
   /*
  this.images.pots[i].potSize.text.text = potSize[i]
@@ -9229,7 +9226,7 @@ var highBet = self.getHighBet()
 
 var getMinBet = function(){
 
-if(self.isItemAddedToStage(self.images.community[3])){var minBet = self.initial_table_state.small_blind}
+if(self.images.community[3].isDisplayed()){var minBet = self.initial_table_state.small_blind}
   else{var minBet = self.initial_table_state.big_blind}
 
     if(!_.isNumber(minBet) || _.isNaN(minBet)){
@@ -9556,6 +9553,7 @@ var updateOptions = {update:false}
 stagesToUpdate.push ( self.images.addCheckBoxButtonText(uncheckedItem, text))
 stagesToUpdate.push (self.images.addCheckBoxButtonText(checkedItem, text))
 */
+
 
 if(!_.isObject(uncheckedItem.text)){stagesToUpdate.push(self.images.addCheckBoxButtonText(uncheckedItem, text))}
 else{
@@ -11557,7 +11555,7 @@ var options = {update:false, seat:seatNumber, server:false }
 
   self.setPreactionData('hand','timeToAct', timeoutInMS,{seat:seatNumber})
       self.setPreactionData('hand','toAct', seatNumber,{seat:'table'})
-          self.setPreactionData('permanent','displayMessageType', 'countdown',{seat:seatNumber})
+      if(seatNumber === self.gameState.userSeatNumber){self.setPreactionData('permanent','displayMessageType', 'countdown',{seat:seatNumber})}
 
         //function that will convert hex to RGB
     var hexToRGB =     function(hex) {
@@ -12034,30 +12032,7 @@ onClick(e)
 
 
 }
-this.images.Item.prototype.isItemDisplayed = function(){
 
-
-if(this.image instanceof createjs.DisplayObject || this.text instanceof createjs.DisplayObject){
-
- if (self.isItemAddedToStage(this)){return true}
-
-}
-
-if (_.isElement(this.image)){
-
-var cssImageDisplay = $(this.image).css('display')
-if(cssImageDisplay !== 'none' && cssImageDisplay !== 'hidden'){return true}
-
-}
-
-if (_.isElement(this.text)){
-var cssTextDisplay = $(this.text).css('display')
-if(cssTextDisplay !== 'none' && cssTextDisplay !== 'hidden'){return true}
-}
-
-
-return false
-}
 
 this.images.Item.prototype.getText = function (){
 
@@ -12339,8 +12314,8 @@ var div = self.getParentOfStageObject(current)
 //check whether checked or unchecked box
 
 //check for easeljs
-if(self.isItemAddedToStage(items.checkBoxChecked) === true){status.checkBox = 'checked'}
-else if(self.isItemAddedToStage(items.checkBoxUnchecked) === true){status.checkBox = 'unchecked'}
+if( isItemDisplayed(items.checkBoxChecked) === true){status.checkBox = 'checked'}
+else if( isItemDisplayed(items.checkBoxUnchecked) === true){status.checkBox = 'unchecked'}
 
 else if(items.htmlCheckBox instanceof self.images.Item){
 //check for html
@@ -13104,6 +13079,7 @@ if(update !== false){this.updateStages(stagesToUpdate)}
        this.images.cashier.accountBalanceValue.text.text = this.gameState.cashier.balance + ' '+info.currency
 if(this.gameState.cashier.balance < this.gameState.cashier.min ){ 
 var accountBalanceColor = 'red'
+/*
   this.images.cashier.accountBalanceValue.text.text = this.images.cashier.accountBalanceValue.text.text + '//CLICK HERE'
 
 this.images.cashier.accountBalanceValue.on('click', function(e){
@@ -13115,8 +13091,9 @@ $.post('/increase_funbucks_by_100')
 socket.emit('get_add_chips_info')
 
 }, 'text')//onclick for account balance value
+*/
 
-}
+}//if acount balance is too low
 
 else{var accountBalanceColor = this.images.cashier.accountBalanceValue.textColor}
 
@@ -13174,50 +13151,61 @@ if(_.isObject(preference) && (!_.isUndefined(preference.value)  || _.isFunction 
 
 }
 
-this.isItemAddedToStage = function(item){
+this.images.Item.prototype.isCSSDisplayed = function(){
+
+  if(_.isElement(this.image)){//if html element
+    var displayStatus = $(this.image).css('display')
+  if(displayStatus !== 'none' && displayStatus !== 'hidden'){return true}
+     
+  }//check html element
+
+    if(_.isElement(this.text)){//if html element
+ var displayStatus = $(this.text).css('display')
+  if(displayStatus !== 'none' && displayStatus !== 'hidden'){return true}
+
+      }//check text element
+}//check if element is added to stage
+
+this.images.Item.prototype.isDisplayed = function(){
+if(this.isCSSDisplayed() === true){return true}
+  if(this.isAddedToStage() === true){return true}
+    return false
+
+}
+
+var isItemDisplayed = function(item){
+  if(item instanceof self.images.Item){return item.isDisplayed()}
+}
+
+this.images.Item.prototype.isAddedToStage = function(){
+
+var isItemAddedToStage = function(item){
 var result = false
 
-if(!item){return false}
+if(item instanceof self.images.Item){
  // console.log('checking if item is added to stage')
 //console.log(item)
-if(item.image){
-  if(_.isElement(item.image)){//if html element
-  if($(item.image).css('display') !== 'none'){}
-     
-  }//if element
-  else if (item.image instanceof createjs.DisplayObject){
-if(_.isUndefined(this.arrayOfParentsOfStageAndOfContainerArray[item.position.z.stage].containers[item.position.z.container])){
-
-  console.error(item)
+if(item.image instanceof createjs.DisplayObject 
+  && self.getParentOfStageObject(item).containers[item.position.z.container].contains(item.image) === true){
+result = true
 }
 
-  if (this.arrayOfParentsOfStageAndOfContainerArray[item.position.z.stage].containers[item.position.z.container].contains(item.image)) {
-   
-    result = true
-  }
-
-  }//image is createjs
-
+//TEXT
+if(result !== true && item.image instanceof createjs.DisplayObject 
+  && self.getParentOfStageObject(item).containers[item.position.z.container+1].contains(item.text) === true){
+result = true
 }
 
-if(result !== true && item.text){
-  //  console.log('is item added to stage called item has no image and is checking text now')
-//  console.log(item)
-  if(_.isElement(item.text)){//if html element
-    if($(item.text).css('display') !== 'none'){  }
-
-      }
-  else if (this.arrayOfParentsOfStageAndOfContainerArray[item.position.z.stage].containers[item.position.z.container+1].contains(item.text)){
- //   console.log('non element text added to stage returning true')
-    result =  true
-  }
-  else{'item.text is not added to stage and is not an element'}
-//console.log(result)
-}
-
+}//make sure parameter is Item
 
 return result
 }
+
+
+return isItemAddedToStage(this)
+
+}
+
 
 this.getCurrentStackSizes = function(){
 var stackSizes = []
@@ -13250,7 +13238,7 @@ for(var i =0;i<this.gameState.numSeats-1;i++){
   var potSize = parseFloat(potSizeItem.text.text)
   if(_.isNaN(potSize)||!_.isNumber(potSize)){potSize = 0}
 //console.log('pot nuber '+i +' added to stage = ' +this.isItemAddedToStage(potSizeItem) )
-  if(i === 0 || (potSize > 0 && this.isItemAddedToStage(potSizeItem))){
+  if(i === 0 || (potSize > 0 && potSizeItem.isAddedToStage)){
 potSizes.push(potSize)
 }//if potSize is displayed
 else{i=999}//if not exit loop
@@ -13289,13 +13277,13 @@ this.getCurrentBetSizes = function(){
 for(var i =0;i<this.gameState.numSeats;i++){
   var betSizeItem = this.images.seats[i].bet
 
-  if(this.isItemAddedToStage(betSizeItem)){
+  if(betSizeItem.isAddedToStage()){
 betSizes.push(parseFloat(betSizeItem.text.text))
 }//if betSize is displayed
 
 //if bet size is displaed check if player has cards in front of him
 
-else if(this.isItemAddedToStage(this.images.seats[i].hiddenCards[0])||this.isItemAddedToStage(this.images.seats[i].shownCards[0])) {
+else if(this.images.seats[i].hiddenCards[0].isAddedToStage()||this.images.seats[i].shownCards[0].isAddedToStage()) {
 betSizes.push(0)}//if not push 0
 
 else{betSizes.push(false)}//else we push null
@@ -14312,7 +14300,6 @@ for(var i = 0;i<self.gameState.numSeats;i++){
  //self.updatePotSize([1,10000,20000,30000,40000,50000, 60000, 70000, 80000])
 // console.log('dealer button item = ')
  //console.log(self.images.dealerButton)
- //console.log(self.isItemAddedToStage(self.images.showTableChatFull))
  //self.adjustHoleCardImageSourceRectangle(self.images.background, {seatNumber:4})
  
  //self.images.showTableChatFull.image.mask = new createjs.Rectangle(0,0,30,30)
@@ -14400,9 +14387,10 @@ break;
            var messageInfo = {}
            messageInfo.okay = true
            messageInfo.html = true
+           messageInfo.style = 'qtip-youtube'
             
           }
-          self.displayMessageBox(errorString, messageInfo)
+          messageBoxAPI.display(errorString, messageInfo)
                 
 })
         
