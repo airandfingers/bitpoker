@@ -14555,7 +14555,7 @@ self.clearExpirationData('act', seatNum)
             
              setJustActedOrPassNullToGetJustActed(seatNum)
                  
-                 /*
+                 
              //clear once for user
              if(seatNum === self.gameState.userSeatNumber){
               self.clearExpirationData('once', player.seat)
@@ -14564,7 +14564,7 @@ $(self.getParentOfStageObject(self.images.betSlider.slider).div).off('mousewheel
 
             }
             else{ self.clearExpirationData('act', seatNum) }
-*/
+
 
 stagesToUpdate.push(self.displayCorrectSeatItems(player.seat, {update:false}) )
          stagesToUpdate.push(self.updateUserOptionsBasedOnFlagsAndPreactions({update:false}) )
