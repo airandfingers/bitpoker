@@ -16,9 +16,14 @@ module.exports = (function () {
   console.log('package.json version is ' + package_file.version);
 
   var base_page = '/';
+
+  // this shouldn't be necessary - should be able to use auth.ensureAuthenticated directly
+  var ensureAuthenticated = function(req, res, next) {
+    auth.ensureAuthenticated(req, res, next);
+  };
   
   //These app.get functions will display their respective ejs page.
-  app.get('/account', auth.ensureAuthenticated, function(req, res) {
+  app.get('/account', ensureAuthenticated, function(req, res) {
     console.log('req.user is ' + req.user);
     var table_games = Table.getTableGames();
 
@@ -44,8 +49,7 @@ module.exports = (function () {
     });
   });
 
-  //Blockchain callback route to deposit bitcoins:
-  app.get('/bitcoin_deposit/:username', function (req, res) {
+  app.get('/bitcoin_deposit/:username', function(req, res) {
 
     if (req.query.confirmations ==='1') {
       var username = req.params.username
@@ -86,8 +90,7 @@ module.exports = (function () {
           });
     }
   });
-
-  app.get('/deposit_bitcoins', auth.ensureAuthenticated, function(req, res) {
+  app.get('/deposit_bitcoins', ensureAuthenticated, function(req, res) {
     console.log(req.user.deposit_address);
     var table_games = Table.getTableGames();
     res.render('deposit_bitcoins', {
@@ -103,7 +106,7 @@ module.exports = (function () {
     console.log('payment made to', username, req);
   });
 
-  app.get('/withdraw_bitcoins', auth.ensureAuthenticated, function(req, res) {
+  app.get('/withdraw_bitcoins', ensureAuthenticated, function(req, res) {
     var table_games = Table.getTableGames();
     res.render('withdraw_bitcoins', {
      title: 'Withdraw Bitcoins',
@@ -714,7 +717,7 @@ module.exports = (function () {
     }
   });
 
-  app.get('/table_state/:table_id', auth.ensureAuthenticated, function(req, res) {
+  app.get('/table_state/:table_id', ensureAuthenticated, function(req, res) {
     var table = Table.getTable(req.params.table_id)
       , hand_include = req.query.fields || 'all';
 
@@ -733,11 +736,11 @@ module.exports = (function () {
     });
   });
 
-  app.get('/preferences', auth.ensureAuthenticated, function(req, res) {
+  app.get('/preferences', ensureAuthenticated, function(req, res) {
     res.json(req.user.preferences);
   });
 
-  app.get('/flags/:table_id', auth.ensureAuthenticated, function(req, res) {
+  app.get('/flags/:table_id', ensureAuthenticated, function(req, res) {
     var table = Table.getTable(req.params.table_id)
       , player;
     if (! (table instanceof Table)) {
@@ -755,7 +758,7 @@ module.exports = (function () {
     }
   });
 
-  app.get('/hand_histories', auth.ensureAuthenticated, function(req, res) {
+  app.get('/hand_histories', ensureAuthenticated, function(req, res) {
     HandHistory.find()
       .sort('-finished_at')
       .exec(function(err, hand_histories) {
@@ -768,7 +771,7 @@ module.exports = (function () {
     })
   });
 
-  app.get('/history', auth.ensureAuthenticated, function(req, res) {
+  app.get('/history', ensureAuthenticated, function(req, res) {
     HandHistory.find({ initial_usernames : req.username})
       .sort('-finished_at')
       .exec(function(err, hand_histories) {
@@ -781,7 +784,7 @@ module.exports = (function () {
     });
   });
 
-  app.post('/leave_table', auth.ensureAuthenticated, function(req, res) {
+  app.post('/leave_table', ensureAuthenticated, function(req, res) {
     var table_name = req.body.table_name;
     console.log('/leave_table called on', req.user.username, 'for', table_name);
     if (! _.isString(table_name)) {
