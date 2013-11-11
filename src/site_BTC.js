@@ -1,6 +1,7 @@
 var site_BTC = new function(){
 	var self = this
 
+//PARSES A KEY, NOT SURE IF IT ALWAYS THROWS ERROR IF INVALID OR NOT
     var parseBase58Check(address) = function {
         var bytes = Bitcoin.Base58.decode(address);
         var end = bytes.length - 4;
@@ -43,6 +44,7 @@ var publicKeyHex = Crypto.util.bytesToHex(publicKeyBytes)
 
 */
 
+//returns compressed private and public keys. compressed = normal, and carry all the data of an uncompressed ky
 this.Address = function(){
 
  var privateKeyBytes = Crypto.util.randomBytes(32)
@@ -65,6 +67,28 @@ this.address = address
 
 }
 
+var isPrivateCompressed = function(key){
+
+ try {
+            var res = parseBase58Check(key); 
+            var version = res[0];
+            var payload = res[1];
+            //DETERMINE WHETHER PRIVATE KEY IS COMPRESSED
+            var compressed = false;
+            if (payload.length > 32) { compressed = true;}//if compressed
+
+        } catch (err) { console.error('parameter not a private key')  }
+
+return compressed
+
+}
+
+var isPublicCompressed = function(key){
+
+
+
+}
+
 //GET ADDRESS FROM A KEY (currently only private is implemented)
 this.getAddress = function(key){
 
@@ -78,11 +102,12 @@ var addr = '';
             var res = parseBase58Check(sec); 
             var version = res[0];
             var payload = res[1];
+            //DETERMINE WHETHER PRIVATE KEY IS COMPRESSED
             var compressed = false;
             if (payload.length > 32) {
                 payload.pop();
                 compressed = true;
-            }
+            }//if compressed
             var eckey = new Bitcoin.ECKey(payload);
             var curve = getSECCurveByName("secp256k1");
             var pt = curve.getG().multiply(eckey.priv);

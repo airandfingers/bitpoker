@@ -751,17 +751,28 @@ this.images.Item.prototype.removeChild = function(imageOrText, options){
   var stagesToUpdate = []
   if(!options){var options = {}}
 var removeChild = function(textOrImageString){
+console.log('removechild called type = ' + textOrImageString)
+if(_.isElement(this[textOrImageString])){
 
-if(_.isElement(this[textOrImageString])){$(this[textOrImageString]).remove()}
+  $(this[textOrImageString]).remove()
+console.log('child of type = ' + imageOrTextString + ' removed')
+
+  var child = this[textOrImageString]
+this[textOrImageString] = null
+
+if(_.isElement(child)){console.log(this);throw''} //check if element is still there throw error if it is
+
+
+}
 else if(this[textOrImageString] instanceof createjs.DisplayObject){
 
 if(textOrImageString === 'text'){stagesToUpdate.push (self.hideText(this, {update:false}))}
   else if(textOrImageString === 'image'){stagesToUpdate.push (self.hideImage(this, {update:false}))   }
     else{throw 'incorrect parameter passed to eliminate '+ textOrImage}
 
-
 }
 
+this[textOrImageString] = null
 
 }//eliminate function
 
@@ -1208,7 +1219,7 @@ if(e.nativeEvent.button != 2){
 
 console.log(item.getOrSetCreateJSEvents('get', childType, 'click'))
 var asdf = item.getOrSetCreateJSEvents('function', childType, 'click')
-console.log(asdf)
+//console.log(asdf)
 asdf(e)
 }//LEFT CLICK
 
@@ -3793,6 +3804,7 @@ this.sitOutNextBlindOn.addBitmap( self.permanentPreferences.sourceObjects.value.
         .drawRect(0, 0, item.size.x, item.size.y)
     //    console.log('drew hitsquare')
     //    console.log(hitSquare)
+    if(item.image){item.image.hitArea = hitSquare}
         return hitSquare
       }
 
@@ -3809,14 +3821,18 @@ if(options.html !== false){options.html = true}
       if(options.html === true){//HTML text
 options.css = {'text-align': 'left'}
 item.addText(text, checkBoxButtonSizeAndFont, checkBoxButtonTextColor, options)
-setDisplayObjectPositionData(item.text, {x:item.position.x + checkBoxButtonCheckBoxWidth + checkBoxButtonDistanceFromBoxToText})
+setDisplayObjectPositionData(item.text, {x:item.position.x + checkBoxButtonCheckBoxWidth + checkBoxButtonDistanceFromBoxToText, width: self.getParentOfStageObject(item).stage.canvas.width})
 
       }//html text
 
 else{//if easeljs text
 
+throw''
 
-         if(item.text instanceof createjs.Text !== true)  {item.text = new createjs.Text(text, checkBoxButtonSizeAndFont, checkBoxButtonTextColor)}
+         if(item.text instanceof createjs.Text !== true)  {
+          var text = new createjs.Text(text, checkBoxButtonSizeAndFont, checkBoxButtonTextColor)
+item.adoptChild(text, 'text')
+        }
           
 
           else{
@@ -8819,9 +8835,11 @@ else if(options.server !== true) {gameStateSeatObject[expiration][action] = val}
  //returns once value, then street, then hand
 this.getPreactionData = function(actionType, options){
 
-if(actionType === 'all_in'){console.log('GETTING PREACTION DATA FOR : '+actionType)}
+//if(actionType === 'all_in'){console.log('GETTING PREACTION DATA FOR : '+actionType)}
 
 if(!options){var options = {}}
+//console.log('GETTING PREACTION DATA CALLED FOR : ' + actionType + 'server = ' + options.server)
+
 
 if(options.seat === 'table'){}
 else if(!_.isNumber(options.seat) || _.isNaN(options.seat)){var seat = self.gameState.userSeatNumber}
@@ -9000,12 +9018,13 @@ if(useValue(onceProcessedValue)){data.push  (onceProcessedValue)}
 if(useValue(handProcessedValue)){data.push (handProcessedValue)}
 if(useValue(permanentProcessedValue)){data.push (permanentProcessedValue)}
 
-  
+  /*
   if(actionType === 'sitting_out'){
     console.log('sitting out flag: ' + data)
     console.log('seat = ' + seat)
 console.log(gameStateSeatObject)
   }
+  */
 
 var numberTestArray = _.uniq(_.without(data, true, false))
 //check if array has a number, if not do notthing
@@ -9044,7 +9063,7 @@ this.getHighBet = function(){
 this.images.createPairOfCheckBoxOptionDisplayObject = function (text, onClickUnchecked, onClickChecked){
 //console.log('createPreactionOptionDisplayObject called')
 var height = self.images.foldToAnyBet.size.y
-    var preactionItem = new self.images.Item(0, 0,0, height, getZ('staticItems','buttons'))
+    var preactionItem = new self.images.Item(0, 0, 0, height, getZ('staticItems','buttons'))
     var preactionItemOn = new self.images.Item(0, 0, 0, height,  getZ('staticItems','buttons'))
 
 preactionItem.addBitmap (self.permanentPreferences.sourceObjects.value.checkBox )
@@ -9435,7 +9454,7 @@ console.log(preactionOptions)
 
 if(preactionOptions.check === true){
 //console.log('displaying check preaction option')
- stagesToUpdate.push (addPreactionText(this.images.preactions.checkUnchecked, this.images.preactions.checkChecked, 'Check'))
+ stagesToUpdate.push (updatePreactionText(this.images.preactions.checkUnchecked, this.images.preactions.checkChecked, 'Check'))
 
 if(this.getPreactionData('check')){displayLastCheckedItem()}
   else{displayLastUncheckedItem()}
@@ -9444,7 +9463,7 @@ if(this.getPreactionData('check')){displayLastCheckedItem()}
 
 if(preactionOptions.fold === true){
 //  console.log('displaying call preaction option')
- stagesToUpdate.push ( addPreactionText(this.images.preactions.foldUnchecked, this.images.preactions.foldChecked, 'Fold'))
+ stagesToUpdate.push ( updatePreactionText(this.images.preactions.foldUnchecked, this.images.preactions.foldChecked, 'Fold'))
 
 if(this.getPreactionData('fold')){displayLastCheckedItem()}
   else{displayLastUncheckedItem()}
@@ -9455,7 +9474,7 @@ var all_inFlag = this.getPreactionData('all_in')
 
 if(_.isNumber(preactionOptions.all_in)){
 //console.log('displaying allin preaction option')
-stagesToUpdate.push ( addPreactionText(this.images.preactions.allInUnchecked, this.images.preactions.allInChecked, 'All-In'))
+stagesToUpdate.push ( updatePreactionText(this.images.preactions.allInUnchecked, this.images.preactions.allInChecked, 'All-In'))
 
   if(all_inFlag){displayLastCheckedItem()}
     else{displayLastUncheckedItem()}
@@ -9463,7 +9482,7 @@ stagesToUpdate.push ( addPreactionText(this.images.preactions.allInUnchecked, th
 if(_.isNumber(preactionOptions.call)){
 //console.log('displaying call preaction option')
 
-   stagesToUpdate.push ( addPreactionText(this.images.preactions.callUnchecked, this.images.preactions.callChecked, callText))
+   stagesToUpdate.push ( updatePreactionText(this.images.preactions.callUnchecked, this.images.preactions.callChecked, callText))
 
 var checkIfCallIsValid = function(value){ if(_.isNumber(value) && value === preactionOptions.call){return true}}
 if(this.getPreactionData('call')){displayLastCheckedItem()}
@@ -9476,7 +9495,7 @@ if(this.getPreactionData('call')){displayLastCheckedItem()}
 if(preactionOptions.call_any === true){
 //console.log('displaying call_any preaction option')
 
-stagesToUpdate.push (addPreactionText(this.images.preactions.callAnyUnchecked, this.images.preactions.callAnyChecked, 'Call Any'))
+stagesToUpdate.push (updatePreactionText(this.images.preactions.callAnyUnchecked, this.images.preactions.callAnyChecked, 'Call Any'))
 
   var checkIfCallAnyIsValid = function(value){if(value===true){return true}}
 if(this.getPreactionData('call_any')){displayLastCheckedItem()}
@@ -9490,7 +9509,7 @@ if(this.getPreactionData('call_any')){displayLastCheckedItem()}
 //if NOT displaying all-in option, we want to display ONLY call all-in option
 else if (preactionOptions.all_in === false){
 
-   stagesToUpdate.push ( addPreactionText(this.images.preactions.callUnchecked, this.images.preactions.callChecked, callText))
+   stagesToUpdate.push ( updatePreactionText(this.images.preactions.callUnchecked, this.images.preactions.callChecked, callText))
 
 if(all_inFlag || this.getPreactionData('call')){displayLastCheckedItem()}
 else{displayLastUncheckedItem()}
@@ -9523,10 +9542,27 @@ else{return stagesToUpdate}
 
 
 
-function addPreactionText (uncheckedItem, checkedItem, text){
+function updatePreactionText (uncheckedItem, checkedItem, text){
 var stagesToUpdate = []
+var updateOptions = {update:false}
+
+/*
 stagesToUpdate.push ( self.images.addCheckBoxButtonText(uncheckedItem, text))
-stagesToUpdate .push (self.images.addCheckBoxButtonText(checkedItem, text))
+stagesToUpdate.push (self.images.addCheckBoxButtonText(checkedItem, text))
+*/
+
+if(!_.isObject(uncheckedItem.text)){stagesToUpdate.push(self.images.addCheckBoxButtonText(uncheckedItem, text))}
+else{
+  stagesToUpdate.push (uncheckedItem.updateText(text, updateOptions))
+stagesToUpdate.push(self.images.drawCheckBoxButtonHitSquareAndAdjustItemWidth(uncheckedItem))
+}
+
+if(!_.isObject(checkedItem.text)){stagesToUpdate.push(self.images.addCheckBoxButtonText(checkedItem, text))}
+else{
+  stagesToUpdate.push (checkedItem.updateText(text, updateOptions))
+stagesToUpdate.push(self.images.drawCheckBoxButtonHitSquareAndAdjustItemWidth(checkedItem))
+}
+
 
   preactionUncheckedItemArray.push(uncheckedItem)
 preactionCheckedItemArray.push(checkedItem)
@@ -11925,6 +11961,14 @@ console.log('leftover child removed with id = ' + options.attr.id)
 
 
 }//if we want to remove previous
+
+else{
+
+  console.log('overwrite not = false on add element type = ' + type)
+  console.log(element)
+  console.log(options)
+  throw''
+}
 
 //MODIFY DISPLAY CSS
 if(_.isString(options.css.display)){
@@ -14589,7 +14633,9 @@ if(actions[i].raise[0] != actions[i].raise[1]){ stagesToUpdate.push( self.displa
          })//iterate through action choices
 
 
-
+//play to_act sound
+var promptSound = createjs.Sound.createInstance(self.images.sources.toActAlertSound)
+     promptSound.play()
 stagesToUpdate.push( self.playerToAct(self.gameState.userSeatNumber, timeout) )
 stagesToUpdate.push(self.updateUserOptionsBasedOnFlagsAndPreactions({update:false}) )
          self.updateStages(stagesToUpdate)
