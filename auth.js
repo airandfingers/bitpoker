@@ -47,12 +47,11 @@ module.exports = (function () {
   });
 
   function isAuthenticated(req) {
-    console.log('isAuthenticated called; passport _userProperty is', req._passport && req._passport.instance._userProperty);
+    //console.log('isAuthenticated called; passport _userProperty is', req._passport && req._passport.instance._userProperty);
     return req.isAuthenticated();
   }
 
   function ensureAuthenticated(req, res, next, message) {
-    //console.log("ensureAuthenticated called!");
     if (isAuthenticated(req)) {
       return next();
     }
