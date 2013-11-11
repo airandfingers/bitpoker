@@ -750,29 +750,35 @@ this.drawRoundedRectangle = function(fillColor){this.image.graphics.beginFill(fi
 this.images.Item.prototype.removeChild = function(imageOrText, options){
   var stagesToUpdate = []
   if(!options){var options = {}}
-var removeChild = function(textOrImageString){
-console.log('removechild called type = ' + textOrImageString)
-if(_.isElement(this[textOrImageString])){
+    var item = this
 
-  $(this[textOrImageString]).remove()
+var removeChild = function(textOrImageString){
+
+if(!item[textOrImageString]){return}
+console.log('removechild removing object of type = ' + textOrImageString)
+
+
+if(_.isElement(item[textOrImageString])){
+
+  $(item[textOrImageString]).remove()
 console.log('child of type = ' + imageOrTextString + ' removed')
 
-  var child = this[textOrImageString]
-this[textOrImageString] = null
+  var child = item[textOrImageString]
+item[textOrImageString] = null
 
-if(_.isElement(child)){console.log(this);throw''} //check if element is still there throw error if it is
+if(_.isElement(child)){console.log(item);throw''} //check if element is still there throw error if it is
 
 
 }
-else if(this[textOrImageString] instanceof createjs.DisplayObject){
+else if(item[textOrImageString] instanceof createjs.DisplayObject){
 
-if(textOrImageString === 'text'){stagesToUpdate.push (self.hideText(this, {update:false}))}
-  else if(textOrImageString === 'image'){stagesToUpdate.push (self.hideImage(this, {update:false}))   }
+if(textOrImageString === 'text'){stagesToUpdate.push (self.hideText(item, {update:false}))}
+  else if(textOrImageString === 'image'){stagesToUpdate.push (self.hideImage(item, {update:false}))   }
     else{throw 'incorrect parameter passed to eliminate '+ textOrImage}
 
 }
 
-this[textOrImageString] = null
+item[textOrImageString] = null
 
 }//eliminate function
 
@@ -11463,7 +11469,7 @@ if(update === false){return stagesToUpdate}
     this.playerActs = function(seatNumber, actionText, displayTime){
          //if player is current user, hide action buttons
         if(seatNumber === self.gameState.userSeatNumber){this.hideAllActionButtons(this.gameState.userSeatNumber)}
-self.setPreactionData('permanent', 'displayMessageType', 'action', {server:false})
+self.setPreactionData('permanent', 'displayMessageType', 'action', {server:false, seat:seatNumber})
 
     
       
@@ -14361,8 +14367,9 @@ if(_.isFunction(callback)){callback()}
     socket.on('street_ends', function (potSizes){
 
 
-        for(var i = 0;i<self.images.seats.length;i++){
-          var options = {seat:i, update:false}
+        for(var i = 0;i<self.gameState.numSeats;i++){
+          /*
+          var options = {seat:i, update:false, server:false}
           var displayMessageType = self.getPreactionData('displayMessageType', options)
 
 switch(displayMessageType){
@@ -14376,6 +14383,7 @@ switch(displayMessageType){
 break;
 
 }
+*/
  self.clearExpirationData('street', i)
         }
 
@@ -14501,15 +14509,19 @@ self.updateUserOptionsBasedOnFlagsAndPreactions()
        socket.on('player_acts', function(player, action, pot){
 
 var seatNum = player.seat
+var stagesToUpdate = []
+var action = action.toUpperCase()
+
 //clear on act data
 self.clearExpirationData('act', seatNum)
-     if(action != 'skip') {self.playerActs(seatNum, action.toUpperCase(), 1000)}
-        
-    //display updated potsize if necessary
-        if(pot && action!=='check'){self.updatePotSize(pot)}
+     if(action != 'SKIP') {self.playerActs(seatNum, action, 1000)}
+     //   else{ throw ''}
 
-        switch(action.toLowerCase()){
-        case 'fold':
+    //display updated potsize if necessary
+        if(pot && action!=='CHECK'){self.updatePotSize(pot)}
+
+        switch(action){
+        case 'FOLD':
         //create hole cards copies for future animations:
        self.createHoleCardCopyIfNeeded(seatNum)
         var foldSound = createjs.Sound.createInstance(self.images.sources.foldSound)
@@ -14523,16 +14535,16 @@ self.clearExpirationData('act', seatNum)
             }
             break;
 
-            case 'check':
+            case 'CHECK':
             var checkSound = createjs.Sound.createInstance(self.images.sources.checkSound)
             checkSound.play()
                self.setPreactionData('hand', 'inHand', true)
             break;
 
-            case'bet':
-            case'call':
-            case 'raise':
-            case'post_blind':
+            case'BET':
+            case'CALL':
+            case 'RAISE':
+            case'POST_BLIND':
               var betSound = createjs.Sound.createInstance(self.images.sources.betSound)
             betSound.play()
             self.playerPutsChipsInPot(seatNum,player.current_bet, player.chips)
@@ -14543,6 +14555,7 @@ self.clearExpirationData('act', seatNum)
             
              setJustActedOrPassNullToGetJustActed(seatNum)
                  
+                 /*
              //clear once for user
              if(seatNum === self.gameState.userSeatNumber){
               self.clearExpirationData('once', player.seat)
@@ -14551,9 +14564,10 @@ $(self.getParentOfStageObject(self.images.betSlider.slider).div).off('mousewheel
 
             }
             else{ self.clearExpirationData('act', seatNum) }
+*/
 
-self.displayCorrectSeatItems(player.seat)
-          self.updateUserOptionsBasedOnFlagsAndPreactions() 
+stagesToUpdate.push(self.displayCorrectSeatItems(player.seat, {update:false}) )
+         stagesToUpdate.push(self.updateUserOptionsBasedOnFlagsAndPreactions({update:false}) )
 })
 
 //user to act 
@@ -14766,6 +14780,7 @@ self.displayBubbleChatPopover(chatInfo)
 
 self.setPreactionData('permanent', 'sitting_out', false , {server:false, seat:player.seat})
 self.setPreactionData('permanent', 'getting_chips', false , {server:false, seat:player.seat})
+
  //       stagesToUpdate.push  ( self.images.seats[player.seat].status.updateText(player.chips, {update:false}))
 stagesToUpdate.push(     self.images.seats[player.seat].stackSize.updateText(player.chips, {update:false})        )
 
