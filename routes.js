@@ -99,7 +99,7 @@ module.exports = (function () {
                 }
                 else {
                 console.log('Deposited ' + bitcoin_update + ' into ' + username + '\'s account.\nNew balance is '+ new_bitcoin_balance + ' satoshi.');
-                req.user.broadcastBalanceUpdate('satoshi', new_bitcoin_balance);
+                user.broadcastBalanceUpdate('satoshi', new_bitcoin_balance);
                 }
               } );          
             }
