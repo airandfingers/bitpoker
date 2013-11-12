@@ -247,23 +247,22 @@ user-select: none;
 }
 
 #pokerTableWrapper .actionButton {
-  text-align:center;
-  display:none; 
-  background-color: hsl(32, 91%, 19%) !important;
+  background-color: hsl(316, 51%, 1%) !important;
   background-repeat: repeat-x;
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#f38910", endColorstr="#5c3304");
-  background-image: -khtml-gradient(linear, left top, left bottom, from(#f38910), to(#5c3304));
-  background-image: -moz-linear-gradient(top, #f38910, #5c3304);
-  background-image: -ms-linear-gradient(top, #f38910, #5c3304);
-  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #f38910), color-stop(100%, #5c3304));
-  background-image: -webkit-linear-gradient(top, #f38910, #5c3304);
-  background-image: -o-linear-gradient(top, #f38910, #5c3304);
-  background-image: linear-gradient(#f38910, #5c3304);
-  border-color: #5c3304 #5c3304 hsl(32, 91%, 11%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#c1429f", endColorstr="#030103");
+  background-image: -khtml-gradient(linear, left top, left bottom, from(#c1429f), to(#030103));
+  background-image: -moz-linear-gradient(top, #c1429f, #030103);
+  background-image: -ms-linear-gradient(top, #c1429f, #030103);
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #c1429f), color-stop(100%, #030103));
+  background-image: -webkit-linear-gradient(top, #c1429f, #030103);
+  background-image: -o-linear-gradient(top, #c1429f, #030103);
+  background-image: linear-gradient(#c1429f, #030103);
+  border-color: #030103 #030103 hsl(316, 51%, -11.5%);
   color: #fff !important;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.52);
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.82);
   -webkit-font-smoothing: antialiased;
 }
+
 
 
 #fold.actionButton {
