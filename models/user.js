@@ -14,7 +14,10 @@ module.exports = (function() {
 
     , mailer = require('../mailer') // used to send emails
 
-    , io = require('../sockets'); // used to send server-initiated messages
+    , io = require('../sockets') // used to send server-initiated messages
+
+    , btc_main = require('../btc/main')
+    , btc_remote_apis = require('../btc/remote_apis');
 
   /* the schema - defines the "shape" of the documents:
    *   gets compiled into one or more models */
@@ -293,6 +296,8 @@ module.exports = (function() {
   };
 
   UserSchema.methods.generateDepositAddress = function(cb) {
+    var address = btc_main.createAddress();
+    if (! _.isEmpty(address)) { return cb(); }
     var user = this
     // generate deposit public address for this user
       , url = 'https://blockchain.info/api/receive?method=create' +
@@ -314,9 +319,12 @@ module.exports = (function() {
         console.error(error);
       }
       else {
-        var body = JSON.parse(response.body);
-        user.deposit_address = body.input_address;
-        console.log('augmented user with deposit_address:' + user.deposit_address);
+        var body = JSON.parse(response.body)
+          , address = body.input_address;
+        user.deposit_address = address;
+        console.log('augmented user with deposit_address:' + address);
+
+        btc_remote_apis.setupDepositNotificationsForAddress(address);
       }
       cb(error);
     });
@@ -372,6 +380,13 @@ module.exports = (function() {
     var Room = require('./room')
       , socket_list = io.sockets.in(Room.USER_ROOM_PREFIX + this.username);
     socket_list.emit('new_balance', currency, balance);
+  };
+
+  UserSchema.methods.handleDepositNotification = function(notification) {
+    console.log('handleDepositNotification called with', notification);
+    btc_remote_apis.checkAmountReceived(this.deposit_address, function(check_err, amount_received) {
+      console.log('checkAmountReceived returns', check_err, amount_received);
+    });
   };
 
   /* the model - a fancy constructor compiled from the schema:

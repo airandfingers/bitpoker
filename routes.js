@@ -49,6 +49,22 @@ module.exports = (function () {
     });
   });
 
+  //TODO: implement this route
+  app.all('/deposit_notification', function(req, res) {
+    console.log('/deposit_notification called with', req);
+    var deposit_address = req.query.address;
+    User.findOne({ deposit_address: deposit_address }, function(find_err, user) {
+      if (find_err) {
+        console.error()
+      }
+      else {
+        user.handleDepositNotification(req.query);
+      }
+    });
+    res.end();
+  });
+
+  //OLD: Blockchain callback route to deposit bitcoins:
   app.get('/bitcoin_deposit/:username', function(req, res) {
 
     if (req.query.confirmations ==='1') {
