@@ -21,6 +21,7 @@ header {
 @media all and (min-width: 762px) {
 
 }
+
 .navbar {
     background: black;
     position: fixed;
@@ -86,6 +87,9 @@ h3 {
     margin-bottom: 20px;
 }
 */
+#chip_count {
+    display: none;
+}
 
 #feedback_message {
     display: none;

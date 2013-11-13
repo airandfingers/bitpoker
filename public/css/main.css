@@ -107,6 +107,16 @@ html {
     min-width: 100%;
     min-height: 100%;
 
+    /* fix for white spacing on right side, but breaks dropdowns 
+    overflow-x: hidden;
+    overflow-y: hidden; 
+
+}
+
+body {
+    overflow-x: hidden; 
+    overflow-y: hidden;
+*/
 }
 
 h1 {
