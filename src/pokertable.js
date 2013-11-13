@@ -451,7 +451,7 @@ touchEnabled:true,
 mouseOverFrequency:30
 ,newCanvas:true
             }//staticItems stage options
-stageContainers.staticItems = ['background', 'table', 'buttons chat', null, 'holeCards', 'seats', null, 'bubbleChat', 'betSlider']
+stageContainers.staticItems = ['background', 'table', 'buttons chat', null, 'holeCards', 'seats', null, 'bubbleChat', 'betSlider', 'contextMenu']
 
 stageOptionData.animatedAndMiddleTableItems = _.clone(disabledOptions)
 stageOptionData.animatedAndMiddleTableItems.newCanvas = true
@@ -2254,9 +2254,130 @@ if(e.nativeEvent.button !== 2){return}//make sure its a right click
 //e.nativeEvent.preventDefault()
    
 
-      var seatObject = e.target.parentItem.seatObjectAncestor
+      
+      var item = e.target.parentItem
+      if(!_.isObject(item)){return}
+      var seatObject = item.seatObjectAncestor
 var rotatedSeatNumber = seatObject.rotatedSeatNumber
 var nonRotatedSeatNumber  = seatObject.nonRotatedSeatNumber
+//return if user's seat is clicked
+if(self.gameState.userSeatNumber === seatObject.nonRotatedSeatNumber){return}
+
+var stageParent = self.getParentOfStageObject(item)
+
+
+
+
+//------------------------CREATE SHOW ME HERE WITH JQUERY-UI-CONTEXTMENU HERE--------------------------
+//   https://github.com/mar10/jquery-ui-contextmenu
+var rotate = function(){
+self.sessionPreferences.changeUserSeatViewTo.updateValue(rotatedSeatNumber)
+self.saveSessionPreferences()
+}
+
+var x = e.stageX+1;var y = e.stageY+1
+
+var contextmenuOptions = {
+    delegate: stageParent.div,
+    menu: [  {title: "Show Me Here", action: rotate }]
+    /*
+    ,select: function(event, ui) {
+       // alert("select " + ui.cmd + " on " + ui.target.text());
+   ui.cmd()
+    }//event on select
+    */
+    
+  ,position:{my: 'left+' + x + ' top+'+y , of: stageParent.div, at:'left top'
+  , within: stageParent.div, collision:'flipfit' }
+   //  ,position:{within: stageParent.div, collision }
+  
+        ,create:function(event, ui) { //ui is {}
+      console.log('contextmenu created')
+      console.log(event)
+     // console.log(ui)
+    }
+    ,beforeOpen: function(event, ui) { //ui = {menu:menu, target:this.delegate}
+      console.log('original beforeOpen called, repositioning showmehere menu')
+      console.log(event)
+      console.log(ui)
+       ui.menu.appendTo(stageParent.div)
+      var css = {
+'z-index':getZ('staticItems', 'contextMenu').container
+,'font-size':'11px'
+,'font-family':self.permanentPreferences.defaultFontType.value
+,'padding':'0 0 0 0'
+      }
+      ui.menu.css(css)
+      console.log(getDisplayObjectPositionAndSizeData(ui.menu[0], {size:true, position:true, maxSize:true}))
+   
+
+//replace before options
+$(stageParent.div).off('contextmenubeforeOpen')
+$(stageParent.div).on('contextmenubeforeOpen', function(event,ui){
+  console.log('context menu called from regular right click, hiding and not showing it ...SUCCESS')
+  $(stageParent.div).contextmenu('destroy')
+  return false
+})
+    }//beforeOpen
+            ,open:function(event, ui) { //ui is {}
+      console.log('contextmenu opened')
+   //   setDisplayObjectPositionData(ui.menu[0], {x:x,y:y} )
+      console.log(getDisplayObjectPositionAndSizeData(ui.menu[0], {size:true, position:true, maxSize:true}))
+    }
+
+      ,close: function(event, ui) {
+       // alert("select " + ui.cmd + " on " + ui.target.text());
+   $(document).contextmenu('destroy')
+    }//event on select
+    ,show:false //sets the ANIMATION for showing the menu, does NOT determine whether we will show the menu
+,hide:false//sets the ANIMATION for hiding the menu, does NOT determine whether we will hide the menu
+}//contextmenuOptions
+
+//remove old contextmenu
+try {$(document).contextmenu('destroy')}catch(err){}
+
+//create new context menu
+$(document).contextmenu(contextmenuOptions)
+
+console.log('calling contextmenu open')
+//open the context menu
+$(document).contextmenu  ("open", $(stageParent.div))
+
+//console the menu
+console.log($(document).contextmenu('getMenu'))
+
+
+/*
+//------------------------CREATE SHOW ME HERE WITH JQUERY-MENU (original) HERE--------------------------
+var rotate = function(){
+self.sessionPreferences.changeUserSeatViewTo.updateValue(rotatedSeatNumber)
+self.saveSessionPreferences()
+}
+
+var stageParent = self.getParentOfStageObject(event.target)
+
+$(stageParent.div).menu({
+    menus: [        {title: "Show Me Here", cmd: rotate }]
+    ,select: function(event, ui) {
+       // alert("select " + ui.cmd + " on " + ui.target.text());
+   ui.cmd()
+    }
+        ,blur: function(event, ui) {
+       // alert("select " + ui.cmd + " on " + ui.target.text());
+   ui.destroy()
+    } 
+    
+    ,create: function(event, ui) {
+      console.log('beforeOpen called')
+      setDisplayObjectPositionData($(stageParent.div.id + ' > .ui-menu'), {x:e.stageX+1,y:e.stageY+1} )
+    }
+    ,show:false
+});
+*/
+
+//------------------------CREATE SHOW ME HERE OPTION--------------------------
+
+/*
 var seatStageNumber = seatObject.seat.position.z.stage
 var seatStage = self.arrayOfParentsOfStageAndOfContainerArray[seatStageNumber]
 var buttonContainer = seatStage.containers.length-2
@@ -2267,12 +2388,11 @@ var buttonWidth = self.images.seats[0].seat.size.x*0.85
 var buttonHeight = 16
 var buttonFontSize = 10
 var buttonFont = self.permanentPreferences.defaultFontType.value
+*/
 
-//return if user's seat is clicked
-if(self.gameState.userSeatNumber === seatObject.nonRotatedSeatNumber){return}
 
-//------------------------CREATE SHOW ME HERE OPTION--------------------------
-var showMeHere = new self.images.Item(0,0,buttonWidth, buttonHeight, {stage:buttonStageNumber, container: buttonContainer})
+/*
+var showMeHere = new self.images.Item(e.stageX+1,e.stageY+1,buttonWidth, buttonHeight, {stage:buttonStageNumber, container: buttonContainer})
  
 var showMeHereImage = new createjs.Shape()
  showMeHere.adoptChild(showMeHereImage, 'image')
@@ -2284,9 +2404,9 @@ var showMeHereImage = new createjs.Shape()
 
 showMeHere.on('click', function(e){
 self.hideChildren(showMeHere)
-self.sessionPreferences.changeUserSeatViewTo.updateValue(rotatedSeatNumber)
-self.saveSessionPreferences()
+
 })
+
 
 var displayShowMeHere = function(){
   var stagesToUpdate = []
@@ -2301,35 +2421,10 @@ var hideShowMeHere = function(){
   self.hideChildren(showMeHere)
 }
 
-
-
+var jqueryDiv = $(self.getParentOfStageObject(showMeHere).div)
 displayShowMeHere()
 
-var jqueryDiv = $(self.getParentOfStageObject(showMeHere).div)
 
-/*
-jqueryDiv.one('contextmenu.hideShowMeHere click.hideShowMeHere', function(event){
-  event.preventDefault()
-jqueryDiv.on(
-  'contextmenu.hideShowMeHere click.hideShowMeHere', function(e) { 
- //   if(triggered === false){triggered = true;return}
-  console.log('click.hideShowMeHere event fired')
-  hideShowMeHere()
-jqueryDiv.off( 'click.hideShowMeHere contextmenu.hideShowMeHere') 
-}//click.hideShowMeHereFunction contextmenu.hideShowMeHereFunction
-)
-} )
-*/
-/*
-jqueryDiv.one('mousedown.hideShowMeHere', function(event){
-  console.log('mousedown.hideShowMeHere fired')
-jqueryDiv.one('contextmenu.hideShowMeHere click.hideShowMeHere', function(e) { 
-  console.log('prevent one default')
-   event.preventDefault() 
-})//click.hideShowMeHereFunction contextmenu.hideShowMeHereFunction
-jqueryDiv.one('mouseup.hideShowMeHere mouseup.hideShowMeHere', function(e) {hideShowMeHere()})
-})
-*/
 jqueryDiv.on('mousedown.hideShowMeHere', function(event){
 if(isItemDisplayed(showMeHere)){
 jqueryDiv.one('mouseup.hideShowMeHere mouseup.hideShowMeHere', function(e) {
@@ -2340,7 +2435,7 @@ jqueryDiv.one('mouseup.hideShowMeHere mouseup.hideShowMeHere', function(e) {
 jqueryDiv.off('mousedown.hideShowMeHere')
 }
 })
-
+*/
 
 
     }

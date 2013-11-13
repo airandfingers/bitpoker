@@ -44,7 +44,8 @@ var publicKeyHex = Crypto.util.bytesToHex(publicKeyBytes)
 
 */
 
-//returns compressed private and public keys. compressed = normal, and carry all the data of an uncompressed ky
+//returns compressed private and public keys. compressed = normal, and carry all the data of an uncompressed key
+//also known as Wallet Import Format
 this.Address = function(){
 
  var privateKeyBytes = Crypto.util.randomBytes(32)
@@ -90,11 +91,11 @@ var isPublicCompressed = function(key){
 }
 
 //GET ADDRESS FROM A KEY (currently only private is implemented)
-this.getAddress = function(key){
+this.getAddress = function(key, type){
 
-var type = 'private'
 
-if (type === 'private'){
+
+if (type === 'public'){
 
 var addr = '';
 
@@ -130,7 +131,7 @@ this.Transaction = function(privateKey, destinationAddress, BTC, fee){
 console.log('Transaction called')
 var raw; var JSON;
 
-var sourceAddress = self.getAddress(privateKey)
+var sourceAddress = self.getAddress(privateKey, 'public')
 
         var sec = privateKey
         var addr = sourceAddress
