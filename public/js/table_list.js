@@ -89,4 +89,8 @@
     $(window).bind('resize', function() {
       $table_list.fnAdjustColumnSizing();
     });
+
+    /*socket.on('new_player_count', function(table, player_count) {
+      $('#' + table + 'player_count').text(player_count);
+    });*/
 })(jQuery);

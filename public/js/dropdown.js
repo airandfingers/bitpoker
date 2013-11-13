@@ -1,122 +1,5 @@
-<!-- Hide/Show Login functionality (OLD VERSION) -->
-/*
-var $login = $('#login');
-$(function() {
-  $login.hide();
-  $('#login_trigger').click(function(e) {
-    $login.stop(true, true);
-    if (! $(this).hasClass('active')) {
-
-      // remove active class from register & hide it.
-      $('#register_trigger')
-        .removeClass('active');
-      $register
-        .hide('slide', { direction: 'up' }, 500);
-
-      // add active class
-      $(this)
-        .addClass('active');
-      // hide login form
-      $login
-        .css({
-          left: $(this).position().left - $(this).width()
-        , top: $(this).position().top + $(this).height()
-        })
-        .show('slide', { direction: 'up' }, 500)
-        .find('input:first').focus();
-    }
-    else {
-      // remove active class
-      $(this)
-        .removeClass('active');
-      // hide login form
-      $login
-        .hide('slide', { direction: 'up' }, 500);
-    }
-  });
-
-  $login.find('form :submit').click(function() {
-    $(this)
-      .parent()
-      .prev('a')
-      .click();
-    });
-});
-
-*/
-
-<!-- Hide/Show Register functionality: OLD VERSION -->
-/*var $register = $('#register');
-$(function() {
-  $register.hide();
-  $('#register_trigger').click(function() {
-    $register.stop(true, true);
-    if (! $(this).hasClass('active')) {
-
-      // remove active class from login & hide it.
-      $('#login_trigger')
-        .removeClass('active');
-      $login
-        .hide('slide', { direction: 'up' }, 500);
-
-      // add active class
-      $(this)
-        .addClass('active');
-      // hide register form
-      $register
-        .css({
-          left: $(this).position().left - $(this).width() - 20
-        , top: $(this).position().top + $(this).height()
-        })
-        .show('slide', { direction: 'up' }, 500)
-        .find('input:first').focus();
-    }
-    else {
-      // remove active class
-      $(this)
-        .removeClass('active');
-      // hide register form
-      $register
-        .hide('slide', { direction: 'up' }, 500);
-    }
-  });
-  $register.find('form :submit').click(function() {
-    $(this)
-      .parent()
-      .prev('a')
-      .click();
-    });
-}); */
-
-<!-- Hide/Show Bugs/Feedback functionality: OLD VERSION -->
-/*var $report_bug = $('#report_bug');
-$(function() {
-  // on page load
-  $report_bug.hide();
-  $('#report_bug_trigger').click(function() {
-    $report_bug.stop(true, true);
-    if (! $(this).hasClass('active')) {
-      // add active class
-      $(this)
-        .addClass('active');
-      // hide report_bug form
-      $report_bug
-        .css({
-          left: $(this).position().left - 20
-        , top: $(this).position().top + $(this).height()
-        })
-        .show('slide', { direction: 'up' }, 500)
-        .find('#report_bug_textarea').focus();
-    }
-    else {
-      // remove active class
-      $(this)
-        .removeClass('active');
-      // hide report_bug form
-      $report_bug
-        .hide('slide', { direction: 'up' }, 500);
-    }
-  }); */
+/* z-index counter. so that the last dropdown will be on top */
+var z_counter = 100;
 
 <!-- Hide/Show Lobby functionality -->
 var $lobby = $('#lobby')
@@ -135,9 +18,11 @@ $(function() {
         .css({
           left: calculateLeft($lobby_trigger, $lobby)
         , top: calculateTop($lobby_trigger)
+        ,'z-index': z_counter
         })
         .stop(true, true)
         .show('fade', 250);
+        z_counter ++
       if (! columns_resized) {
         $lobby.find('#table_list').dataTable().fnAdjustColumnSizing();
         columns_resized = true;
@@ -167,9 +52,11 @@ $(function() {
         .css({
           left: calculateLeft($lobby_trigger, $lobby)
         , top: calculateTop($lobby_trigger)
+        ,'z-index': z_counter
         })
         .stop(true, true)
         .show('fade', 400);
+        z_counter ++
       if (! columns_resized) {
         $lobby.find('#table_list').dataTable().fnAdjustColumnSizing();
         columns_resized = true;
@@ -211,10 +98,25 @@ $(function() {
     , $account_dropdown = $('#account');
   $account_trigger.click(function() {
     toggleDropdown($account_trigger, $account_dropdown,
-                   { top: 0
+                   { top: top
                    , toggle_args: ['slide', { direction: 'right' }, 400] });
   });
 });
+
+/*Show funbucks/bitcoin balances on Hover */
+$(function() {
+  $('#account_trigger').hoverIntent(accountHoverOn, accountHoverOff)
+
+});
+
+function accountHoverOn() {
+  $('#chip_count').show();
+}
+
+function accountHoverOff() {
+  $('#chip_count').hide();
+}
+
 
 $(function() {
   var $login_trigger = $('#login_trigger')
@@ -305,10 +207,12 @@ function toggleDropdown($trigger, $dropdown, options) {
   $dropdown.css({
     left: left
   , top: top
+  ,'z-index': z_counter
   });
 
   // add or remove active class
   $trigger.toggleClass('active');
+  z_counter ++
 
   // show or hide dropdown
   $dropdown.stop(true, true)
