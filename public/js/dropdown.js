@@ -223,6 +223,7 @@ $(function() {
     toggleDropdown($login_trigger, $login_dropdown,
                    { top: 0
                    , toggle_args: ['slide', { direction: 'up' }, 400] });
+    $login_dropdown.find('#login_username').focus();
   });
 });
 
@@ -233,6 +234,7 @@ $(function() {
     toggleDropdown($register_trigger, $register_dropdown,
                    { top: 0
                    , toggle_args: ['slide', { direction: 'up' }, 400] });
+    $register_dropdown.find('#register_username').focus();
   });
 });
 
@@ -295,18 +297,19 @@ $(function() {
 function toggleDropdown($trigger, $dropdown, options) {
   console.log('toggleDropdown called with', $trigger, $dropdown);
   //console.log('$dropdown\'s top and left are', $dropdown.position().top, $dropdown.position().left);
-  if (true) {
-    // calculate and set position of $dropdown
-    var left = (! _.isUndefined(options.left)) ? options.left : calculateLeft($trigger, $dropdown)
-      , top = (! _.isUndefined(options.top)) ? options.top : calculateTop($trigger)
-      , toggle_args = options.toggle_args || ['fade']
-    $dropdown.css({
-      left: left
-    , top: top
-    });
-  }
+  
+  // calculate and set position of $dropdown
+  var left = (! _.isUndefined(options.left)) ? options.left : calculateLeft($trigger, $dropdown)
+    , top = (! _.isUndefined(options.top)) ? options.top : calculateTop($trigger)
+    , toggle_args = options.toggle_args || ['fade']
+  $dropdown.css({
+    left: left
+  , top: top
+  });
+
   // add or remove active class
   $trigger.toggleClass('active');
+
   // show or hide dropdown
   $dropdown.stop(true, true)
            .toggle.apply($dropdown, toggle_args);
@@ -340,6 +343,9 @@ $(function() {
   $('#login form[action="/login"]').validate();
 });
 
-socket.on('new_balance', function(currency, balance) {
-  $('#' + currency + '_balance').text(balance);
-});
+// workaround - only run this code if socket exists
+if (typeof socket !== 'undefined') {
+  socket.on('new_balance', function(currency, balance) {
+    $('#' + currency + '_balance').text(balance);
+  });
+}

@@ -72,13 +72,33 @@
                         </a>
                     </li>
 
+                    <!-- SIGN UP dropdown Link -->
+                    <li class="right unselectable">
+                        <% if (locals.username) { %>
+                          <a id="logout_trigger"href="/logout">LOGOUT</a>
+                        <% } %>
+                    </li>
+                    <% 
+                    if (typeof locals.username !== 'string' ||
+                        locals.username.substring(0, 5) === 'guest') {
+                    %>
                     <li class="right unselectable">
                       <a href="#" id="register_trigger">SIGN UP</a>
                     </li>
+                    <% } %>
 
                     <!--Login or Logout Link-->
                     <li class="right unselectable">
+                        <% if (locals.username) { %>
+                          <a id= "account_trigger" href="#" title="My Account"
+                             <%= title === 'Account' ? 'class=current_page' : '' %>
+                          >
+                            <i class="icon-cog icon-white"></i>
+                            <%= locals.username.toUpperCase() %> 
+                          </a>
+                        <% } else { %>
                           <a href="#" id="login_trigger">LOGIN</a>
+                        <% } %>
                     </li>
                 </ul>
             </nav>
