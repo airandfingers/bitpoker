@@ -13,7 +13,7 @@
 header {
     font-family: Planer_Reg, Helvetica, sans-serif;
     position: fixed;
-    z-index: 1;
+    z-index: 9999;
 }
 
 
