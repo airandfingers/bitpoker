@@ -24,11 +24,11 @@ module.exports = (function() {
   var UserSchema = new Schema({
   // instance properties - document.field_name
     //the user's username
-    username         : { type: String, unique: true }
+    username           : { type: String, unique: true }
     //the user's password, hashed with SHA-1
-  , password         : String
+  , password           : String
     //the user's email address
-  , email            : { type: String, trim: true }
+  , email              : { type: String, trim: true }
     //the code used to confirm this user's email
   , confirmation_code: String
     //whether the user has confirmed his/r email address
@@ -41,6 +41,7 @@ module.exports = (function() {
   , current_table_names: { type: [String], default: function() { return {}; } }
   // persistent preferences shared across sessions/tables
   , preferences        : { type: Schema.Types.Mixed, default: function() { return {}; } }
+  , agent_id           : Number
   }, { minimize: false }); // set minimize to false to save empty objects
 
   // static methods - Model.method()
@@ -307,26 +308,32 @@ module.exports = (function() {
       , error = null;
     request({
       url: url
-    }, function(err, response, body) {
+    }, function(err, response) {
       if (err) {
         error = 'Error while creating deposit address: ' + err.message;
         console.error(error);
       }
-      else if (response &&
+      else if (! err && response &&
                response.statusCode !== 200 &&
                response.statusCode !== 201) {
         error = 'Unsuccessful response code while creating deposit address: ' + response.statusCode
+      }
+      if (error) {
         console.error(error);
+        return cb(error);
       }
-      else {
-        var body = JSON.parse(response.body)
-          , address = body.input_address;
-        user.deposit_address = address;
-        console.log('augmented user with deposit_address:' + address);
+      var body = JSON.parse(response.body)
+        , address = body.input_address;
+      user.deposit_address = address;
+      //console.log('deposit_address set:', user.username, address);
 
-        btc_remote_apis.setupDepositNotificationsForAddress(address);
-      }
-      cb(error);
+      btc_remote_apis.setupDepositNotificationsForAddress(address,
+                                                          function(err, agent_id) {
+        //console.log('setupDepositNotificationsForAddress returns', err, agent_id);
+        user.agent_id = agent_id || user.agent_id; // don't override with empty value
+        //console.log('agent_id set:', user.agent_id);
+        return cb(err);
+      });
     });
   };
 
