@@ -251,5 +251,6 @@ $(function() {
 if (typeof socket !== 'undefined') {
   socket.on('new_balance', function(currency, balance) {
     $('#' + currency + '_balance').text(balance);
+    $('#' + currency + '_counter').text(balance);
   });
 }
