@@ -244,19 +244,25 @@ module.exports = (function () {
 
   static_properties.player_events.sit = 'playerSits';
   TableSchema.methods.playerSits = function(player, seat_num) {
+    console.log('player sits log message');
     var socket = player.socket;
     this.seats[seat_num] = player;
     socket.emitToOthers('player_sits', player.serialize(), false);
     socket.emit('player_sits', player.serialize(['preferences']), true);
-  };
+    
+    io.sockets.emit('new_num_players', this.name, this.getNumSeatsTaken());
+    };
 
   static_properties.player_events.stand = 'playerStands';
   TableSchema.methods.playerStands = function(player, seat_num) {
+    console.log('player stands log message');
     var socket = player.socket
       , player_obj = player.serialize();
       delete this.seats[seat_num];
     socket.emitToOthers('player_stands', player_obj, seat_num, false);
     socket.emit('player_stands', player_obj, seat_num, true);
+
+    io.sockets.emit('new_num_players', this.name, this.getNumSeatsTaken());
   };
 
   static_properties.player_events.sit_out = 'playerSitsOut';
