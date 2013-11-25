@@ -5577,29 +5577,35 @@ var tableChatFullRightOffsetFromMiddleSeat = 10
   this.tableChatFull = {} // define object everyting within is inside the new canvas
 
 //DIMENSIONS of popup
-var tableChatFullStageX = tableChatFullLeftOffset
-var tableChatFullStageY = tableChatFullTopOffsetFromHideChat + this.hideTableChatFull.position.y+this.hideTableChatFull.size.y
-var tableChatFullStageWidth = this.seats[0].seat.position.x-tableChatFullStageX - tableChatFullRightOffsetFromMiddleSeat
-var tableChatFullStageHeight = this.foldToAnyBet.position.y - tableChatFullBottomOffsetFromFoldToAnyBetButton - tableChatFullStageY
+var tableChatFullDivX = tableChatFullLeftOffset
+var tableChatFullDivY = tableChatFullTopOffsetFromHideChat + this.hideTableChatFull.position.y+this.hideTableChatFull.size.y
+var tableChatFullStageWidth = this.seats[0].seat.position.x-tableChatFullDivX - tableChatFullRightOffsetFromMiddleSeat
+var tableChatFullStageHeight = this.foldToAnyBet.position.y - tableChatFullBottomOffsetFromFoldToAnyBetButton - tableChatFullDivY
+
+
+
 
 //create stageelement
-this.tableChatFull.htmlStageElement = new this.Item(tableChatFullStageX, tableChatFullStageY, tableChatFullStageWidth, tableChatFullStageHeight,getZ('background','tableChatFull')
-  )
+this.tableChatFull.htmlCanvasElement = new this.Item(0, 0, tableChatFullStageWidth, tableChatFullStageHeight,getZ('background','tableChatFull'))
 //console.log('tablechatfullhtml element')
-//console.log(this.tableChatFull.htmlStageElement)
+//console.log(this.tableChatFull.htmlCanvasElement)
 
-//console.log(self.arrayOfParentsOfStageAndOfContainerArray[ this.tableChatFull.htmlStageElement.position.z.stage])
-var tableChatFullStageCanvas =  self.arrayOfParentsOfStageAndOfContainerArray[ this.tableChatFull.htmlStageElement.position.z.stage].stage.canvas
+//console.log(self.arrayOfParentsOfStageAndOfContainerArray[ this.tableChatFull.htmlCanvasElement.position.z.stage])
+var tableChatFullStageParent =  self.getParentOfStageObject(this.tableChatFull.htmlCanvasElement)
 
 
-   $(tableChatFullStageCanvas).attr({
-      'width': this.tableChatFull.htmlStageElement.size.x+'px',
-'height': this.tableChatFull.htmlStageElement.size.y+'px'
-  })
-        $(tableChatFullStageCanvas).css({
-               'left':this.tableChatFull.htmlStageElement.position.x+'px',
-    'top':this.tableChatFull.htmlStageElement.position.y +'px',
+ $(tableChatFullStageParent.div).css({
+               'left':tableChatFullDivX+'px',
+    'top':tableChatFullDivY +'px',
            })
+
+
+   $(tableChatFullStageParent.stage.canvas).attr({
+      'width': this.tableChatFull.htmlCanvasElement.size.x+'px',
+'height': this.tableChatFull.htmlCanvasElement.size.y+'px'
+  })
+
+
 
 var tableChatFullWindowBackgroundColor = self.permanentPreferences.tableChatFull.windowColor.value
 var tableChatFullWindowBorderColor = '#000000'
@@ -5614,7 +5620,7 @@ this.tableChatFull.window.image.graphics.beginFill(tableChatFullWindowBackground
 .drawRoundRect(this.tableChatFull.window.position.x, this.tableChatFull.window.position.y, this.tableChatFull.window.size.x, this.tableChatFull.window.size.y, tableChatFullRoundedRectCornerSizeRatioOfHeight*this.tableChatFull.window.size.y)
 this.tableChatFull.window.image.alpha = tableChatFullWindowAlpha
 
-var hideDealerMessagesOffsetLeft =  this.tableChatFull.htmlStageElement.size.x*.05 //checkBoxButtonOffSetLeft
+var hideDealerMessagesOffsetLeft =  this.tableChatFull.htmlCanvasElement.size.x*.05 //checkBoxButtonOffSetLeft
 var hideDealerMessagesOffsetRight =  hideDealerMessagesOffsetLeft//checkBoxButtonOffSetLeft
 var hideDealerMessagesOffsetTop =  checkBoxButtonDistanceY
 
@@ -5674,13 +5680,13 @@ var chatTextDivTextOffsetRight = checkBoxButtonOffSetLeft - 1
 var chatTextDivTextOffsetTopFromLastButton = 3
 var chatTextDivTextOffsetBottom = this.tableChatFull.window.size.y*tableChatFullRoundedRectCornerSizeRatioOfHeight
 
-var chatTextDivX = this.tableChatFull.htmlStageElement.position.x + chatTextDivTextOffsetLeft
-var chatTextDivY = this.tableChatFull.htmlStageElement.position.y + this.tableChatFull.hideObserverMessages.position.y+this.tableChatFull.hideObserverMessages.size.y + chatTextDivTextOffsetTopFromLastButton 
-//var chatTextDivWidth = this.tableChatFull.htmlStageElement.size.x -chatTextDivTextOffsetLeft-chatTextDivTextOffsetRight
-//var chatTextDivHeight = this.tableChatFull.htmlStageElement.size.y - chatTextDivTextOffsetBottom -(chatTextDivY-this.tableChatFull.htmlStageElement.position.y) 
+var chatTextDivX = this.tableChatFull.htmlCanvasElement.position.x + chatTextDivTextOffsetLeft
+var chatTextDivY = this.tableChatFull.htmlCanvasElement.position.y + this.tableChatFull.hideObserverMessages.position.y+this.tableChatFull.hideObserverMessages.size.y + chatTextDivTextOffsetTopFromLastButton 
+//var chatTextDivWidth = this.tableChatFull.htmlCanvasElement.size.x -chatTextDivTextOffsetLeft-chatTextDivTextOffsetRight
+//var chatTextDivHeight = this.tableChatFull.htmlCanvasElement.size.y - chatTextDivTextOffsetBottom -(chatTextDivY-this.tableChatFull.htmlCanvasElement.position.y) 
 
-var chatTextDivWidth = this.tableChatFull.htmlStageElement.size.x 
-var chatTextDivHeight = this.tableChatFull.htmlStageElement.size.y - chatTextDivTextOffsetBottom -(chatTextDivY-this.tableChatFull.htmlStageElement.position.y) 
+var chatTextDivWidth = this.tableChatFull.htmlCanvasElement.size.x 
+var chatTextDivHeight = this.tableChatFull.htmlCanvasElement.size.y - chatTextDivTextOffsetBottom -(chatTextDivY-this.tableChatFull.htmlCanvasElement.position.y) 
 
 
 this.tableChatFull.chatTextDiv = new this.Item(chatTextDivX, chatTextDivY, chatTextDivWidth ,chatTextDivHeight, getZ('background','tableChatFull'))
@@ -12316,7 +12322,7 @@ stagesToUpdate.push(this.displayChildren(this.images.tableChatFull, hideOrDispla
 
 stagesToUpdate.push( this.updateTableChatFullDisplay(hideOrDisplayChildrenOptions) )
 
-var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.images.tableChatFull.htmlStageElement.position.z.stage].stage.canvas
+var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.images.tableChatFull.htmlCanvasElement.position.z.stage].stage.canvas
 
 setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(this.images.tableChatFull.window, true)
 //$(tableChatFullCanvas).css('display','inline')
@@ -12365,7 +12371,7 @@ console.log('calling hideTableChatFull')
 stagesToUpdate.push(this.hideChildren(this.images.hideTableChatFull,options))
 stagesToUpdate.push(this.hideChildren(this.images.tableChatFull, options))
 
-var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.images.tableChatFull.htmlStageElement.position.z.stage].stage.canvas
+var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.images.tableChatFull.htmlCanvasElement.position.z.stage].stage.canvas
 
 setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(this.images.tableChatFull.window, false)
 
