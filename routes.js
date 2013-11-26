@@ -25,7 +25,8 @@ module.exports = (function () {
   //These app.get functions will display their respective ejs page.
   app.get('/account', ensureAuthenticated, function(req, res) {
     console.log('req.user is ' + req.user);
-    var table_games = Table.getTableGames();
+    var table_games = Table.getTableGames()
+      , flash = req.flash('error');
 
     res.render('account', {
       table_games: table_games,
@@ -37,7 +38,7 @@ module.exports = (function () {
       email_confirmed: req.user.email_confirmed,
       bitcoins: req.user.satoshi / 1E8,
       satoshi: req.user.satoshi,
-      message: req.flash('error'),
+      message: flash && flash[0]
     });
   });
 
@@ -135,7 +136,8 @@ module.exports = (function () {
   function renderHome(req, res) {
     var users = Room.getRoom('').getUsernames()
       , table_games = Table.getTableGames()
-      , room_state = { users: users };
+      , room_state = { users: users }
+      , flash = req.flash('error');
 
       if (_.isObject(req.user)) { 
         console.log('req.user is an object');
@@ -151,7 +153,7 @@ module.exports = (function () {
         , table_games: table_games
         , registration_date: req.user.registration_date
         , room_state: JSON.stringify(room_state)
-        , message: req.flash('error')
+        , message: flash && flash[0]
         , satoshi: req.user.satoshi
         , user: req.user      
 
@@ -200,13 +202,14 @@ module.exports = (function () {
   });
 
   app.get('/login', function (req, res) {
-    var table_games = Table.getTableGames();
-    var next_page = req.query.next || base_page;
+    var table_games = Table.getTableGames()
+      , next_page = req.query.next || base_page
+      , flash = req.flash('error');
     if (! auth.isAuthenticated(req)) {
       //Show the login form.
       res.render('login', {
         table_games: table_games,
-        message: req.flash('error'),
+        message: flash && flash[0],
         next: next_page,
         title: 'Login',
         table_games: table_games
@@ -220,8 +223,9 @@ module.exports = (function () {
   
   //this page is where you request the password recovery e-mail
   app.get('/password_recovery', function (req, res) {
+    var flash = req.flash('error');
     res.render('password_recovery', {
-      message: req.flash('error'),
+      message: flash && flash[0],
       next: req.query.next,
       title: 'Password Recovery',
     });
@@ -232,10 +236,11 @@ module.exports = (function () {
   app.get('/password_reset', function(req, res) {
     var email = req.query.email
       , recovery_code = req.query.recovery_code
-      , username = req.query.username;
-      console.log(email + recovery_code + username);
+      , username = req.query.username
+      , flash = req.flash('error');
+    console.log(email + recovery_code + username);
     res.render('password_reset', {
-      message: req.flash('error'),
+      message: flash && flash[0],
       title: 'Password Reset',
       email: email,
       recovery_code: recovery_code,
@@ -252,11 +257,12 @@ module.exports = (function () {
 
   //home, index and '/' link to the same page
   function renderRegister(req, res) {
-    var next_page = req.query.next || base_page;
+    var next_page = req.query.next || base_page
+      , flash = req.flash('error');
     if (! auth.isAuthenticated(req)) {
       //Show the registration form.
       res.render('register', {
-        message: req.flash('error'),
+        message: flash && flash[0],
         next: req.query.next,
         title: 'Ready to play?',
         mode: 'register'
@@ -266,7 +272,7 @@ module.exports = (function () {
       if (User.isGuest(req.user.username)) {
         //Show the 'conversion' form.
         res.render('register', {
-          message: req.flash('error'),
+          message: flash && flash[0],
           next: req.query.next,
           title: 'Ready to play?',
           mode: 'convert'
@@ -312,11 +318,12 @@ module.exports = (function () {
   app.get('/welcome', function (req, res) {
     var users = Room.getRoom('').getUsernames()
       , table_games = Table.getTableGames()
-      , room_state = { users: users };
+      , room_state = { users: users }
+      , flash = req.flash('error');
 
-      if (_.isObject(req.user)) { 
-        res.redirect('/');
-      }
+    if (_.isObject(req.user)) { 
+      res.redirect('/');
+    }
       
     //console.log('Got table_games:', table_games);
 
@@ -324,10 +331,11 @@ module.exports = (function () {
       title: 'Bitcoin Poker'
     , table_games: table_games
     , room_state: JSON.stringify(room_state)
-    , message: req.flash('error')
+    , message: flash && flash[0]
     , user: req.user
     });
   });
+
   // validate e-mail address & save to MongoDB & send an e-mail confirmation.
   app.post('/set_email', function (req, res) {
     var username = req.user.username
@@ -343,7 +351,7 @@ module.exports = (function () {
     }
     else {
       console.log('POST /set_email called ' + req.body.email +'req.user is ', req.user);
-      //if email is valid, save it to MondoDB
+      //if email is valid, save it to MongoDB
       req.user.sendConfirmationEmail(email, function(err) {
         if (err) {
           res.json({ error : err });
@@ -354,7 +362,6 @@ module.exports = (function () {
       });
     }
   });
-
 
   //delete account
   app.post('/delete_account', function (req, res) {
@@ -666,7 +673,7 @@ module.exports = (function () {
       User.createUser({ username: username, pt_password: pt_password, email: email }, function(create_err, user) {
         console.log('createUser returns', create_err, user);
         if (create_err) {
-          req.flash('error', create_err || create_err);
+          req.flash('error', create_err);
           res.redirect('/register?next=' + target);
         }
         else {
@@ -839,8 +846,8 @@ module.exports = (function () {
     var table_games = Table.getTableGames();
     res.status(404);
     res.render('404', {
-        title: '404 Not Found'    
-      , table_games: table_games
-      });
+      title: '404 Not Found'    
+    , table_games: table_games
+    });
   });
 })();
