@@ -90,7 +90,14 @@
       $table_list.fnAdjustColumnSizing();
     });
 
-    /*socket.on('new_player_count', function(table, player_count) {
-      $('#' + table + 'player_count').text(player_count);
-    });*/
+
+    // workaround - only run this code if socket exists
+    if (typeof socket !== 'undefined') {
+      socket.on('new_num_players', function(table_name, num_players) {
+        console.log('Socket.on...new_num_players. Time to update the lobby count.', table_name, num_players );
+        $('#' + table_name + ' .num_players').text(num_players);
+      });
+    }
+
+
 })(jQuery);

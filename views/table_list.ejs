@@ -39,7 +39,7 @@
             <%= game.CURRENCY %>
             (<%= CURRENCY_ABBREV === 'sat' ? '10E-8 BTC' : 'play money' %>)
         </td>
-        <td> <%= seats_taken %> / <%= MAX_PLAYERS %> </td>
+        <td> <span class="num_players"><%= seats_taken %></span> / <%= MAX_PLAYERS %> </td>
       </tr> 
    <% } %>
   </tbody>

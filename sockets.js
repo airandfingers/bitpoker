@@ -98,6 +98,5 @@ module.exports = (function () {
       });
     });
   }
-
   return io;
 })();
