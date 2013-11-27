@@ -16,33 +16,33 @@ var site_BTC = new function(){
         return [version, hash];
     }
 
+
+
+
 /*
 
-BTC.newAddress = function(){
 
-var private;var public; var address;
+//Usefull Functions
+function checkBin(n){return/^[01]{1,64}$/.test(n)}
+function checkDec(n){return/^[0-9]{1,64}$/.test(n)}
 
-//GENERATE PRIVATE
- var randomBytes = Crypto.util.randomBytes(32)
-var private = new Bitcoin.Address(randomBytes).toString()
+function pad(s,z){s=""+s;return s.length<z?pad("0"+s,z):s}
+function unpad(s){s=""+s;return s.replace(/^0+/,'')}
 
-//generate PUBLIC
-var curve = getSECCurveByName("secp256k1") //found in bitcoinjs-lib/src/jsbn/sec.js
+//Decimal operations
+function Dec2Bin(n){if(!checkDec(n)||n<0)return 0;return n.toString(2)}
+function Dec2Hex(n){if(!checkDec(n)||n<0)return 0;return n.toString(16)}
 
-//convert our random array or private key to a Big Integer
-var privateKeyBN = BigInteger.fromByteArrayUnsigned(private) 
+//Binary Operations
+function Bin2Dec(n){if(!checkBin(n))return 0;return parseInt(n,2).toString(10)}
+function Bin2Hex(n){if(!checkBin(n))return 0;return parseInt(n,2).toString(16)}
 
-var curvePt = curve.getG().multiply(privateKeyBN)
-var x = curvePt.getX().toBigInteger()
-var y = curvePt.getY().toBigInteger()
-var publicKeyBytes = integerToBytes(x,32) //integerToBytes is found in bitcoinjs-lib/src/ecdsa.js
-publicKeyBytes = publicKeyBytes.concat(integerToBytes(y,32))
-publicKeyBytes.unshift(0x04)
-var publicKeyHex = Crypto.util.bytesToHex(publicKeyBytes)
-
-}
-
+//Hexadecimal Operations
+function Hex2Bin(n){if(!checkHex(n))return 0;return parseInt(n,16).toString(2)}
 */
+var checkHex = function(n){return/^[0-9A-Fa-f]{1,64}$/.test(n)}
+var hex2Dec = function(n){if(!checkHex(n)){return};return parseInt(n,16).toString(10)}
+
 
 //returns compressed private and public keys. compressed = normal, and carry all the data of an uncompressed key
 //also known as Wallet Import Format
@@ -68,7 +68,30 @@ this.address = address
 
 }
 
-var isPrivateCompressed = function(key){
+
+    //returns array of integars representing point on curve (public key)
+    //length 33 for compressed, length 65 for uncompressed, 
+    //curve.getG().multiply(uncompressedPrivateKey)  = pt //this may or may not work for compressed private keys
+    var getEncoded = function(pt, compressed) {
+       var x = pt.getX().toBigInteger();
+       var y = pt.getY().toBigInteger();
+       var enc = integerToBytes(x, 32);
+       if (compressed) {
+         if (y.isEven()) {
+           enc.unshift(0x02);
+         } else {
+           enc.unshift(0x03);
+         }
+       } else {
+         enc.unshift(0x04);
+         enc = enc.concat(integerToBytes(y, 32));
+       }
+       return enc;
+    }
+
+
+
+var isPrivateCompressed = function(key){//returns true if compressed, false if not compressed, undefined if invalid
 
  try {
             var res = parseBase58Check(key); 
@@ -91,13 +114,17 @@ var isPublicCompressed = function(key){
 }
 
 //GET ADDRESS FROM A KEY (currently only private is implemented)
-this.getAddress = function(key, type){
+this.getAddress = function(key, type, options){
 
+if(!options){var options = {}}
+    else {var options = _.clone(options)}
+var defaults = {
 
+    compressed:true
+}
+options = _.defaults(options, defaults)
 
-if (type === 'public'){
-
-var addr = '';
+if (type === 'private'){
 
         try {
             var res = parseBase58Check(sec); 
@@ -112,9 +139,9 @@ var addr = '';
             var eckey = new Bitcoin.ECKey(payload);
             var curve = getSECCurveByName("secp256k1");
             var pt = curve.getG().multiply(eckey.priv);
-            eckey.pub = getEncoded(pt, compressed);
+            eckey.pub = getEncoded(pt, options.compressed);
             eckey.pubKeyHash = Bitcoin.Util.sha256ripe160(eckey.pub);
-            addr = new Bitcoin.Address(eckey.getPubKeyHash());
+          var  addr = new Bitcoin.Address(eckey.getPubKeyHash());
             addr.version = (version-128)&255;
         } catch (err) {   }
 }//if parameter is private key
@@ -124,14 +151,46 @@ return addr
 
 }
 
+/*
+this.validate = function(data, type){
 
+//validate bitcoin address
+if(type == 'address' || type == 'addr'){
+
+var address = data
+
+try{
+address = parseBase58Check(data) //convert to integar array
+address = Crypto.util.bytesToHex(publicKeyBytes) //convert to hex
+address = '00' + address
+address = address.substring(0,address.length-8) //remove last 8 digits of addres
+
+address = hex2Bin(address) //convert from hex to binary
+address = Crytpo.util.SHA256(address) //sha256 once
+address = Crytpo.util.SHA256(address) //sha256 twice
+
+if(address.indexOf(0) != -1
+    ||address.indexOf('O') != -1
+    ||address.indexOf('I') != -1
+    ||addres.indexOf('l') != -1
+
+
+}catch(err){return false}
+
+
+
+
+}//validate bitcoin address
+
+}//validation
+*/
 
 this.Transaction = function(privateKey, destinationAddress, BTC, fee){
 
 console.log('Transaction called')
 var raw; var JSON;
 
-var sourceAddress = self.getAddress(privateKey, 'public')
+var sourceAddress = self.getAddress(privateKey, 'private')
 
         var sec = privateKey
         var addr = sourceAddress

@@ -1,7 +1,7 @@
 (function($){
 
     var gen_from = 'pass';
-    var gen_compressed = false;
+    var gen_compressed = false; //this variable toggles whether keys should be compressed or not
     var gen_eckey = null;
     var gen_pt = null;
     var gen_ps_reset = false;
@@ -12,6 +12,9 @@
     var PRIVATE_KEY_VERSION = 0x80;
     var ADDRESS_URL_PREFIX = 'http://blockchain.info/address/'
 
+//accepts compressed or uncompressed private keys, as well as addresse, compressed/uncompressed addresses give different results
+//compressed private key inputs give same result, except compressed private key has 1 more element in the array
+//version = 0 for address inputs, 128 for private key inputs, hash = integar array of bitcoin address without the last 4 digits, and an extra 1 element of 1 tacked on if compressed
     function parseBase58Check(address) {
         var bytes = Bitcoin.Base58.decode(address);
         var end = bytes.length - 4;
@@ -65,6 +68,8 @@
         return encode_id(0x30, sequence);
     }
 
+    //returns array of integars representing point on curve (public key)
+    //length 33 for compressed, length 65 for uncompressed
     function getEncoded(pt, compressed) {
        var x = pt.getX().toBigInteger();
        var y = pt.getY().toBigInteger();
@@ -190,19 +195,21 @@
     }
 
     function generate() {
-        var hash_str = pad($('#hash').val(), 64, '0');
+        var hash_str = pad($('#hash').val(), 64, '0'); //adds enough 0's to beginnning of hash to create appropriate digits
 
-        var hash = Crypto.util.hexToBytes(hash_str);
+        var hash = Crypto.util.hexToBytes(hash_str); //turns our hash into a 32 length array of integars
 
-        eckey = new Bitcoin.ECKey(hash);
+        eckey = new Bitcoin.ECKey(hash); //returns an object, most notably important properties: priv, compressed
 
         gen_eckey = eckey;
 
         try {
-            var curve = getSECCurveByName("secp256k1");
-            gen_pt = curve.getG().multiply(eckey.priv);
-            gen_eckey.pub = getEncoded(gen_pt, gen_compressed);
-            gen_eckey.pubKeyHash = Bitcoin.Util.sha256ripe160(gen_eckey.pub);
+            var curve = getSECCurveByName("secp256k1"); //the Bitcoin curve chosen by satoshi
+            //gives us our point on the curve (which is our PUBLIC key), an object with x,y,z
+            //the eckey.priv is NOT compressed, not sure if this works with compressed keys as a parameter
+            gen_pt = curve.getG().multiply(eckey.priv); 
+            gen_eckey.pub = getEncoded(gen_pt, gen_compressed); //gives us our point on the curve in the form of an array of integars
+            gen_eckey.pubKeyHash = Bitcoin.Util.sha256ripe160(gen_eckey.pub); //hash (address), another array of integars
             setErrorState($('#hash'), false);
         } catch (err) {
             //console.info(err);
@@ -225,30 +232,31 @@
 
     function gen_update() {
 
-        var eckey = gen_eckey;
-        var compressed = gen_compressed;
+        var eckey = gen_eckey; //gen_eckey comes from generated hash (this is our PRIVATE key object), this is object with priv/compressed properties
+        var compressed = gen_compressed; //whether we want to generate compressed or uncompressed
 
-        var hash_str = pad($('#hash').val(), 64, '0');
-        var hash = Crypto.util.hexToBytes(hash_str);
+        var hash_str = pad($('#hash').val(), 64, '0'); //adds 0 to beginning of string as necessary
+        var hash = Crypto.util.hexToBytes(hash_str); //converts hex to array of integars
 
-        var hash160 = eckey.getPubKeyHash();
+        var hash160 = eckey.getPubKeyHash(); //same as hash, but shorter, array of integars
 
-        var h160 = Crypto.util.bytesToHex(hash160);
-        $('#h160').val(h160);
+        var h160 = Crypto.util.bytesToHex(hash160); //converts integar array hash into hex hash
+        $('#h160').val(h160);                     //sets hash160 text box value
 
-        var addr = new Bitcoin.Address(hash160);
+        var addr = new Bitcoin.Address(hash160);   //just an object with hash (in integar array form) as only property
         addr.version = PUBLIC_KEY_VERSION;
-        $('#addr').val(addr);
-
+        $('#addr').val(addr);                //set value of address textbox (addr.toString() is automatically called i guess)
+ 
         var payload = hash;
 
-        if (compressed)
-            payload.push(0x01);
+        if (compressed){payload.push(0x01)}   //adds a 1 to the end of the hash array
 
-        var sec = new Bitcoin.Address(payload);
-        sec.version = PRIVATE_KEY_VERSION;
-        $('#sec').val(sec);
+        var sec = new Bitcoin.Address(payload); //object with hash as only property
+        sec.version = PRIVATE_KEY_VERSION;     //should probably be 0x80
+        $('#sec').val(sec);                    //toString the address, creating a hex version of PRIVATE address
 
+ //getEncoded(gen_pt, compressed) = integer array of point on curve (public key)
+ //gets hex version of our thingy
         var pub = Crypto.util.bytesToHex(getEncoded(gen_pt, compressed));
         $('#pub').val(pub);
 
@@ -1128,6 +1136,7 @@
       return '?vrMsg='+encodeURIComponent(msg)+'&vrSig='+encodeURIComponent(sig);
     }
 
+//called when verify message is clicked
     function vrVerify() {
         var msg = $('#vrMsg').val();
         var sig = $('#vrSig').val();
