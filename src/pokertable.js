@@ -549,9 +549,9 @@ this.images.sourceObjects.cardObjectParent = {}
       //      community: 'img/card_back.jpg',
      //       fold: 'img/fold.jpg',
       //      sideButton :'img/side_button.jpg',
-         , background: 'img/background images/dark/abstract_black_gradient_desktop_1920x1200_hd-wallpaper-1012937.jpg',
+         , background: 'img/background images/dark/Map1280x800.jpg'
       //   background:'img/gray_bg.jpg',
-            table: 'img/jpoker_table.png',
+          ,  table: 'img/jpoker_table.png',
      //       fourColorDeck: 'img/sheet4color.png',
 
             dealerButton: 'img/dealer_button_red.png',
@@ -2505,6 +2505,7 @@ var x = e.stageX+1;var y = e.stageY+1
 var menu = []
 var addDarkOption = function(fileName){menu.push({title:menu.length,cmd:'img/background images/dark/'+fileName})}
 
+addDarkOption('Map1280x800.jpg')
 addDarkOption('abstract_black_gradient_desktop_1920x1200_hd-wallpaper-1012937.jpg')
 addDarkOption('1280x1024_backround-best-black-and-green-wall-papers-go-wallpaper.jpg')
 addDarkOption('51b736384045f25357.jpg')
@@ -2515,7 +2516,7 @@ addDarkOption('Black-Background-Leather-600x800.jpg')
 addDarkOption('Black-background-set-wood-on-chanconsultants.jpg')
 addDarkOption('Black-Desktop-Background-texture world map.jpg')
 addDarkOption('grey-gray-black-gradient-30641.jpg')
-addDarkOption('Map1280x800.jpg')
+
 addDarkOption('wallpapers-room-com-black-background-set-fabric-by-iamfreeman.jpg')
 addDarkOption('jpoker_bg_brown.png')
 addDarkOption('gray_bg.jpg')
