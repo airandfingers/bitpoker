@@ -1,10 +1,4 @@
 @font-face {
-    /*font found at http://www.fontsquirrel.com/fonts/Destroy*/
-    font-family: "DESTROY";
-    src: url(/DESTROY.ttf) format("truetype");
-}
-
-@font-face {
     /* http://www.fontspace.com/jonathan-hill/planer */
     font-family: "Planer_Reg";
     src: url(/Planer_Reg.otf) format("opentype");
@@ -12,57 +6,12 @@
 
 header {
     font-family: Planer_Reg, Helvetica, sans-serif;
-    position: fixed;
     z-index: 9999;
-}
-
-
-
-@media all and (min-width: 762px) {
-
 }
 
 .navbar {
     background: black;
     border: none;
-    top: 0;
-    left: 0;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-    height: 1.625em; /*26px/16px*/
-}
-
-.navbar ul {
-    margin: 0px;
-    padding: 3px;
-}
-
-.navbar li {
-    display: inline;
-    float: left;
-    background: black;
-    padding-left: 10px;
-    padding-right: 10px;
-    vertical-align: center;
-    color: #FFFFCC;
-}
-
-.navbar li.right {
-    float: right;
-}
-
-.navbar a {
-    display: block;
-    text-decoration: none;
-}
-
-.navbar > ul > li > ul {
-    background-color: black;
-    position: absolute;
-    width: 7em;
-    font-size: .9em;
-    left: -999em;
 }
 
 .navbar a:link    { color: white; }
@@ -72,11 +21,10 @@ header {
 .navbar a#lobby_trigger  { color: orange; }
 .navbar a#lobby_trigger:hover  { color: red; }
 
-
-.navbar li:hover ul, .navbar li ul:hover {
-    overflow: visible;
-    left:auto;
+.navbar-collapse {
+    border: none;
 }
+
 /* I can't remember what this was for, so I'm commenting it out, as it's breaking the temporary bitcoin info page h3
 h3 {
     font-size: 1em;

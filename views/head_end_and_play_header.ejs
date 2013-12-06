@@ -6,13 +6,15 @@
         <!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
         <header>
           <% if (! locals.hide_navbar) { %>      
-            <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="navbar-collapse-1">
-                  <span class="sr-only">Toggle navigation</span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                  <span class="icon-bar"></span>
-                </button>
+              <nav class="navbar navbar-default navbar-static-top" role="navigation">
+                <div class="navbar-header">
+                  <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                  </button>
+                </div>
             
                 <div class="collapse navbar-collapse" id="navbar-collapse-1">
                     <ul class="nav navbar-nav">
@@ -102,7 +104,7 @@
                         <% } %>
 
                         <!--Login or Logout Link-->
-                        <li class="right unselectable">
+                        <li class="unselectable">
                             <% if (locals.username) { %>
                               <a id= "account_trigger" href="#" title="My Account"
                                  <%= title === 'Account' ? 'class=current_page' : '' %>
@@ -116,7 +118,7 @@
                         </li>
 
                         <!-- Funbucks/Satoshi Chip Count -->
-                        <li id="chip_count" class="right unselectable">
+                        <li id="chip_count" class="unselectable">
                             <% if(locals.username) { %>
                                 Fb <span id="funbucks_balance"><%= funbucks %></span>
                                 Sat <span id="satoshi_balance"><%= satoshi %></span>
