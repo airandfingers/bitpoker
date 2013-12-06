@@ -55,29 +55,11 @@
                                 </li>
                             <% } %>
                         <% } %>
-
-                                <% if (typeof table_games !=='undefined') { %>
-                                  <div id="lobbyWrapperDiv">
-                                    <li class="unselectable">
-                                      <a href = "#" id="lobby_trigger">
-                                      LOBBY
-                                      </a>
-                                    </li>
-
-                                    <!-- lobby dropdown -->
-                                    <% if (locals.username) { %>
-
-                                    <!-- include values to expose to scripts -->
-                                    <input type="hidden" id="user_server_values"
-                                        data-username="<%= locals.username %>"
-                                    />
-                                    <% } %>
-
-                                    <div id="lobby" class="unselectable">
-                                      <% include table_list %>
-                                    </div>
-                                  </div> <!-- wrapperDiv: This is to help with hoverIntent -->
-                                <%  } %>
+                                <li class="unselectable">
+                                  <a href = "#" id="lobby_trigger">
+                                    LOBBY
+                                  </a>
+                                </li>
 
                                 <li class="unselectable">
                                     <a href="#" id="report_bug_trigger" title="Submit bugs or feedback">
@@ -87,7 +69,15 @@
                     </ul>
 
                     <ul class="nav navbar-nav navbar-right">
-
+                    
+                        <!-- Funbucks/Satoshi Chip Count -->
+                        <li id="chip_count" class="unselectable">
+                            <% if(locals.username) { %>
+                                Fb <span id="funbucks_balance"><%= funbucks %></span>
+                                Sat <span id="satoshi_balance"><%= satoshi %></span>
+                            <% } %>
+                        </li>
+                    
                         <!-- SIGN UP dropdown Link -->
                         <li class="unselectable">
                             <% if (locals.username) { %>
@@ -117,18 +107,31 @@
                             <% } %>
                         </li>
 
-                        <!-- Funbucks/Satoshi Chip Count -->
-                        <li id="chip_count" class="unselectable">
-                            <% if(locals.username) { %>
-                                Fb <span id="funbucks_balance"><%= funbucks %></span>
-                                Sat <span id="satoshi_balance"><%= satoshi %></span>
-                            <% } %>
-                        </li>
+
                     </ul>
                 </div><!--navbar collapse-->                
             </nav>
 
                 <!-- dropdowns -->
+                <% if (typeof table_games !=='undefined') { %>
+                  <div id="lobbyWrapperDiv">
+
+
+                    <!-- lobby dropdown -->
+                    <% if (locals.username) { %>
+
+                    <!-- include values to expose to scripts -->
+                    <input type="hidden" id="user_server_values"
+                        data-username="<%= locals.username %>"
+                    />
+                    <% } %>
+
+                    <div id="lobby" class="unselectable">
+                      <% include table_list %>
+                    </div>
+                  </div> <!-- wrapperDiv: This is to help with hoverIntent -->
+                <%  } %>
+
                 <% include bug_report %>
 
                 <% if ( locals.username) { %>

@@ -68,8 +68,8 @@ h3 {
 }
 
 #report_bug {
-    height: 275px;
-    width: 275px;
+    min-height: 275px;
+    min-width: 275px;
 }
 
 #report_bug_textarea {
