@@ -1,8 +1,8 @@
-var site_BTC = new function(){
+module.exports = site_BTC = new function(){
 	var self = this
 
 //PARSES A KEY, NOT SURE IF IT ALWAYS THROWS ERROR IF INVALID OR NOT
-    var parseBase58Check(address) = function {
+    var parseBase58Check = function(address) {
         var bytes = Bitcoin.Base58.decode(address);
         var end = bytes.length - 4;
         var hash = bytes.slice(0, end);

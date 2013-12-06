@@ -113,8 +113,4 @@ function bitcoinsig_test() {
     console.log(verify_message(sig, m));
 }
 
-if (typeof require != 'undefined' && require.main === module) {
-    window = global; navigator = {}; Bitcoin = {};
-    eval(require('fs').readFileSync('./bitcoinjs-min.js')+'');
-    eval(require('path').basename(module.filename,'.js')+'_test()');
-}
+window = global; navigator = {}; Bitcoin = {};
