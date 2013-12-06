@@ -1,5 +1,5 @@
 /* z-index counter. so that the last dropdown will be on top */
-var z_counter = 100;
+var z_counter = 999;
 
 <!-- Hide/Show Lobby functionality -->
 var $lobby = $('#lobby')
@@ -47,7 +47,7 @@ $(function() {
       // add active class
       $lobby_trigger
         .addClass('active');
-      // hide lobby form
+      // show lobby form
       $lobby
         .css({
           left: calculateLeft($lobby_trigger, $lobby)
@@ -123,8 +123,7 @@ $(function() {
     , $login_dropdown = $('#login');
   $login_trigger.click(function() {
     toggleDropdown($login_trigger, $login_dropdown,
-                   { top: 0
-                   , toggle_args: ['slide', { direction: 'up' }, 400] });
+                   { toggle_args: ['slide', { direction: 'up' }, 400] });
     $login_dropdown.find('#login_username').focus();
   });
 });
@@ -134,8 +133,7 @@ $(function() {
     , $register_dropdown = $('#register');
   $register_trigger.click(function() {
     toggleDropdown($register_trigger, $register_dropdown,
-                   { top: 0
-                   , toggle_args: ['slide', { direction: 'up' }, 400] });
+                   { toggle_args: ['slide', { direction: 'up' }, 400] });
     $register_dropdown.find('#register_username').focus();
   });
 });
@@ -146,12 +144,11 @@ $(function() {
     , $report_bug_dropdown = $('#report_bug');
   $report_bug_trigger.click(function() {
     toggleDropdown($report_bug_trigger, $report_bug_dropdown,
-                   { top: 0
-                   , toggle_args: ['slide', { direction: 'up' }, 400] });
+                   {toggle_args: ['slide', { direction: 'up' }, 400] });
     $report_bug_dropdown.find('textarea').focus();
   });
 
-  // ajax form submission
+  // report_bug ajax form submission
   $('#report_bug').find('form').submit(function(e) {
     console.log($(this).attr('id'));
     var empty_form = $(this).html(); //$(this) is $report_bug
@@ -221,8 +218,8 @@ function toggleDropdown($trigger, $dropdown, options) {
 
 function calculateLeft($trigger, $dropdown) {
   // calculate trigger's left and maximum left
-  var trigger_left = $trigger.position().left
-    , max_left = $(window).width() - $dropdown.width() - 12.5
+  var trigger_left = $trigger.offset().left
+    , max_left = $(window).width() - $dropdown.outerWidth(true)
   // return whichever is less
     , left = trigger_left < max_left ? trigger_left : max_left;
   return left;
@@ -230,8 +227,8 @@ function calculateLeft($trigger, $dropdown) {
 
 function calculateTop($trigger) {
   // return vertical position of $trigger's bottom
-  console.log($trigger.position().top, $trigger.height());
-  return $trigger.position().top + $trigger.height();
+  console.log($trigger.position().top, $trigger.outerHeight(true));
+  return $trigger.offset().top + $trigger.outerHeight(true);
 }
 
 <!-- Hide/Show Register functionality -->

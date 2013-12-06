@@ -14,14 +14,14 @@
                 <form id="set_email" action="/set_email" method="post">
                     email address:
                     <input field="text" name="email" placeholder="jklsemicolon@asdf.com" />
-                    <button class="btn btn-inverse" value="submit"> Submit </button>
+                    <button class="btn btn-default" value="submit"> Submit </button>
                 </form>
             <% } else { %>
                 email address: <%= email %>
                 <br />
                 email confirmed: <%= email_confirmed %>
                 <form id="remove_email" action="/remove_email" method="post">
-                    <button class="btn btn-inverse" value="submit"> Remove E-mail </button>
+                    <button class="btn btn-default" value="submit"> Remove E-mail </button>
                 </form>
             <% } %>
             <div id="set_email_error"></div>
@@ -29,7 +29,7 @@
         <div id="funbucks">
             fun bucks: <span id = "funbucks_counter"> <%= funbucks %></span>
             <form id="increase_funbucks" action="/increase_funbucks_by_100" method="post">
-                <button class="btn btn-inverse" value="submit"> Give me 100 funbucks! </button>
+                <button class="btn btn-default" value="submit"> Give me 100 funbucks! </button>
             </form>
         </div>
         
@@ -41,14 +41,14 @@
             <p>Satoshi are each .00000001 Bitcoin, often abbreviated "sat".</p>
             Satoshi: <span id ="satoshi_counter"> <%= satoshi %></span>
             <br />
-            <a href="/deposit_bitcoins"> <button class="btn btn-inverse">Deposit Bitcoins</button></a>
-            <a href="/withdraw_bitcoins"><button class="btn btn-inverse">Withdraw Bitcoins</button></a>
+            <a href="/deposit_bitcoins"> <button class="btn btn-default">Deposit Bitcoins</button></a>
+            <a href="/withdraw_bitcoins"><button class="btn btn-default">Withdraw Bitcoins</button></a>
         </div>
 
         <!--delete account -->
         <div>
             <h3>Delete Account</h3>
             <form id="delete_account" action="/delete_account" method="post">
-            <button class="btn btn-inverse" value="submit">Delete</button>
+            <button class="btn btn-default" value="submit">Delete</button>
             </form>
         </div>
