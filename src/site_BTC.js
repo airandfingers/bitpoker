@@ -16,9 +16,6 @@ var site_BTC = new function(){
         return [version, hash];
     }
 
-
-
-
 /*
 
 
@@ -119,9 +116,9 @@ this.getAddress = function(key, type, options){
 if(!options){var options = {}}
     else {var options = _.clone(options)}
 var defaults = {
-
     compressed:true
-}
+}//defaults
+
 options = _.defaults(options, defaults)
 
 if (type === 'private'){
@@ -197,8 +194,6 @@ var sourceAddress = self.getAddress(privateKey, 'private')
         var unspent = 1000
         var balance = 10000
       if(!fee){  var fee = 0 }
-
-
 
         try {
             var res = parseBase58Check(privateKey); 

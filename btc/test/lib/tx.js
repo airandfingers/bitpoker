@@ -303,7 +303,7 @@ var TX = new function () {
         return sendTx;
     };
     return this;
-};
+};//TX function
 
 function dumpScript(script) {
     var out = [];
@@ -505,3 +505,6 @@ function tx_test() {
     console.log(TX.toBBE(sendTx));
     console.log(Crypto.util.bytesToHex(sendTx.serialize()));
 }
+
+console.log('TX = ');console.log(TX)
+//if(_.isUndefined(TX)){throw''}
