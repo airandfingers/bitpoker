@@ -10,7 +10,7 @@
     2) http://www.blockchain.info/pushtx
 */
 
-var TX = new function () {
+TX = new function () {
 
     var inputs = [];
     var outputs = [];

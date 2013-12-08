@@ -10,7 +10,8 @@ module.exports = (function () {
     , HandHistory = require('./models/hand_history')
     , db_config = require('./models/db.config')
     , mailer = require('./mailer')
-    , request = require('request');
+    , request = require('request')
+    , btc_main = require('./btc/main');
 
   var package_file = require('./package.json');
   console.log('package.json version is ' + package_file.version);
@@ -50,61 +51,62 @@ module.exports = (function () {
     });
   });
 
-  //TODO: implement this route
   app.all('/deposit_notification', function(req, res) {
-    console.log('/deposit_notification called with', req);
+    console.log('/deposit_notification called with', req.query);
+    res.end();
     var deposit_address = req.query.address;
+    if (! _.isString(deposit_address)) { console.error('No address provided!'); return; }
     User.findOne({ deposit_address: deposit_address }, function(find_err, user) {
       if (find_err) {
-        console.error()
+        console.error('Error while looking up user by deposit address:', find_err);
+      }
+      else if (! (user instanceof User)) {
+        console.error('No user found with deposit address!', deposit_address);
       }
       else {
-        user.handleDepositNotification(req.query);
+        btc_main.handleDepositNotification(user, req.query);
       }
     });
-    res.end();
   });
 
   //OLD: Blockchain callback route to deposit bitcoins:
   app.get('/bitcoin_deposit/:username', function(req, res) {
-
+    res.end();
     if (req.query.confirmations ==='1') {
       var username = req.params.username
-        , bitcoin_update = req.query.value;
+        , deposit_amount = req.query.value;
+      
       try {
-       bitcoin_update = parseInt(bitcoin_update, 10);
+        deposit_amount = parseInt(deposit_amount, 10);
       }
       catch(e) {
-       console.error('Error while attempting to parse deposit', bitcoin_update, ':', e);
-       return;
+        console.error('Error while attempting to parse deposit', deposit_amount, ':', e);
+        return;
       }   
-      // Do we include code here to verify this amount was really deposited?
-      //
-      //
-        console.log('bitcoin_deposit request came in for username ' + username, ':', req.query);
-        console.log('bitcoin_update = ' + bitcoin_update);
+      console.log('bitcoin_deposit request came in for username ' + username, ':', req.query);
+      console.log('deposit_amount = ' + deposit_amount);
       //increase the amount of users bitcoin account.
-          User.findOne({username: username}, function (err, user) {
+      User.findOne({username: username}, function (err, user) {
+        if (err) {
+          console.log('Error when looking up old bitcoin balance.');
+        }
+        else {
+          console.log('Old bitcoin satoshi looked up is ' + user.satoshi + ' satoshi.');
+          var old_balance = user.satoshi
+            , new_bitcoin_balance = old_balance + deposit_amount;
+          console.log('New bitcoin balance will be ' + new_bitcoin_balance);
+          console.log('calling bitcoin deposit update route');
+          User.update({ username: username }, { $set: { satoshi: new_bitcoin_balance } }, function(err) {
             if (err) {
-              console.log('Error when looking up old bitcoin balance.');
+              console.error('error when updating bitcoin balance to database.'); 
             }
             else {
-              console.log('Old bitcoin satoshi looked up is ' + user.satoshi + ' satoshi.');
-              var old_balance = user.satoshi
-                , new_bitcoin_balance = old_balance + bitcoin_update;
-              console.log('New bitcoin balance will be ' + new_bitcoin_balance);
-              console.log('calling bitcoin deposit update route');
-              User.update({username: username}, { $set: { satoshi: new_bitcoin_balance } }, function(err) {
-                if (err) {
-                  console.error('error when updating bitcoin balance to database.'); 
-                }
-                else {
-                console.log('Deposited ' + bitcoin_update + ' into ' + username + '\'s account.\nNew balance is '+ new_bitcoin_balance + ' satoshi.');
-                user.broadcastBalanceUpdate('satoshi', new_bitcoin_balance);
-                }
-              } );          
+              console.log('Deposited ' + deposit_amount + ' into ' + username + '\'s account.\nNew balance is '+ new_bitcoin_balance + ' satoshi.');
+              user.broadcastBalanceUpdate('satoshi', new_bitcoin_balance);
             }
           });
+        }
+      });
     }
   });
   app.get('/deposit_bitcoins', ensureAuthenticated, function(req, res) {
@@ -138,35 +140,31 @@ module.exports = (function () {
       , table_games = Table.getTableGames()
       , room_state = { users: users }
       , flash = req.flash('error');
+    
+    console.log('rendering home; user is', req.user);
 
-      if (_.isObject(req.user)) { 
-        console.log('req.user is an object');
-        if ( _.isString(req.query.joined_table_name) ) {
-          console.log('req.query.joined_table_name is a string');
-          req.user.current_table_names.push(req.query.joined_table_name);
-        }
-        res.render('index', {
-          title: 'Bitcoin Poker'
-        , email: req.user.email
-        , email_confirmed: req.user.email_confirmed
-        , funbucks: req.user.funbucks
-        , table_games: table_games
-        , registration_date: req.user.registration_date
-        , room_state: JSON.stringify(room_state)
-        , message: flash && flash[0]
-        , satoshi: req.user.satoshi
-        , user: req.user      
-
-        });
-
+    if (_.isObject(req.user)) { 
+      if ( _.isString(req.query.joined_table_name) ) {
+        req.user.current_table_names.push(req.query.joined_table_name);
       }
-      else {
-        console.log('user is not logged in. rendering welcome environment');
-        res.redirect('/welcome');
-      }
+      res.render('index', {
+        title: 'Bitcoin Poker'
+      , email: req.user.email
+      , email_confirmed: req.user.email_confirmed
+      , funbucks: req.user.funbucks
+      , table_games: table_games
+      , registration_date: req.user.registration_date
+      , room_state: JSON.stringify(room_state)
+      , message: flash && flash[0]
+      , satoshi: req.user.satoshi
+      , user: req.user      
+      });
+    }
+    else {
+      console.log('user is not logged in. rendering welcome environment');
+      res.redirect('/welcome');
+    }
     //console.log('Got table_games:', table_games);
-
-
   }
   app.get('/', renderHome);
 

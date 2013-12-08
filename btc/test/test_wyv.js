@@ -1,4 +1,4 @@
-_ = require('underscore') // list utility library
+var _ = require('underscore') // list utility library
 require('./lib/tx.js');
 require('./lib/bitcoinsig.js');
 require('./lib/bitcoinjs-min.js');
@@ -13,8 +13,6 @@ require('./lib/bitcoinjs-min.js');
 
 require('./site_BTC');
 
-
-
 /*
 var Address = site_BTC.Address
   , getAddress = site_BTC.getAddress
@@ -22,7 +20,7 @@ var Address = site_BTC.Address
   , getReceivedByTotal = site_BTC.getReceivedByTotal
   , subscribe = site_BTC.subscribe;
   */
-  console.log(TX)
+console.log(TX)
 console.log(site_BTC)
  // var BTC_FUNCTIONS = new site_BTC()
 
