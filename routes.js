@@ -1,6 +1,7 @@
 module.exports = (function () {
   var app = require('./app').app
     , _ = require('underscore') // list utility library
+    , async = require('async') // flow control utility library
     , passport = require('passport')
     , nodemailer = require('nodemailer')
     , auth = require('./auth')
@@ -177,19 +178,23 @@ module.exports = (function () {
   app.get('/play', redirectToHome);
 
   app.get('/leaderboard', function (req, res) {
-    User.getLeaders('funbucks', function (err, funbucks_leaders) {
-      if (err) return (err);
-      //console.log('Callback called. User.getLeaders is', leaders);
-      User.getLeaders('satoshi', function (err, satoshi_leaders) {
-        if (err) return (err);
-        var table_games = Table.getTableGames();
-        res.render('leaderboard', {
-          table_games: table_games,
-          title: 'Leaderboard',
-          funbucks_leaders: funbucks_leaders,
-          satoshi_leaders: satoshi_leaders
-        });        
-      });
+    async.parallel({
+      funbucks: function(acb) { User.getLeaders('funbucks', acb); }
+    , satoshi: function(acb) { User.getLeaders('satoshi', acb); }
+    }, function(err, leaders) {
+      // either err is set, or leaders looks like this:
+      // { funbucks: [{ username: 'air', funbucks: 100 }, ...]
+      // , satoshi:  [{ username: 'air3', satoshi: 100 }, ...] }
+      if (err) {
+        console.error('Error while getting leaders:', err);
+        leaders = { funbucks: [], satoshi: [] };
+      }
+      var table_games = Table.getTableGames();
+      res.render('leaderboard', {
+        table_games: table_games,
+        title: 'Leaderboard',
+        leaders: leaders
+      }); 
     });
   });
 

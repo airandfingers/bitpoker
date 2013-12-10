@@ -151,14 +151,14 @@ module.exports = (function() {
   };
 
   UserSchema.statics.getLeaders = function(currency, cb) {
-    console.log ('getLeaders function called');
+    //console.log ('getLeaders called');
     User.find()
       .limit(25)
       .sort('-' + currency)
-      .select('username funbucks satoshi')
+      .select('username ' + currency)
       .exec(function (err, users) {
         if (err) return cb(err);
-        console.log('users are', users);
+        //console.log('users are', users);
         cb(err, users);
       });   
   };
