@@ -134,7 +134,7 @@
                                 <label for="register_email">Email (optional):</label>
                                 <input id="register_email" name="email" type="email" placeholder="name@domain.com" />
                             </div>
-                            <input type="submit" value="Sign Up" class="btn btn-inverse"/>
+                            <input type="submit" value="Sign Up" class="btn btn-default"/>
                         </form>
                     </div>
 
@@ -148,13 +148,13 @@
                           <label for="login_password">Password:</label>
                           <input id="login_password" name="password" type="password" placeholder="password" required />
                         </div>
-                        <input type="submit" value="Login" class="btn btn-inverse" />
+                        <input type="submit" value="Log In" class="btn btn-default" />
                       </form>
-                      <div>
-                        Forgetting your password? <a href="/password_recovery">Recover it.</a>
+                      <div id="forget_password">
+                        <a href="/password_recovery">Forgetting your password? <br /> Recover it.</a>
                       </div>
                       <form action="/guest_login" method="post">
-                        <button class="btn btn-inverse">Play as Guest</button>
+                        <button class="btn btn-default">Play as Guest</button>
                       </form>
                     </div>
           <% } %>
