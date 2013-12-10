@@ -10,12 +10,19 @@
     2) http://www.blockchain.info/pushtx
 */
 
-var TX = new function () {
+module.exports = TX = new function () {
 
     var inputs = [];
     var outputs = [];
     var eckey = null;
     var balance = 0;
+
+
+    //MY OWN EDIT
+    this.setBalance = function(newBal){
+        if(_.isNaN(newBal) || !_.isNumber(newBal) || newBal < 0){return}
+        balance = newBal
+    }
 
     this.init = function(_eckey) {
         outputs = [];
@@ -33,6 +40,8 @@ var TX = new function () {
     this.getBalance = function() {
         return balance;
     }
+
+
 
     this.getFee = function(sendTx) {
         var out = BigInteger.ZERO;
@@ -505,6 +514,3 @@ function tx_test() {
     console.log(TX.toBBE(sendTx));
     console.log(Crypto.util.bytesToHex(sendTx.serialize()));
 }
-
-console.log('TX = ');console.log(TX)
-//if(_.isUndefined(TX)){throw''}

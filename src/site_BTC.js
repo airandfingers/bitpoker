@@ -184,7 +184,7 @@ if(address.indexOf(0) != -1
 
 this.Transaction = function(privateKey, destinationAddress, BTC, fee){
 
-console.log('Transaction called')
+//console.log('Transaction called')
 var raw; var JSON;
 
 var sourceAddress = self.getAddress(privateKey, 'private')
@@ -197,7 +197,7 @@ var sourceAddress = self.getAddress(privateKey, 'private')
 
         try {
             var res = parseBase58Check(privateKey); 
-            console.log(res)
+//            console.log(res)
             var version = res[0];
             var payload = res[1];
         } catch (err) {          console.log('bad key');  return;        }
@@ -209,14 +209,14 @@ var sourceAddress = self.getAddress(privateKey, 'private')
             compressed = true;
         }
 
-console.log('compressed = ' + compressed)
+//console.log('compressed = ' + compressed)
         var eckey = new Bitcoin.ECKey(payload);
-        console.log(eckey)
+    //    console.log(eckey)
         eckey.setCompressed(compressed);
-        console.log(eckey)
+  //      console.log(eckey)
 
         TX.init(eckey);
-console.log(eckey)
+//console.log(eckey)
 /*
         var fval = 0;
         var o = txGetOutputs();
@@ -234,22 +234,22 @@ console.log(eckey)
 */
         try {
             var sendTx = TX.construct();
-            console.log('sendTX = ')
-            console.log(sendTx)
+        //    console.log('sendTX = ')
+       //     console.log(sendTx)
             var txJSON = TX.toBBE(sendTx);
-                console.log('txJSON = ')
-            console.log(txJSON)
+         //       console.log('txJSON = ')
+   //         console.log(txJSON)
             var buf = sendTx.serialize();
-                console.log('buf = ')
-            console.log(buf)
+      //          console.log('buf = ')
+ //           console.log(buf)
             var txHex = Crypto.util.bytesToHex(buf);
-                console.log('txHex = ')
-            console.log(txHex)
+       //         console.log('txHex = ')
+  //          console.log(txHex)
           
         } catch(err) {  console.error('failed to produce json/hex transaction')      }
 
-console.log(sendTx)
-console.log(txJSON)
+//console.log(sendTx)
+//console.log(txJSON)
 
 
 this.JSON = txJSON

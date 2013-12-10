@@ -1,8 +1,8 @@
 module.exports = site_BTC = new function(){
-	var self = this
+    var self = this
 
 //PARSES A KEY, NOT SURE IF IT ALWAYS THROWS ERROR IF INVALID OR NOT
-    var parseBase58Check = function(address) {
+    var parseBase58Check= function (address) {
         var bytes = Bitcoin.Base58.decode(address);
         var end = bytes.length - 4;
         var hash = bytes.slice(0, end);
@@ -15,9 +15,6 @@ module.exports = site_BTC = new function(){
         var version = hash.shift();
         return [version, hash];
     }
-
-
-
 
 /*
 
@@ -119,9 +116,9 @@ this.getAddress = function(key, type, options){
 if(!options){var options = {}}
     else {var options = _.clone(options)}
 var defaults = {
-
     compressed:true
-}
+}//defaults
+
 options = _.defaults(options, defaults)
 
 if (type === 'private'){
@@ -187,22 +184,19 @@ if(address.indexOf(0) != -1
 
 this.Transaction = function(privateKey, destinationAddress, BTC, fee){
 
-console.log('Transaction called')
+//console.log('Transaction called')
 var raw; var JSON;
 
 var sourceAddress = self.getAddress(privateKey, 'private')
 
-        var sec = privateKey
         var addr = sourceAddress
-        var unspent = 1000
-        var balance = 10000
+    //    var unspent = 1000
+   //     var balance = 10000
       if(!fee){  var fee = 0 }
-
-
 
         try {
             var res = parseBase58Check(privateKey); 
-            console.log(res)
+//            console.log(res)
             var version = res[0];
             var payload = res[1];
         } catch (err) {          console.log('bad key');  return;        }
@@ -214,29 +208,50 @@ var sourceAddress = self.getAddress(privateKey, 'private')
             compressed = true;
         }
 
-console.log('compressed = ' + compressed)
+//console.log('compressed = ' + compressed)
         var eckey = new Bitcoin.ECKey(payload);
-        console.log(eckey)
+    //    console.log(eckey)
         eckey.setCompressed(compressed);
-        console.log(eckey)
+  //      console.log(eckey)
 
-        TX.init(eckey);
-console.log(eckey)
-/*
-        var fval = 0;
-        var o = txGetOutputs();
-        for (i in o) {
-            TX.addOutput(o[i].dest, o[i].fval);
-            fval += o[i].fval;
+        TX.init(eckey); //reset TX data
+//console.log(eckey)
+
+        var fval = 0;   //fval just means amount to send
+        var destinationAddressArray = _.flatten([destinationAddress])
+        var BTCArray =  _.flatten([BTC])
+        console.log('btc array = ');console.log(BTCArray)
+        var outputs = []
+        _.each(destinationAddressArray, function(value, element, list){
+            var amountToSend = BTCArray[element]
+            console.log('amountToSend = ');console.log(amountToSend)
+            if(_.isNumber(amountToSend) && !_.isNaN(amountToSend) && amountToSend > 0){
+outputs.push({dest:value, fval:parseFloat('0'+amountToSend)})
+
+}//if amountToSend > 0
+        })//iterate through and make array of {dest:address, fval:amountToSend}
+
+console.log('outputs = ')
+console.log(outputs)
+
+        for (var i in outputs) {
+            TX.addOutput(outputs[i].dest, outputs[i].fval);
+            fval += outputs[i].fval;
         }
 
+//set balance = outputs + fee
+
+TX.setBalance (fval + fee)
+
+
+/*
         // send change back or it will be sent as fee
         if (balance > fval + fee) {
             var change = balance - fval - fee;
             TX.addOutput(addr, change);
         }
-
 */
+
         try {
             var sendTx = TX.construct();
             console.log('sendTX = ')
@@ -248,13 +263,13 @@ console.log(eckey)
                 console.log('buf = ')
             console.log(buf)
             var txHex = Crypto.util.bytesToHex(buf);
-                console.log('txHex = ')
+               console.log('txHex = ')
             console.log(txHex)
           
         } catch(err) {  console.error('failed to produce json/hex transaction')      }
 
-console.log(sendTx)
-console.log(txJSON)
+//console.log(sendTx)
+//console.log(txJSON)
 
 
 this.JSON = txJSON

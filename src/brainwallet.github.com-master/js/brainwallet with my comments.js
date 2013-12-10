@@ -923,10 +923,10 @@
 
         eckey.setCompressed(compressed);
 
-        TX.init(eckey);
+        TX.init(eckey); //resets data from tx
 
         var fval = 0;
-        var o = txGetOutputs();
+        var o = txGetOutputs(); //this returns an array of objects {dest:destination, fval:fval}
         for (i in o) {
             TX.addOutput(o[i].dest, o[i].fval);
             fval += o[i].fval;
@@ -1051,7 +1051,7 @@
         timeout = setTimeout(txRebuild, TIMEOUT);
     }
 
-    function txGetOutputs() {
+    function txGetOutputs() { //gets destination, other stuff from page and returns it in an array
         var res = [];
         $.each($(document).find('.txCC'), function() {
             var dest = $(this).find('#txDest').val();
