@@ -20,4 +20,5 @@
 
   exports.TEST_USERNAME = db_config.TEST_USERNAME;
   exports.TEST_PASSWORD = db_config.TEST_PASSWORD;
+  exports.SESSION_SECRET = db_config.SESSION_SECRET;
 })(module.exports = {});

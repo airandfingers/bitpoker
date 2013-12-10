@@ -7,16 +7,16 @@ module.exports = (function () {
   //returns user or an error message
   passport.use(new LocalStrategy(
     function (username, password, done) {
-      User.authenticate(username, password, function(err, result) {
-        console.log('authenticate returns', err, result);
+      User.authenticate(username, password, function(err, user) {
+        //console.log('authenticate returns', err, user);
         if (err) {
           return done(err);
         }
-        else if (! result) {
+        else if (! user) {
           return done(null, false, { message: 'Invalid credentials!' });
         }
         else {
-          return done(null, result);
+          return done(null, user);
         }
       });
     }
@@ -28,12 +28,12 @@ module.exports = (function () {
   //   this will be as simple as storing the user ID when serializing, and finding
   //   the user by ID when deserializing.
   passport.serializeUser(function(user, done) {
-    //console.log("serializeUser called!");
+    //console.log('serializeUser called!', user);
     done(null, user._id);
   });
 
   passport.deserializeUser(function(id, done) {
-    //console.log("deserializeUser called!");
+    //console.log('deserializeUser called!', id);
     // everything except password (for security reasons)
     User.getByIdWithoutPassword(id, function(err, user) {
       if (err) { return done(err); }

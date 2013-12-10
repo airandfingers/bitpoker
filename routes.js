@@ -226,11 +226,13 @@ module.exports = (function () {
   
   //this page is where you request the password recovery e-mail
   app.get('/password_recovery', function (req, res) {
-    var flash = req.flash('error');
+    var flash = req.flash('error')
+      , table_games = Table.getTableGames();
     res.render('password_recovery', {
       message: flash && flash[0],
       next: req.query.next,
       title: 'Password Recovery',
+      table_games: table_games
     });
   });
 
@@ -415,7 +417,7 @@ module.exports = (function () {
   //submit password recovery to user's e-mail address route.
   app.post('/password_recovery', function (req, res) {
     var username = req.body.username;
-    console.log('Post /password recovery route called for username: ' + username);
+    console.log('/password_recovery route called for username: ' + username);
     User.findOne({ username: username }, function(err, user) {
       console.log('findOne returns', user);
       if (err) {
@@ -423,7 +425,7 @@ module.exports = (function () {
         res.json({ error: 'Error during findOne:' + JSON.stringify(err) });
       }
       else if (user === null) {
-        req.flash('error', 'Sorry. There is no such user as ' + username + '. Hope you did not forget your username. That could be bad.');
+        req.flash('error', 'Sorry. There is no such user as ' + username + '. Hope you didn\'t forget your username. That could be bad.');
         res.redirect('/password_recovery');
       }
       else if (_.isEmpty(user.email)) {
