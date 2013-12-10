@@ -19,7 +19,6 @@ textarea {
 }
 
 body {
-    font-size: 1em;
     line-height: 1.4;
 }
 
@@ -92,23 +91,26 @@ textarea {
 /* ==========================================================================
    Author's custom styles
    ========================================================================== */
-html {
-    /* White 3D#1 http://www.colorzilla.com/gradient-editor/#ffffff+0,f6f6f6+47,ededed+100;White+3D+%231  */
-    background: #ffffff; /* Old browsers */
-    background: -moz-linear-gradient(top,  #ffffff 0%, #f6f6f6 47%, #ededed 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(47%,#f6f6f6), color-stop(100%,#ededed)); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top,  #ffffff 0%,#f6f6f6 47%,#ededed 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top,  #ffffff 0%,#f6f6f6 47%,#ededed 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top,  #ffffff 0%,#f6f6f6 47%,#ededed 100%); /* IE10+ */
-    background: linear-gradient(to bottom,  #ffffff 0%,#f6f6f6 47%,#ededed 100%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
 
+html {
+    height: 100%;
     text-align: center;
     min-width: 100%;
     min-height: 100%;
-
     /* fix for white spacing on right side */
     overflow-x: hidden;
+}
+
+body {
+    background: black;
+    height: -moz-calc(100% - 26px);
+    height: -webkit-calc(100% - 26px);
+    height: -o-calc(100% - 26px);
+    height: calc(100% - 26px);    
+    min-height: -moz-calc(100% - 26px);
+    min-height: -webkit-calc(100% - 26px);
+    min-height: -o-calc(100% - 26px);
+    min-height: calc(100% - 26px);
 }
 
 h1 {
@@ -157,8 +159,6 @@ h2 {
 
 #container {
     clear: both;
-    background-color: rgb(0,0,0);
-    margin-top: 1.625em;
     width: 100%;
     min-height: 100%
 }
@@ -346,6 +346,7 @@ h2 {
     -ms-user-select: none;
     user-select: none;
 }
+
 /* ==========================================================================
    Helper classes
    ========================================================================== */
