@@ -69,7 +69,12 @@ module.exports = (function() {
 
     var user = new User(spec);
     console.log('created user with', spec, user);
-    user.generateDepositAddress(function() {
+    btc_main.createDepositAddress(user, function(create_err, deposit_address) {
+      if (create_err) {
+        error = 'Error during save: ' + create_err;
+        return cb(error);
+      }
+      user.deposit_address = deposit_address;
       user.save(function(save_err, result) {
         if (save_err) {
           error = 'Error during save: ' + save_err;
@@ -146,14 +151,14 @@ module.exports = (function() {
   };
 
   UserSchema.statics.getLeaders = function(currency, cb) {
-    console.log ('getLeaders function called');
+    //console.log ('getLeaders called');
     User.find()
       .limit(25)
       .sort('-' + currency)
-      .select('username funbucks satoshi')
+      .select('username ' + currency)
       .exec(function (err, users) {
         if (err) return cb(err);
-        console.log('users are', users);
+        //console.log('users are', users);
         cb(err, users);
       });   
   };
@@ -251,7 +256,11 @@ module.exports = (function() {
         return cb(error);
       }
 
-      self.generateDepositAddress(function() {
+      self.setupDepositAddress(function(setup_err) {
+        if (setup_err) {
+          error = 'Error during deposit address setup: ' + setup_err;
+          return cb(error);
+        }
         self.save(function(save_err, result) {
           if (save_err) {
             error = 'Error during save: ' + save_err;
@@ -264,7 +273,7 @@ module.exports = (function() {
                 return cb(error);
               }
               cb(null, result);
-            })
+            });
           }
           else {
             cb(null, result);
@@ -283,7 +292,7 @@ module.exports = (function() {
       }
       else {
         console.log(user.username + ' has ' + (user && user[type]) + ' in ' + type + ' on ' + Date());
-        cb(null, user && user[type])
+        cb(null, user && user[type]);
       }
     });
   };
@@ -293,47 +302,6 @@ module.exports = (function() {
     User.findOne({ _id: this._id }, function(err, user) {
       //console.log('findOne returns', err, user);
       cb(err, user);
-    });
-  };
-
-  UserSchema.methods.generateDepositAddress = function(cb) {
-    var address = btc_main.createAddress();
-    if (! _.isEmpty(address)) { return cb(); }
-    var user = this
-    // generate deposit public address for this user
-      , url = 'https://blockchain.info/api/receive?method=create' +
-              '&address=1NpMFVFNjutgY2VXGfn97WcBa1JafSVHF' +
-              '&shared=false' +
-              '&callback=https://bitcoin-poker-7793.onmodulus.net/bitcoin_deposit/' + user.username
-      , error = null;
-    request({
-      url: url
-    }, function(err, response) {
-      if (err) {
-        error = 'Error while creating deposit address: ' + err.message;
-        console.error(error);
-      }
-      else if (! err && response &&
-               response.statusCode !== 200 &&
-               response.statusCode !== 201) {
-        error = 'Unsuccessful response code while creating deposit address: ' + response.statusCode
-      }
-      if (error) {
-        console.error(error);
-        return cb(error);
-      }
-      var body = JSON.parse(response.body)
-        , address = body.input_address;
-      user.deposit_address = address;
-      //console.log('deposit_address set:', user.username, address);
-
-      btc_remote_apis.setupDepositNotificationsForAddress(address,
-                                                          function(err, agent_id) {
-        //console.log('setupDepositNotificationsForAddress returns', err, agent_id);
-        user.agent_id = agent_id || user.agent_id; // don't override with empty value
-        //console.log('agent_id set:', user.agent_id);
-        return cb(err);
-      });
     });
   };
 
@@ -387,13 +355,6 @@ module.exports = (function() {
     var Room = require('./room')
       , socket_list = io.sockets.in(Room.USER_ROOM_PREFIX + this.username);
     socket_list.emit('new_balance', currency, balance);
-  };
-
-  UserSchema.methods.handleDepositNotification = function(notification) {
-    console.log('handleDepositNotification called with', notification);
-    btc_remote_apis.checkAmountReceived(this.deposit_address, function(check_err, amount_received) {
-      console.log('checkAmountReceived returns', check_err, amount_received);
-    });
   };
 
   /* the model - a fancy constructor compiled from the schema:

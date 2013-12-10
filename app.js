@@ -30,13 +30,16 @@ var express = require('express')
   , db = require('./models/db')
   , session_settings = {
       store: db.session_store
-    , secret: 'All1N0rGoH0M3'
+    , secret: db.SESSION_SECRET
     , sid_name: 'express.sid'
+    , cookie: { maxAge: 3600000 } // 1 hour
   };
+console.log('session_settings', session_settings);
 
 function start() {
   console.log('starting up.. node version is', process.versions.node);
 
+  // export some variables to be used by other files (routes, sockets, ?)
   module.exports = {
     app: app
   , server: server
@@ -57,6 +60,7 @@ function start() {
     store: session_settings.store, //where to store sessions
     secret: session_settings.secret, //seed used to randomize some aspect of sessions?
     key: session_settings.sid_name, //the name under which the session ID will be stored
+    cookie: session_settings.cookie // dictates how long the cookie will last
   })); //enable session use with these settings
   app.use(passport.initialize()); // Initialize Passport authentication module
   app.use(passport.session()); // Set up Passport session

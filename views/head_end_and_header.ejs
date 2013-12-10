@@ -6,17 +6,18 @@
         <!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
         <header>
           <% if (! locals.hide_navbar) { %>      
-            <nav class="navbar">
-            <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-            </a>
-            
-            <!-- Be sure to leave the brand out there if you want it shown             <a class="brand" href="#">Project name</a>-->
-            <div class="nav-collapse collapse">
-                <ul>
+            <nav class="navbar navbar-default navbar-static-top" role="navigation">
+              <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                </button>
+              </div>
+
+            <div class="collapse navbar-collapse" id="navbar-collapse-1">
+                <ul class="nav navbar-nav">
                     <%
                     var pages = [
                         { name: 'home', href: '/', title: 'Bitcoin Poker' },
@@ -52,68 +53,67 @@
                                 </a>
                             </li>
                     <% } %>
+                            <li class="unselectable">
+                              <a href = "#" id="lobby_trigger">
+                                LOBBY
+                              </a>
+                            </li>
+                            <li class="unselectable">
+                                <a href="#" id="report_bug_trigger" title="Submit bugs or feedback">
+                                    <img src="/img/bug.png" />
+                                </a>
+                            </li>
+                    </ul>
 
-                            <% if (typeof table_games !=='undefined') { %>
-                              <div id="lobbyWrapperDiv">
-                                <li class="unselectable">
-                                  <a href = "#" id="lobby_trigger">
-                                  LOBBY
-                                  </a>
-                                </li>
+                    <ul class="nav navbar-nav navbar-right">
 
-                                <!-- lobby dropdown -->
-                                <% if (locals.username) { %>
+                      <!-- SIGN UP dropdown Link -->
+                      <li class="unselectable">
+                          <% if (locals.username) { %>
+                            <a id="logout_trigger"href="/logout">LOGOUT</a>
+                          <% } %>
+                      </li>
+                      <% 
+                      if (typeof locals.username !== 'string' ||
+                          locals.username.substring(0, 5) === 'guest') {
+                      %>
+                      <li class="unselectable">
+                        <a href="#" id="register_trigger">SIGN UP</a>
+                      </li>
+                      <% } %>
 
-                                <!-- include values to expose to scripts -->
-                                <input type="hidden" id="user_server_values"
-                                    data-username="<%= locals.username %>"
-                                />
-                                <% } %>
-
-                                <div id="lobby" class="unselectable">
-                                  <% include table_list %>
-                                </div>
-                              </div> <!-- wrapperDiv: This is to help with hoverIntent -->
-                            <%  } %>
-                    <li class="unselectable">
-                        <a href="#" id="report_bug_trigger" title="Submit bugs or feedback">
-                            <img src="/img/bug.png" />
-                        </a>
-                    </li>
-
-                    <!-- SIGN UP dropdown Link -->
-                    <li class="right unselectable">
-                        <% if (locals.username) { %>
-                          <a id="logout_trigger"href="/logout">LOGOUT</a>
-                        <% } %>
-                    </li>
-                    <% 
-                    if (typeof locals.username !== 'string' ||
-                        locals.username.substring(0, 5) === 'guest') {
-                    %>
-                    <li class="right unselectable">
-                      <a href="#" id="register_trigger">SIGN UP</a>
-                    </li>
-                    <% } %>
-
-                    <!--Login or Logout Link-->
-                    <li class="right unselectable">
-                        <% if (locals.username) { %>
-                          <a id= "account_trigger" href="#" title="My Account"
-                             <%= title === 'Account' ? 'class=current_page' : '' %>
-                          >
-                            <i class="icon-cog icon-white"></i>
-                            <%= locals.username.toUpperCase() %> 
-                          </a>
-                        <% } else { %>
-                          <a href="#" id="login_trigger">LOGIN</a>
-                        <% } %>
-                    </li>
+                      <!--Login or Logout Link-->
+                      <li class="unselectable">
+                          <% if (locals.username) { %>
+                            <a id= "account_trigger" href="#" title="My Account"
+                               <%= title === 'Account' ? 'class=current_page' : '' %>
+                            >
+                              <i class="icon-cog icon-white"></i>
+                              <%= locals.username.toUpperCase() %> 
+                            </a>
+                          <% } else { %>
+                            <a href="#" id="login_trigger">LOGIN</a>
+                          <% } %>
+                      </li>
                 </ul>
             </div><!--nav collapse-->
             </nav>
 
                 <!-- dropdowns -->
+
+                <!-- lobby dropdown -->
+
+                  <div id="lobby" class="unselectable">
+                    <% include table_list %>
+                  </div>
+                  <% if (locals.username) { %>
+
+                  <!-- include values to expose to scripts -->
+                  <input type="hidden" id="user_server_values"
+                      data-username="<%= locals.username %>"
+                  />
+                  <% } %>
+
                 <% include bug_report %>
 
                     <div id="register" class="dropdown_form">
@@ -134,7 +134,7 @@
                                 <label for="register_email">Email (optional):</label>
                                 <input id="register_email" name="email" type="email" placeholder="name@domain.com" />
                             </div>
-                            <input type="submit" value="Sign Up" class="btn btn-inverse"/>
+                            <input type="submit" value="Sign Up" class="btn btn-default"/>
                         </form>
                     </div>
 
@@ -148,13 +148,13 @@
                           <label for="login_password">Password:</label>
                           <input id="login_password" name="password" type="password" placeholder="password" required />
                         </div>
-                        <input type="submit" value="Login" class="btn btn-inverse" />
+                        <input type="submit" value="Log In" class="btn btn-default" />
                       </form>
-                      <div>
-                        Forgetting your password? <a href="/password_recovery">Recover it.</a>
+                      <div id="forget_password">
+                        <a href="/password_recovery">Forgetting your password? <br /> Recover it.</a>
                       </div>
                       <form action="/guest_login" method="post">
-                        <button class="btn btn-inverse">Play as Guest</button>
+                        <button class="btn btn-default">Play as Guest</button>
                       </form>
                     </div>
           <% } %>

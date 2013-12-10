@@ -10,7 +10,7 @@
     "mongoose": "latest",
     "passport": "latest",
     "passport-local": "latest",
-    "session-mongoose": "0.2.2",
+    "session-mongoose": "latest",
     "socket.io": "latest",
     "underscore": "latest",
     "underscore.string": "latest",

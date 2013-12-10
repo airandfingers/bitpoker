@@ -13,15 +13,6 @@ require('./lib/bitcoinjs-min.js');
 
 require('./site_BTC');
 
-var Bitcoin = require('bitcoinjs')
-
-/*
-var Address = site_BTC.Address
-  , getAddress = site_BTC.getAddress
-  , Transaction = site_BTC.Transaction
-  , getReceivedByTotal = site_BTC.getReceivedByTotal
-  , subscribe = site_BTC.subscribe;
-  */
 console.log(site_BTC)
 console.log(TX)
  // var BTC_FUNCTIONS = new site_BTC()

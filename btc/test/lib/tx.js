@@ -10,19 +10,12 @@
     2) http://www.blockchain.info/pushtx
 */
 
-module.exports = TX = new function () {
-
+TX = new function () {
     var inputs = [];
     var outputs = [];
     var eckey = null;
     var balance = 0;
 
-
-    //MY OWN EDIT
-    this.setBalance = function(newBal){
-        if(_.isNaN(newBal) || !_.isNumber(newBal) || newBal < 0){return}
-        balance = newBal
-    }
 
     this.init = function(_eckey) {
         outputs = [];
