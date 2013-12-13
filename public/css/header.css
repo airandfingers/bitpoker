@@ -10,7 +10,7 @@ header {
 }
 
 .navbar {
-    background: black;
+    background: rgba(0,0,0,0);
     border: none;
 }
 
@@ -25,15 +25,6 @@ header {
     border: none;
 }
 
-/* I can't remember what this was for, so I'm commenting it out, as it's breaking the temporary bitcoin info page h3
-h3 {
-    font-size: 1em;
-    color: #efefff;
-    text-align: center;
-    margin: 0px auto 0 auto;
-    margin-bottom: 20px;
-}
-*/
 #chip_count {
     display: none;
 }
@@ -69,7 +60,7 @@ h3 {
 
 #report_bug {
     min-height: 275px;
-    min-width: 275px;
+    min-width: 300px;
 }
 
 #report_bug_textarea {

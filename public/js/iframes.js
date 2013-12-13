@@ -56,7 +56,7 @@
     // make iframe draggable
     $iframe.draggable({
       handle: '.iframe_header'
-    , snap: true
+    , snap: false
     , snapMode: 'outer'
     , stack: '.iframe'
     });
@@ -114,6 +114,16 @@
       , $iframe = $iframe_container.find('#' + iframe_id);
     return $iframe;
   }
+
+  var Top = 1000;
+
+  function setIFrameToTop() {
+    this.style.zIndex= Top + 1;
+    Top++;
+    console.log("new top is ", Top);
+  }
+
+$('.iframe').on("mousedown", setIFrameToTop)
 
   iframes = {
     openNewIframe: openNewIframe
