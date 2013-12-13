@@ -26,13 +26,13 @@
     '<div class="iframe_header unselectable">' +
       '<span class="iframe_header_title"></span>' +
       '<a href="#" class="iframe_refresh pull-left">' +
-        '<i class="icon-refresh"></i>' +
+        '<span class="glyphicon glyphicon-refresh"></span>' +
       '</a>' +
       '<a href="#" class="iframe_close pull-right">' +
-        '<i class="icon-remove"></i>' +
+        '<span class="glyphicon glyphicon-remove"></span>' +
       '</a>' +
     '</div>' +
-    '<iframe src="/<%= table_name %>" width="680" height="450">' +
+    '<iframe src="/<%= table_name %>" width="665" height="450">' +
         '<p>Your browser does not support iframes.</p>' +
         '<p><a href="http://www.smashingmagazine.com/2012/07/10/dear-web-user-please-upgrade-your-browser/">Upgrade your browser</a></p>' +
         '<p>Or go directly to <a table_name="/<%= table_name %>">/<%= table_name %></a>.</p>' +
