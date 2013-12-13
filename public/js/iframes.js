@@ -32,7 +32,7 @@
         '<i class="icon-remove"></i>' +
       '</a>' +
     '</div>' +
-    '<iframe src="/<%= table_name %>" width="690" height="450">' +
+    '<iframe src="/<%= table_name %>" width="680" height="450">' +
         '<p>Your browser does not support iframes.</p>' +
         '<p><a href="http://www.smashingmagazine.com/2012/07/10/dear-web-user-please-upgrade-your-browser/">Upgrade your browser</a></p>' +
         '<p>Or go directly to <a table_name="/<%= table_name %>">/<%= table_name %></a>.</p>' +

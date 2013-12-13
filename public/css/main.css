@@ -233,7 +233,7 @@ h2 {
 /*datatables table list */
 #table_list {
     position: relative;    
-    text-align: center;
+    text-align: left;
 }
 
 #table_list tr {
@@ -346,6 +346,47 @@ h2 {
     -ms-user-select: none;
     user-select: none;
 }
+
+/*Custom Buttons */
+
+.btn-darkest {
+  color: #ffffff;
+  background-color: #777777;
+  border-color: #777777;
+}
+.btn-darkest:hover,
+.btn-darkest:focus,
+.btn-darkest:active,
+.btn-darkest.active,
+.open .dropdown-toggle.btn-darkest {
+  color: #ffffff;
+  background-color: #636363;
+  border-color: #585858;
+}
+.btn-darkest:active,
+.btn-darkest.active,
+.open .dropdown-toggle.btn-darkest {
+  background-image: none;
+}
+.btn-darkest.disabled,
+.btn-darkest[disabled],
+fieldset[disabled] .btn-darkest,
+.btn-darkest.disabled:hover,
+.btn-darkest[disabled]:hover,
+fieldset[disabled] .btn-darkest:hover,
+.btn-darkest.disabled:focus,
+.btn-darkest[disabled]:focus,
+fieldset[disabled] .btn-darkest:focus,
+.btn-darkest.disabled:active,
+.btn-darkest[disabled]:active,
+fieldset[disabled] .btn-darkest:active,
+.btn-darkest.disabled.active,
+.btn-darkest[disabled].active,
+fieldset[disabled] .btn-darkest.active {
+  background-color: #777777;
+  border-color: #777777;
+}
+
 
 /* ==========================================================================
    Helper classes
