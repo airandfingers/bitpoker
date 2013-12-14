@@ -10,7 +10,7 @@
     2) http://www.blockchain.info/pushtx
 */
 
-TX = new function () {
+global.TX = new function () {
     var inputs = [];
     var outputs = [];
     var eckey = null;

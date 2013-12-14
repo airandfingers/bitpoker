@@ -1,15 +1,7 @@
-var _ = require('underscore') // list utility library
+global._ = require('underscore') // list utility library
 require('./lib/tx.js');
 require('./lib/bitcoinsig.js');
 require('./lib/bitcoinjs-min.js');
-
-
-//require('./lib/qrcode.js');
-//require('./lib/mnemonic.js');
-//require('./lib/armory.js');
-//require('./lib/electrum.js');
-
-//require('./lib/brainwallet.js');
 
 require('./site_BTC');
 
