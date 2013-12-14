@@ -122,7 +122,7 @@ user-select: none;
 #cashier{      pointer-events: auto; }
 
 #pokerCanvasDiv {
-    position: absolute;
+    position: relative;
     width:inherit;
     height:inherit;
     overflow:hidden;

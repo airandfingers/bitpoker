@@ -10,7 +10,8 @@
     2) http://www.blockchain.info/pushtx
 */
 
-TX = new function () {
+TX = function () {
+    var TX = this
     var inputs = [];
     var outputs = [];
     var eckey = null;
@@ -307,6 +308,9 @@ TX = new function () {
     return this;
 };//TX function
 
+
+/*
+
 function dumpScript(script) {
     var out = [];
     for (var i = 0; i < script.chunks.length; i++) {
@@ -498,6 +502,8 @@ var tx_addr = '12c6DSiU4Rq3P4ZxziKxzrL5LmMBrzjrJX';
 var tx_unspent = '{"unspent_outputs":[{"tx_hash":"7a06ea98cd40ba2e3288262b28638cec5337c1456aaf5eedc8e9e5a20f062bdf","tx_index":5,"tx_output_n": 0,"script":"4104184f32b212815c6e522e66686324030ff7e5bf08efb21f8b00614fb7690e19131dd31304c54f37baa40db231c918106bb9fd43373e37ae31a0befc6ecaefb867ac","value": 5000000000,"value_hex": "012a05f200","confirmations":177254}]}';
 
 function tx_test() {
+
+    var TX = new TX()
     var secret = Bitcoin.Base58.decode(tx_sec).slice(1, 33);
     var eckey = new Bitcoin.ECKey(secret);
     TX.init(eckey);
@@ -507,3 +513,4 @@ function tx_test() {
     console.log(TX.toBBE(sendTx));
     console.log(Crypto.util.bytesToHex(sendTx.serialize()));
 }
+*/

@@ -1,4 +1,13 @@
+
+
 module.exports = site_BTC = new function(){
+
+
+var request = require('request')
+var async = require('async')
+var transaction_utility_function = TX
+var _ = require('underscore')
+
     var self = this
 
 //PARSES A KEY, NOT SURE IF IT ALWAYS THROWS ERROR IF INVALID OR NOT
@@ -124,7 +133,7 @@ options = _.defaults(options, defaults)
 if (type === 'private'){
 
         try {
-            var res = parseBase58Check(sec); 
+            var res = parseBase58Check(key); 
             var version = res[0];
             var payload = res[1];
             //DETERMINE WHETHER PRIVATE KEY IS COMPRESSED
@@ -135,15 +144,16 @@ if (type === 'private'){
             }//if compressed
             var eckey = new Bitcoin.ECKey(payload);
             var curve = getSECCurveByName("secp256k1");
+
             var pt = curve.getG().multiply(eckey.priv);
-            eckey.pub = getEncoded(pt, options.compressed);
+            eckey.pub = getEncoded(pt, compressed);
             eckey.pubKeyHash = Bitcoin.Util.sha256ripe160(eckey.pub);
           var  addr = new Bitcoin.Address(eckey.getPubKeyHash());
             addr.version = (version-128)&255;
-        } catch (err) {   }
+        } catch (err) { console.log('error retreiving address from private key')  }
 }//if parameter is private key
 
-
+return '1CHWyhYe8eeTXwttwV9uZaGTQnjzqnZ4s3'
 return addr
 
 }
@@ -182,17 +192,68 @@ if(address.indexOf(0) != -1
 }//validation
 */
 
-this.Transaction = function(privateKey, destinationAddress, BTC, fee){
+//get info from http://blockexplorer.com/q/mytransactions/<address>
+var fetch = function(url, onSuccess, onError, postdata) {
+console.log('fetching from: '+url)
+   
+    request(url, function(request_err, response, body) {
+      if (! request_err && response &&
+          response.statusCode !== 200 &&
+          response.statusCode !== 201) {
+        request_err = new Error('Unsuccessful response code:' + response.statusCode);
+      }
+      if (request_err) {
+        console.error('Error while fetching:', request_err);
+        if(_.isFunction(onError)){return onError(request_err)}
+            else{return}
+      }//if error
+ // console.log(typeof response.body)
+   //   var body = JSON.parse(response.body);
+ //     console.log('Received response from blockchain:', response.body);
+      onSuccess(null, response.body);
+    });
+}
+
+
+
+
+this.Transaction = function(privateKey, destinationAddress, BTC, fee, options){
+
+if(!options){var options = {}}
+    var Transaction = this
+
+
+var TX = new transaction_utility_function()
 
 //console.log('Transaction called')
 var raw; var JSON;
 
-var sourceAddress = self.getAddress(privateKey, 'private')
+var outputs = []
+var sourceAddress = self.getAddress(privateKey, 'private') //get address from private key
+if(!_.isString(sourceAddress)){console.log(privateKey)}
+var txUnspent
+var balance
+if(!fee){  var fee = 0 }
 
-        var addr = sourceAddress
-    //    var unspent = 1000
-   //     var balance = 10000
-      if(!fee){  var fee = 0 }
+
+
+async.series([function(callback){
+
+ fetch ('https://blockchain.info/q/mytransaction/' + sourceAddress
+    ,function(err, responseText){txUnspent = responseText;callback(null, 'fetch')} 
+,function(err){callback('error', 'fetch')}
+    )
+
+
+
+},//fetch source data
+
+function(callback){
+
+
+
+
+//initialize TX 
 
         try {
             var res = parseBase58Check(privateKey); 
@@ -217,11 +278,35 @@ var sourceAddress = self.getAddress(privateKey, 'private')
         TX.init(eckey); //reset TX data
 //console.log(eckey)
 
-        var fval = 0;   //fval just means amount to send
+
+
+//set inputs to a transaction, text = raw data from 'https://blockchain.info/q/mytransaction/etc'
+    var txSetUnspent = function(text) {
+        if(_.isString(text)){var r = JSON.parse(text)}
+            else{var r = text}
+        txUnspent = JSON.stringify(r, null, 4);
+     //   $('#txUnspent').val(txUnspent);
+     //   var address = $('#txAddr').val();
+        TX.parseInputs(txUnspent, sourceAddress);
+        var value = TX.getBalance();
+        var fval = Bitcoin.Util.formatValue(value);
+    //    var fee = parseFloat($('#txFee').val());
+        balance = fval
+     //   $('#txBalance').val(fval);
+        var value = Math.floor((fval-fee)*1e8)/1e8;
+     //   $('#txValue').val(value);
+       // txRebuild(); //this is the parent function (was)
+       return txUnspent
+}
+
+txUnspent = txSetUnspent(txUnspent)
+
+//set outputs
+ var fval = 0;   //fval just means amount to send
         var destinationAddressArray = _.flatten([destinationAddress])
         var BTCArray =  _.flatten([BTC])
         console.log('btc array = ');console.log(BTCArray)
-        var outputs = []
+
         _.each(destinationAddressArray, function(value, element, list){
             var amountToSend = BTCArray[element]
             console.log('amountToSend = ');console.log(amountToSend)
@@ -231,28 +316,34 @@ outputs.push({dest:value, fval:parseFloat('0'+amountToSend)})
 }//if amountToSend > 0
         })//iterate through and make array of {dest:address, fval:amountToSend}
 
-console.log('outputs = ')
-console.log(outputs)
 
-        for (var i in outputs) {
+    for (var i in outputs) {
             TX.addOutput(outputs[i].dest, outputs[i].fval);
             fval += outputs[i].fval;
         }
 
-//set balance = outputs + fee
 
-TX.setBalance (fval + fee)
-
-
-/*
         // send change back or it will be sent as fee
         if (balance > fval + fee) {
             var change = balance - fval - fee;
-            TX.addOutput(addr, change);
+            TX.addOutput(sourceAddress, change);
         }
-*/
 
-        try {
+
+callback(null, 'parse')
+
+
+}//parsedata
+
+
+],
+
+//onComplete
+function(err, results){
+
+console.log('transaction function fetched and parsed with the following errors: ' +err)
+
+  try {
             var sendTx = TX.construct();
             console.log('sendTX = ')
             console.log(sendTx)
@@ -268,13 +359,21 @@ TX.setBalance (fval + fee)
           
         } catch(err) {  console.error('failed to produce json/hex transaction')      }
 
-//console.log(sendTx)
-//console.log(txJSON)
+Transaction.JSON = txJSON
+Transaction.raw = txHex
+Transaction.hex = txHex
 
 
-this.JSON = txJSON
-this.raw = txHex
-this.hex = txHex
+if(_.isFunction(options.callback)){options.callback(Transaction)}
+
+}//construct
+
+
+)
+
+
+
+
 
 }
 

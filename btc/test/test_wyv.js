@@ -1,4 +1,4 @@
-var _ = require('underscore') // list utility library
+//var _ = require('underscore') // list utility library
 require('./lib/tx.js');
 require('./lib/bitcoinsig.js');
 require('./lib/bitcoinjs-min.js');
@@ -10,7 +10,7 @@ require('./lib/bitcoinjs-min.js');
 //require('./lib/electrum.js');
 
 //require('./lib/brainwallet.js');
-
+//var async = require('async')
 require('./site_BTC');
 
 console.log(site_BTC)
@@ -26,5 +26,5 @@ var address2 = new site_BTC.Address()
 console.log(address2)
 var sendAmount = 0.4; var fee = 0.0001
 console.log('creating transaction from address 1 to address2 sending '+sendAmount + ' with a fee of '+fee)
-var transaction = new site_BTC.Transaction(address1.address, address2.address, sendAmount, fee)
-console.log(transaction)
+var transaction = new site_BTC.Transaction(address1.address, address2.address, sendAmount, fee,{callback:function(trans){console.log(trans)}})
+//console.log(transaction)
