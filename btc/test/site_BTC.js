@@ -282,6 +282,7 @@ function(callback){
 
 //set inputs to a transaction, text = raw data from 'https://blockchain.info/q/mytransaction/etc'
     var txSetUnspent = function(text) {
+      
         if(_.isString(text)){var r = JSON.parse(text)}
             else{var r = text}
         txUnspent = JSON.stringify(r, null, 4);
