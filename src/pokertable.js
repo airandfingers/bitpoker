@@ -140,24 +140,24 @@ if(self.gameState.itemsCreated === true){
 self.updateTableChatFullDisplay(options)}
                   }//hideObserverMessagesOn.updateValue function
                 },//hideObserverMessagesOn
-                  disableTouchScroll:{value:true, updateValue: function(newValue, options){
+                  popOut:{value:true, updateValue: function(newValue, options){
                                                                                 if(!options){var options = {}}
                       var update = options.update
       if((newValue === false || this.value === false) && newValue !== this.value){    options.update = true}
 this.value = newValue
 if(self.gameState.itemsCreated === true){
 self.updateTableChatFullDisplay(options)}
-                  }//disableTouchScroll.updateValue function
-                },//disableTouchScroll
-                  disableTouchScrollOn:{value:false, updateValue: function(newValue, options){
+                  }//popOut.updateValue function
+                },//popOut
+                  popOutOn:{value:false, updateValue: function(newValue, options){
                                                                                 if(!options){var options = {}}
                       var update = options.update
       if((newValue === false || this.value === false) && newValue !== this.value){    options.update = true}
 this.value = newValue
 if(self.gameState.itemsCreated === true){
 self.updateTableChatFullDisplay(options)}
-                  }//disableTouchScrollOn.updateValue function
-                }//disableTouchScrollOn
+                  }//popOutOn.updateValue function
+                }//popOutOn
 
   }//default items to hide
 
@@ -521,7 +521,7 @@ var initializeStage = new StageInitializationInfo(stageName, stageNumber, stageC
 this.jQueryObjects.canvasDiv = $('#pokerCanvasDiv')
 this.jQueryObjects.tableChatFullDiv = $('#tableChatFullTextDiv')
 this.jQueryObjects.tableChatFullParagraph = $('#tableChatFullText')
-this.jQueryObjects.chatBoxDiv = $('#chatDiv')
+//this.jQueryObjects.chatBoxDiv = $('#chatDiv')
 this.jQueryObjects.chatBoxInput = $('#chat')
 this.jQueryObjects.cashierForm = $('#cashier')
 
@@ -1988,7 +1988,7 @@ self.jQueryObjects.tableChatFullDiv.trigger("DOMMouseScroll", [0])
 //scroll[0].setScrollTop(scroll[0].getScrollTop())
 // setScrollHandleToMinimum()
 }
-  else{
+  else{ //if magnitude defined
 
 
 if(movementObject.positionUnit == 'pixels'){}
@@ -1999,14 +1999,15 @@ if(self.permanentPreferences.tableChatFull.scrollBarType && self.permanentPrefer
 
 else{//if nicescroll
 var scroll = self.jQueryObjects.tableChatFullDiv.getNiceScroll()
-  scroll[0].scrollTop(self.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value)
+ scroll[0].scrollTop(movementObject.magnitude)
+ // scroll[0].scrollTop(self.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value)
   movementObject.resize = true
 }//if not mcustomscrollbar
 
 }//if magnitude is a  number
 
 
-}//if magnitude not a number
+}//if magnitude not anumber
 
 //resize if necessary
 if (movementObject.resize === true){
@@ -2070,11 +2071,11 @@ self.images.tableChatFull.chatMessageText.parentOfStage.stage.update()
 
 }
 
-this.events.disableTouchScrollClicked = function(){
-console.log('disableTouchScrollClicked')
+this.events.popOutClicked = function(){
+console.log('popOutClicked')
 //change user preferences
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.disableTouchScroll.value = false
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.disableTouchScrollOn.value = true
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOut.value = false
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOutOn.value = true
 
 /*
 console.log(self.jQueryObjects.tableChatFullDiv.getNiceScroll())
@@ -2086,11 +2087,11 @@ self.saveSessionPreferences()
 self.updateTableChatFullDisplay()
 }
 
-this.events.disableTouchScrollOnClicked = function(){
-console.log('disableTouchScrollClicked')
+this.events.popOutOnClicked = function(){
+console.log('popOutClicked')
 //change user preferences
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.disableTouchScroll.value = true
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.disableTouchScrollOn.value = false
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOut.value = true
+self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOutOn.value = false
 /*
 console.log(self.jQueryObjects.tableChatFullDiv.getNiceScroll())
 self.jQueryObjects.tableChatFullDiv.getNiceScroll()[0].istouchcapable = true
@@ -4041,11 +4042,12 @@ createPotItems(8, pot8X, pot8Y)
 
 */
 
-           
-
-
               //---------------------player chat input---------------
               this.htmlTableChatBox = new this.Item(htmlTableChatBoxLeftOffset,canvasHeight - htmlTableChatBoxBottomOffset-htmlTableChatBoxHeight-htmlTableChatBorderSize*2,htmlTableChatBoxWidth,htmlTableChatBoxHeight, getZ('chat','staticItems'))
+
+//this.htmlTableChatBox.addElement(self.jQueryObjects.chatBoxInput[0], 'image')
+ this.htmlTableChatBox.addElement(self.jQueryObjects.chatBoxInput[0], 'image')
+
 var defaultMessage = 'Type here to chat'
 self.jQueryObjects.chatBoxInput.val(defaultMessage)
 self.jQueryObjects.chatBoxInput.css('color', htmlTableChatBoxReminderTextColor)
@@ -4069,9 +4071,9 @@ self.jQueryObjects.chatBoxInput.css('color', htmlTableChatBoxReminderTextColor)
 //set z-index of chatDiv
 var chatBoxStageParent = self.arrayOfParentsOfStageAndOfContainerArray[self.images.htmlTableChatBox.position.z.stage]
 var chatBoxStageCanvasZIndex = $(chatBoxStageParent.stage.canvas).css('z-index')
-$(chatBoxStageParent.div).append(self.jQueryObjects.chatBoxDiv)
+//$(chatBoxStageParent.div).append(self.jQueryObjects.chatBoxDiv)
 
-self.jQueryObjects.chatBoxDiv.css('z-index', parseInt(chatBoxStageCanvasZIndex)+1)
+//self.jQueryObjects.chatBoxDiv.css('z-index', parseInt(chatBoxStageCanvasZIndex)+1)
 
 self.jQueryObjects.chatBoxInput.css({
  'position' :  'absolute',
@@ -4081,7 +4083,6 @@ self.jQueryObjects.chatBoxInput.css({
 'height' : this.htmlTableChatBox.size.y +'px',
 'padding': '0px',
 'margin':'0px'
-
  // 'background-color': 'rgb(200,200,200)'
 })
 
@@ -4094,6 +4095,8 @@ self.jQueryObjects.chatBoxInput.css({
         self.jQueryObjects.chatBoxInput.focus()
         }
     })
+
+
 
            //--------standard pre-action buttons---------------------
           this.foldToAnyBet = new  this.Item(checkBoxButtonOffSetLeft,this.htmlTableChatBox.position.y-  checkBoxButtonDistanceFromChat - 3*checkBoxButtonHeight-2*checkBoxButtonDistanceY,checkBoxButtonWidth,checkBoxButtonHeight, getZ('buttons','staticItems'), {messages:[['set_flag','check',true], ['set_flag','fold',true]]})
@@ -5584,10 +5587,10 @@ var tableChatFullStageWidth = this.seats[0].seat.position.x-tableChatFullDivX - 
 var tableChatFullStageHeight = this.foldToAnyBet.position.y - tableChatFullBottomOffsetFromFoldToAnyBetButton - tableChatFullDivY
 
 
-
-
 //create stageelement
-this.tableChatFull.htmlCanvasElement = new this.Item(0, 0, tableChatFullStageWidth, tableChatFullStageHeight,getZ('background','tableChatFull'))
+this.tableChatFull.htmlDivElement = new this.Item(tableChatFullDivX, tableChatFullDivY, tableChatFullStageWidth, tableChatFullStageHeight, getZ('background','tableChatFull'))
+
+this.tableChatFull.htmlCanvasElement = new this.Item(0, 0, tableChatFullStageWidth, tableChatFullStageHeight, getZ('background','tableChatFull'))
 //console.log('tablechatfullhtml element')
 //console.log(this.tableChatFull.htmlCanvasElement)
 
@@ -5596,15 +5599,28 @@ var tableChatFullStageParent =  self.getParentOfStageObject(this.tableChatFull.h
 
 
  $(tableChatFullStageParent.div).css({
-               'left':tableChatFullDivX+'px',
-    'top':tableChatFullDivY +'px',
+               'left':tableChatFullDivX+'px'
+    ,'top':tableChatFullDivY +'px'
+    ,'height':'auto'
+    ,'width':'auto'
+    ,'float':'left'
+        ,'width': this.tableChatFull.htmlCanvasElement.size.x+'px',
+'height': this.tableChatFull.htmlCanvasElement.size.y+'px'
+,'overflow':'hidden'
+,'pointer-events':'visible'
            })
 
 
    $(tableChatFullStageParent.stage.canvas).attr({
       'width': this.tableChatFull.htmlCanvasElement.size.x+'px',
 'height': this.tableChatFull.htmlCanvasElement.size.y+'px'
+
   })
+   /*
+   .css({
+  'pointer-events':'auto'
+  })
+ */
 
 
 
@@ -5615,11 +5631,24 @@ var tableChatFullWindowAlpha = self.permanentPreferences.tableChatFull.windowAlp
 var tableChatFullRoundedRectCornerSizeRatioOfHeight = 0.05
 
   this.tableChatFull.window = new this.Item(0, 0, tableChatFullStageWidth, tableChatFullStageHeight, getZ('background','tableChatFull'))
-  this.tableChatFull.window.image = new createjs.Shape()
-this.tableChatFull.window.image.graphics.beginFill(tableChatFullWindowBackgroundColor)
+  
+  this.tableChatFull.window.drawImage = function(){ //we can use this function to update when we popout the chat box
+
+var canvas = self.getParentOfStageObject(this).stage.canvas
+var width = canvas.width;var height = canvas.height
+
+if(this.image instanceof createjs.Shape){this.image.graphics.clear()}
+else{this.image = new createjs.Shape()}
+
+this.image.graphics.beginFill(tableChatFullWindowBackgroundColor)
 .setStrokeStyle(tableChatFullWindowBorderWidth,'round').beginStroke(tableChatFullWindowBorderColor)
-.drawRoundRect(this.tableChatFull.window.position.x, this.tableChatFull.window.position.y, this.tableChatFull.window.size.x, this.tableChatFull.window.size.y, tableChatFullRoundedRectCornerSizeRatioOfHeight*this.tableChatFull.window.size.y)
-this.tableChatFull.window.image.alpha = tableChatFullWindowAlpha
+.drawRoundRect(this.position.x, this.position.y, width, height, tableChatFullRoundedRectCornerSizeRatioOfHeight*this.size.y)
+this.image.alpha = tableChatFullWindowAlpha
+
+  }
+
+  this.tableChatFull.window.drawImage()
+
 
 var hideDealerMessagesOffsetLeft =  this.tableChatFull.htmlCanvasElement.size.x*.05 //checkBoxButtonOffSetLeft
 var hideDealerMessagesOffsetRight =  hideDealerMessagesOffsetLeft//checkBoxButtonOffSetLeft
@@ -5664,15 +5693,15 @@ if(this.tableChatFull.hideDealerMessages.size.x > longestLeftSideCheckBoxAndText
 var rightSideCheckBoxX = this.tableChatFull.hideDealerMessages.position.x + longestLeftSideCheckBoxAndTextItemWidth + hideDealerMessagesOffsetRight
 var rightSideCheckBoxY = this.tableChatFull.hideDealerMessages.position.y
 
-this.tableChatFull.disableTouchScroll = new this.Item(rightSideCheckBoxX, rightSideCheckBoxY, 0, checkBoxButtonHeight,getZ('buttons','tableChatFull'))
-this.tableChatFull.disableTouchScroll.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
-self.images.addCheckBoxButtonText(this.tableChatFull.disableTouchScroll, 'Disable touch scroll')
-this.tableChatFull.disableTouchScroll.on('click', self.events.disableTouchScrollClicked)
+this.tableChatFull.popOut = new this.Item(rightSideCheckBoxX, rightSideCheckBoxY, 0, checkBoxButtonHeight,getZ('buttons','tableChatFull'))
+this.tableChatFull.popOut.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
+self.images.addCheckBoxButtonText(this.tableChatFull.popOut, 'Pop-Out')
+this.tableChatFull.popOut.on('click', self.events.popOutClicked)
 
-this.tableChatFull.disableTouchScrollOn = new this.Item(this.tableChatFull.disableTouchScroll.position.x, this.tableChatFull.disableTouchScroll.position.y, this.tableChatFull.disableTouchScroll.size.x, checkBoxButtonHeight,getZ('text','tableChatFull'))
-this.tableChatFull.disableTouchScrollOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
-self.images.addCheckBoxButtonText(this.tableChatFull.disableTouchScrollOn, 'Disable touch scroll')
-this.tableChatFull.disableTouchScrollOn.on('click', self.events.disableTouchScrollOnClicked)
+this.tableChatFull.popOutOn = new this.Item(this.tableChatFull.popOut.position.x, this.tableChatFull.popOut.position.y, this.tableChatFull.popOut.size.x, checkBoxButtonHeight,getZ('text','tableChatFull'))
+this.tableChatFull.popOutOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
+self.images.addCheckBoxButtonText(this.tableChatFull.popOutOn, 'Pop-Out')
+this.tableChatFull.popOutOn.on('click', self.events.popOutOnClicked)
 
 //chat message text
 
@@ -5691,10 +5720,12 @@ var chatTextDivHeight = this.tableChatFull.htmlCanvasElement.size.y - chatTextDi
 
 
 this.tableChatFull.chatTextDiv = new this.Item(chatTextDivX, chatTextDivY, chatTextDivWidth ,chatTextDivHeight, getZ('background','tableChatFull'))
-this.tableChatFull.chatTextDiv.image = $('#tableChatFullTextDiv')[0]
+this.tableChatFull.chatTextDiv.addElement($('#tableChatFullTextDiv')[0],'image')
 
+/*
 this.tableChatFull.chatParagraph = new this.Item(chatTextDivX, chatTextDivY, chatTextDivWidth ,chatTextDivHeight, getZ('background','tableChatFull'))
-this.tableChatFull.chatParagraph.image = $('#tableChatFullText')[0]
+this.tableChatFull.chatParagraph.addElement = ($('#tableChatFullText')[0],'image')
+*/
 
 var tableChatFullParentOfStage = self.arrayOfParentsOfStageAndOfContainerArray[ this.tableChatFull.chatTextDiv.position.z.stage]
 var tableChatFullStageCanvasZIndex = $(tableChatFullParentOfStage.stage.canvas).css('z-index')
@@ -5708,21 +5739,21 @@ var tableChatFullStageCanvasZIndex = $(tableChatFullParentOfStage.stage.canvas).
 '-khtml-user-select': 'none',
 '-moz-user-select': 'none',
 '-ms-user-select': 'none',
-'user-select': 'none',
-          'display':'none',
-               'left':this.tableChatFull.chatTextDiv.position.x+'px',
-    'top':this.tableChatFull.chatTextDiv.position.y +'px',
- 'width': this.tableChatFull.chatTextDiv.size.x+'px',
-'height': this.tableChatFull.chatTextDiv.size.y+'px',
-'z-index':parseInt(tableChatFullStageCanvasZIndex)+1
+'user-select': 'none'
+/*
+          'display':'none'
+          ,left: this.tableChatFull.chatTextDiv.position.x+'px'
+     ,  top:      this.tableChatFull.chatTextDiv.position.y +'px'
+ ,'width':           this.tableChatFull.chatTextDiv.size.x+'px'
+,'height':            this.tableChatFull.chatTextDiv.size.y+'px'
+//,'margin-bottom': chatTextDivTextOffsetBottom + 'px'
+//,'margin-right': chatTextDivTextOffsetRight + 'px'
+//,'margin-left': chatTextDivTextOffsetLeft + 'px'
+//,'margin-top': this.tableChatFull.chatTextDiv.position.y +'px'
+
+,'z-index':parseInt(tableChatFullStageCanvasZIndex)+1
+*/
            })
-
-$(self.getParentOfStageObject(this.tableChatFull.chatTextDiv).div).css({
-
-width:0
-,height:0
-
-})
 
 
 var scrollBarInnerWidth = 2
@@ -5834,8 +5865,8 @@ var stopWheel = function(e){
  
 
         self.jQueryObjects.tableChatFullParagraph.css({
-               'width': this.tableChatFull.chatMessageText.size.x+'px',
-'height': this.tableChatFull.chatMessageText.size.y+'px',
+        //       'width': this.tableChatFull.chatMessageText.size.x+'px',
+//'height': this.tableChatFull.chatMessageText.size.y+'px',
           'font': chatMessageFont,
           'font-size':chatMessageFontSize + 'px',
           'color': chatMessageFontColor ,
@@ -8539,10 +8570,11 @@ if(_.isNumber(newOuterHeight)){
  // cssOptions['max-height'] = (newOuterHeight - data.extraHeight) + 'px'
 
 //NOW ADJUST LINE HEIGHT
-var oldLineHeight = $(imageOrText).css('line-height')
+
+ var oldLineHeight = $(imageOrText).css('line-height')
 //MAKE SURE old line height is pixel based
-if(_.isString(oldLineHeight) && oldLineHeight.indexOf('px') !== -1){
-  
+if($(imageOrText).is('p') && _.isString(oldLineHeight) && oldLineHeight.indexOf('px') !== -1){
+ 
  cssOptions['line-height'] = parseInt(oldLineHeight)*((newOuterHeight - data.extraHeight)/ data.contentHeight) + 'px'
 
 /*
@@ -11174,9 +11206,15 @@ var isAtBottom = true//( scroll[0].getContentSize().h - scroll[0].getScrollTop()
 }//if we using mCustomScrollBar
 
 else{//if we don't want to use mCustomScrollbar
-  var scroll = self.jQueryObjects.tableChatFullDiv.getNiceScroll()//grab niceScroll instance on the scroll div
+  var scroll = $(self.images.tableChatFull.chatTextDiv.image).getNiceScroll()//grab niceScroll instance on the scroll div
 //console.log('content size = '+scroll[0].getContentSize().h +' upper scroll value = '+scroll[0].getScrollTop()+' height of visible paragraph = '+(self.jQueryObjects.tableChatFullParagraph.outerHeight(true)+1))
 var isAtBottom = ( scroll[0].getContentSize().h - scroll[0].getScrollTop() <=  parseFloat(self.jQueryObjects.tableChatFullParagraph.outerHeight(true))+1)
+
+  var scroll = self.jQueryObjects.tableChatFullDiv.getNiceScroll()
+
+  //save value
+   self.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value = scroll[0].getScrollTop()
+
 }
 //console.log('var isAtBottom = ' + isAtBottom)
 return isAtBottom
@@ -11719,7 +11757,8 @@ this.appendTableChatFullMessageText(log.length-1, {moveTable:false})
 }//if we want to append a message at the end
 
 if(scrollDownAtEnd === true){this.moveTableChatFullMessageText({resize:true})}
-  else{this.moveTableChatFullMessageText({magnitude:0, resize:true})}
+  else{    this.moveTableChatFullMessageText({    magnitude:self.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value, resize:true  })
+}
 
 }
 
@@ -12284,6 +12323,96 @@ this.updateTableChatFullMessageTextFromCurrentOrAdditionalData()
 //console.log('finished adding to stages for tableChatFull display, now showing which stages should be updated')
 //console.log(stagesToUpdate)
 
+//CHECK IF WE SHOULD POP OUT OR IN
+var tableChatFullStageParent = self.getParentOfStageObject (self.images.tableChatFull.window)
+
+//variables for popping out
+if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOut.value === false 
+  && $(tableChatFullStageParent.div).parent().is(self.jQueryObjects.canvasDiv) == true 
+  ){
+
+var newHeight = self.jQueryObjects.canvasDiv.outerHeight(true) 
+
+var newDivX = 0; var newDivY = 0; 
+//set background same
+/*
+if(self.images.background.image instanceof createjs.DisplayObject){
+  var bgURL = self.images.background.image.image.src
+}
+else{var bgURL = self.images.background.image.src}
+*/
+
+var bgColor = 'rgba(0,0,0,0.5)'
+
+var prependTo = self.jQueryObjects.pokerTableDiv
+var position = 'relative'
+
+
+//we are goign to keep the same left distance to edge. right will = left to edge. bottom will = top distance to text
+var prependChatBoxTo = tableChatFullStageParent.div
+var chatBoxWidth = self.images.tableChatFull.htmlDivElement.size.x - self.images.htmlTableChatBox.position.x*2
+var chatBoxTopOffset = newHeight - self.images.htmlTableChatBox.position.y - self.images.htmlTableChatBox.size.y
+
+var newTextHeight = self.images.htmlTableChatBox.position.y - chatBoxTopOffset - self.images.tableChatFull.chatTextDiv.position.y
+
+console.log('moving chat outside of the table height = ' + newHeight + ' textheight =  ' + newTextHeight)
+
+var scrollDownAtEnd = self.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText()
+}//popout tablechatfull
+
+else if (self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOut.value !== false
+&& $(tableChatFullStageParent.div).parent().is(self.jQueryObjects.canvasDiv) != true){//variables for popping in
+
+console.log('moving chat inside the table')
+
+var newHeight = self.images.tableChatFull.htmlDivElement.size.y
+var newDivX =  self.images.tableChatFull.htmlDivElement.position.x
+var newDivY = self.images.tableChatFull.htmlDivElement.position.y
+var bgColor = 'transparent'
+
+var prependTo = self.jQueryObjects.canvasDiv
+var position = 'absolute'
+
+//restore normal chatboxbehavior
+var prependChatBoxTo = self.getParentOfStageObject(self.images.htmlTableChatBox).div
+
+var chatBoxWidth = self.images.tableChatFull.htmlDivElement.size.x
+var chatBoxTopOffset = 0//normal for chattext
+
+var newTextHeight = self.images.tableChatFull.chatTextDiv.size.y
+var scrollDownAtEnd = self.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText()
+}
+else{console.log('keeping chat same place as last time ')}
+
+//popin or out tablechatfull if needed
+if(prependTo){
+
+setDisplayObjectPositionData(self.images.tableChatFull.chatTextDiv.image,{height:newTextHeight}, {update:false})
+
+setDisplayObjectPositionData(self.images.htmlTableChatBox.image,{width:chatBoxWidth}, {update:false})
+//$(self.images.htmlTableChatBox.image).css('width',chatBoxWidth)
+$(self.images.htmlTableChatBox.image).prependTo(prependChatBoxTo)
+
+
+
+$(tableChatFullStageParent.div).css({
+  'position':position
+,'left':newDivX
+,'top':newDivY
+,'height':newHeight
+,'background-color':bgColor
+//,"background-image": "url(" + bgURL + ")"
+})
+$(tableChatFullStageParent.stage.canvas).attr('height', newHeight)
+$(tableChatFullStageParent.div).prependTo(prependTo)
+self.images.tableChatFull.window.drawImage()
+}//if we changing our display
+
+//scroll if necessary
+if(scrollDownAtEnd){self.moveTableChatFullMessageText()}
+else{self.moveTableChatFullMessageText({magnitude:self.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels})}
+
+
 displayOrHideChildrenOptions.update  = update
 if(update !== false){this.updateStages(stagesToUpdate)}
 else{return stagesToUpdate}
@@ -12362,8 +12491,11 @@ console.log('calling hideTableChatFull')
    positionValue = true
  }
  else{
+  if(self.sessionPreferences.tableChatFull.scrollBarType != 'mCustomScrollbar'){
   var scroll = self.jQueryObjects.tableChatFullDiv.getNiceScroll()
    positionValue  = scroll[0].getScrollTop()
+ }
+ else{positionValue = 0}
 }
   this.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value = positionValue
 
@@ -12487,7 +12619,6 @@ console.log('leftover child removed with id = ' + options.attr.id)
 }//if we want to remove previous
 
 else{
-
   console.log('overwrite not = false on add element type = ' + type)
   console.log(element)
   console.log(options)
