@@ -15572,6 +15572,26 @@ self.updateStages(stagesToUpdate)
 jQuery(document).ready(function(){
   //Calls code in iframes.js to set iframe to top//
   $('.iframe').on("mousedown", setIFrameToTopHandler);
+
+
+
+   holdemCanvas = new Table()
+
+
+if(holdemCanvas.isIframe()) {
+  // we're not in index.ejs
+    console.log('this is an iframe')
+    
+      holdemCanvas.loadImageSources()
+}
+else{
+    // we're in index.ejs
+      console.log('this is not an iframe')
+holdemCanvas.loadImageSources(true)
+}
+
+
+  
 });
 
 function setIFrameToTopHandler() {
@@ -15588,20 +15608,7 @@ self.jQueryObjects.tableChatFullDiv.mCustomScrollbar()
  //   holdemCanvas.createAllItems()
 
  //console.log($('#server_values').data('table_state'))
-   holdemCanvas = new Table()
 
-
-if(holdemCanvas.isIframe()) {
-  // we're not in index.ejs
-    console.log('this is an iframe')
-    
-      holdemCanvas.loadImageSources()
-}
-else{
-    // we're in index.ejs
-      console.log('this is not an iframe')
-holdemCanvas.loadImageSources(true)
-}
 
       console.log(document)
       

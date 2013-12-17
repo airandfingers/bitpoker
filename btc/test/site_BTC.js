@@ -82,9 +82,12 @@ this.address = address
     //length 33 for compressed, length 65 for uncompressed, 
     //curve.getG().multiply(uncompressedPrivateKey)  = pt //this may or may not work for compressed private keys
     var getEncoded = function(pt, compressed) {
+
        var x = pt.getX().toBigInteger();
        var y = pt.getY().toBigInteger();
+       console.log('inttobutes = ' + typeof integarToBytes)
        var enc = integerToBytes(x, 32);
+       console.log('enc')
        if (compressed) {
          if (y.isEven()) {
            enc.unshift(0x02);
@@ -149,14 +152,19 @@ if (type === 'private'){
             var curve = getSECCurveByName("secp256k1");
 
             var pt = curve.getG().multiply(eckey.priv);
+            console.log('pt calculated')
+            console.log(eckey)
+            console.log(getEncoded)
             eckey.pub = getEncoded(pt, compressed);
+            console.log('eckey.pub')
             eckey.pubKeyHash = Bitcoin.Util.sha256ripe160(eckey.pub);
           var  addr = new Bitcoin.Address(eckey.getPubKeyHash());
             addr.version = (version-128)&255;
         } catch (err) { console.log('error retreiving address from private key')  }
 }//if parameter is private key
 
-return '1CHWyhYe8eeTXwttwV9uZaGTQnjzqnZ4s3'
+//return '1CHWyhYe8eeTXwttwV9uZaGTQnjzqnZ4s3'
+console.log(addr)
 return addr
 
 }
