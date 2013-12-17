@@ -63,7 +63,7 @@
       handle: '.iframe_header'
     , snap: false
     , snapMode: 'outer'
-    , stack: '.iframe'
+    //, stack: '.iframe'
     });
 
     $iframe.find('.iframe_refresh').click(function(){
@@ -122,8 +122,10 @@
 
   var Top = 1000;
 
-  function setIFrameToTop(iframe) {
-    iframe.style.zIndex= Top + 1;
+  function setIFrameToTop(table_name) {
+    var blah = findIframe(table_name);
+    var new_top = Top + 1;
+    blah.css("z-index", new_top);
     Top++;
     console.log("new top is ", Top);
   }

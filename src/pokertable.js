@@ -15571,12 +15571,14 @@ self.updateStages(stagesToUpdate)
 
 jQuery(document).ready(function(){
   //Calls code in iframes.js to set iframe to top//
-  $('.iframe').on("mousedown", setIFrameToTopHandler);
+  $("body").on("mousedown", setIFrameToTopHandler);
 });
 
 function setIFrameToTopHandler() {
-    console.log('trying to run setIFrameToTop @ ' + this);
-    iframes.setIFrameToTop(this);   
+    if (holdemCanvas.isIframe()) {
+      console.log('trying to run setIFrameToTop @ ' + $('#server_values').data('table_name'));
+      parent.iframes.setIFrameToTop($('#server_values').data('table_name'));         
+    }
 }
 
 jQuery(window).load(function (){
