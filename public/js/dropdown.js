@@ -22,7 +22,7 @@ $(function() {
         })
         .stop(true, true)
         .show('fade', 250);
-        z_counter ++
+        z_counter++;
       if (! columns_resized) {
         $lobby.find('#table_list').dataTable().fnAdjustColumnSizing();
         columns_resized = true;
@@ -56,7 +56,7 @@ $(function() {
         })
         .stop(true, true)
         .show('fade', 400);
-        z_counter ++
+        z_counter++;
       if (! columns_resized) {
         $lobby.find('#table_list').dataTable().fnAdjustColumnSizing();
         columns_resized = true;
@@ -123,17 +123,29 @@ $(function() {
     , $login_dropdown = $('#login');
   $login_trigger.click(function() {
     toggleDropdown($login_trigger, $login_dropdown,
-                   { toggle_args: ['slide', { direction: 'up' }, 400] });
+                   { toggle_args: ['slide', { direction: 'up' },
+                     function() {
+                       if ($register_trigger.hasClass('active')) {
+                         toggleDropdown($register_trigger, $register_dropdown,
+                                        { toggle_args: ['slide', { direction: 'up' } ] });
+                       }
+                     }]
+                   });
     $login_dropdown.find('#login_username').focus();
   });
-});
 
-$(function() {
   var $register_trigger = $('#register_trigger')
     , $register_dropdown = $('#register');
   $register_trigger.click(function() {
     toggleDropdown($register_trigger, $register_dropdown,
-                   { toggle_args: ['slide', { direction: 'up' }, 400] });
+                   { toggle_args: ['slide', { direction: 'up' },
+                     function() {
+                       if ($login_trigger.hasClass('active')) {
+                         toggleDropdown($login_trigger, $login_dropdown,
+                                        { toggle_args: ['slide', { direction: 'up' } ] });
+                       }
+                     }]
+                   });
     $register_dropdown.find('#register_username').focus();
   });
 });
@@ -144,7 +156,7 @@ $(function() {
     , $report_bug_dropdown = $('#report_bug');
   $report_bug_trigger.click(function() {
     toggleDropdown($report_bug_trigger, $report_bug_dropdown,
-                   {toggle_args: ['slide', { direction: 'up' }, 400] });
+                   {toggle_args: ['slide', { direction: 'up' }] });
     $report_bug_dropdown.find('textarea').focus();
   });
 
@@ -204,12 +216,16 @@ function toggleDropdown($trigger, $dropdown, options) {
   $dropdown.css({
     left: left
   , top: top
-  ,'z-index': z_counter
   });
 
   // add or remove active class
   $trigger.toggleClass('active');
-  z_counter ++
+  z_counter++;
+
+  // set z-index for dropdowns being shown only - not those being hidden
+  if ($trigger.hasClass('active')) {
+    $dropdown.css('z-index', z_counter);
+  }
 
   // show or hide dropdown
   $dropdown.stop(true, true)
