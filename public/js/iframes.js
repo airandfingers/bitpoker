@@ -1,4 +1,9 @@
 (function() {
+
+  function resizeIFrame(table_name, height, width) {
+    $('[src="/'+ table_name + '"]').height(height).width(width);
+  }
+
   function resizeWindowJazz(e) {
     var height = $(window).height()
       , width = $(window).width()
@@ -129,5 +134,6 @@
   , setIframeTitle: setIframeTitle
   , closeIframe: closeIframe
   , setIFrameToTop: setIFrameToTop
+  , resizeIFrame: resizeIFrame
   };
 })();
