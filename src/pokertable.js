@@ -15604,12 +15604,13 @@ if(holdemCanvas.isIframe()) {
     
       holdemCanvas.loadImageSources()
 
-$(holdemCanvas.getIframe()).on('mousedown', setIFrameToTopHandler)
+$(holdemCanvas.getIframe()).off('mousedown.setToTop')
+$(holdemCanvas.getIframe()).on('mousedown.setToTop', setIFrameToTopHandler)
 
   $(window).on("mousedown", function(e){
 console.log('window mousedown triggered')
 console.log(holdemCanvas.getIframe())
-$(holdemCanvas.getIframe()).trigger('mousedown')
+$(holdemCanvas.getIframe()).trigger('mousedown.setToTop')
 
   });
 
