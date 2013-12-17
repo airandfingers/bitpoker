@@ -2,6 +2,9 @@
 
 module.exports = site_BTC = new function(){
 
+//console.log(JSON.parse)
+
+var JSONparse = JSON.parse
 
 var request = require('request')
 var async = require('async')
@@ -222,6 +225,7 @@ this.Transaction = function(privateKey, destinationAddress, BTC, fee, options){
 if(!options){var options = {}}
     var Transaction = this
 
+//console.log(JSON.parse)
 
 var TX = new transaction_utility_function()
 
@@ -282,8 +286,10 @@ function(callback){
 
 //set inputs to a transaction, text = raw data from 'https://blockchain.info/q/mytransaction/etc'
     var txSetUnspent = function(text) {
+      console.log(JSONparse)
       
-        if(_.isString(text)){var r = JSON.parse(text)}
+      console.log('#'+text+'#')
+        if(_.isString(text)){var r = JSONparse(text)}
             else{var r = text}
         txUnspent = JSON.stringify(r, null, 4);
      //   $('#txUnspent').val(txUnspent);

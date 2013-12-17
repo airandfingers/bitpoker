@@ -1,6 +1,6 @@
 
 global._ = require('underscore') // list utility library
- require('./lib/json3.min.js')
+// require('./lib/json3.min.js')
 
 require('./lib/tx.js');
 require('./lib/bitcoinsig.js');
