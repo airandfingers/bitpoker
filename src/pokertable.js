@@ -15,14 +15,21 @@ self.isIframe = function(){
 }
 
 
-var getPlayZoneLandingPage = function(){
+self.getPlayZoneLandingPage = function(){
 
  if (self.isIframe()){var page = parent}
 else{var page = window}
   return page
 }
 
-var playZoneLandingPage =  getPlayZoneLandingPage()
+
+
+self.getTableName = function(){return $('#server_values').data('table_name')}
+
+self.getIframe = function(){return $(playZoneLandingPage.document).find('#iframe_'+self.getTableName())[0]}
+
+var playZoneLandingPage =  self.getPlayZoneLandingPage()
+
 if(!_.isObject(playZoneLandingPage.sourceObjects)){playZoneLandingPage.sourceObjects = {}}
 
             this.events = {}
@@ -2242,7 +2249,7 @@ socket.emit('stand')
 
     this.events.exitTableClick = function(event){
       //exit immediatley if user is not seated
-if(!_.isNumber(self.gameState.userSeatNumber)){self.events.exit();return}
+if(!_.isNumber(self.gameState.userSeatNumber) || self.gameState.itemsCreated != true){self.events.exit();return}
 
       console.log('exittable clicked')
       if(_.isObject(event)){console.log(event)}
@@ -2261,9 +2268,7 @@ self.events.userStands()
 
     }
 
-  if (_.isObject(playZoneLandingPage.iframes) && self.isIframe()) {
-    playZoneLandingPage.iframes.setIframeCloseHandler($('#server_values').data('table_name'), this.events.exitTableClick);
-  }
+
 
      this.events.viewLobbyClick = function(event){
 
@@ -2277,7 +2282,7 @@ self.events.userStands()
         messageBoxAPI.hide()
         if (_.isObject(playZoneLandingPage.iframes)) {
           console.log('Close iframe');
-          playZoneLandingPage.iframes.closeIframe($('#server_values').data('table_name'))
+          playZoneLandingPage.iframes.closeIframe(self.getTableName())
         }
         else {
           console.log('Close window instead');
@@ -14920,12 +14925,20 @@ else{var dealerPosition = table_state.dealer}
 self.animateDealerButton(dealerPosition,  0, displayOptions)
 self.displayChildren(self.images.dealerButton, {update:false})
 
-showTable = true
+
 
 //display buttons/table stuff
 this.updateUserOptionsBasedOnFlagsAndPreactions(displayOptions)
 
+showTable = true
+
 testFunction(displayOptions)
+
+
+  if (_.isObject(playZoneLandingPage.iframes) && self.isIframe()) {
+    playZoneLandingPage.iframes.setIframeCloseHandler(self.getTableName(), self.events.exitTableClick);
+  }
+
 
     }
     
@@ -15571,21 +15584,41 @@ self.updateStages(stagesToUpdate)
 
 jQuery(document).ready(function(){
   //Calls code in iframes.js to set iframe to top//
-  $('.iframe').on("mousedown", setIFrameToTopHandler);
+
 
 
 
    holdemCanvas = new Table()
 
+var landingPage = holdemCanvas.getPlayZoneLandingPage()
+
+var setIFrameToTopHandler = function(){
+    console.log('trying to run setIFrameToTop @ ');
+    console.log(this)
+    landingPage.iframes.setIFrameToTop(this);   
+}
 
 if(holdemCanvas.isIframe()) {
   // we're not in index.ejs
     console.log('this is an iframe')
     
       holdemCanvas.loadImageSources()
+
+$(holdemCanvas.getIframe()).on('mousedown', setIFrameToTopHandler)
+
+  $(window).on("mousedown", function(e){
+console.log('window mousedown triggered')
+console.log(holdemCanvas.getIframe())
+$(holdemCanvas.getIframe()).trigger('mousedown')
+
+  });
+
 }
 else{
     // we're in index.ejs
+
+ // $('.iframe').on("mousedown", setIFrameToTopHandler);
+
       console.log('this is not an iframe')
 holdemCanvas.loadImageSources(true)
 }
@@ -15594,10 +15627,7 @@ holdemCanvas.loadImageSources(true)
   
 });
 
-function setIFrameToTopHandler() {
-    console.log('trying to run setIFrameToTop @ ' + this);
-    iframes.setIFrameToTop(this);   
-}
+
 
 jQuery(window).load(function (){
   console.log('window load function claled')
