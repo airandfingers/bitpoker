@@ -1,4 +1,9 @@
 (function() {
+
+  function resizeIFrame(table_name, height, width) {
+    $('[src="/'+ table_name + '"]').height(height).width(width);
+  }
+
   function resizeWindowJazz(e) {
     var height = $(window).height()
       , width = $(window).width()
@@ -117,18 +122,18 @@
 
   var Top = 1000;
 
-  function setIFrameToTop() {
-    this.style.zIndex= Top + 1;
+  function setIFrameToTop(iframe) {
+    iframe.style.zIndex= Top + 1;
     Top++;
     console.log("new top is ", Top);
   }
-
-$('.iframe').on("mousedown", setIFrameToTop)
 
   iframes = {
     openNewIframe: openNewIframe
   , setIframeCloseHandler: setIframeCloseHandler
   , setIframeTitle: setIframeTitle
   , closeIframe: closeIframe
+  , setIFrameToTop: setIFrameToTop
+  , resizeIFrame: resizeIFrame
   };
 })();
