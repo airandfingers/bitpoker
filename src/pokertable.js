@@ -15570,9 +15570,14 @@ self.updateStages(stagesToUpdate)
     //---------------END SOCKET CODE----------------------------
 
 jQuery(document).ready(function(){
+  //Calls code in iframes.js to set iframe to top//
+  $('.iframe').on("mousedown", setIFrameToTopHandler);
+});
 
-})
-
+function setIFrameToTopHandler() {
+    console.log('trying to run setIFrameToTop @ ' + this);
+    iframes.setIFrameToTop(this);   
+}
 
 jQuery(window).load(function (){
   console.log('window load function claled')

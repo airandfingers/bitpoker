@@ -117,18 +117,17 @@
 
   var Top = 1000;
 
-  function setIFrameToTop() {
-    this.style.zIndex= Top + 1;
+  function setIFrameToTop(iframe) {
+    iframe.style.zIndex= Top + 1;
     Top++;
     console.log("new top is ", Top);
   }
-
-$('.iframe').on("mousedown", setIFrameToTop)
 
   iframes = {
     openNewIframe: openNewIframe
   , setIframeCloseHandler: setIframeCloseHandler
   , setIframeTitle: setIframeTitle
   , closeIframe: closeIframe
+  , setIFrameToTop: setIFrameToTop
   };
 })();
