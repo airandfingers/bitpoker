@@ -120,15 +120,24 @@
     return $iframe;
   }
 
-  var Top = 1000;
+  var Top = 1;
 
   function setIFrameToTop(table_name) {
     var blah = findIframe(table_name);
     var new_top = Top + 1;
     blah.css("z-index", new_top);
     Top++;
-    console.log("new top is ", Top);
+    console.log("setIFrametoTop SAYS: new top is ", Top);
   }
+
+
+  function setIFrameHeaderToTop() {
+    this.style.zIndex= Top + 1;
+    Top++;
+    console.log("setiframeHeaderToTop SAYS: new top is ", Top);
+   }
+ 
+ $('#iframe_container').on("mousedown", ".iframe", setIFrameHeaderToTop);
 
   iframes = {
     openNewIframe: openNewIframe
