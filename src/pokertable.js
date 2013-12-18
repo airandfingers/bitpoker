@@ -6277,7 +6277,27 @@ event.target.parentItem.messages.push('sit',event.target.parentItem.seatObjectAn
 
     //    self.stage.onPress = self.events.onStagePress
 
-    }
+if(self.isIframe()){
+
+
+var setIFrameToTopHandler = function(){
+    console.log('trying to run setIFrameToTop @ ');
+    console.log(this)
+    playZoneLandingPage.iframes.setIFrameToTop(self.getTableName());   
+}
+$(self.getIframe()).off('mousedown.setToTop')
+$(self.getIframe()).on('mousedown.setToTop', setIFrameToTopHandler)
+
+  $("body").on("mousedown.triggerIframeSetToTop", function(e){
+//console.log('body mousedown triggered')
+console.log(holdemCanvas.getIframe())
+$(holdemCanvas.getIframe()).trigger('mousedown.setToTop')
+
+  });
+
+
+}
+    }//set default events
 
     this.images.setDefaultMessages = function(){
         
@@ -15584,19 +15604,27 @@ self.updateStages(stagesToUpdate)
 
 jQuery(document).ready(function(){
   //Calls code in iframes.js to set iframe to top//
+  /*
+<<<<<<< HEAD
 
+=======
+  $("body").on("mousedown", setIFrameToTopHandler);
+});
+
+function setIFrameToTopHandler() {
+    if (holdemCanvas.isIframe()) {
+      console.log('trying to run setIFrameToTop @ ' + $('#server_values').data('table_name'));
+      parent.iframes.setIFrameToTop($('#server_values').data('table_name'));         
+    }
+}
+>>>>>>> bobby/master
+*/
 
 
 
    holdemCanvas = new Table()
 
-var landingPage = holdemCanvas.getPlayZoneLandingPage()
 
-var setIFrameToTopHandler = function(){
-    console.log('trying to run setIFrameToTop @ ');
-    console.log(this)
-    landingPage.iframes.setIFrameToTop(this);   
-}
 
 if(holdemCanvas.isIframe()) {
   // we're not in index.ejs
@@ -15604,15 +15632,7 @@ if(holdemCanvas.isIframe()) {
     
       holdemCanvas.loadImageSources()
 
-$(holdemCanvas.getIframe()).off('mousedown.setToTop')
-$(holdemCanvas.getIframe()).on('mousedown.setToTop', setIFrameToTopHandler)
 
-  $(window).on("mousedown.triggerIframeSetToTop", function(e){
-console.log('window mousedown triggered')
-console.log(holdemCanvas.getIframe())
-$(holdemCanvas.getIframe()).trigger('mousedown.setToTop')
-
-  });
 
 }
 else{
