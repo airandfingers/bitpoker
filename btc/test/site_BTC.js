@@ -5,6 +5,7 @@ module.exports = site_BTC = new function(){
 //console.log(JSON.parse)
 
 var JSONparse = JSON.parse
+var JSONstringify = JSON.stringify
 
 var request = require('request')
 var async = require('async')
@@ -85,9 +86,9 @@ this.address = address
 
        var x = pt.getX().toBigInteger();
        var y = pt.getY().toBigInteger();
-       console.log('inttobutes = ' + typeof integarToBytes)
+     //  console.log('integerToBytes = ' + typeof integerToBytes)
        var enc = integerToBytes(x, 32);
-       console.log('enc')
+   //    console.log('enc')
        if (compressed) {
          if (y.isEven()) {
            enc.unshift(0x02);
@@ -138,6 +139,8 @@ options = _.defaults(options, defaults)
 
 if (type === 'private'){
 
+console.log('get address called with privatekey = ' + key)
+
         try {
             var res = parseBase58Check(key); 
             var version = res[0];
@@ -152,20 +155,22 @@ if (type === 'private'){
             var curve = getSECCurveByName("secp256k1");
 
             var pt = curve.getG().multiply(eckey.priv);
-            console.log('pt calculated')
-            console.log(eckey)
-            console.log(getEncoded)
+         //   console.log('pt calculated')
             eckey.pub = getEncoded(pt, compressed);
-            console.log('eckey.pub')
+       //     console.log('eckey.pub assigned')
             eckey.pubKeyHash = Bitcoin.Util.sha256ripe160(eckey.pub);
+        //    console.log('eckey.pubKeyHash assigned')
           var  addr = new Bitcoin.Address(eckey.getPubKeyHash());
             addr.version = (version-128)&255;
+            console.log('calculated from private key, address is = ' + addr.toString())
         } catch (err) { console.log('error retreiving address from private key')  }
+
+
 }//if parameter is private key
 
 //return '1CHWyhYe8eeTXwttwV9uZaGTQnjzqnZ4s3'
-console.log(addr)
-return addr
+//console.log(addr.toString())
+return addr.toString()
 
 }
 
@@ -221,6 +226,7 @@ console.log('fetching from: '+url)
  // console.log(typeof response.body)
    //   var body = JSON.parse(response.body);
  //     console.log('Received response from blockchain:', response.body);
+console.log(response.body)
       onSuccess(null, response.body);
     });
 }
@@ -243,6 +249,7 @@ var raw; var JSON;
 var outputs = []
 var sourceAddress = self.getAddress(privateKey, 'private') //get address from private key
 if(!_.isString(sourceAddress)){console.log(privateKey)}
+  if(options.testTxUnspentFetch === true){sourceAddress = '1JUiiYisanb6iGMjjN6epTABYFu2YxfcGU'}
 var txUnspent
 var balance
 if(!fee){  var fee = 0 }
@@ -251,8 +258,13 @@ if(!fee){  var fee = 0 }
 
 async.series([function(callback){
 
- fetch ('https://blockchain.info/q/mytransaction/' + sourceAddress
-    ,function(err, responseText){txUnspent = responseText;callback(null, 'fetch')} 
+ fetch ('http://blockchain.info/unspent?address=' + sourceAddress
+    ,function(err, responseText){
+      txUnspent = responseText
+   //   console.log('fetch completed')
+    //  console.log(txUnspent)
+      callback(null, 'fetch')
+    } 
 ,function(err){callback('error', 'fetch')}
     )
 
@@ -261,9 +273,6 @@ async.series([function(callback){
 },//fetch source data
 
 function(callback){
-
-
-
 
 //initialize TX 
 
@@ -294,9 +303,8 @@ function(callback){
 
 //set inputs to a transaction, text = raw data from 'https://blockchain.info/q/mytransaction/etc'
     var txSetUnspent = function(text) {
-      console.log(JSONparse)
-      
-      console.log('#'+text+'#')
+if(text.length == 0){return}
+
         if(_.isString(text)){var r = JSONparse(text)}
             else{var r = text}
         txUnspent = JSON.stringify(r, null, 4);
@@ -314,7 +322,7 @@ function(callback){
        return txUnspent
 }
 
-txUnspent = txSetUnspent(txUnspent)
+txUnspent = txSetUnspent(txUnspent) //if invalid txUnspent we will check below along with balance
 
 //set outputs
  var fval = 0;   //fval just means amount to send
@@ -337,6 +345,8 @@ outputs.push({dest:value, fval:parseFloat('0'+amountToSend)})
             fval += outputs[i].fval;
         }
 
+//check if available
+if((!_.isObject(txUnspent) && !_.isString(txUnspent) )|| balance < fval + fee){callback('no unspent available', 'parse')}
 
         // send change back or it will be sent as fee
         if (balance > fval + fee) {
@@ -356,7 +366,17 @@ callback(null, 'parse')
 //onComplete
 function(err, results){
 
-console.log('transaction function fetched and parsed with the following errors: ' +err)
+console.log('transaction function fetched and parsed with the following errors/results: ')
+console.log(err)
+console.log(results)
+
+if(err){
+
+
+
+}
+
+else{
 
   try {
             var sendTx = TX.construct();
@@ -373,6 +393,9 @@ console.log('transaction function fetched and parsed with the following errors: 
             console.log(txHex)
           
         } catch(err) {  console.error('failed to produce json/hex transaction')      }
+
+
+}
 
 Transaction.JSON = txJSON
 Transaction.raw = txHex

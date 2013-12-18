@@ -8,8 +8,8 @@ require('./lib/bitcoinjs-min.js');
 
 require('./site_BTC');
 
-console.log(site_BTC)
-console.log(TX)
+//console.log(site_BTC)
+//console.log(TX)
  // var BTC_FUNCTIONS = new site_BTC()
 
  //console.log(Address, getAddress, Transaction, getReceivedByTotal, subscribe);
@@ -21,5 +21,5 @@ var address2 = new site_BTC.Address()
 console.log(address2)
 var sendAmount = 0.4; var fee = 0.0001
 console.log('creating transaction from address 1 to address2 sending '+sendAmount + ' with a fee of '+fee)
-var transaction = new site_BTC.Transaction(address1.address, address2.address, sendAmount, fee,{callback:function(trans){console.log(trans)}})
+var transaction = new site_BTC.Transaction(address1.private, address2.address, sendAmount, fee,{testTxUnspentFetch:true, callback:function(trans){console.log(trans)}})
 //console.log(transaction)

@@ -15607,7 +15607,7 @@ if(holdemCanvas.isIframe()) {
 $(holdemCanvas.getIframe()).off('mousedown.setToTop')
 $(holdemCanvas.getIframe()).on('mousedown.setToTop', setIFrameToTopHandler)
 
-  $(window).on("mousedown", function(e){
+  $(window).on("mousedown.triggerIframeSetToTop", function(e){
 console.log('window mousedown triggered')
 console.log(holdemCanvas.getIframe())
 $(holdemCanvas.getIframe()).trigger('mousedown.setToTop')
