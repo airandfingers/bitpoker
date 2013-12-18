@@ -6285,15 +6285,18 @@ var setIFrameToTopHandler = function(){
     console.log(this)
     playZoneLandingPage.iframes.setIFrameToTop(self.getTableName());   
 }
+/*
 $(self.getIframe()).off('mousedown.setToTop')
 $(self.getIframe()).on('mousedown.setToTop', setIFrameToTopHandler)
-
-  $("body").on("mousedown.triggerIframeSetToTop", function(e){
+*/
+  $("body").on("mousedown.triggerIframeSetToTop",setIFrameToTopHandler)
+  /* function(e){
 //console.log('body mousedown triggered')
 console.log(holdemCanvas.getIframe())
 $(holdemCanvas.getIframe()).trigger('mousedown.setToTop')
 
   });
+ */
 
 
 }
