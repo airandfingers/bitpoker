@@ -1,15 +1,19 @@
 
 
-module.exports = site_BTC = new function(){
+module.exports = new function(){
 
 //console.log(JSON.parse)
-
+console.log(JSON.stringify)
 var JSONparse = JSON.parse
 var JSONstringify = JSON.stringify
 
+require('./lib/tx.js');
+require('./lib/bitcoinsig.js');
+require('./lib/bitcoinjs-min.js');
+
 var request = require('request')
 var async = require('async')
-var transaction_utility_function = TX
+var TX = require('./lib/tx.js')
 var _ = require('underscore')
 
     var self = this
@@ -219,6 +223,7 @@ console.log('fetching from: '+url)
         request_err = new Error('Unsuccessful response code:' + response.statusCode);
       }
       if (request_err) {
+        console.log(response.body)
         console.error('Error while fetching:', request_err);
         if(_.isFunction(onError)){return onError(request_err)}
             else{return}
@@ -241,7 +246,6 @@ if(!options){var options = {}}
 
 //console.log(JSON.parse)
 
-var TX = new transaction_utility_function()
 
 //console.log('Transaction called')
 var raw; var JSON;
@@ -249,7 +253,7 @@ var raw; var JSON;
 var outputs = []
 var sourceAddress = self.getAddress(privateKey, 'private') //get address from private key
 if(!_.isString(sourceAddress)){console.log(privateKey)}
-  if(options.testTxUnspentFetch === true){sourceAddress = '1JUiiYisanb6iGMjjN6epTABYFu2YxfcGU'}
+  if(options.testTxUnspentFetch === true){sourceAddress = '1Hco7Zx3W1z8scgxZLoc3nupLJuqaoKpCS'}
 var txUnspent
 var balance
 if(!fee){  var fee = 0 }
@@ -307,7 +311,8 @@ if(text.length == 0){return}
 
         if(_.isString(text)){var r = JSONparse(text)}
             else{var r = text}
-        txUnspent = JSON.stringify(r, null, 4);
+   //     txUnspent =  JSON.stringify(r, null, 4);
+ txUnspent =  JSONstringify(r, null, 4);
      //   $('#txUnspent').val(txUnspent);
      //   var address = $('#txAddr').val();
         TX.parseInputs(txUnspent, sourceAddress);

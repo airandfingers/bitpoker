@@ -1,12 +1,8 @@
 
-global._ = require('underscore') // list utility library
+//global._ = require('underscore') // list utility library
 // require('./lib/json3.min.js')
 
-require('./lib/tx.js');
-require('./lib/bitcoinsig.js');
-require('./lib/bitcoinjs-min.js');
-
-require('./site_BTC');
+var site_BTC = require('./site_BTC');
 
 //console.log(site_BTC)
 //console.log(TX)

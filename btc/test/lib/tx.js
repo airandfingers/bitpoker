@@ -10,7 +10,7 @@
     2) http://www.blockchain.info/pushtx
 */
 
-global.TX = function () {
+module.exports = function () {
 
 var TX = this
 
@@ -311,7 +311,7 @@ var TX = this
 };//TX function
 
 
-/*
+
 
 function dumpScript(script) {
     var out = [];
@@ -515,4 +515,4 @@ function tx_test() {
     console.log(TX.toBBE(sendTx));
     console.log(Crypto.util.bytesToHex(sendTx.serialize()));
 }
-*/
+
