@@ -14837,10 +14837,7 @@ if(_.isFunction(callback)){callback()}
      
         socket.on('connect', function(){
 
-self.receiveTableState({
-
-  activateSockets:false
-})
+self.receiveTableState({  activateSockets:false})
 
         })
 
