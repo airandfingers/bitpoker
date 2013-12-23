@@ -3,7 +3,7 @@
 module.exports = new function(){
 
 //console.log(JSON.parse)
-console.log(JSON.stringify)
+//console.log(JSON.stringify)
 var JSONparse = JSON.parse
 var JSONstringify = JSON.stringify
 
@@ -14,12 +14,17 @@ require('./lib/bitcoinjs-min.js');
 var request = require('request')
 var async = require('async')
 var TX = require('./lib/tx.js')
+console.log('TX = ' + typeof TX)
 var _ = require('underscore')
 
     var self = this
 
+var removeAllWhitespace = function(str){return str.replace(/ /g,'')}
+
 //PARSES A KEY, NOT SURE IF IT ALWAYS THROWS ERROR IF INVALID OR NOT
     var parseBase58Check= function (address) {
+      var address = removeAllWhitespace(address)
+      console.log('parseBase58Check called address of:' + address)
         var bytes = Bitcoin.Base58.decode(address);
         var end = bytes.length - 4;
         var hash = bytes.slice(0, end);
@@ -110,6 +115,8 @@ this.address = address
 
 var isPrivateCompressed = function(key){//returns true if compressed, false if not compressed, undefined if invalid
 
+var key = removeAllWhitespace(key)
+
  try {
             var res = parseBase58Check(key); 
             var version = res[0];
@@ -132,6 +139,8 @@ var isPublicCompressed = function(key){
 
 //GET ADDRESS FROM A KEY (currently only private is implemented)
 this.getAddress = function(key, type, options){
+
+key = removeAllWhitespace(key)
 
 if(!options){var options = {}}
     else {var options = _.clone(options)}
@@ -243,7 +252,7 @@ this.Transaction = function(privateKey, destinationAddress, BTC, fee, options){
 
 if(!options){var options = {}}
     var Transaction = this
-
+var tx = new TX()
 //console.log(JSON.parse)
 
 
@@ -281,11 +290,13 @@ function(callback){
 //initialize TX 
 
         try {
+          console.log(parseBase58Check)
             var res = parseBase58Check(privateKey); 
+
 //            console.log(res)
             var version = res[0];
             var payload = res[1];
-        } catch (err) {          console.log('bad key');  return;        }
+        } catch (err) {   console.log('bad key');  return;        }
 
 //DETECT WHETHER PRIVATE KEY IS COMPRESSED OR NOT
         var compressed = false;
@@ -300,7 +311,7 @@ function(callback){
         eckey.setCompressed(compressed);
   //      console.log(eckey)
 
-        TX.init(eckey); //reset TX data
+        tx.init(eckey); //reset TX data
 //console.log(eckey)
 
 
@@ -315,8 +326,8 @@ if(text.length == 0){return}
  txUnspent =  JSONstringify(r, null, 4);
      //   $('#txUnspent').val(txUnspent);
      //   var address = $('#txAddr').val();
-        TX.parseInputs(txUnspent, sourceAddress);
-        var value = TX.getBalance();
+        tx.parseInputs(txUnspent, sourceAddress);
+        var value = tx.getBalance();
         var fval = Bitcoin.Util.formatValue(value);
     //    var fee = parseFloat($('#txFee').val());
         balance = fval
@@ -346,7 +357,7 @@ outputs.push({dest:value, fval:parseFloat('0'+amountToSend)})
 
 
     for (var i in outputs) {
-            TX.addOutput(outputs[i].dest, outputs[i].fval);
+            tx.addOutput(outputs[i].dest, outputs[i].fval);
             fval += outputs[i].fval;
         }
 
@@ -356,7 +367,7 @@ if((!_.isObject(txUnspent) && !_.isString(txUnspent) )|| balance < fval + fee){c
         // send change back or it will be sent as fee
         if (balance > fval + fee) {
             var change = balance - fval - fee;
-            TX.addOutput(sourceAddress, change);
+            tx.addOutput(sourceAddress, change);
         }
 
 
@@ -384,27 +395,33 @@ if(err){
 else{
 
   try {
-            var sendTx = TX.construct();
-            console.log('sendTX = ')
-            console.log(sendTx)
-            var txJSON = TX.toBBE(sendTx);
-                console.log('txJSON = ')
-            console.log(txJSON)
+            var sendTx = tx.construct();
+           console.log('sendtx = ');console.log(sendTx)
+            var txJSON = tx.toBBE(sendTx) //.toString()
+      // txJSON = txJSON.toString()
+      console.log('txJSON = ');console.log(txJSON)
+         
             var buf = sendTx.serialize();
-                console.log('buf = ')
-            console.log(buf)
-            var txHex = Crypto.util.bytesToHex(buf);
-               console.log('txHex = ')
-            console.log(txHex)
-          
+            console.log('txJSON after sendTx.serialize = ');console.log(txJSON)
+            var txHex = Crypto.util.bytesToHex(buf)
+            console.log(txJSON)
+    // console.log(txHex)
+    //      var txHex = txHex.replace(/[^0-9a-fA-f]/g,''); //replace /n new line stuff
+    //      console.log(txHex)
         } catch(err) {  console.error('failed to produce json/hex transaction')      }
+/*
+//sign transaction
+tx.removeOutputs()
+*/
 
 
 }
 
+
 Transaction.JSON = txJSON
 Transaction.raw = txHex
 Transaction.hex = txHex
+Transaction.data = JSONparse(txJSON)
 
 
 if(_.isFunction(options.callback)){options.callback(Transaction)}
