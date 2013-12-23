@@ -929,9 +929,6 @@ module.exports = (function () {
       }
     };
 
-    // send outstanding prompt, if any
-    self.sendCurrentPromptIfAny();
-
     // attach handlers for messages as defined in Player.messages
     io.bindMessageHandlers.call(this, this.socket, static_properties.messages);
   };

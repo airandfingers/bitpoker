@@ -225,11 +225,8 @@ module.exports = (function () {
     }
     // set player.socket to socket
     player.socket = socket;
-    // send current table state
-    self.sendTableState(player, null, function() {
-      // augment the socket and send act_prompt if applicable
-      player.onConnect(socket);
-    });
+    // augment the socket
+    player.onConnect(socket);
   };
 
   static_properties.room_events.socket_leave = 'onSocketDisconnect';
