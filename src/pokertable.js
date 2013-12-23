@@ -512,6 +512,7 @@ divOptionData.finalMessageBox = {hidden : true}
 stageOptionData.loadingScreen = _.clone(disabledOptions)
   stageOptionData.loadingScreen.newCanvas = true
 stageContainers.loadingScreen = ['background text', null, 'animation']
+stageContainers.loadingScreen[startingContainerIndex] = 'fill'
 
 var stageOrder = zPositionData.stageArray
 _.each(stageOrder, function(stageName, stageNumber, list){
@@ -545,11 +546,16 @@ this.images.sourceObjects.mobileCards = {}
 this.images.sourceObjects.desktopCards = {}
 this.images.sourceObjects.cardObjectParent = {}
           this.images.sources = {
+
        //     call: 'img/call.jpg',
        //     check: 'img/check.jpg',
        //     raise: 'img/raise.jpg',
             cardBackFileNameWithoutExtension: 'back'
             ,cardSpriteFileNameWithoutExtension:'sprite'
+            ,loadingBackgroundDefault: 'img/background images/loading/10-max.jpg'
+            ,loading2Max:'img/background images/loading/2-max.jpg'
+            ,loading4Max:'img/background images/loading/4-max.jpg'
+            ,loading10Max:'img/background images/loading/10-max.jpg'
        //     seat: 'img/empty_seat.jpg',
       //      blankSeat : 'img/blank_seat.jpg',
        //     bet: 'img/bet.jpg',
@@ -954,14 +960,11 @@ console.log('itemAsBitmap passed non source paramater');console.log(source insta
 
 }
 
- 
-
 return stagesToUpdate
 
             }//item as bitmap
 
   return addItemBitmap(this, source, options)
-
 
 }
 
@@ -2852,399 +2855,6 @@ trueOrFalseToggleRaiseAndBet(true)
 //--------------END EVENTS----------------------------
 
 
-//-----------functions below this line ---------------------
-this.initialize = function(){
-
-
-this.initializeStagesAndCanvasCallThisFirst()
-
-if(parent.imagesLoaded === true || parent.imagesLoading === true){return}
-
-    var imageSourceArray = []
-    var soundSourceArray = []
-    var flashSoundSourceArray = []
-
-    var resourceID = 0
-   var loadedFiles=0
-   var errorFiles = 0
-   var errorSrcArray = []
-
-var isImageSource = function(source){
-  var sourceEnding = source.substr(source.length-4).toUpperCase()
-  if(sourceEnding == '.PNG'){return true}
-  else if (sourceEnding == '.JPG'){return true}
-    else{return false}
-}
-var isSoundSource = function(source){
-var sourceEnding = source.substr(source.length-4).toUpperCase()
-if (sourceEnding == '.MP3'){return true}
-  else if(sourceEnding == '.WAV'){return true}
-    else{return false}
-}
-
-var isFlashSoundSource = function(source){
-  var sourceEnding = source.substr(source.length-4).toUpperCase()
-if(sourceEnding == '.SWF'){return true}
-    else{return false}
-}
-
-    //push items to preload into arrays
-    for(var i in this.images.sources){
-       if(_.isString(this.images.sources[i])){
-
-        if(isImageSource(this.images.sources[i])){
-
-           imageSourceArray.push({src: this.images.sources[i], id:resourceID, name: i, sourceObjectParent: this.images.sourceObjects})
-           resourceID++
-    }//end check if this.images.sources[i] = image
-
-    else if(isFlashSoundSource(this.images.sources[i])){
-           flashSoundSourceArray.push({src: this.images.sources[i], id:resourceID, name: i})
-           resourceID++
-    }//end check if this.images.sources[i] = flashSound
-
-    else if(isSoundSource(this.images.sources[i])){
-           soundSourceArray.push({src: this.images.sources[i], id:resourceID, name: i})
-           resourceID++
-    }//end check if this.images.sources[i] = sound
-
-  }//end check if this.images.sources[i] = string
-    else if (_.isObject(this.images.sources[i])){
-      this.images.sourceObjects[i] = {}
-        for(var n in this.images.sources[i]){
-            if(_.isString(this.images.sources[i][n])){
-                imageSourceArray.push({src: this.images.sources[i][n], id:resourceID, name: n, sourceObjectParent: this.images.sourceObjects[i]})
-                resourceID++
-            }
-        }//end iteration through this.images.sources[i]
-      }//end check if this.images.sources[i] is object
-      
-    }//end iteration through this.images.sources
-
-//define object for card image to stay
-this.images.sourceObjects.desktopCards = {}
-this.images.sourceObjects.mobileCards = {}
-var desktopCards = this.images.sourceObjects.desktopCards
-var mobileCards = this.images.sourceObjects.mobileCards
-
- //push card back mobile and desktop
-imageSourceArray.push({src:this.images.sources.desktopCardFolder+this.images.sources.cardBackFileNameWithoutExtension+'.png', id: resourceID, name: 'cardBack', sourceObjectParent: desktopCards})
-imageSourceArray.push({src:this.images.sources.mobileCardFolder+this.images.sources.cardBackFileNameWithoutExtension+'.png', id: resourceID, name: 'cardBack', sourceObjectParent: mobileCards})
-
-//push individual cards
-    for(var i = 2;i<=14;i++){
-        var cardRank
-           if(i==10){cardRank = 't'}
-      else  if(i==11){cardRank = 'j'}
-     else   if(i==12){cardRank = 'q'}
-else if(i==13){cardRank = 'k'}
-    else    if(i==14){cardRank = 'a'}
-    else{cardRank = i}
-        imageSourceArray.push({src: this.images.sources.desktopCardFolder+cardRank+'c.png', id: resourceID, name: cardRank+'c', sourceObjectParent: desktopCards})
-      resourceID++
-        imageSourceArray.push({src:this.images.sources.desktopCardFolder+cardRank+'d.png', id: resourceID, name: cardRank+'d', sourceObjectParent: desktopCards})
-        resourceID++
-        imageSourceArray.push({src:this.images.sources.desktopCardFolder+cardRank+'h.png', id: resourceID, name: cardRank+'h', sourceObjectParent: desktopCards})
-        resourceID++
-        imageSourceArray.push({src:this.images.sources.desktopCardFolder+cardRank+'s.png', id: resourceID, name: cardRank+'s', sourceObjectParent: desktopCards})
-        resourceID++
-       imageSourceArray.push({src: this.images.sources.mobileCardFolder+cardRank+'c.png', id: resourceID, name: cardRank+'c', sourceObjectParent: mobileCards})
-      resourceID++
-        imageSourceArray.push({src:this.images.sources.mobileCardFolder+cardRank+'d.png', id: resourceID, name: cardRank+'d', sourceObjectParent: mobileCards})
-        resourceID++
-        imageSourceArray.push({src:this.images.sources.mobileCardFolder+cardRank+'h.png', id: resourceID, name: cardRank+'h', sourceObjectParent: mobileCards})
-        resourceID++
-        imageSourceArray.push({src:this.images.sources.mobileCardFolder+cardRank+'s.png', id: resourceID, name: cardRank+'s', sourceObjectParent: mobileCards})
-        resourceID++
-    }
-
-   
-
-console.log(imageSourceArray)
-
-    //console.log(imageSourceArray)
-    //define dimensions of preloading screen
-    var introScreen = {}
-   // console.log(this.arrayOfParentsOfStageAndOfContainerArray)
-    var canvasWidth = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.width
-    var canvasHeight = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.height
-    var titleSizeAndFont = '20px ' + self.permanentPreferences.defaultFontType.value
-     var titleHeight = 35
-     var titleAndPreloadBarDistanceY = 50
-     var titleText = 'Loading resources...'
-     var titleColor = '#000000'
-     var statusSizeAndFont = '15px ' + self.permanentPreferences.defaultFontType.value
-     var statusHeight = 20
-     var statusColor = '#000000'
-    var preloadBarY  = canvasHeight/2
-    var preloadBarWidth = canvasWidth*.65
-    var preloadBarHeight = 30
-    var preloadBarBorderColor = 'rgb(0,0,255)'
-    var preloadBarProgressColor = '#000000'
-    var preloadBarUnfinishedColor = 'rgb(150,150,150)'
-    var introScreenBackgroundColor = "blue"
-
-    introScreen.background = new this.images.Item(0, 0, canvasWidth, canvasHeight, getZ('background','loadingScreen'))
-    introScreen.background.image = new createjs.Shape()
-    introScreen.background.image.graphics.beginFill(introScreenBackgroundColor)
-    .drawRect(introScreen.background.position.x, introScreen.background.position.y,  introScreen.background.size.x, introScreen.background.size.y)
-
-    introScreen.preloadBar = new this.images.Item(canvasWidth/2 - preloadBarWidth/2, preloadBarY, preloadBarWidth, preloadBarHeight, getZ('animation', 'loadingScreen'))
-    introScreen.title = new this.images.Item(0, preloadBarY-titleAndPreloadBarDistanceY-titleHeight, canvasWidth, titleHeight, getZ('animation','loadingScreen'))
-     introScreen.status = new this.images.Item(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y - statusHeight, canvasWidth-introScreen.preloadBar.x, statusHeight, getZ('animation','loadingScreen'))
-  
-
-     //define function for drawing the loading bar graphic
-     introScreen.preloadBar.image  = new createjs.Shape()
-     introScreen.preloadBar.drawBar = function (progressRatio){
-         //where to start fill
-         var progressX = introScreen.preloadBar.size.x*progressRatio + introScreen.preloadBar.position.x
-         // where to end fill
-         var unfinishedX 
-         //insure fill does not surpass the loading bar
-         if(progressX >= introScreen.preloadBar.size.x+ introScreen.preloadBar.position.x){
-             progressX = introScreen.preloadBar.size.x+ introScreen.preloadBar.position.x
-             unfinishedX = false
-             }
-       else  if(progressX<= introScreen.preloadBar.position.x){
-             progressX = false
-             unfinishedX = introScreen.preloadBar.position.x
-             }
-             //if progress is within bounds, set end of fill to end of bar
-             else{unfinishedX = progressX}
-
-         //clear previous graphics
-         introScreen.preloadBar.image.graphics.clear()
-         //draw outer border
-         .beginStroke(preloadBarBorderColor).beginFill(null).setStrokeStyle(1)
-         .drawRect(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y, introScreen.preloadBar.size.x, introScreen.preloadBar.size.y)
-         //show progress'd ratio
-   if(progressX != false){
-       introScreen.preloadBar.image.graphics.setStrokeStyle(0).beginFill(preloadBarProgressColor)
-       .beginStroke(null).drawRect(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y, progressX - introScreen.preloadBar.position.x, introScreen.preloadBar.size.y)
-
-   }
-if(unfinishedX != false && unfinishedX<introScreen.preloadBar.position.x+introScreen.preloadBar.size.x){
-       introScreen.preloadBar.image.graphics.setStrokeStyle(0).beginFill(preloadBarUnfinishedColor)
-       .beginStroke(null).drawRect(unfinishedX, introScreen.preloadBar.position.y, introScreen.preloadBar.position.x+introScreen.preloadBar.size.x - unfinishedX, introScreen.preloadBar.size.y)
-   }
-
-var stage = introScreen.preloadBar.position.z.stage
-var container = introScreen.preloadBar.position.z.container
-//if image is on the stage, we need to set the stage upToDate variable to false
-if(self.arrayOfParentsOfStageAndOfContainerArray[stage].containers[container].contains(introScreen.preloadBar.image))
-{
-  self.arrayOfParentsOfStageAndOfContainerArray[stage].upToDate = false
-}
-return stage
-     }
-
-     //define title text
-     introScreen.title.addText(titleText, titleSizeAndFont, titleColor)
-     //define statusText
-     introScreen.status.text = new createjs.Text('', statusSizeAndFont, statusColor)
- introScreen.status.text.x= introScreen.status.position.x
- introScreen.status.text.y= introScreen.status.position.y + 1
- introScreen.status.text.baseline = 'top'
- introScreen.status.text.textAlign = 'left'
- introScreen.status.textColor = titleColor
-
-
- 
-//create text to show user images are being displayed
-
-this.images.imageLoading = {}
-var titleHeight = 30
-var titleSizeAndFont = '30px ' + self.permanentPreferences.defaultFontType.value
-var titleColor = 'blue'
-var titleText = 'Displaying Images ...'
-var titleX = canvasWidth*.25
-var titleY = canvasHeight*.75
-this.images.imageLoading.title = new this.images.Item(titleX, titleY, canvasWidth -titleX, titleHeight, getZ('animation','loadingScreen'))
-this.images.imageLoading.title.text = new createjs.Text(titleText, titleSizeAndFont, titleColor)
-this.images.imageLoading.title.text.x= this.images.imageLoading.title.position.x
- this.images.imageLoading.title.text.y= this.images.imageLoading.title.position.y + 1
- this.images.imageLoading.title.text.baseline = 'top'
- this.images.imageLoading.title.text.textAlign = 'left'
- this.images.imageLoading.title.text.textColor = titleColor
-
-
- //add imageLoading
- 
-    var displayPreloadScreen  = function(){
-        //add images and text to containers 
-    //  console.log(introScreen)
-self.displayChildren(introScreen,{update:false})        
-
-    }
-
-    var totalSources = imageSourceArray.length + soundSourceArray.length + flashSoundSourceArray.length
- //define image.onload functions
-    function handleLoad(src, id, onComplete){
-        loadedFiles++
-        introScreen.status.text.text = src + ' loaded'
-        introScreen.preloadBar.drawBar(loadedFiles/totalSources)
-        console.log(src +' loaded file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
-        if (id == imageSourceArray[imageSourceArray.length-1].id){
-            console.log("last image loaded")
-        }
-         else if(id == soundSourceArray[soundSourceArray.length-1].id){
-          console.log('last non-flash sound loaded')
-        }
-       
-        self.updateStages(introScreen.status.position.z.stage)
-         if(onComplete){onComplete()}
-    }
-    function handleLoadError(src,id, onComplete){
-        loadedFiles++
-        errorFiles++
-        errorSrcArray.push(src)
-        introScreen.status.text.text = src + ' loaded'
-         console.log(src + ' error loading file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
-        introScreen.preloadBar.drawBar(loadedFiles/totalSources)
-         if (id == imageSourceArray[imageSourceArray.length-1].id)  {
-            console.log('last image loaded')
-        }
-        else if(id == soundSourceArray[soundSourceArray.length-1].id){
-          console.log('last non-flash sound loaded')
-        }
-
-        if(loadedFiles >= totalSources){
-console.log('load completed with total of '+ errorFiles +' image and sound errors whose sources are in the following array:')
-console.log(errorSrcArray)
-
-        }
-
-        self.updateStages(introScreen.status.position.z.stage)
-        if(onComplete){onComplete()}
-    }
-
-
- var  preloadImages = function (imageArray, onComplete){
-  var loadedImages = 0
-  var increaseCounter = function(){
-    loadedImages++
-console.log('loaded '+ loadedImages+' images out of a total of '+imageArray.length + ' images')
-  }
- //   var newImages=[]
-    //iterate through imageArray to preload images
-    _.each(_.range(imageArray.length), function(i){
-   //   console.log(imageArray[i].sourceObjectParent)
-    //  if(!_.isObject(imageArray[i].sourceObjectParent)){imageArray[i].sourceObjectParent = self.permanentPreferences.sourceObjects.value}
-      imageArray[i].sourceObjectParent[imageArray[i].name] = new Image()
-      var newImageObject = imageArray[i].sourceObjectParent[imageArray[i].name]
-
-  if(typeof imageArray[i] == 'string'){newImageObject.src=imageArray[i]}
-        else if (typeof imageArray[i] == 'object'){newImageObject.src=imageArray[i].src}
-        
-       newImageObject.onload=function(){handleLoad(newImageObject.src, imageArray[i].id, increaseCounter)}
-        newImageObject.onerror=function(){handleLoadError(newImageObject.src, imageArray[i].id, increaseCounter) }
-
-        //on last iteration call onComplete function
-
-      /*
-        newImages[i]=new Image()
-        if(typeof imageArray[i] == 'string'){newImages[i].src=imageArray[i]}
-        else if (typeof imageArray[i] == 'object'){newImages[i].src=imageArray[i].src}
-        
-        newImages[i].onload=function(){handleLoad(newImages[i].src, imageArray[i].id, increaseCounter)}
-        newImages[i].onerror=function(){handleLoadError(newImages[i].src, imageArray[i].id, increaseCounter) }
-
-        //on last iteration call onComplete function
-        */
-
-
-    })
-//periodicaly checkto see if its completed
-var checkIfCompleted = setInterval (function(){
-if(loadedImages >= imageArray.length){
- // console.log('calling onComplete function')
-  onComplete()
-  clearInterval(checkIfCompleted)
-}
-},25)
-
-  }
-
-var preloadSounds = function(flashArray, soundArray){
-
-
-createjs.FlashPlugin.BASE_PATH = "js/vendor/" //tell createjs where to find default flash audio
-createjs.Sound.registerPlugins([createjs.WebAudioPlugin, createjs.HTMLAudioPlugin, createjs.FlashPlugin]) //enable soundjs to play .swf files
-//createjs.Sound.registerPlugin(createjs.FlashPlugin)
-
-createjs.Sound.addEventListener("fileload", function(event){handleLoad(event.src, event.id)}) // add an event listener for when load is completed
-createjs.Sound.addEventListener("error", function(event){handleLoadError(event.src, event.id)}) // add an event listener for when load is completed
-
-
-//preload other sounds
-//soundArray.push({src:'sound/aqua_vitae.mp3', id:999})
-createjs.Sound.registerManifest(soundArray)
-//createjs.Sound.registerManifest(flashArray)
-
-//load flash sounds with createjs.FlashPlugin
-
-for(var i =0;i<flashArray.length;i++){
-  console.log(flashArray[i].src)
-  var temp = createjs.Sound.createInstance(flashArray[i].src)
-  console.log(temp)
- // temp.play()
-  handleLoad(flashArray[i].src, flashArray[i].id )
-}
-
-
-}
-
-    displayPreloadScreen()
-
-    preloadImages(imageSourceArray, function(){
-      self.displayChildren(self.images.imageLoading.title,{update:false})
-        self.createAllItems()
-        
-        } )
-  preloadSounds(flashSoundSourceArray, soundSourceArray)
-
-
-
- /*
- 
-    // must set to false or won't work.  dont know whay...
-                var preload = new createjs.LoadQueue(false)
-               
-  //  preload.addEventListener("complete", handleComplete)
- //    preload.addEventListener("fileload", handleFileLoad)
- // preload.addEventListener("progress", handleProgress)
-
-      preload.onComplete = handleComplete
-  //    preload.onFileLoad = handleFileLoad
-   //  preload.onProgress = handleProgress
-  //  preload.onLoadStart = handleLoadStart
-   preload.loadManifest(imageSourceArray)
-
-   var handleLoadStart = function(event){
-       
-       console.log('load started')
-   }
- var handleProgress = function(event){
-     console.log(event)
- }
-
-   var handleFileLoad=  function  (event){
-       console.log('file loaded')
-       console.log(event.item.src)
-   }
-
-           function handleComplete(event) {
-               console.log('loading completed')
-           self.createAllItems()
-        }
-
-
-        */
-
-
-}
-
 //returns the Image() instance
 self.saveImageToParent = function(imageName, options){
 if(!options){var options = {}}
@@ -3436,7 +3046,113 @@ if(backgroundLoad !== true){
     var canvasWidth = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.width
     var canvasHeight = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.height
     var titleSizeAndFont = '20px ' + self.permanentPreferences.defaultFontType.value
-     var titleHeight = 35
+     var titleHeight = 24
+     var titleAndPreloadBarDistanceY = 50
+     var titleText = 'Loading...'
+     var titleColor = '#000000'
+     var statusSizeAndFont = '15px ' + self.permanentPreferences.defaultFontType.value
+     var statusHeight = 17
+     var statusColor = '#000000'
+     var preloadBarX = 0
+    var preloadBarY  = canvasHeight
+    var preloadEndX = canvasWidth
+    var preloadEndY = canvasHeight
+    var preloadBarWidth = canvasWidth*.65
+    var preloadBarHeight = 30
+    var preloadBarBorderColor = '#009933'
+    var preloadBarProgressColor = '#009933'
+    var preloadBarUnfinishedColor = 'rgb(150,150,150)'
+    var introScreenBackgroundColor = "blue"
+    var textOffsetX = 8
+    var textOffsetY = 4
+
+var animationZ = getZ('animation','loadingScreen')
+var backgroundZ = getZ('background','loadingScreen')
+
+    introScreen.background = new this.images.Item(0, 0, canvasWidth, canvasHeight, backgroundZ)
+ introScreen.background.addBitmap(self.images.sources.loadingBackgroundDefault, {
+  //make image fit our stage
+onload:function(image){
+var canvas = self.getParentOfStageObject(introScreen.background).stage.canvas
+introScreen.background.image.setTransform(0,0, canvas.width/image.width, canvas.height/image.height)
+introScreen.background.image.alpha = 0.5
+introScreen.background.display()
+}
+ }//addBitmap options
+ )
+
+//new style, diagonal from bottom left
+
+    introScreen.preloadBar = new this.images.Item(preloadBarX, preloadBarY, canvasWidth, canvasHeight, getZ('fill','loadingScreen'))
+    introScreen.title = new this.images.Item(textOffsetX, textOffsetY, canvasWidth, titleHeight, animationZ)
+     introScreen.status = new this.images.Item(textOffsetX, canvasHeight - statusHeight - textOffsetY, canvasWidth, statusHeight, animationZ)
+  
+     //define function for drawing the loading bar graphic
+     introScreen.preloadBar.image  = new createjs.Shape()
+     introScreen.preloadBar.drawBar = function (progressRatio){
+
+if(!_.isNumber(progressRatio) || _.isNaN(progressRatio)){var progressRatio = 0}
+  else if(progressRatio > 1){progressRatio = 1;console.error('progress ratio greater than 1')}
+
+         //where to fill to
+         var progressX = 2*(introScreen.preloadBar.size.x*progressRatio)+ introScreen.preloadBar.position.x
+var progressY = -2*(introScreen.preloadBar.size.y*progressRatio) + introScreen.preloadBar.position.y
+
+
+         //clear previous graphics
+         introScreen.preloadBar.image.graphics.clear()
+         //draw outer border
+         .beginStroke(preloadBarBorderColor).beginFill(preloadBarProgressColor).setStrokeStyle(1)
+         .moveTo(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y)
+.lineTo(progressX, introScreen.preloadBar.position.y)
+.lineTo(introScreen.preloadBar.position.x,progressY)
+.closePath()//.beginFill(preloadBarProgressColor)
+
+//if image is on the stage, we need to set the stage upToDate variable to false
+return self.easelJSDisplayObjectChanged(introScreen.preloadBar)
+ 
+     }
+
+     //define title text
+     introScreen.title.addText( titleText, titleSizeAndFont, titleColor,{
+
+      html:true
+,css:{ 'text-align':'left'}
+
+
+    })
+     //define statusText
+     introScreen.status.addText('', statusSizeAndFont, statusColor,
+     {
+html:true
+,css:{
+'text-align':'left'
+//,'color':titleColor
+}//status.css options
+     }//status options
+     )
+     console.log(introScreen.status)
+     console.log('gjorb')
+     //throw''
+     /*
+ introScreen.status.text.x = introScreen.status.position.x
+ introScreen.status.text.y = introScreen.status.position.y + 1
+ introScreen.status.text.baseline = 'top'
+ introScreen.status.text.textAlign = 'left'
+ introScreen.status.textColor = titleColor
+ */
+
+//bar style (old)
+    /*
+
+    //console.log(imageSourceArray)
+    //define dimensions of preloading screen
+    var introScreen = {}
+   // console.log(this.arrayOfParentsOfStageAndOfContainerArray)
+    var canvasWidth = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.width
+    var canvasHeight = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.height
+    var titleSizeAndFont = '20px ' + self.permanentPreferences.defaultFontType.value
+     var titleHeight = 26
      var titleAndPreloadBarDistanceY = 50
      var titleText = 'Loading resources...'
      var titleColor = '#000000'
@@ -3451,15 +3167,14 @@ if(backgroundLoad !== true){
     var preloadBarUnfinishedColor = 'rgb(150,150,150)'
     var introScreenBackgroundColor = "blue"
 
-var animationZ = getZ('animation','loadingScreen')
-var backgroundZ = getZ('background','loadingScreen')
-
-    introScreen.background = new this.images.Item(0, 0, canvasWidth, canvasHeight, backgroundZ)
     introScreen.background.image = new createjs.Shape()
     introScreen.background.image.graphics.beginFill(introScreenBackgroundColor)
     .drawRect(introScreen.background.position.x, introScreen.background.position.y,  introScreen.background.size.x, introScreen.background.size.y)
+*/
 
-    introScreen.preloadBar = new this.images.Item(canvasWidth/2 - preloadBarWidth/2, preloadBarY, preloadBarWidth, preloadBarHeight, animationZ)
+
+/*
+    introScreen.preloadBar = new this.images.Item(canvasWidth/2 - preloadBarWidth/2, preloadBarY, preloadBarWidth, preloadBarHeight, getZ('fill','loadingScreen'))
     introScreen.title = new this.images.Item(0, preloadBarY-titleAndPreloadBarDistanceY-titleHeight, canvasWidth, titleHeight,animationZ)
      introScreen.status = new this.images.Item(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y - statusHeight, canvasWidth-introScreen.preloadBar.x, statusHeight,animationZ)
   
@@ -3507,6 +3222,7 @@ return self.easelJSDisplayObjectChanged(introScreen.preloadBar)
  
      }
 
+
      //define title text
      introScreen.title.addText( titleText, titleSizeAndFont, titleColor)
      //define statusText
@@ -3517,11 +3233,14 @@ return self.easelJSDisplayObjectChanged(introScreen.preloadBar)
  introScreen.status.text.textAlign = 'left'
  introScreen.status.textColor = titleColor
 
+*/
+
 
  
 //create text to show user images are being displayed
 
-this.images.imageLoading = {}
+self.images.loadingScreen = introScreen
+/*
 var titleHeight = 30
 var titleSizeAndFont = '30px ' + self.permanentPreferences.defaultFontType.value
 var titleColor = 'blue'
@@ -3535,27 +3254,38 @@ this.images.imageLoading.title.text.x= this.images.imageLoading.title.position.x
  this.images.imageLoading.title.text.baseline = 'top'
  this.images.imageLoading.title.text.textAlign = 'left'
  this.images.imageLoading.title.text.color = titleColor
-
+*/
 
  //add imageLoading
  
-    var displayPreloadScreen  = function(){
+    var displayPreloadScreen  = function(options){
         //add images and text to containers 
     //  console.log(introScreen)
-self.displayChildren(introScreen,{update:false})        
+return self.displayChildren(introScreen,options)        
     }
 
 }//if we are loading only in background and displaying nothing
 
+
+function statusStringFromSource (src){  return src + ' downloaded'}
+
+
  //define image.onload functions
     function handleLoad(src, id, onEnd){
+var stagesToUpdate  =  []
+     // var stagesToUpdate = []
         loadedFiles++
- //       introScreen.status.text.text = src + ' loaded'
-  //      introScreen.preloadBar.drawBar(loadedFiles/totalSources)
-       playZoneLandingPage.loadingScreen.status = src + ' loaded'
+
+       playZoneLandingPage.loadingScreen.status = statusStringFromSource(src)
        playZoneLandingPage.loadingScreen.progressRatio = loadedFiles/totalSources
+try{
+          stagesToUpdate.push(  introScreen.status.updateText(playZoneLandingPage.loadingScreen.status, {update:false}) )
+     stagesToUpdate.push(   introScreen.preloadBar.drawBar(playZoneLandingPage.loadingScreen.progressRatio, {update:false}))
+   self.updateStages(stagesToUpdate)
+ }catch(err){}
         console.log(src +' loaded file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
       console.log(playZoneLandingPage.loadingScreen.progressRatio)
+      console.log('text = ' + introScreen.status.getText())
         if (id == imageSourceArray[imageSourceArray.length-1].id){
             console.log("last image loaded")
         }
@@ -3563,16 +3293,20 @@ self.displayChildren(introScreen,{update:false})
           console.log('last non-flash sound loaded')
         }
        
-    //    self.updateStages(introScreen.status.position.z.stage)
+     
          if(onEnd){onEnd()}
     }
     function handleLoadError(src,id, onEnd){
         loadedFiles++
         errorFiles++
         errorSrcArray.push(src)
-       // introScreen.status.text.text = src + ' loaded'
-       playZoneLandingPage.loadingScreen.status = src + ' loaded'
-       playZoneLandingPage.loadingScreen.progressRatio = loadedFiles/totalSources
+          playZoneLandingPage.loadingScreen.status = statusStringFromSource(src)
+          playZoneLandingPage.loadingScreen.progressRatio = loadedFiles/totalSources
+        try{
+    stagesToUpdate.push(    introScreen.status.updateText(playZoneLandingPage.loadingScreen.status, {update:false}))
+      self.updateStages(stagesToUpdate)
+    }catch(err){}
+
          console.log(src + ' error loading file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
          console.log(playZoneLandingPage.loadingScreen.progressRatio)
      //   introScreen.preloadBar.drawBar(loadedFiles/totalSources)
@@ -3589,7 +3323,7 @@ console.log(errorSrcArray)
 
         }
 
-    //    self.updateStages(stage)
+
       if(onEnd){onEnd()}
     }
 
@@ -3631,6 +3365,7 @@ var fullSizeCardSpriteData = {
 fullSizeCardSpriteData.images = [self.permanentPreferences.sourceObjects.value.desktopCards[self.images.sources.cardSpriteFileNameWithoutExtension]]
 self.permanentPreferences.sourceObjects.value.desktopCards.spriteSheet = new createjs.SpriteSheet(fullSizeCardSpriteData)
 
+
 /*
 var mobileSizeCardSpriteData = {
 "images": ["sprite.png"], "frames": [[1872, 0, 36, 45], [1836, 0, 36, 45], [1800, 0, 36, 45], [1764, 0, 36, 45], [1728, 0, 36, 45], [1692, 0, 36, 45], [1656, 0, 36, 45], [1620, 0, 36, 45], [1584, 0, 36, 45], [1548, 0, 36, 45], [1512, 0, 36, 45], [1476, 0, 36, 45], [1440, 0, 36, 45], [1404, 0, 36, 45], [1368, 0, 36, 45], [1332, 0, 36, 45], [1296, 0, 36, 45], [1260, 0, 36, 45], [1224, 0, 36, 45], [1188, 0, 36, 45], [1152, 0, 36, 45], [1116, 0, 36, 45], [1080, 0, 36, 45], [1044, 0, 36, 45], [1008, 0, 36, 45], [972, 0, 36, 45], [936, 0, 36, 45], [900, 0, 36, 45], [864, 0, 36, 45], [828, 0, 36, 45], [792, 0, 36, 45], [756, 0, 36, 45], [720, 0, 36, 45], [684, 0, 36, 45], [648, 0, 36, 45], [612, 0, 36, 45], [576, 0, 36, 45], [540, 0, 36, 45], [504, 0, 36, 45], [468, 0, 36, 45], [432, 0, 36, 45], [396, 0, 36, 45], [360, 0, 36, 45], [324, 0, 36, 45], [288, 0, 36, 45], [252, 0, 36, 45], [216, 0, 36, 45], [180, 0, 36, 45], [144, 0, 36, 45], [108, 0, 36, 45], [72, 0, 36, 45], [36, 0, 36, 45], [0, 0, 36, 45] ], "animations": {"2c":[0], "2d":[1], "2h":[2], "2s":[3], "3c":[4], "3d":[5], "3h":[6], "3s":[7], "4c":[8], "4d":[9], "4h":[10], "4s":[11], "5c":[12], "5d":[13], "5h":[14], "5s":[15], "6c":[16], "6d":[17], "6h":[18], "6s":[19], "7c":[20], "7d":[21], "7h":[22], "7s":[23], "8c":[24], "8d":[25], "8h":[26], "8s":[27], "9c":[28], "9d":[29], "9h":[30], "9s":[31], "ac":[32], "ad":[33], "ah":[34], "as":[35], "back":[36], "jc":[37], "jd":[38], "jh":[39], "js":[40], "kc":[41], "kd":[42], "kh":[43], "ks":[44], "qc":[45], "qd":[46], "qh":[47], "qs":[48], "tc":[49], "td":[50], "th":[51], "ts":[52] }
@@ -3640,30 +3375,43 @@ mobileSizeCardSpriteData.images = [self.permanentPreferences.sourceObjects.value
 self.permanentPreferences.sourceObjects.value.mobileCards.spriteSheet = new createjs.SpriteSheet(mobileSizeCardSpriteData)
 */
 
+var stagesToUpdate = []
 
   console.log('onComplete called in initialize');console.log(parent)
-     playZoneLandingPage.loaded = true
+
      if(backgroundLoad !== true){
-           self.displayChildren(self.images.imageLoading.title,{update:false})
+  stagesToUpdate.push( introScreen.status.updateText('preparing images'),{update:false} )
+  //  stagesToUpdate.push( introScreen.title.updateText('displaying images '),{update:false} )
+     //   stagesToUpdate.push( self.displayChildren(self.images.imageLoading.title,{update:false}) )
+       self.updateStages(stagesToUpdate)
+stagesToUpdate.length = 0
              self.createAllItems()
+
            }//if we not just loading in the background
+
+createjs.Ticker.removeEventListener('tick', checkIfCompleted)
+
         }
 
 function checkIfCompleted(e){
+
+  var stagesToUpdate = []
  // console.log(e)
 //CHECK IF COMPLETED
 //if(loadedImages >= imageArray.length){
-  if(!_.isObject(playZoneLandingPage.loadingScreen)){console.log(playZoneLandingPage);throw'loadingscreen not object'}
-  if((playZoneLandingPage.loadingScreen.progressRatio >= 1 || playZoneLandingPage.loaded === true) && preferencesRetreived !== false){
-     onComplete()
-createjs.Ticker.removeEventListener(e.type, checkIfCompleted)
+   if(playZoneLandingPage.loadingScreen.progressRatio >= 1 || playZoneLandingPage.loadingScreen.loaded === true){
+
+if (preferencesRetreived !== false){onComplete()}
+
 }
 //UPDATE DISPLAY IF NOT COMPLETED
 else{
-  introScreen.preloadBar.drawBar(playZoneLandingPage.loadingScreen.progressRatio)
-   introScreen.status.text.text = playZoneLandingPage.loadingScreen.status
-   self.easelJSDisplayObjectChanged(introScreen.status)
-   self.updateStages()
+   if(!_.isObject(playZoneLandingPage.loadingScreen)){console.log(playZoneLandingPage);throw'loadingscreen not object'}
+//  console.log('changing status text to: ' + playZoneLandingPage.loadingScreen.status)
+  stagesToUpdate.push(introScreen.status.updateText(playZoneLandingPage.loadingScreen.status))
+  stagesToUpdate.push(introScreen.preloadBar.drawBar(playZoneLandingPage.loadingScreen.progressRatio))
+   stagesToUpdate.push(  displayPreloadScreen({update:false}) )
+   self.updateStages(stagesToUpdate)
 }
 
 
@@ -3702,15 +3450,15 @@ for(var i =0;i<flashArray.length;i++){
 
 //console.log('we are going to check whether to perform load from this page, or use other page load');
 //console.log(parent)
-if(playZoneLandingPage.loaded === true || playZoneLandingPage.loading === true){console.log('other frame to load our images');console.log(self.permanentPreferences.sourceObjects.value);console.log(playZoneLandingPage.sourceObjects)}
+if(playZoneLandingPage.loadingScreen && (playZoneLandingPage.loadingScreen.loaded === true || playZoneLandingPage.loadingScreen.loading === true)){console.log('other frame to load our images');console.log(self.permanentPreferences.sourceObjects.value);console.log(playZoneLandingPage.sourceObjects)}
   else{
     console.log('loading from this page')
   //  playZoneLandingPage.sourceObjects = {}
-    playZoneLandingPage.loading = true
-playZoneLandingPage.loadingScreen = {}
+  playZoneLandingPage.loadingScreen = {}
+    playZoneLandingPage.loadingScreen.loading = true
+
 playZoneLandingPage.loadingScreen.progressRatio = 0
 playZoneLandingPage.loadingScreen.status = ''
-
 
 createPreloadArray()
           preloadSounds(flashSoundSourceArray, soundSourceArray)
@@ -3719,8 +3467,8 @@ createPreloadArray()
 
 //if this is the main page (parent of the table iframes), we dont want to display anything at all
   if(backgroundLoad !== true) { 
-    displayPreloadScreen()
 //add event listener to stage to see if it is done
+displayPreloadScreen()
    createjs.Ticker.addEventListener('tick', checkIfCompleted)
   }
 
@@ -7527,7 +7275,7 @@ options.displayChipStackSize = true
 if(!potSize||(_.isArray(potSize) && _.isEmpty(_.compact(potSize)))){
   console.log('we are hiding all pots in teh updatePotSize function')
   for(var i  = 0;i<this.images.pots.length;i++){
-    this.images.pots[i].potSize.text.text = 0
+    this.images.pots[i].potSize.updateText('0')
    stagesToUpdate.push( this.easelJSDisplayObjectChanged(this.images.pots[i].potSize) )
  stagesToUpdate.push(  this.hideChildren(this.images.pots[i].potSize, options))
  stagesToUpdate.push(    this.hideChildren(this.images.pots[i].chips, options))
@@ -7628,7 +7376,7 @@ else {console.log('pot '+i+'not redrawn because same value')}
  if(_.isNumber(newTotalPotSize)) {
   var newTotalPotSizeText = 'Total: '+newTotalPotSize
   if(newTotalPotSizeText != this.images.totalPotSize.text.text ){
-  this.images.totalPotSize.text.text = newTotalPotSizeText
+  this.images.totalPotSize.updateText(newTotalPotSizeText)
   stagesToUpdate.push(this.easelJSDisplayObjectChanged( this.images.totalPotSize))
     }//if different
           stagesToUpdate.push(   this.displayChildren(this.images.totalPotSize, options) )
@@ -7842,7 +7590,7 @@ var chipArray = parentOfChipArray[options.chipArrayName]
 if( options.displayChipStackSize !== false && _.isArray(chipArray) && chipArray.length>0 && options.chipStackSizeItem instanceof this.images.Item && _.isObject(options.chipStackSizeItem.text)){
 
 var sizeItem = options.chipStackSizeItem
-sizeItem.text.text = totalChipAmount
+sizeItem.updateText(totalChipAmount)
 /*
 console.log('displaying size item')
 console.log(sizeItem)
@@ -11257,7 +11005,7 @@ var fontSize  = '13px'
 console.log('displayin bubblechat popover')
 console.log(chatInfo)
 
-self.images.seats[chatInfo.seat].chat.text.text = ''
+self.images.seats[chatInfo.seat].chat.updateText('')
 
 var playerSeatObject = self.images.seats[chatInfo.seat]
 
@@ -11451,7 +11199,7 @@ chatInfo.message = chatInfo.message.replace(/^\s+|\s+$/g,'')
      //perform animation only if string is longer than 0 and is not purely spaces
   if (/\S/.test(chatInfo.message)){
 
-    self.images.seats[chatInfo.seat].chat.text.text = ''
+    self.images.seats[chatInfo.seat].chat.updateText('')
 
   //remove previous tweens that may be running:
   createjs.Tween.removeTweens(self.images.seats[chatInfo.seat].chat.image)
@@ -11543,7 +11291,7 @@ numAddedChars = numAddedChars +2
 //}//loop thorugh entire text object to add text until end
 
   //append messageToAdd to the end of seats
-self.images.seats[chatInfo.seat].chat.text.text = self.images.seats[chatInfo.seat].chat.text.text + messageToAdd
+self.images.seats[chatInfo.seat].chat.updateText(self.images.seats[chatInfo.seat].chat.text.text + messageToAdd) 
 
     //increase lines
 if(wasTrimmed == true){
@@ -11577,7 +11325,7 @@ else{ //if message was not trimmed
 if(needElipses == true){    //add elipses .... to end of text if text was shortened
 
 self.images.seats[chatInfo.seat].chat.text.text=self.images.seats[chatInfo.seat].chat.text.text.substring(0,self.images.seats[chatInfo.seat].chat.text.text.length-4)
-        self.images.seats[chatInfo.seat].chat.text.text = self.images.seats[chatInfo.seat].chat.text.text + '...'
+        self.images.seats[chatInfo.seat].chat.updateText(self.images.seats[chatInfo.seat].chat.text.text + '...')
     }//if needElipses = true
 
 
@@ -13748,10 +13496,10 @@ if(update !== false){this.updateStages(stagesToUpdate)}
         this.gameState.cashier.big_blind = info.big_blind*info.currency_per_chip
         this.gameState.cashier.table_min = info.table_min*info.currency_per_chip
         
-       this.images.cashier.currency.text.text = 'Blinds:'
-       this.images.cashier.blinds.text.text = info.currency_per_chip*info.small_blind+'/'+info.currency_per_chip*info.big_blind + ' '+info.currency
+       this.images.cashier.currency.updateText('Blinds:')
+       this.images.cashier.blinds.updateText(info.currency_per_chip*info.small_blind+'/'+info.currency_per_chip*info.big_blind + ' '+info.currency)
        
-         this.images.cashier.tableNameValue.text.text = info.table_name
+         this.images.cashier.tableNameValue.updateText(info.table_name) 
         this.images.cashier.tableMinValue.text.text = info.currency_per_chip*info.table_min
         this.images.cashier.tableMaxValue.text.text = info.currency_per_chip*info.table_max
         this.images.cashier.playerMinValue.text.text = info.currency_per_chip*info.min
@@ -14748,6 +14496,8 @@ this.initial_table_state = table_state
 
 var displayOptions = {update:false, server:false}
 
+var animationTimeToHidePreloadingScreen = 600
+var hidePreloadingScreenTicks = 80
 var showTable = false
  //set up animation variables
  var tickerInterval = 5
@@ -14758,15 +14508,17 @@ createjs.Ticker.setInterval(tickerInterval)
 createjs.Ticker.setPaused(false)
        var seatsLoaded = []
 
-//add one elipse to the loading text
-self.images.imageLoading.title.text.text = self.images.imageLoading.title.text.text+ '.'
-this.updateStages(this.images.imageLoading.title.position.z.stage)
-function tick(event){
-  
+
+self.images.loadingScreen.status.updateText('displaying table state',{update:true})
+
+tick()
+
+function tick(){
+  var stagesToUpdate  =  []
+
     //update loading images graphic evert 3 ticks
     if(numTicks%ticksPerAnimation == 0){
-        
-        self.images.imageLoading.title.text.text = self.images.imageLoading.title.text.text+ '.'
+        stagesToUpdate.push(self.images.loadingScreen.status.updateText(self.images.loadingScreen.status.getText()+'.'),{update:false})
     }
 
 
@@ -14792,13 +14544,63 @@ function tick(event){
        //update status on whether seats have loaded
        updateLoadedSeats()
 
+self.updateStages(stagesToUpdate)
        // check if all seats are loaded
      //  if(checkSeatsLoaded() ==true){
       if(showTable === true){
-      //  createjs.Ticker.setPaused(true)
-                      createjs.Ticker.removeEventListener("tick", tick)
+        self.updateStages(null, {forceUpdate:true})
+        createjs.Ticker.removeEventListener("tick", tick)
+        hideLoadingScreen()
+      }
+       console.log('increasing tick')
+       numTicks ++
+
+}//end tick function
+
+function hideLoadingScreen (animateBoolean){
+
+var ticks = 0
+var loadingScreen = self.images.loadingScreen
+
+var setNonFillAlpha = function(alpha){
+var stageParent = self.getParentOfStageObject(self.images.loadingScreen.title)
+var containerArray = stageParent.containers
+_.each(containerArray, function(value, index, list){
+value.alpha = alpha
+})
+
+
+var stage = self.images.loadingScreen.title.position.z.stage
+
+setStageUpdateStatus(stage)
+return stage
+}//adjust alpha
+
+var hide = setInterval(function(){
+var stagesToUpdate = []
+var showRatio = 1 - ticks/hidePreloadingScreenTicks
+
+stagesToUpdate.push (loadingScreen.preloadBar.drawBar(showRatio), {update:false})
+stagesToUpdate.push (setNonFillAlpha(showRatio))
+
+self.updateStages(stagesToUpdate)
+
+ticks++
+if(ticks >= hidePreloadingScreenTicks){
+  clearInterval(hide)
+finish()
+  }//end the animation
+},
+animationTimeToHidePreloadingScreen/hidePreloadingScreenTicks
+)
+
+
+          
+}//showTable
+
+function finish(){
                       //remove all loadingContainers from the stage and remove all children from them
-               var parentOfLoadingStage =       self.arrayOfParentsOfStageAndOfContainerArray[getZ('loadingScreen').stage]
+               var parentOfLoadingStage = self.arrayOfParentsOfStageAndOfContainerArray[getZ('loadingScreen').stage]
                parentOfLoadingStage.stage.removeAllChildren()
                self.updateStages(getZ('loadingScreen').stage)
               // parentOfLoadingStage.stage.update()
@@ -14806,10 +14608,9 @@ function tick(event){
           //     $(parentOfLoadingStage.stage.canvas).css('display','none')
 setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(getZ('loadingScreen').stage, false)
                self.activateTicker(50)
-       }
-       console.log('increasing tick')
-       numTicks ++
-}//end tick function
+
+}
+
 
                  //display static items
 
@@ -14821,9 +14622,9 @@ setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(getZ('l
      //    this.displayChildren(this.images.exitTable)
 
 //remove extra S
-         this.images.currencyDisplay.text.text = '1 chip is equal to ' + table_state.currency_per_chip + ' ' + table_state.currency
+         this.images.currencyDisplay.updateText('1 chip is equal to ' + table_state.currency_per_chip + ' ' + table_state.currency)
 if(table_state.currency_per_chip == 1 && table_state.currency.charAt(table_state.currency.length-1)=='s'||'S'){
-  this.images.currencyDisplay.text.text = this.images.currencyDisplay.text.text.substring(0,this.images.currencyDisplay.text.text.length-1)
+  this.images.currencyDisplay.updateText(this.images.currencyDisplay.text.text.substring(0,this.images.currencyDisplay.text.text.length-1) )
 }
 
 
@@ -15018,13 +14819,14 @@ if(_.isFunction(callback)){callback()}
 }
 
 
-    this.receiveTableState = function(){
+    this.receiveTableState = function(options){
+      if(!options){var options = {}}
    socket.once('table_state', function(table_state){
    //    console.clear()
              console.log('one time table_state message received')
              console.log(table_state)
              self.displayInitialTableState(table_state)
-            self.activateSockets()
+         if(options.activateSockets !== false)   {self.activateSockets()}
     })
 
     socket.emit('get_table_state')
@@ -15033,7 +14835,14 @@ if(_.isFunction(callback)){callback()}
     
     this.activateSockets = function(){
      
-        
+        socket.on('connect', function(){
+
+self.receiveTableState({
+
+  activateSockets:false
+})
+
+        })
 
     socket.on('street_ends', function (potSizes){
 

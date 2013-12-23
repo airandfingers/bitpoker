@@ -64,6 +64,7 @@ var TX = this
 
         balance = res.balance;
         inputs = res.unspenttxs;
+        
     }
 
     this.rebuild = function(sendTx, resign) {
