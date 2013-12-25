@@ -23,8 +23,8 @@ var transaction = new site_BTC.Transaction(address1.private, address2.address, s
 //console.log(transaction)
 */
 
-var amountInBTC =  0.0011; var feeInBTC = 0//0.0001
-var sendToAddress = '1P2tbdA6p1J1XboFEc9FtAVXUQz9ysWmqi'
+var amountInBTC =  0.0011; var feeInBTC = 0.0001//0.0001
+var sendToAddress = '1G1WggkFkb5vcQx6WBMFHimbLFpuyXKtV7'
 
 console.log('creating transaction from address 1 to address2 sending ')
 var transaction = new site_BTC.Transaction('5Ht6Sx nByi4U H4GJdb 4NtvqK ivBdT7 Nw9Qdc eDEtS3 a861Dv JWb', 

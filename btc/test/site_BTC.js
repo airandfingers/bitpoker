@@ -6,6 +6,8 @@ module.exports = new function(){
 //console.log(JSON.stringify)
 var JSONparse = JSON.parse
 var JSONstringify = JSON.stringify
+var JSONparseJSON = JSON.parseJSON
+//console.log(JSONparseJSON)
 
 require('./lib/tx.js');
 require('./lib/bitcoinsig.js');
@@ -267,8 +269,6 @@ var txUnspent
 var balance
 if(!fee){  var fee = 0 }
 
-
-
 async.series([function(callback){
 
  fetch ('http://blockchain.info/unspent?address=' + sourceAddress
@@ -314,32 +314,6 @@ function(callback){
         tx.init(eckey); //reset TX data
 //console.log(eckey)
 
-
-
-//set inputs to a transaction, text = raw data from 'https://blockchain.info/q/mytransaction/etc'
-    var txSetUnspent = function(text) {
-if(text.length == 0){return}
-
-        if(_.isString(text)){var r = JSONparse(text)}
-            else{var r = text}
-   //     txUnspent =  JSON.stringify(r, null, 4);
- txUnspent =  JSONstringify(r, null, 4);
-     //   $('#txUnspent').val(txUnspent);
-     //   var address = $('#txAddr').val();
-        tx.parseInputs(txUnspent, sourceAddress);
-        var value = tx.getBalance();
-        var fval = Bitcoin.Util.formatValue(value);
-    //    var fee = parseFloat($('#txFee').val());
-        balance = fval
-     //   $('#txBalance').val(fval);
-        var value = Math.floor((fval-fee)*1e8)/1e8;
-     //   $('#txValue').val(value);
-       // txRebuild(); //this is the parent function (was)
-       return txUnspent
-}
-
-txUnspent = txSetUnspent(txUnspent) //if invalid txUnspent we will check below along with balance
-
 //set outputs
  var fval = 0;   //fval just means amount to send
         var destinationAddressArray = _.flatten([destinationAddress])
@@ -361,14 +335,57 @@ outputs.push({dest:value, fval:parseFloat('0'+amountToSend)})
             fval += outputs[i].fval;
         }
 
-//check if available
-if((!_.isObject(txUnspent) && !_.isString(txUnspent) )|| balance < fval + fee){callback('no unspent available', 'parse')}
 
         // send change back or it will be sent as fee
         if (balance > fval + fee) {
             var change = balance - fval - fee;
             tx.addOutput(sourceAddress, change);
         }
+
+
+//set inputs to a transaction, text = raw data from 'https://blockchain.info/q/mytransaction/etc'
+    var txSetUnspent = function(text) {
+if(text.length == 0){return}
+
+        if(_.isString(text)){var r = JSONparse(text)}
+            else{var r = text}
+
+console.log('original unspent outs')
+             console.log(r['unspent_outputs'])
+
+//take only unspents that are needed
+var unspentOuts = r['unspent_outputs']
+var inputTotal = 0
+_.each(unspentOuts, function(value, index, list){
+
+if(inputTotal < fval){inputTotal = inputTotal + value.value/(pow(10,8))}
+else{unspentOuts.splice(index, 1)}
+})//iterate thorugh unspent_outs
+//1 BTC = 100,000,000 Satoshis
+
+
+   //     txUnspent =  JSON.stringify(r, null, 4);
+ txUnspent =  JSONstringify(r, null, 4);
+     //   $('#txUnspent').val(txUnspent);
+     //   var address = $('#txAddr').val();
+     console.log('txunspent = ');console.log(txUnspent)
+
+        tx.parseInputs(txUnspent, sourceAddress);
+        var value = tx.getBalance();
+        var fval = Bitcoin.Util.formatValue(value);
+    //    var fee = parseFloat($('#txFee').val());
+        balance = fval
+     //   $('#txBalance').val(fval);
+        var value = Math.floor((fval-fee)*1e8)/1e8;
+     //   $('#txValue').val(value);
+       // txRebuild(); //this is the parent function (was)
+       return txUnspent
+}
+
+txUnspent = txSetUnspent(txUnspent) //if invalid txUnspent we will check below along with balance
+
+//check if available
+if((!_.isObject(txUnspent) && !_.isString(txUnspent) )|| balance < fval + fee){callback('no unspent available', 'parse')}
 
 
 callback(null, 'parse')
@@ -396,15 +413,15 @@ else{
 
   try {
             var sendTx = tx.construct();
-           console.log('sendtx = ');console.log(sendTx)
+     //      console.log('sendtx = ');console.log(sendTx)
             var txJSON = tx.toBBE(sendTx) //.toString()
       // txJSON = txJSON.toString()
-      console.log('txJSON = ');console.log(txJSON)
+   //   console.log('txJSON = ');console.log(txJSON)
          
             var buf = sendTx.serialize();
-            console.log('txJSON after sendTx.serialize = ');console.log(txJSON)
+       //     console.log('txJSON after sendTx.serialize = ');console.log(txJSON)
             var txHex = Crypto.util.bytesToHex(buf)
-            console.log(txJSON)
+   //         console.log(txJSON)
     // console.log(txHex)
     //      var txHex = txHex.replace(/[^0-9a-fA-f]/g,''); //replace /n new line stuff
     //      console.log(txHex)
