@@ -3089,7 +3089,9 @@ introScreen.background.display()
   
      //define function for drawing the loading bar graphic
      introScreen.preloadBar.image  = new createjs.Shape()
-     introScreen.preloadBar.drawBar = function (progressRatio){
+     introScreen.preloadBar.drawBar = function (progressRatio, options){
+
+if(!options){var options = {}}
 
 if(!_.isNumber(progressRatio) || _.isNaN(progressRatio)){var progressRatio = 0}
   else if(progressRatio > 1){progressRatio = 1;console.error('progress ratio greater than 1')}
@@ -3109,7 +3111,8 @@ var progressY = -2*(introScreen.preloadBar.size.y*progressRatio) + introScreen.p
 .closePath()//.beginFill(preloadBarProgressColor)
 
 //if image is on the stage, we need to set the stage upToDate variable to false
-return self.easelJSDisplayObjectChanged(introScreen.preloadBar)
+if(options.update !== false){self.updateStages(introScreen.preloadBar.position.z.stage)}
+else{return self.easelJSDisplayObjectChanged(introScreen.preloadBar)}
  
      }
 
@@ -3282,10 +3285,11 @@ try{
           stagesToUpdate.push(  introScreen.status.updateText(playZoneLandingPage.loadingScreen.status, {update:false}) )
      stagesToUpdate.push(   introScreen.preloadBar.drawBar(playZoneLandingPage.loadingScreen.progressRatio, {update:false}))
    self.updateStages(stagesToUpdate)
+  // console.log('text = ' + introScreen.status.getText())
  }catch(err){}
         console.log(src +' loaded file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
       console.log(playZoneLandingPage.loadingScreen.progressRatio)
-      console.log('text = ' + introScreen.status.getText())
+      
         if (id == imageSourceArray[imageSourceArray.length-1].id){
             console.log("last image loaded")
         }
@@ -6060,9 +6064,9 @@ $(holdemCanvas.getIframe()).trigger('mousedown.setToTop')
 
       this.updatePreference(this.sessionPreferences, this.sessionPreferences,{updateEqualValues:true})
         this.setBackground()
+       
+this.getTableState()
         this.images.setDefaults()
-
-     this.receiveTableState()
 
        this.images.setDefaultEvents()
        this.images.setDefaultMessages()
@@ -6079,7 +6083,6 @@ var isNumber =  !_.isNaN(betSize) && _.isNumber(betSize)
 
 
    if(isNumber === false ){return false}
-
 
 
 //check to insure betSize is not outside of bounds, return min or max if it is
@@ -6665,8 +6668,6 @@ this.copySeatObjectItemLocationData = function(seatObject){
 this.iterateThroughObjectAndPerformOnAllObjectsOrObjectsInArray(seatObject, function(value, indexes){
 
 
-
-
 if (indexes.length === 1){
   //if array make blank array on copy object
   if(_.isArray(value)){seatObjectCopy[indexes[0]] = [];return}
@@ -7019,12 +7020,11 @@ this.imageData.originalSeatLocations.push(this.copySeatObjectItemLocationData(th
 //we need to set our location equal to the original
 else{ 
   console.log('changing numseats for (atleast), the second time')
-  //first  set original seats (that have been taken out due to number of seats changing) back in place
-
+  //first  set original seats (that have been taken outdue to number of seats changing) back in place
 for (var originalSeatNumber = 0;originalSeatNumber<this.images.seats.length;originalSeatNumber++){
 
 //take out original seat and push to end of array
-    this.images.seats.push(this.images.seats.splice(this.getSeatImageIndex(originalSeatNumber, 'originalSeatNumber'),1))
+    this.images.seats.push(this.images.seats.splice(this.getSeatImageIndex(originalSeatNumber, 'originalSeatNumber'),1)[0])
 
 }//iterate through this.images.seats.length after increasing originalSeatNumber
 
@@ -14490,9 +14490,91 @@ else{return self.gameState.street.justActed}
 
 }
 
-   this.displayInitialTableState = function(table_state){
+var displayLoadingScreen = function(originalOptions){
 
-this.initial_table_state = table_state
+if(!_.isObject(originalOptions)){var options = {}}
+  else{var options = _.clone(originalOptions)}
+
+var stagesToUpdate = []
+var update = options.update
+options.update = false
+loadingScreen = self.images.loadingScreen
+
+if(options.defaults){
+var defaults = {
+
+fill:0
+,title:'Loading...'
+,status:''
+,background:1
+
+}
+
+options = _.defaults(options, defaults)
+}
+
+ stagesToUpdate.push( self.displayChildren(loadingScreen, options) )
+
+//update options
+if(_.isNumber(options.fill)){
+ stagesToUpdate.push( loadingScreen.preloadBar.drawBar(options.fill, options) )
+}
+else if(options.fill === false){
+ stagesToUpdate.push(loadingScreen.preloadBar.hide() )
+
+}
+
+if(_.isString(options.title)){
+ stagesToUpdate.push( loadingScreen.title.updateText(options.title, options) )
+}
+else if(options.title === false){
+ stagesToUpdate.push(loadingScreen.title.hide(options) )
+
+}
+
+
+if(_.isString(options.status)){
+stagesToUpdate.push(  loadingScreen.status.updateText(options.status, options) )
+}
+else if(options.status === false){
+ stagesToUpdate.push(loadingScreen.status.hide(options) )
+
+}
+
+if(_.isNumber(options.background)){
+  loadingScreen.background.image.alpha = options.background
+  stagesToUpdate.push(self.easelJSDisplayObjectChanged(loadingScreen.background))
+}
+else if(options.background <= 0){
+
+  loadingScreen.background.image.alpha = 1
+  stagesToUpdate.push(self.easelJSDisplayObjectChanged(loadingScreen.background))
+
+}
+
+else if(options.background === false){
+
+  stagesToUpdate.push(self.hideChildren(loadingScreen.background, options))
+}
+
+
+//update and return
+options.update = update
+
+if(options.update !== false){self.updateStages(stagesToUpdate)}
+if(options.div !== false){setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(loadingScreen.status,true)}
+  if(options.update === false) {return stagesToUpdate}
+
+}//display preload screen
+
+   this.displayInitialTableState = function(table_state, options){
+
+if(!_.isObject(options)){var options = {}}
+  else{var options = _.clone(options)}
+
+//store initial table state if necessary
+if(!_.isObject(this.initial_table_state)){this.initial_table_state = table_state}
+
 
 var displayOptions = {update:false, server:false}
 
@@ -14503,13 +14585,15 @@ var showTable = false
  var tickerInterval = 5
 var ticksPerAnimation = 1
 var numTicks = 0
+
 createjs.Ticker.addEventListener('tick', tick)
 createjs.Ticker.setInterval(tickerInterval)
 createjs.Ticker.setPaused(false)
        var seatsLoaded = []
 
-
 self.images.loadingScreen.status.updateText('displaying table state',{update:true})
+self.displayChildren(self.images.loadingScreen)
+displayLoadingScreen({update:false})
 
 tick()
 
@@ -14562,18 +14646,20 @@ function hideLoadingScreen (animateBoolean){
 var ticks = 0
 var loadingScreen = self.images.loadingScreen
 
-var setNonFillAlpha = function(alpha){
+var setDivAlpha = function(alpha){
 var stageParent = self.getParentOfStageObject(self.images.loadingScreen.title)
+$(stageParent.div).css('opacity',alpha)
+/*
 var containerArray = stageParent.containers
 _.each(containerArray, function(value, index, list){
 value.alpha = alpha
 })
+*/
 
+//var stage = self.images.loadingScreen.title.position.z.stage
 
-var stage = self.images.loadingScreen.title.position.z.stage
-
-setStageUpdateStatus(stage)
-return stage
+//setStageUpdateStatus(stage)
+//return stage
 }//adjust alpha
 
 var hide = setInterval(function(){
@@ -14581,7 +14667,7 @@ var stagesToUpdate = []
 var showRatio = 1 - ticks/hidePreloadingScreenTicks
 
 stagesToUpdate.push (loadingScreen.preloadBar.drawBar(showRatio), {update:false})
-stagesToUpdate.push (setNonFillAlpha(showRatio))
+stagesToUpdate.push (setDivAlpha(showRatio))
 
 self.updateStages(stagesToUpdate)
 
@@ -14595,27 +14681,32 @@ animationTimeToHidePreloadingScreen/hidePreloadingScreenTicks
 )
 
 
-          
-}//showTable
-
 function finish(){
                       //remove all loadingContainers from the stage and remove all children from them
-               var parentOfLoadingStage = self.arrayOfParentsOfStageAndOfContainerArray[getZ('loadingScreen').stage]
-               parentOfLoadingStage.stage.removeAllChildren()
+    //           var parentOfLoadingStage = self.arrayOfParentsOfStageAndOfContainerArray[getZ('loadingScreen').stage]
+          //     parentOfLoadingStage.stage.removeAllChildren()
                self.updateStages(getZ('loadingScreen').stage)
               // parentOfLoadingStage.stage.update()
               console.log('loading canvas now')
           //     $(parentOfLoadingStage.stage.canvas).css('display','none')
 setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(getZ('loadingScreen').stage, false)
+            setDivAlpha(1)
+self.hideChildren(self.images.loadingScreen)
                self.activateTicker(50)
 
 }
 
 
+          
+}//showTable
+
+
+
+
                  //display static items
 
     this.displayChildren(this.images.getChips, displayOptions)
-                 this.displayChildren(this.images.table, displayOptions)
+    this.displayChildren(this.images.table, displayOptions)
          this.displayChildren(this.images.showTableChatFull, displayOptions)
          this.displayChildren(this.images.standUp, displayOptions)
          this.displayTableChatBox()
@@ -14819,28 +14910,86 @@ if(_.isFunction(callback)){callback()}
 }
 
 
-    this.receiveTableState = function(options){
+    this.getTableState = function(options){
       if(!options){var options = {}}
-   socket.once('table_state', function(table_state){
-   //    console.clear()
-             console.log('one time table_state message received')
-             console.log(table_state)
-             self.displayInitialTableState(table_state)
-         if(options.activateSockets !== false)   {self.activateSockets()}
-    })
+   socket.once('table_state', self.events.table_state_received)
 
     socket.emit('get_table_state')
     }
      
-    
-    this.activateSockets = function(){
+self.events.table_state_received = function(table_state){
+             console.log('one time table_state message received')
+             console.log(table_state)
+             //turn off all sockets
+            socket.removeAllListeners()
+            self.toggleGameSocketsTrueForOn(true)
+             self.displayInitialTableState(table_state)
+             }
+
+
+self.events.connect = function(){
+
+self.getTableState()
+
+}
+
+
+self.events.disconnect = function(){
+
+  console.log('self.events.disconnect called')
+
+//turn off all sockets (dont know how to do this)
+socket.removeAllListeners()
+console.log('removed all listeners')
+
+
+socket.on('connecting', function(){
+
+self.images.loadingScreen.title.updateText('RECONNECTING')
+self.images.loadingScreen.status.updateText('establishing connection with server...')
+
+})
+
+socket.on('connect', self.events.connect)
+
+//display our loading screen
+displayLoadingScreen({
+
+title:'DISCONNECTED'
+,status:'contacting server.....'
+,fill:0
+,background:1
+})
+                console.log('displayed loading screen')
+
+}//  self.events.disconnect
+
+   
+
+
+    this.toggleGameSocketsTrueForOn = function(bool){
      
-        socket.on('connect', function(){
 
-self.receiveTableState({  activateSockets:false})
 
-        })
+    //when disconnect we show loading screen
+       socket.on('disconnect', self.events.disconnect)
 
+     /*
+if(bool === false){
+
+socket.off('street_ends')
+socket.off('error')
+socket.off('disconnect')
+socket.off('player_gets_refund')
+socket.off('street_ends')
+socket.off('street_ends')
+socket.off('street_ends')
+socket.off('street_ends')
+socket.off('street_ends')
+socket.off('street_ends')
+
+}
+*/
     socket.on('street_ends', function (potSizes){
 
 
@@ -14883,6 +15032,9 @@ break;
           messageBoxAPI.display(errorString, messageInfo)
                 
 })
+
+
+
         
  //player is refunded chips
        socket.on('player_gets_refund', function(player, betSize, totalPotSize){
@@ -15405,7 +15557,7 @@ stagesToUpdate.push( self.updateUserOptionsBasedOnFlagsAndPreactions(options))
 self.updateStages(stagesToUpdate)
 })
 
-    }//this.activateSockets
+    }//this.toggleGameSocketsTrueForOn
 
    }
 
