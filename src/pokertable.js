@@ -3117,7 +3117,7 @@ html:true
 //preloadBar
   introScreen.preloadBar.image = new createjs.Shape() 
 introScreen.preloadBar.drawBar = function (progressRatio, options){
-console.log('drawbar called')
+//console.log('drawbar called')
 if(!options){var options = {}}
 
 if(!_.isNumber(progressRatio) || _.isNaN(progressRatio)){var progressRatio = 0}
@@ -3166,7 +3166,7 @@ return introScreen.preloadBar.drawBar( (1/ticksPerCycle+introScreen.preloadBar.p
      //define function for drawing the loading bar graphic
      introScreen.preloadFill.image  = new createjs.Shape()
      introScreen.preloadFill.drawFill = function (progressRatio, options){
-
+//console.log('drawing loading fill ' + progressRatio)
 if(!options){var options = {}}
 
 if(!_.isNumber(progressRatio) || _.isNaN(progressRatio)){var progressRatio = 0}
@@ -3359,7 +3359,7 @@ createjs.Ticker.removeEventListener('tick', checkIfCompleted)
 
 function checkIfCompleted(e){
 
-if(self.isIframe()){console.log('checkIfCompleted called from iframe'+playZoneLandingPage.loadingScreen.progressRatio+playZoneLandingPage.loadingScreen.loaded)}
+//if(self.isIframe()){console.log('checkIfCompleted called from iframe'+playZoneLandingPage.loadingScreen.progressRatio+playZoneLandingPage.loadingScreen.loaded)}
 //else{console.log('checkIfCompleted called from landingpage');return}
   var stagesToUpdate = []
  // console.log(e)
@@ -14590,7 +14590,8 @@ $(stageParent.div).css('opacity',alpha)
 }//adjust alpha
 
 //remove the loading animation no matter what immediately
-createjs.Ticker.removeEventListener('tick',self.images.loadingScreen.preloadBar.animate)
+createjs.Ticker.removeEventListener('tick', self.images.loadingScreen.preloadBar.animate)
+createjs.Ticker.removeEventListener('tick', self.images.loadingScreen.preloadFill.animate)
 
 if(options.animate){
 
@@ -14628,7 +14629,7 @@ function finish(){
             
 self.hideChildren(self.images.loadingScreen)
 
-createjs.Ticker.removeEventListener('tick',self.images.loadingScreen.preloadFill.animate)
+
 setDivAlpha(1)
 self.activateTicker(50)
 }//function that oes the actul hiding
@@ -14970,9 +14971,14 @@ displayLoadingScreen({
 title:'DISCONNECTED'
 ,status:'contacting server.....'
 ,fill:0
-,background:1
+,background:0.66
+,bar:0
 })
-                console.log('displayed loading screen')
+
+console.log('animating fill and preloading bar')
+createjs.Ticker.addEventListener('tick', self.images.loadingScreen.preloadBar.animate)
+createjs.Ticker.addEventListener('tick', self.images.loadingScreen.preloadFill.animate)
+
 
 }//  self.events.disconnect
 
@@ -14981,8 +14987,6 @@ title:'DISCONNECTED'
 
     this.toggleGameSocketsTrueForOn = function(bool){
      
-
-
     //when disconnect we show loading screen
        socket.on('disconnect', self.events.disconnect)
 
