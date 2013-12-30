@@ -3047,24 +3047,28 @@ if(backgroundLoad !== true){
     var canvasHeight = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.height
     var titleSizeAndFont = '20px ' + self.permanentPreferences.defaultFontType.value
      var titleHeight = 24
-     var titleAndPreloadBarDistanceY = 50
+     var titleAndpreloadFillDistanceY = 50
      var titleText = 'Loading...'
      var titleColor = '#000000'
      var statusSizeAndFont = '15px ' + self.permanentPreferences.defaultFontType.value
      var statusHeight = 17
      var statusColor = '#000000'
-     var preloadBarX = 0
-    var preloadBarY  = canvasHeight
+     var preloadFillX = 0
+    var preloadFillY  = canvasHeight
     var preloadEndX = canvasWidth
     var preloadEndY = canvasHeight
-    var preloadBarWidth = canvasWidth*.65
-    var preloadBarHeight = 30
-    var preloadBarBorderColor = '#009933'
-    var preloadBarProgressColor = '#009933'
-    var preloadBarUnfinishedColor = 'rgb(150,150,150)'
+    var preloadFillWidth = canvasWidth*.65
+    var preloadFillHeight = 30
+    var preloadFillBorderColor = '#009933'
+    var preloadFillProgressColor = '#009933'
+    var preloadFillUnfinishedColor = 'rgb(150,150,150)'
     var introScreenBackgroundColor = "blue"
     var textOffsetX = 8
     var textOffsetY = 4
+    var preloadBarHeight = 10
+var preloadBarProgressColor = '#3300CC'
+var preloadBarUnfinishedColor = '#00FFFF'
+
 
 var animationZ = getZ('animation','loadingScreen')
 var backgroundZ = getZ('background','loadingScreen')
@@ -3083,38 +3087,12 @@ introScreen.background.display()
 
 //new style, diagonal from bottom left
 
-    introScreen.preloadBar = new this.images.Item(preloadBarX, preloadBarY, canvasWidth, canvasHeight, getZ('fill','loadingScreen'))
-    introScreen.title = new this.images.Item(textOffsetX, textOffsetY, canvasWidth, titleHeight, animationZ)
-     introScreen.status = new this.images.Item(textOffsetX, canvasHeight - statusHeight - textOffsetY, canvasWidth, statusHeight, animationZ)
-  
-     //define function for drawing the loading bar graphic
-     introScreen.preloadBar.image  = new createjs.Shape()
-     introScreen.preloadBar.drawBar = function (progressRatio, options){
-
-if(!options){var options = {}}
-
-if(!_.isNumber(progressRatio) || _.isNaN(progressRatio)){var progressRatio = 0}
-  else if(progressRatio > 1){progressRatio = 1;console.error('progress ratio greater than 1')}
-
-         //where to fill to
-         var progressX = 2*(introScreen.preloadBar.size.x*progressRatio)+ introScreen.preloadBar.position.x
-var progressY = -2*(introScreen.preloadBar.size.y*progressRatio) + introScreen.preloadBar.position.y
-
-
-         //clear previous graphics
-         introScreen.preloadBar.image.graphics.clear()
-         //draw outer border
-         .beginStroke(preloadBarBorderColor).beginFill(preloadBarProgressColor).setStrokeStyle(1)
-         .moveTo(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y)
-.lineTo(progressX, introScreen.preloadBar.position.y)
-.lineTo(introScreen.preloadBar.position.x,progressY)
-.closePath()//.beginFill(preloadBarProgressColor)
-
-//if image is on the stage, we need to set the stage upToDate variable to false
-if(options.update !== false){self.updateStages(introScreen.preloadBar.position.z.stage)}
-else{return self.easelJSDisplayObjectChanged(introScreen.preloadBar)}
+    introScreen.preloadFill = new this.images.Item(preloadFillX, preloadFillY, canvasWidth, canvasHeight, getZ('fill','loadingScreen'))
+      introScreen.title = new this.images.Item(textOffsetX, textOffsetY, canvasWidth, titleHeight, animationZ)
+     introScreen.preloadBar = new this.images.Item(0, canvasHeight - preloadBarHeight, canvasWidth, preloadBarHeight, animationZ)
+ introScreen.status = new this.images.Item(textOffsetX, introScreen.preloadBar.position.y - statusHeight - textOffsetY, canvasWidth, statusHeight, animationZ)
+    
  
-     }
 
      //define title text
      introScreen.title.addText( titleText, titleSizeAndFont, titleColor,{
@@ -3134,130 +3112,111 @@ html:true
 }//status.css options
      }//status options
      )
-     console.log(introScreen.status)
-     console.log('gjorb')
-     //throw''
-     /*
- introScreen.status.text.x = introScreen.status.position.x
- introScreen.status.text.y = introScreen.status.position.y + 1
- introScreen.status.text.baseline = 'top'
- introScreen.status.text.textAlign = 'left'
- introScreen.status.textColor = titleColor
- */
-
-//bar style (old)
-    /*
-
-    //console.log(imageSourceArray)
-    //define dimensions of preloading screen
-    var introScreen = {}
-   // console.log(this.arrayOfParentsOfStageAndOfContainerArray)
-    var canvasWidth = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.width
-    var canvasHeight = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.height
-    var titleSizeAndFont = '20px ' + self.permanentPreferences.defaultFontType.value
-     var titleHeight = 26
-     var titleAndPreloadBarDistanceY = 50
-     var titleText = 'Loading resources...'
-     var titleColor = '#000000'
-     var statusSizeAndFont = '15px ' + self.permanentPreferences.defaultFontType.value
-     var statusHeight = 20
-     var statusColor = '#000000'
-    var preloadBarY  = canvasHeight/2
-    var preloadBarWidth = canvasWidth*.65
-    var preloadBarHeight = 30
-    var preloadBarBorderColor = 'rgb(0,0,255)'
-    var preloadBarProgressColor = '#000000'
-    var preloadBarUnfinishedColor = 'rgb(150,150,150)'
-    var introScreenBackgroundColor = "blue"
-
-    introScreen.background.image = new createjs.Shape()
-    introScreen.background.image.graphics.beginFill(introScreenBackgroundColor)
-    .drawRect(introScreen.background.position.x, introScreen.background.position.y,  introScreen.background.size.x, introScreen.background.size.y)
-*/
 
 
-/*
-    introScreen.preloadBar = new this.images.Item(canvasWidth/2 - preloadBarWidth/2, preloadBarY, preloadBarWidth, preloadBarHeight, getZ('fill','loadingScreen'))
-    introScreen.title = new this.images.Item(0, preloadBarY-titleAndPreloadBarDistanceY-titleHeight, canvasWidth, titleHeight,animationZ)
-     introScreen.status = new this.images.Item(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y - statusHeight, canvasWidth-introScreen.preloadBar.x, statusHeight,animationZ)
-  
-     //define function for drawing the loading bar graphic
-     introScreen.preloadBar.image  = new createjs.Shape()
-     introScreen.preloadBar.drawBar = function (progressRatio){
+//preloadBar
+  introScreen.preloadBar.image = new createjs.Shape() 
+introScreen.preloadBar.drawBar = function (progressRatio, options){
+console.log('drawbar called')
+if(!options){var options = {}}
 
 if(!_.isNumber(progressRatio) || _.isNaN(progressRatio)){var progressRatio = 0}
+  else if(progressRatio > 1){progressRatio = 1/*;console.error('progress ratio greater than 1')*/}
+else if (progressRatio < 0){progressRatio = 0;console.error('progress ratio negative')}
 
-         //where to start fill
-         var progressX = introScreen.preloadBar.size.x*progressRatio + introScreen.preloadBar.position.x
-         // where to end fill
-         var unfinishedX 
-         //insure fill does not surpass the loading bar
-         if(progressX>=introScreen.preloadBar.size.x+ introScreen.preloadBar.position.x){
-             progressX = introScreen.preloadBar.size.x+ introScreen.preloadBar.position.x
-             unfinishedX = false
-             }
-       else  if(progressX<= introScreen.preloadBar.position.x){
-             progressX = false
-             unfinishedX = introScreen.preloadBar.position.x
-             }
-             //if progress is within bounds, set end of fill to end of bar
-             else{unfinishedX = progressX}
+         //where to fill to
+         var progressX = (introScreen.preloadBar.size.x*progressRatio) + introScreen.preloadBar.position.x
+var endX = introScreen.preloadBar.size.x + introScreen.preloadBar.position.x
 
          //clear previous graphics
          introScreen.preloadBar.image.graphics.clear()
-         //draw outer border
-         .beginStroke(preloadBarBorderColor).beginFill(null).setStrokeStyle(1)
-         .drawRect(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y, introScreen.preloadBar.size.x, introScreen.preloadBar.size.y)
-         //show progress'd ratio
-   if(progressX != false){
-       introScreen.preloadBar.image.graphics.setStrokeStyle(0).beginFill(preloadBarProgressColor)
-       .beginStroke(null).drawRect(introScreen.preloadBar.position.x, introScreen.preloadBar.position.y, progressX - introScreen.preloadBar.position.x, introScreen.preloadBar.size.y)
+         //draw progress
+         .beginStroke(preloadBarProgressColor).beginFill(preloadBarProgressColor).setStrokeStyle(0)
+         .drawRect(introScreen.preloadBar.position.x,introScreen.preloadBar.position.y, progressX - introScreen.preloadBar.position.x, introScreen.preloadBar.size.y)
 
-   }
-if(unfinishedX != false && unfinishedX<introScreen.preloadBar.position.x+introScreen.preloadBar.size.x){
-       introScreen.preloadBar.image.graphics.setStrokeStyle(0).beginFill(preloadBarUnfinishedColor)
-       .beginStroke(null).drawRect(unfinishedX, introScreen.preloadBar.position.y, introScreen.preloadBar.position.x+introScreen.preloadBar.size.x - unfinishedX, introScreen.preloadBar.size.y)
-   }
+if(options.unfinished !== false){
+//draw unfinished
+introScreen.preloadBar.image.graphics.beginStroke(preloadBarUnfinishedColor).beginFill(preloadBarUnfinishedColor).setStrokeStyle(0)
+.drawRect(progressX, introScreen.preloadBar.position.y, endX - progressX, introScreen.preloadBar.size.y )
+}
 
+
+this.progressRatio = progressRatio
 
 //if image is on the stage, we need to set the stage upToDate variable to false
-return self.easelJSDisplayObjectChanged(introScreen.preloadBar)
+if(options.update !== false){self.updateStages(self.easelJSDisplayObjectChanged(introScreen.preloadBar))}
+else{return self.easelJSDisplayObjectChanged(introScreen.preloadBar)}
  
-     }
+     }//preloadBar.drawBar
+
+   introScreen.preloadBar.animate = function(ticksPerCycle, options){
+
+    if(!options){var options = {}}
+//default ticks
+var defaultTicksPerCycle = 75
+if(!_.isNumber(ticksPerCycle) || _.isNaN(ticksPerCycle) || ticksPerCycle <= 0){var ticksPerCycle = defaultTicksPerCycle}
 
 
-     //define title text
-     introScreen.title.addText( titleText, titleSizeAndFont, titleColor)
-     //define statusText
-     introScreen.status.text = new createjs.Text('', statusSizeAndFont, statusColor)
- introScreen.status.text.x= introScreen.status.position.x
- introScreen.status.text.y= introScreen.status.position.y + 1
- introScreen.status.text.baseline = 'top'
- introScreen.status.text.textAlign = 'left'
- introScreen.status.textColor = titleColor
+return introScreen.preloadBar.drawBar( (1/ticksPerCycle+introScreen.preloadBar.progressRatio)%1, options)
 
-*/
+   }//animate
 
+
+
+     //define function for drawing the loading bar graphic
+     introScreen.preloadFill.image  = new createjs.Shape()
+     introScreen.preloadFill.drawFill = function (progressRatio, options){
+
+if(!options){var options = {}}
+
+if(!_.isNumber(progressRatio) || _.isNaN(progressRatio)){var progressRatio = 0}
+  else if(progressRatio > 1){progressRatio = 1}
+
+         //where to fill to
+         var progressX = 2*(introScreen.preloadFill.size.x*progressRatio)+ introScreen.preloadFill.position.x
+var progressY = -2*(introScreen.preloadFill.size.y*progressRatio) + introScreen.preloadFill.position.y
+
+
+         //clear previous graphics
+         introScreen.preloadFill.image.graphics.clear()
+         //draw outer border
+         .beginStroke(preloadFillBorderColor).beginFill(preloadFillProgressColor).setStrokeStyle(1)
+         .moveTo(introScreen.preloadFill.position.x, introScreen.preloadFill.position.y)
+.lineTo(progressX, introScreen.preloadFill.position.y)
+.lineTo(introScreen.preloadFill.position.x,progressY)
+.closePath()//.beginFill(preloadFillProgressColor)
+
+this.progressRatio = progressRatio
+
+//if image is on the stage, we need to set the stage upToDate variable to false
+if(options.update !== false){self.updateStages(self.easelJSDisplayObjectChanged(introScreen.preloadFill))}
+else{return self.easelJSDisplayObjectChanged(introScreen.preloadFill)}
+ 
+     }//preloadFill.drawFill
+
+   introScreen.preloadFill.animate = function(ticksPerCycle, options){
+
+    if(!options){var options = {}}
+//default ticks
+var defaultTicksPerCycle = 75
+if(!_.isNumber(ticksPerCycle) || _.isNaN(ticksPerCycle) || ticksPerCycle <= 0){var ticksPerCycle = defaultTicksPerCycle}
+
+var newProgressRatio = 1/ticksPerCycle+introScreen.preloadFill.progressRatio
+if(options.cycle === true){newProgressRatio = newProgressRatio%1}
+
+
+return introScreen.preloadFill.drawFill( newProgressRatio, options)
+
+   }//animates
+
+     console.log(introScreen.status)
+     console.log('gjorb')
+     //throw''
 
  
 //create text to show user images are being displayed
 
 self.images.loadingScreen = introScreen
-/*
-var titleHeight = 30
-var titleSizeAndFont = '30px ' + self.permanentPreferences.defaultFontType.value
-var titleColor = 'blue'
-var titleText = 'Displaying Images ...'
-var titleX = canvasWidth*.25
-var titleY = canvasHeight*.75
-this.images.imageLoading.title = new this.images.Item(titleX, titleY, canvasWidth -titleX, titleHeight,animationZ)
-this.images.imageLoading.title.text = new createjs.Text(titleText, titleSizeAndFont, titleColor)
-this.images.imageLoading.title.text.x= this.images.imageLoading.title.position.x
- this.images.imageLoading.title.text.y= this.images.imageLoading.title.position.y + 1
- this.images.imageLoading.title.text.baseline = 'top'
- this.images.imageLoading.title.text.textAlign = 'left'
- this.images.imageLoading.title.text.color = titleColor
-*/
 
  //add imageLoading
  
@@ -3282,11 +3241,12 @@ var stagesToUpdate  =  []
        playZoneLandingPage.loadingScreen.status = statusStringFromSource(src)
        playZoneLandingPage.loadingScreen.progressRatio = loadedFiles/totalSources
 try{
-          stagesToUpdate.push(  introScreen.status.updateText(playZoneLandingPage.loadingScreen.status, {update:false}) )
-     stagesToUpdate.push(   introScreen.preloadBar.drawBar(playZoneLandingPage.loadingScreen.progressRatio, {update:false}))
+ //         stagesToUpdate.push(  introScreen.status.updateText(playZoneLandingPage.loadingScreen.status, {update:false}) )
+ //    stagesToUpdate.push(   introScreen.preloadFill.drawFill(playZoneLandingPage.loadingScreen.progressRatio, {update:false}))
+  // console.log('drawing bar due to completed load, ratio: ' +playZoneLandingPage.loadingScreen.progressRatio)
    self.updateStages(stagesToUpdate)
   // console.log('text = ' + introScreen.status.getText())
- }catch(err){}
+ }catch(err){/*console.log('error drawing bar')*/}
         console.log(src +' loaded file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
       console.log(playZoneLandingPage.loadingScreen.progressRatio)
       
@@ -3307,13 +3267,13 @@ try{
           playZoneLandingPage.loadingScreen.status = statusStringFromSource(src)
           playZoneLandingPage.loadingScreen.progressRatio = loadedFiles/totalSources
         try{
-    stagesToUpdate.push(    introScreen.status.updateText(playZoneLandingPage.loadingScreen.status, {update:false}))
-      self.updateStages(stagesToUpdate)
+  //  stagesToUpdate.push(    introScreen.status.updateText(playZoneLandingPage.loadingScreen.status, {update:false}))
+  //    self.updateStages(stagesToUpdate)
     }catch(err){}
 
          console.log(src + ' error loading file id: '+id+' totalLoaded: '+loadedFiles +' of '+totalSources)
          console.log(playZoneLandingPage.loadingScreen.progressRatio)
-     //   introScreen.preloadBar.drawBar(loadedFiles/totalSources)
+     //   introScreen.preloadFill.drawFill(loadedFiles/totalSources)
          if (id == imageSourceArray[imageSourceArray.length-1].id)  {
             console.log('last image loaded')
         }
@@ -3399,6 +3359,8 @@ createjs.Ticker.removeEventListener('tick', checkIfCompleted)
 
 function checkIfCompleted(e){
 
+if(self.isIframe()){console.log('checkIfCompleted called from iframe'+playZoneLandingPage.loadingScreen.progressRatio+playZoneLandingPage.loadingScreen.loaded)}
+//else{console.log('checkIfCompleted called from landingpage');return}
   var stagesToUpdate = []
  // console.log(e)
 //CHECK IF COMPLETED
@@ -3412,12 +3374,24 @@ if (preferencesRetreived !== false){onComplete()}
 else{
    if(!_.isObject(playZoneLandingPage.loadingScreen)){console.log(playZoneLandingPage);throw'loadingscreen not object'}
 //  console.log('changing status text to: ' + playZoneLandingPage.loadingScreen.status)
-  stagesToUpdate.push(introScreen.status.updateText(playZoneLandingPage.loadingScreen.status))
-  stagesToUpdate.push(introScreen.preloadBar.drawBar(playZoneLandingPage.loadingScreen.progressRatio))
-   stagesToUpdate.push(  displayPreloadScreen({update:false}) )
-   self.updateStages(stagesToUpdate)
+  stagesToUpdate.push(introScreen.status.updateText(playZoneLandingPage.loadingScreen.status, {update:false}))
+  //stagesToUpdate.push(introScreen.preloadFill.drawFill(playZoneLandingPage.loadingScreen.progressRatio, {update:false}))
+
+
+
+  console.log('updating bar and status')
+
+
 }
 
+/*
+var ticksPerPreloadBarCycle = 75
+var progressRatioIncrease = 1/ticksPerPreloadBarCycle
+ stagesToUpdate.push(introScreen.preloadBar.drawBar( (introScreen.preloadBar.progressRatio + 1/ticksPerPreloadBarCycle)%1, {update:false}) )
+*/
+//introScreen.preloadBar.animate({update:false})
+   stagesToUpdate.push(displayPreloadScreen({update:false}) )
+   self.updateStages(stagesToUpdate)
 
   }//check if completed
 
@@ -3454,6 +3428,8 @@ for(var i =0;i<flashArray.length;i++){
 
 //console.log('we are going to check whether to perform load from this page, or use other page load');
 //console.log(parent)
+
+
 if(playZoneLandingPage.loadingScreen && (playZoneLandingPage.loadingScreen.loaded === true || playZoneLandingPage.loadingScreen.loading === true)){console.log('other frame to load our images');console.log(self.permanentPreferences.sourceObjects.value);console.log(playZoneLandingPage.sourceObjects)}
   else{
     console.log('loading from this page')
@@ -3473,8 +3449,18 @@ createPreloadArray()
   if(backgroundLoad !== true) { 
 //add event listener to stage to see if it is done
 displayPreloadScreen()
+createjs.Ticker.setInterval(30)
+
+
+  createjs.Ticker.addEventListener('tick', introScreen.preloadFill.animate)
+      createjs.Ticker.addEventListener('tick', introScreen.preloadBar.animate)
    createjs.Ticker.addEventListener('tick', checkIfCompleted)
+
+
   }
+
+//async.
+
 
 
 }//initialize on parent object function
@@ -6062,10 +6048,20 @@ $(holdemCanvas.getIframe()).trigger('mousedown.setToTop')
 
 //self.sessionPreferences.displaySize.updateValue(self.sessionPreferences.displaySize.value)
 
+self.images.loadingScreen.status.updateText('fetching table state ...')
+console.log('fetching table state')
+this.getTableState()
+
       this.updatePreference(this.sessionPreferences, this.sessionPreferences,{updateEqualValues:true})
+       
+self.images.loadingScreen.status.updateText('loading table background ...')
+console.log('loading table background')
         this.setBackground()
        
-this.getTableState()
+
+
+self.images.loadingScreen.status.updateText('preparing images ...')
+console.log('preparing images')
         this.images.setDefaults()
 
        this.images.setDefaultEvents()
@@ -14504,6 +14500,7 @@ if(options.defaults){
 var defaults = {
 
 fill:0
+,bar:0
 ,title:'Loading...'
 ,status:''
 ,background:1
@@ -14516,14 +14513,27 @@ options = _.defaults(options, defaults)
  stagesToUpdate.push( self.displayChildren(loadingScreen, options) )
 
 //update options
+
+
+
+//FILL
 if(_.isNumber(options.fill)){
- stagesToUpdate.push( loadingScreen.preloadBar.drawBar(options.fill, options) )
+ stagesToUpdate.push( loadingScreen.preloadFill.drawFill(options.fill, options) )
 }
 else if(options.fill === false){
- stagesToUpdate.push(loadingScreen.preloadBar.hide() )
+ stagesToUpdate.push(loadingScreen.preloadFill.hide() )
 
 }
 
+//BAR
+if(_.isNumber(options.bar)){
+ stagesToUpdate.push( loadingScreen.preloadBar.drawBar(options.bar, options) )
+}
+else if(options.bar === false){
+ stagesToUpdate.push(loadingScreen.preloadBar.hide() )
+}
+
+//TITLE
 if(_.isString(options.title)){
  stagesToUpdate.push( loadingScreen.title.updateText(options.title, options) )
 }
@@ -14532,7 +14542,7 @@ else if(options.title === false){
 
 }
 
-
+//STATUS
 if(_.isString(options.status)){
 stagesToUpdate.push(  loadingScreen.status.updateText(options.status, options) )
 }
@@ -14541,6 +14551,7 @@ else if(options.status === false){
 
 }
 
+//BACKGROUND
 if(_.isNumber(options.background)){
   loadingScreen.background.image.alpha = options.background
   stagesToUpdate.push(self.easelJSDisplayObjectChanged(loadingScreen.background))
@@ -14566,6 +14577,63 @@ if(options.div !== false){setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisp
   if(options.update === false) {return stagesToUpdate}
 
 }//display preload screen
+
+var hideLoadingScreen = function(options){
+
+if(!_.isObject(options)){var options = {}}
+
+var loadingScreen = self.images.loadingScreen
+
+var setDivAlpha = function(alpha){
+var stageParent = self.getParentOfStageObject(self.images.loadingScreen.title)
+$(stageParent.div).css('opacity',alpha)
+}//adjust alpha
+
+//remove the loading animation no matter what immediately
+createjs.Ticker.removeEventListener('tick',self.images.loadingScreen.preloadBar.animate)
+
+if(options.animate){
+
+
+var animationTimeToHidePreloadingScreen = options.animate
+
+
+var hidePreloadingScreenTicks = 100
+var ticks = 0
+var hide = setInterval(function(){
+var stagesToUpdate = []
+var showRatio = 1 - ticks/hidePreloadingScreenTicks
+
+stagesToUpdate.push (loadingScreen.preloadFill.drawFill(showRatio), {update:false})
+stagesToUpdate.push (setDivAlpha(showRatio))
+
+self.updateStages(stagesToUpdate)
+
+ticks++
+if(ticks >= hidePreloadingScreenTicks){
+  clearInterval(hide)
+finish()
+  }//end the animation
+},
+animationTimeToHidePreloadingScreen/hidePreloadingScreenTicks
+)
+
+}//if ANIMATION
+
+else{finish()}//NO ANIMATION
+
+
+function finish(){
+  setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(getZ('loadingScreen').stage, false)
+            
+self.hideChildren(self.images.loadingScreen)
+
+createjs.Ticker.removeEventListener('tick',self.images.loadingScreen.preloadFill.animate)
+setDivAlpha(1)
+self.activateTicker(50)
+}//function that oes the actul hiding
+
+}//hideLoadingScreen
 
    this.displayInitialTableState = function(table_state, options){
 
@@ -14632,74 +14700,15 @@ self.updateStages(stagesToUpdate)
        // check if all seats are loaded
      //  if(checkSeatsLoaded() ==true){
       if(showTable === true){
+
         self.updateStages(null, {forceUpdate:true})
         createjs.Ticker.removeEventListener("tick", tick)
-        hideLoadingScreen()
+        hideLoadingScreen({animate:550})
       }
        console.log('increasing tick')
        numTicks ++
 
 }//end tick function
-
-function hideLoadingScreen (animateBoolean){
-
-var ticks = 0
-var loadingScreen = self.images.loadingScreen
-
-var setDivAlpha = function(alpha){
-var stageParent = self.getParentOfStageObject(self.images.loadingScreen.title)
-$(stageParent.div).css('opacity',alpha)
-/*
-var containerArray = stageParent.containers
-_.each(containerArray, function(value, index, list){
-value.alpha = alpha
-})
-*/
-
-//var stage = self.images.loadingScreen.title.position.z.stage
-
-//setStageUpdateStatus(stage)
-//return stage
-}//adjust alpha
-
-var hide = setInterval(function(){
-var stagesToUpdate = []
-var showRatio = 1 - ticks/hidePreloadingScreenTicks
-
-stagesToUpdate.push (loadingScreen.preloadBar.drawBar(showRatio), {update:false})
-stagesToUpdate.push (setDivAlpha(showRatio))
-
-self.updateStages(stagesToUpdate)
-
-ticks++
-if(ticks >= hidePreloadingScreenTicks){
-  clearInterval(hide)
-finish()
-  }//end the animation
-},
-animationTimeToHidePreloadingScreen/hidePreloadingScreenTicks
-)
-
-
-function finish(){
-                      //remove all loadingContainers from the stage and remove all children from them
-    //           var parentOfLoadingStage = self.arrayOfParentsOfStageAndOfContainerArray[getZ('loadingScreen').stage]
-          //     parentOfLoadingStage.stage.removeAllChildren()
-               self.updateStages(getZ('loadingScreen').stage)
-              // parentOfLoadingStage.stage.update()
-              console.log('loading canvas now')
-          //     $(parentOfLoadingStage.stage.canvas).css('display','none')
-setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(getZ('loadingScreen').stage, false)
-            setDivAlpha(1)
-self.hideChildren(self.images.loadingScreen)
-               self.activateTicker(50)
-
-}
-
-
-          
-}//showTable
-
 
 
 
@@ -14840,10 +14849,13 @@ else{var dealerPosition = table_state.dealer}
 self.animateDealerButton(dealerPosition,  0, displayOptions)
 self.displayChildren(self.images.dealerButton, {update:false})
 
-
-
 //display buttons/table stuff
 this.updateUserOptionsBasedOnFlagsAndPreactions(displayOptions)
+
+var loadingUpdateStages = []
+loadingUpdateStages.push(self.images.loadingScreen.status.updateText("loading completed ...", {update:false}))//fill 100%
+loadingUpdateStages.push(self.images.loadingScreen.preloadFill.drawFill(1, {update:false}))//fill 100%
+self.updateStages(loadingUpdateStages)
 
 showTable = true
 
