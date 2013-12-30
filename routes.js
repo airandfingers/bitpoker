@@ -44,11 +44,11 @@ module.exports = (function () {
     });
   });
 
-  app.get('/bitcoin_info', function(req, res) {
+  app.get('/faq', function(req, res) {
     var table_games = Table.getTableGames();
-    res.render('bitcoin_info', {
+    res.render('faq', {
       table_games: table_games,
-      title: 'Bitcoin Information',
+      title: 'Frequently Asked Questions',
     });
   });
 

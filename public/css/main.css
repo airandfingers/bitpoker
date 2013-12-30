@@ -139,12 +139,12 @@ h2 {
     width: 100%;
 }
 
-#bitcoin_info {
+#faq {
     min-width: 620px;
     position: relative;
 }
 
-#bitcoin_info > h2, #bitcoin_info > h3 {
+#faq > h2, #faq > h3 {
     color: #111111 !important;
 }
 
