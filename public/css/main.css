@@ -216,10 +216,20 @@ h2 {
     position: relative;
     padding-left: 8%;
     padding-right: 8%;
+    text-align: left
 }
 
 #faq > h1 {
+    font-size:55px;
     padding-top: 0;
+}
+
+#faq > section {
+    margin-left: 15px;
+}
+#faq ul {
+    margin-left: 15px;
+    padding-left:0px;
 }
 
 #faq > h1, #faq > h2, #faq > h3 {
