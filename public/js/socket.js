@@ -1,4 +1,5 @@
-var socket = io.connect(window.location.origin, {
+(function() {
+window.socket = io.connect(window.location.origin, {
   transports: [
     'websocket'
   , 'xhr-multipart'
@@ -9,12 +10,13 @@ var socket = io.connect(window.location.origin, {
 
 var emit = socket.emit;
 socket.emit = function() {
-  console.error('Sending message:', Array.prototype.slice.call(arguments));
+  console.warn('Sending message:', Array.prototype.slice.call(arguments));
   emit.apply(socket, arguments);
 };
 
 var $emit = socket.$emit;
 socket.$emit = function() {
-  console.error('Message received:', Array.prototype.slice.call(arguments));
+  console.warn('Message received:', Array.prototype.slice.call(arguments));
   $emit.apply(socket, arguments);
 };
+})();
