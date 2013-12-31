@@ -52,12 +52,26 @@ module.exports = (function () {
     });
   });
 
-  app.all('/deposit_notification', function(req, res) {
-    console.log('/deposit_notification called with', req.query);
+  app.post('/deposit_notification', function(req, res, next) {
+    console.log('/deposit_notification called with', req.body);
     res.end();
-    var deposit_address = req.query.address;
-    if (! _.isString(deposit_address)) { console.error('No address provided!'); return; }
-    User.findOne({ deposit_address: deposit_address }, function(find_err, user) {
+    var notification;
+    _.each(req.body, function(val, key) {
+      console.log('key:', key, ', val:', val, '~');
+      try {
+        notification = JSON.parse(key);
+      }
+      catch(e) {
+        console.error('Exception while parsing key:', e);
+        next(e);
+      }
+    });
+    
+    // check signature
+    var signed_data = notification.signed_data
+      , signature = notification.signature;
+
+    User.findOne({ deposit_address: signed_data.address }, function(find_err, user) {
       if (find_err) {
         console.error('Error while looking up user by deposit address:', find_err);
       }
@@ -65,7 +79,7 @@ module.exports = (function () {
         console.error('No user found with deposit address!', deposit_address);
       }
       else {
-        btc_main.handleDepositNotification(user, req.query);
+        btc_main.handleDepositNotification(user, notification);
       }
     });
   });
@@ -73,7 +87,7 @@ module.exports = (function () {
   //OLD: Blockchain callback route to deposit bitcoins:
   app.get('/bitcoin_deposit/:username', function(req, res) {
     res.end();
-    if (req.query.confirmations ==='1') {
+    if (req.query.confirmations === '1') {
       var username = req.params.username
         , deposit_amount = req.query.value;
       
@@ -83,7 +97,7 @@ module.exports = (function () {
       catch(e) {
         console.error('Error while attempting to parse deposit', deposit_amount, ':', e);
         return;
-      }   
+      }
       console.log('bitcoin_deposit request came in for username ' + username, ':', req.query);
       console.log('deposit_amount = ' + deposit_amount);
       //increase the amount of users bitcoin account.
