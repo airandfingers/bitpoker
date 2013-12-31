@@ -139,15 +139,6 @@ h2 {
     width: 100%;
 }
 
-#bitcoin_info {
-    min-width: 620px;
-    position: relative;
-}
-
-#bitcoin_info > h2, #bitcoin_info > h3 {
-    color: #111111 !important;
-}
-
 #bug_submit {
     margin: 1em;
 }
@@ -216,6 +207,33 @@ h2 {
 
 #chat_message {
     padding: 0 2em;
+}
+
+#faq {
+    font-size: 1.12em;
+    min-width: 620px;
+    max-width: 900px;
+    position: relative;
+    padding-left: 8%;
+    padding-right: 8%;
+    text-align: left
+}
+
+#faq > h1 {
+    font-size:55px;
+    padding-top: 0;
+}
+
+#faq > section {
+    margin-left: 15px;
+}
+#faq ul {
+    margin-left: 15px;
+    padding-left:0px;
+}
+
+#faq > h1, #faq > h2, #faq > h3 {
+    color: #111111 !important;
 }
 
 #funbucks_leaderboard, #satoshi_leaderboard {
