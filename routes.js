@@ -145,7 +145,7 @@ module.exports = (function () {
     res.render('withdraw_bitcoins', {
      title: 'Withdraw Bitcoins',
      table_games: table_games,
-     bitcoins: req.user.satoshi / 10E8,
+     bitcoins: req.user.satoshi / 1E8,
     });
   });
 
@@ -582,24 +582,25 @@ module.exports = (function () {
   });
 
   //withdraw bitcoins
+  var withdraw_fee = 0.0001 * 1E8;
   app.post('/withdraw_bitcoins', function (req, res) {
-    var num_satoshi = req.body.amount * 10E8
+    var withdraw_total_satoshi = req.body.amount * 1E8
       , withdraw_address = req.body.withdraw_address
      // withdraw bitcoins from user's account, send to given public address
       , url = 'https://blockchain.info/merchant/' + db_config.WALLET_ID + '/payment' +
               '?password=' + db_config.WALLET_PASSWORD +
               '&to=' + withdraw_address +
-              '&amount=' + num_satoshi
-              '$fee='+(0.0001*100000000);
-    console.log('num_satoshi:', num_satoshi, 'withdraw_address:', withdraw_address, 'url:', url);
-    if (num_satoshi > 0) {
+              '&amount=' + (withdraw_total_satoshi - withdraw_fee) +
+              '&fee=' + withdraw_fee;
+    console.log('withdraw_total_satoshi:', withdraw_total_satoshi, 'withdraw_address:', withdraw_address, 'url:', url);
+    if (withdraw_total_satoshi > 0) {
       req.user.checkBalance('satoshi', function(err, balance_in_satoshi) {
         if (err) {
           console.error('Error while looking up bitcoin balance:', err);
           res.redirect('back');
           return;
         }
-        if (num_satoshi <= balance_in_satoshi) {
+        if (withdraw_total_satoshi <= balance_in_satoshi) {
           request({
             url: url
           }, function(err, response, body) {
@@ -611,8 +612,8 @@ module.exports = (function () {
             }
             else {
               var body = JSON.parse(response.body)
-                , new_satoshi = req.user.satoshi - num_satoshi;
-              console.log('Withdraw successful!', num_satoshi, new_satoshi);
+                , new_satoshi = req.user.satoshi - withdraw_total_satoshi;
+              console.log('Withdraw successful!', withdraw_total_satoshi, new_satoshi);
               req.user.update({ $set: { satoshi: new_satoshi } }, function(save_err) {
                 if (save_err) {
                   console.error('Error while updating bitcoin balance:', save_err);
@@ -627,13 +628,13 @@ module.exports = (function () {
           });
         }
         else {
-          console.error('Tried to withdraw', num_satoshi, 'when balance is only', balance_in_satoshi);
+          console.error('Tried to withdraw', withdraw_total_satoshi, 'when balance is only', balance_in_satoshi);
           res.redirect('back');
         }
       });
     }
     else {
-      console.error('Tried to withdraw', num_satoshi);
+      console.error('Tried to withdraw', withdraw_total_satoshi);
       res.redirect('back');
     }
   });
