@@ -590,7 +590,7 @@ module.exports = (function () {
               '?password=' + db_config.WALLET_PASSWORD +
               '&to=' + withdraw_address +
               '&amount=' + num_satoshi
-              '$fee='0.0001/100000000;
+              '$fee='+(0.0001*100000000);
     console.log('num_satoshi:', num_satoshi, 'withdraw_address:', withdraw_address, 'url:', url);
     if (num_satoshi > 0) {
       req.user.checkBalance('satoshi', function(err, balance_in_satoshi) {
