@@ -2301,9 +2301,7 @@ self.events.userStands()
       //if right click
 if(e.nativeEvent.button !== 2){return}//make sure its a right click
 //e.nativeEvent.preventDefault()
-   
-
-      
+         
       var item = e.target.parentItem
       if(!_.isObject(item)){return}
       var seatObject = item.seatObjectAncestor

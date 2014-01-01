@@ -71,6 +71,10 @@
       $iframe.find('iframe').get(0).contentWindow.location.reload();
     });
 
+//wyv addition: set x to close before poker table loads
+setIframeCloseHandler(table_name, function(){closeIframe(table_name)})
+
+
   }
 
   // open iframes for each table_name in initial_tables
