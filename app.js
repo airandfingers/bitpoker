@@ -1,6 +1,7 @@
 // Require dependencies
 var express = require('express')
   , http = require('http')
+  , https = require('https')
   , passport = require('passport')
   , flash = require('connect-flash')
   , fs = require('fs')
@@ -22,10 +23,16 @@ var express = require('express')
       + 'ms\033[0m';
 
 // Create an Express app and an HTTP server
-  }, app = module.exports = express()
-  , server = http.createServer(app)
+  }, http_app = express()
+  , http_server = http.createServer(http_app)
+// Create an Express app and an HTTPS server
+  , app = module.exports = express()
+  , key  = fs.readFileSync('keys/key.pem', 'utf8')
+  , cert = fs.readFileSync('keys/cert.pem', 'utf8')
+  , credentials = { key: key, cert: cert }
+  , server = https.createServer(credentials, app)
 // Declare what port to listen on - set to "process.env.PORT" per modulus getting started.
-  , EXPRESS_PORT = process.env.PORT || 9000
+  , EXPRESS_PORT = process.env.PORT || 443
 // Define some session-related settings
   , db = require('./models/db')
   , session_settings = {
@@ -38,6 +45,11 @@ console.log('session_settings', session_settings);
 
 function start() {
   console.log('starting up.. node version is', process.versions.node);
+
+  // set up HTTP forwarder
+  http_app.use(function(req, res, next) {
+    res.redirect('https://' + req.headers.host + req.url);
+  });
 
   // export some variables to be used by other files (routes, sockets, ?)
   module.exports = {
@@ -53,7 +65,8 @@ function start() {
   // Define which middleware the Express app should use
   // (and what order to apply them in)
   app.use(express.logger(logger_options)); // Log each request
-  app.use(express.bodyParser()); // Parse POST options into req.body
+  app.use(express.urlencoded()); // Parse POST options into req.body (application/x-www-form-urlencoded)
+  app.use(express.bodyParser()); // Parse POST options into req.body (application/json)
   app.use(express.static(__dirname + '/public')); // Serve files found in the public directory
   app.use(express.cookieParser()); // Parse cookie into req.session
   app.use(express.session({
@@ -101,9 +114,11 @@ function start() {
   //thus, this server is accessible at the URL:
   //  [hostname]:X
   //where [hostname] is the IP address of our server, or any domains pointed at our server
+  http_server.listen(80);
   server.listen(EXPRESS_PORT);
 
   //this is printed after the server is up
+  console.log('http_server listening on port %d in %s mode', http_server.address().port, app.settings.env);
   console.log('server listening on port %d in %s mode', server.address().port, app.settings.env);
 }
 
