@@ -5996,6 +5996,21 @@ console.log(this.images.background.image.isVisible())
 
     this.images.setDefaultEvents = function(){
 
+//prevent tabbing because it auto srolls shit
+$(window).on('keydown', function(e){
+
+var keyCode = e.keyCode || e.which; 
+
+  if (keyCode == 9) { //if tab key
+    e.preventDefault(); 
+  } 
+
+
+})
+
+
+
+
         //mouse events for changing bet sizes
      //    $(this.betSlider.slider.image).on('mousedown', self.events.betSliderHorizontalMouseDown)
 
