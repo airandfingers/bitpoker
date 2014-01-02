@@ -352,7 +352,6 @@ module.exports = (function () {
 
     // don't let guest users set an email address (they can't log in anyway)
     if (User.isGuest(username)) {
-      console.log('You cannot register an email address to a guest account');      
       var error = 'You cannot register an email address to a guest account';  
       console.error(error); 
       res.json({ error: error });       
