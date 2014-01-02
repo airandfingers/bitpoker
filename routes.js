@@ -76,7 +76,7 @@ module.exports = (function () {
       , concatenated_data = signed_data.address + signed_data.agent + signed_data.amount +
                             signed_data.amount_btc + signed_data.confirmations + signed_data.created +
                             signed_data.userdata + signed_data.txhash + db_config.BITCOIN_MONITOR_API_KEY
-      , calculated_signature = crypto.createHash('md5'.update(concatenated_data).digest('hex'));
+      , calculated_signature = crypto.createHash('md5').update(concatenated_data).digest('hex');
     console.log('Comparing', concatenated_data, calculated_signature, signature);
     if (calculated_signature !== signature) {
       console.error('Deposit notification\'s signature didn\'t match calculated signature!');
