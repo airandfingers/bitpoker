@@ -1,7 +1,16 @@
 (function() {
 
-  function resizeIFrame(table_name, height, width) {
-    $('[src="/'+ table_name + '"]').height(height).width(width);
+  function resizeIFrame(table_name, height, width, options) {
+    if(!_.isObject(options)){var options = {}}
+      var iframe = $('[src="/'+ table_name + '"]')
+//iframe.css('float','right')
+   //   if(options.right){var oldWidth = iframe.width()}
+     //   if(options.bottom){var oldHeight = iframe.height()}
+
+    iframe.height(height).width(width);
+  
+//if(options.right){}
+
   }
 
   function resizeWindowJazz(e) {
