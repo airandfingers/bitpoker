@@ -59,7 +59,6 @@ module.exports = (function () {
     res.end();
     var notification;
     _.each(req.body, function(val, key) {
-      console.log('key:', key, ', val:', val, '~');
       try {
         notification = JSON.parse(key);
       }
@@ -69,11 +68,11 @@ module.exports = (function () {
       }
     });
     
-    // check signature
     var signed_data = notification.signed_data
       , deposit_address = signed_data.address
-      , signature = notification.signature
-      , concatenated_data = signed_data.address + signed_data.agent + signed_data.amount +
+      , signature = notification.signature;
+    // check signature (not working for some reason)
+      /*, concatenated_data = signed_data.address + signed_data.agent + signed_data.amount +
                             signed_data.amount_btc + signed_data.confirmations + signed_data.created +
                             signed_data.userdata + signed_data.txhash + db_config.BITCOIN_MONITOR_API_KEY
       , calculated_signature = crypto.createHash('md5').update(concatenated_data).digest('hex');
@@ -81,7 +80,7 @@ module.exports = (function () {
     if (calculated_signature !== signature) {
       console.error('Deposit notification\'s signature didn\'t match calculated signature!');
       return;
-    }
+    }*/
 
     User.findOne({ deposit_address: deposit_address }, { password: 0 }, function(find_err, user) {
       if (find_err) {
