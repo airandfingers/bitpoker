@@ -1,5 +1,8 @@
 <% include head %>
     <div id="container" class="inverse">
+        <% if (typeof message === 'string') { %>
+          <p class="inverse"><%= message %></p>
+        <% } %>
         <h1> Withdraw Bitcoins </h1>
         <form action ="/withdraw_bitcoins" method="post" class="form-inline">
             Account balance (in BTC): <%= bitcoins %>

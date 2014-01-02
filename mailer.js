@@ -1,5 +1,6 @@
 module.exports = (function () {
-  var nodemailer = require ('nodemailer');
+  var nodemailer = require('nodemailer')
+    , db_config = require('./models/db.config');
 
   //create reusable transport method (opens pool of SMTP connections)
   var smtp_transport = nodemailer.createTransport('SMTP', {
@@ -19,7 +20,7 @@ module.exports = (function () {
 
   // send confirmation email with a link to the confirmation route
   var sendConfirmationEmail = function(email_address, confirmation_code, username) {
-    var confirmation_url = 'https://bitcoin-poker-7793.onmodulus.net/verify_email?email=' + email_address +
+    var confirmation_url = 'https://' + db_config.DB_HOST + '/verify_email?email=' + email_address +
                            '&confirmation_code=' + confirmation_code
       , greeting = 'Hi ' + username + '!'
       , confirmation_email = {
@@ -45,7 +46,7 @@ module.exports = (function () {
 
   // send password recovery email with a link to the password reset route.
   var sendPasswordRecovery = function(email_address, recovery_code, username) {
-    var recovery_url = 'https://bitcoin-poker-7793.onmodulus.net/password_reset?email=' + email_address +
+    var recovery_url = 'https://' + db_config.DB_HOST + '/password_reset?email=' + email_address +
                         '&recovery_code=' + recovery_code + '&username=' + username
         , greeting = 'Hello ' + username + ','
         , password_recovery_email = {
