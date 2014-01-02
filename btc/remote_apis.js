@@ -59,7 +59,7 @@ module.exports = (function () {
     });
   };
 
-  var checkTransaction = function(tx_hash, deposit_address, cb) {
+  var checkTransaction = function(tx_hash, deposit_address, deposit_amount, cb) {
     console.log('checkTransaction called with', tx_hash, deposit_address);
     var url = 'https://blockchain.info/q/txresult/' + tx_hash + '/' + deposit_address;
     request(url, function(request_err, response) {
@@ -72,9 +72,11 @@ module.exports = (function () {
         console.error('Error while checking transaction:', request_err);
         return cb(request_err);
       }
-      var body = JSON.parse(response.body);
-      console.log('Received response from blockchain:', body);
-      cb(null, body);
+      var amount = JSON.parse(response.body);
+      if (amount !== deposit_amount) {
+        return cb('BlockChain reported ' + amount + ' instead of ' + deposit_amount);
+      }
+      cb();
     });
   };
 

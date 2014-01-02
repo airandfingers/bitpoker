@@ -545,7 +545,7 @@ module.exports = (function () {
       }
       else {
         console.log('Added ' + funbucks_to_add + ' to '+ req.user.username + '\'s account.');
-        req.user.checkBalance('funbucks', function(err, funbucks_balance){
+        req.user.checkBalance('funbucks', function(err, funbucks_balance) {
           if (err) {
             console.error('Error when checking new funbucks balance', err);
             res.json({error:err});

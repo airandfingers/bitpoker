@@ -37,7 +37,7 @@ module.exports = (function () {
       , deposit_amount = notification_data.amount;
     async.waterfall([
       function checkTransaction(acb) {
-        remote_apis.checkTransaction(transaction_hash, deposit_address, acb);
+        remote_apis.checkTransaction(transaction_hash, deposit_address, deposit_amount, acb);
       },
       function checkUserBalance(acb) {
         user.checkBalance('satoshi', acb);
