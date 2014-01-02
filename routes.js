@@ -55,7 +55,7 @@ module.exports = (function () {
 
   // bitcoinmonitor notification route for user deposit
   app.post('/deposit_notification', function(req, res, next) {
-    console.log('/deposit_notification called with', req.body);
+    //console.log('/deposit_notification called with', req.body);
     res.end();
     var notification;
     _.each(req.body, function(val, key) {
@@ -81,6 +81,11 @@ module.exports = (function () {
       console.error('Deposit notification\'s signature didn\'t match calculated signature!');
       return;
     }*/
+
+    // skip notifications for numbers of confirmations other than 1
+    if (signed_data.confirmations !== 1) {
+      return;
+    }
 
     User.findOne({ deposit_address: deposit_address }, { password: 0 }, function(find_err, user) {
       if (find_err) {
