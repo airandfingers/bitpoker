@@ -292,7 +292,7 @@ module.exports = (function() {
         return;
       }
       else {
-        console.log(user.username + ' has ' + (user && user[type]) + ' in ' + type + ' on ' + Date());
+        //console.log(user.username + ' has ' + (user && user[type]) + ' in ' + type + ' on ' + Date());
         cb(null, user && user[type]);
       }
     });

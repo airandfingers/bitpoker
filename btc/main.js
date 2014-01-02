@@ -30,11 +30,11 @@ module.exports = (function () {
     agent: 'Deposit Notifier'
   },
   */
-  var handleDepositNotification = function(user, notification) {
-    console.log('handleDepositNotification called with', user, notification);
-    var deposit_address = notification.address
-      , transaction_hash = notification.txhash
-      , deposit_amount = notification.amount;
+  var handleDepositNotification = function(user, notification_data) {
+    console.log('handleDepositNotification_data called with', user, notification_data);
+    var deposit_address = notification_data.address
+      , transaction_hash = notification_data.txhash
+      , deposit_amount = notification_data.amount;
     async.waterfall([
       function checkTransaction(acb) {
         remote_apis.checkTransaction(transaction_hash, deposit_amount, acb);
@@ -85,7 +85,6 @@ module.exports = (function () {
       },
       function checkAgainstBalance(acb) {
         user.checkBalance('satoshi', function(check_err, balance_in_satoshi) {
-          console.log('comparing', withdraw_amount, balance_in_satoshi);          
           if (check_err) {
             console.error('Error while looking up bitcoin balance: ', check_err);
             error = generic_error;

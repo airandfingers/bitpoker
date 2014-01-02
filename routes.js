@@ -12,7 +12,8 @@ module.exports = (function () {
     , db_config = require('./models/db.config')
     , mailer = require('./mailer')
     , request = require('request')
-    , btc_main = require('./btc/main');
+    , btc_main = require('./btc/main')
+    , crypto = require('crypto');
 
   var package_file = require('./package.json');
   console.log('package.json version is ' + package_file.version);
@@ -26,7 +27,7 @@ module.exports = (function () {
   
   //These app.get functions will display their respective ejs page.
   app.get('/account', ensureAuthenticated, function(req, res) {
-    console.log('req.user is ' + req.user);
+    //console.log('req.user is ' + req.user);
     var table_games = Table.getTableGames()
       , flash = req.flash('error');
 
@@ -71,9 +72,18 @@ module.exports = (function () {
     // check signature
     var signed_data = notification.signed_data
       , deposit_address = signed_data.address
-      , signature = notification.signature;
+      , signature = notification.signature
+      , concatenated_data = signed_data.address + signed_data.agent + signed_data.amount +
+                            signed_data.amount_btc + signed_data.confirmations + signed_data.created +
+                            signed_data.userdata + signed_data.txhash + db_config.BITCOIN_MONITOR_API_KEY
+      , calculated_signature = crypto.createHash('md5'.update(concatenated_data).digest('hex'));
+    console.log('Comparing', concatenated_data, calculated_signature, signature);
+    if (calculated_signature !== signature) {
+      console.error('Deposit notification\'s signature didn\'t match calculated signature!');
+      return;
+    }
 
-    User.findOne({ deposit_address: deposit_address }, function(find_err, user) {
+    User.findOne({ deposit_address: deposit_address }, { password: 0 }, function(find_err, user) {
       if (find_err) {
         console.error('Error while looking up user by deposit address:', find_err);
       }
@@ -81,7 +91,7 @@ module.exports = (function () {
         console.error('No user found with deposit address!', deposit_address);
       }
       else {
-        btc_main.handleDepositNotification(user, notification);
+        btc_main.handleDepositNotification(user, signed_data);
       }
     });
   });

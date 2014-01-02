@@ -60,7 +60,7 @@ module.exports = (function () {
   };
 
   var checkTransaction = function(tx_hash, deposit_address, cb) {
-    console.log('checkTransaction called with', tx_hash, cb);
+    console.log('checkTransaction called with', tx_hash, deposit_address);
     var url = 'https://blockchain.info/q/txresult/' + tx_hash + '/' + deposit_address;
     request(url, function(request_err, response) {
       if (! request_err && response &&
