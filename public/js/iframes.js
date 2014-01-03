@@ -73,6 +73,7 @@
     , snap: false
     , snapMode: 'outer'
     , containment: '#container'
+    , iframeFix: true
     //, stack: '.iframe'
     });
 
