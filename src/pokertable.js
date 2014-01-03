@@ -2314,11 +2314,70 @@ self.sessionPreferences.changeUserSeatViewTo.updateValue(rotatedSeatNumber)
 self.saveSessionPreferences()
 }
 
+var promptUsernameCopy = function(text){
+
+ window.alert ("(Control + C to copy)", text);
+
+}
+
+var selectPlayerText = function(){
+
+var textDisplayItem = seatObject.playerName
+
+function selectElementText(el, win) {
+    win = win || window;
+    var doc = win.document, sel, range;
+    if (win.getSelection && doc.createRange) {
+        sel = win.getSelection();
+        range = doc.createRange();
+        range.selectNodeContents(el);
+        sel.removeAllRanges();
+        sel.addRange(range);
+    } else if (doc.body.createTextRange) {
+        range = doc.body.createTextRange();
+        range.moveToElementText(el);
+        range.select();
+    }
+}
+
+//if element make selectable 
+if(_.isElement(textDisplayItem.text)){
+
+
+var isUnselectable = $(textDisplayItem.text).hasClass(self.css.unselectable)
+
+if(isUnselectable){$(textDisplayItem.text).removeClass(self.css.unselectable)}
+selectElementText(textDisplayItem.text)
+if(isUnselectable){
+
+var addUnselectable = setInterval(function(){
+if(!$(textDisplayItem.text).hasClass(self.css.unselectable)){ $(textDisplayItem.text).addClass(self.css.unselectable)}
+$(textDisplayItem.text).off('focusout.clearAddUnselectable')
+},5000)//delay 5 seconds
+ 
+ $(textDisplayItem.text).one('focusout.clearAddUnselectable',function(e){clearInterval(addUnselectable)})
+
+}
+
+}//if element
+
+else if(textDisplayItem.text instanceof createjs.Text){
+  promptUsernameCopy(textDisplayItem.getText())
+}//if createjstext
+
+}//select playertext
+
 var x = e.stageX+1;var y = e.stageY+1
+
+var menu = [
+    {title: "Show Me Here", action: rotate }
+]
+//push if player is seated
+if( seatObject.playerName.isDisplayed()){menu.push({title: "Copy Player Name", action: selectPlayerText})}
 
 var contextmenuOptions = {
     delegate: stageParent.div,
-    menu: [  {title: "Show Me Here", action: rotate }]
+menu:menu
     /*
     ,select: function(event, ui) {
        // alert("select " + ui.cmd + " on " + ui.target.text());
