@@ -72,6 +72,7 @@
       handle: '.iframe_header'
     , snap: false
     , snapMode: 'outer'
+    , containment: '#container'
     //, stack: '.iframe'
     });
 
