@@ -70,7 +70,7 @@
     // make iframe draggable
     $iframe.draggable({
       handle: '.iframe_header'
-    , snap: false
+    , snap: true
     , snapMode: 'outer'
     , containment: '#container'
     , iframeFix: true
@@ -82,9 +82,19 @@
       $iframe.find('iframe').get(0).contentWindow.location.reload();
     });
 
-//wyv addition: set x to close before poker table loads
-setIframeCloseHandler(table_name, function(){closeIframe(table_name)})
+    //wyv addition: set x to close before poker table loads
+    setIframeCloseHandler(table_name, function(){closeIframe(table_name)})
 
+    function newIFramePosition(iframe) {
+    //find number of iframes currently on table.
+    //if 0, place position Top: 0, Left: 0
+    //if 1, place position Top: 0, Right: 0
+    //if 2, place position Bottom: 0, Left: 0
+    //if 3, place position Bottom: 0, Right: 0
+    //if >3, place center.
+
+    return new_position;
+    }
 
   }
 
