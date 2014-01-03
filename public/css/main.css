@@ -251,6 +251,10 @@ h2 {
     margin-right: auto;
 }
 
+#nav-collapse-1 {
+    border: none;
+}
+
 #play_as_guest {
     margin: .5em;
 }

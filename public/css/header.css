@@ -12,18 +12,17 @@ header {
 .navbar {
     background: rgba(0,0,0,0);
     border: none;
+    margin-bottom: 0;
 }
 
+.navbar-static-top {
+}
 .navbar a:link    { color: white; }
 .navbar a:visited { color: #CCCCCC; }
 .navbar a:hover   { color: red; }
 .navbar a.current_page  { color: chartreuse; }
 .navbar a#lobby_trigger  { color: orange; }
 .navbar a#lobby_trigger:hover  { color: red; }
-
-.navbar-collapse {
-    border: none;
-}
 
 #chip_count {
     display: none;
