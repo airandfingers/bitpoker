@@ -38,10 +38,10 @@ module.exports = (function() {
   , recovery_code      : { type: String }
   , registration_date  : { type: Date, default: Date.now }
   , deposit_address    : { type: String }
-  , current_table_names: { type: [String], default: function() { return {}; } }
+  , current_table_names: { type: [String], default: function() { return []; } }
   // persistent preferences shared across sessions/tables
   , preferences        : { type: Schema.Types.Mixed, default: function() { return {}; } }
-  , agent_id           : Number
+  , transactions       : { type: [Schema.Types.Mixed], default: function() { return []; } }
   }, { minimize: false }); // set minimize to false to save empty objects
 
   // static methods - Model.method()
@@ -283,17 +283,30 @@ module.exports = (function() {
     });
   };
 
-  // lookup and return current currency value of the given type
+  // look up and return current balance of the given currency type
   UserSchema.methods.checkBalance = function(type, cb) {
-    User.findOne({ _id: this._id }, function(err, user) {
-      if (err) {
-        cb(err);
+    if (type !== 'satoshi' && type !== 'funbucks') { return cb('Invalid type passed to checkBalance: ' + type); }
+    User.findOne({ _id: this._id }, function(find_err, user) {
+      if (find_err) {
+        cb(find_err);
         return;
       }
       else {
-        console.log(user.username + ' has ' + (user && user[type]) + ' in ' + type + ' on ' + Date());
+        //console.log(user.username + ' has ' + (user && user[type]) + ' in ' + type + ' on ' + Date());
         cb(null, user && user[type]);
       }
+    });
+  };
+
+  // update balance of the given currency type, and create a transaction to store in the transactions array
+  UserSchema.methods.updateBalance = function(type, new_balance, transaction, cb) {
+    if (type !== 'satoshi' && type !== 'funbucks') { return cb('Invalid type passed to updateBalance: ' + type); }
+    var update_obj = { $set: {} };
+    update_obj.$set[type] = new_balance;
+    if (_.isObject(transaction)) { update_obj.$push = { transactions: transaction }; }
+    //console.log('update_obj is', update_obj);
+    this.update(update_obj, function(update_err) {
+      cb(update_err, new_balance);
     });
   };
 

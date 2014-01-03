@@ -12,7 +12,8 @@ module.exports = (function () {
     , db_config = require('./models/db.config')
     , mailer = require('./mailer')
     , request = require('request')
-    , btc_main = require('./btc/main');
+    , btc_main = require('./btc/main')
+    , crypto = require('crypto');
 
   var package_file = require('./package.json');
   console.log('package.json version is ' + package_file.version);
@@ -26,7 +27,7 @@ module.exports = (function () {
   
   //These app.get functions will display their respective ejs page.
   app.get('/account', ensureAuthenticated, function(req, res) {
-    console.log('req.user is ' + req.user);
+    //console.log('req.user is ' + req.user);
     var table_games = Table.getTableGames()
       , flash = req.flash('error');
 
@@ -52,26 +53,41 @@ module.exports = (function () {
     });
   });
 
+  // bitcoinmonitor notification route for user deposit
   app.post('/deposit_notification', function(req, res, next) {
-    console.log('/deposit_notification called with', req.body);
+    //console.log('/deposit_notification called with', req.body);
     res.end();
     var notification;
     _.each(req.body, function(val, key) {
-      console.log('key:', key, ', val:', val, '~');
       try {
         notification = JSON.parse(key);
       }
       catch(e) {
         console.error('Exception while parsing key:', e);
-        next(e);
+        return next(e);
       }
     });
     
-    // check signature
     var signed_data = notification.signed_data
+      , deposit_address = signed_data.address
       , signature = notification.signature;
+    // check signature (not working for some reason)
+      /*, concatenated_data = signed_data.address + signed_data.agent + signed_data.amount +
+                            signed_data.amount_btc + signed_data.confirmations + signed_data.created +
+                            signed_data.userdata + signed_data.txhash + db_config.BITCOIN_MONITOR_API_KEY
+      , calculated_signature = crypto.createHash('md5').update(concatenated_data).digest('hex');
+    console.log('Comparing', concatenated_data, calculated_signature, signature);
+    if (calculated_signature !== signature) {
+      console.error('Deposit notification\'s signature didn\'t match calculated signature!');
+      return;
+    }*/
 
-    User.findOne({ deposit_address: signed_data.address }, function(find_err, user) {
+    // skip notifications for numbers of confirmations other than 1
+    if (signed_data.confirmations !== 1) {
+      return;
+    }
+
+    User.findOne({ deposit_address: deposit_address }, { password: 0 }, function(find_err, user) {
       if (find_err) {
         console.error('Error while looking up user by deposit address:', find_err);
       }
@@ -79,51 +95,16 @@ module.exports = (function () {
         console.error('No user found with deposit address!', deposit_address);
       }
       else {
-        btc_main.handleDepositNotification(user, notification);
+        btc_main.handleDepositNotification(user, signed_data);
       }
     });
   });
 
-  //OLD: Blockchain callback route to deposit bitcoins:
+  // Blockchain notification route for user deposit (redundant with /deposit_notification)
   app.get('/bitcoin_deposit/:username', function(req, res) {
     res.end();
-    if (req.query.confirmations === '1') {
-      var username = req.params.username
-        , deposit_amount = req.query.value;
-      
-      try {
-        deposit_amount = parseInt(deposit_amount, 10);
-      }
-      catch(e) {
-        console.error('Error while attempting to parse deposit', deposit_amount, ':', e);
-        return;
-      }
-      console.log('bitcoin_deposit request came in for username ' + username, ':', req.query);
-      console.log('deposit_amount = ' + deposit_amount);
-      //increase the amount of users bitcoin account.
-      User.findOne({username: username}, function (err, user) {
-        if (err) {
-          console.log('Error when looking up old bitcoin balance.');
-        }
-        else {
-          console.log('Old bitcoin satoshi looked up is ' + user.satoshi + ' satoshi.');
-          var old_balance = user.satoshi
-            , new_bitcoin_balance = old_balance + deposit_amount;
-          console.log('New bitcoin balance will be ' + new_bitcoin_balance);
-          console.log('calling bitcoin deposit update route');
-          User.update({ username: username }, { $set: { satoshi: new_bitcoin_balance } }, function(err) {
-            if (err) {
-              console.error('error when updating bitcoin balance to database.'); 
-            }
-            else {
-              console.log('Deposited ' + deposit_amount + ' into ' + username + '\'s account.\nNew balance is '+ new_bitcoin_balance + ' satoshi.');
-              user.broadcastBalanceUpdate('satoshi', new_bitcoin_balance);
-            }
-          });
-        }
-      });
-    }
   });
+
   app.get('/deposit_bitcoins', ensureAuthenticated, function(req, res) {
     console.log(req.user.deposit_address);
     var table_games = Table.getTableGames();
@@ -141,11 +122,25 @@ module.exports = (function () {
   });
 
   app.get('/withdraw_bitcoins', ensureAuthenticated, function(req, res) {
-    var table_games = Table.getTableGames();
+    var table_games = Table.getTableGames()
+      , flash = req.flash('error');
     res.render('withdraw_bitcoins', {
-     title: 'Withdraw Bitcoins',
-     table_games: table_games,
-     bitcoins: req.user.satoshi / 1E8,
+      title: 'Withdraw Bitcoins',
+      table_games: table_games,
+      bitcoins: req.user.satoshi / 1E8,
+      message: flash && flash[0]
+    });
+  });
+
+  app.post('/withdraw_bitcoins', function (req, res) {
+    btc_main.handleWithdrawRequest(req.user, req.body, function(err) {
+      if (err) {
+        req.flash('error', err);
+        res.redirect('back');
+      }
+      else {
+        res.redirect('account');
+      }
     });
   });
 
@@ -362,7 +357,6 @@ module.exports = (function () {
 
     // don't let guest users set an email address (they can't log in anyway)
     if (User.isGuest(username)) {
-      console.log('You cannot register an email address to a guest account');      
       var error = 'You cannot register an email address to a guest account';  
       console.error(error); 
       res.json({ error: error });       
@@ -556,7 +550,7 @@ module.exports = (function () {
       }
       else {
         console.log('Added ' + funbucks_to_add + ' to '+ req.user.username + '\'s account.');
-        req.user.checkBalance('funbucks', function(err, funbucks_balance){
+        req.user.checkBalance('funbucks', function(err, funbucks_balance) {
           if (err) {
             console.error('Error when checking new funbucks balance', err);
             res.json({error:err});
@@ -579,64 +573,6 @@ module.exports = (function () {
     // Authentication successful. Redirect.
     //console.log('POST /login called!');
     res.redirect(req.body.next || base_page);
-  });
-
-  //withdraw bitcoins
-  var withdraw_fee = 0.0001 * 1E8;
-  app.post('/withdraw_bitcoins', function (req, res) {
-    var withdraw_total_satoshi = req.body.amount * 1E8
-      , withdraw_address = req.body.withdraw_address
-     // withdraw bitcoins from user's account, send to given public address
-      , url = 'https://blockchain.info/merchant/' + db_config.WALLET_ID + '/payment' +
-              '?password=' + db_config.WALLET_PASSWORD +
-              '&to=' + withdraw_address +
-              '&amount=' + (withdraw_total_satoshi - withdraw_fee) +
-              '&fee=' + withdraw_fee;
-    console.log('withdraw_total_satoshi:', withdraw_total_satoshi, 'withdraw_address:', withdraw_address, 'url:', url);
-    if (withdraw_total_satoshi > 0) {
-      req.user.checkBalance('satoshi', function(err, balance_in_satoshi) {
-        if (err) {
-          console.error('Error while looking up bitcoin balance:', err);
-          res.redirect('back');
-          return;
-        }
-        if (withdraw_total_satoshi <= balance_in_satoshi) {
-          request({
-            url: url
-          }, function(err, response, body) {
-            if (err) {
-              console.error('Error while withdrawing:', err);
-            }
-            else if (response.statusCode !== 200 && response.statusCode !== 201) {
-              console.error('Unsuccessful response code while withdrawing:', response.statusCode);
-            }
-            else {
-              var body = JSON.parse(response.body)
-                , new_satoshi = req.user.satoshi - withdraw_total_satoshi;
-              console.log('Withdraw successful!', withdraw_total_satoshi, new_satoshi);
-              req.user.update({ $set: { satoshi: new_satoshi } }, function(save_err) {
-                if (save_err) {
-                  console.error('Error while updating bitcoin balance:', save_err);
-                }
-                else {
-                  console.log('User bitcoin balance update successful');
-                  req.user.broadcastBalanceUpdate('satoshi', new_satoshi);
-                }
-              });
-            }
-            res.redirect('/account');
-          });
-        }
-        else {
-          console.error('Tried to withdraw', withdraw_total_satoshi, 'when balance is only', balance_in_satoshi);
-          res.redirect('back');
-        }
-      });
-    }
-    else {
-      console.error('Tried to withdraw', withdraw_total_satoshi);
-      res.redirect('back');
-    }
   });
 
   //Send register the new information

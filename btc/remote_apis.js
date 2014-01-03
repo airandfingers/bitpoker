@@ -7,7 +7,7 @@ module.exports = (function () {
     var url = 'https://blockchain.info/api/receive?method=create' +
       '&address=' + vault_address +
       '&shared=false' +
-      '&callback=https://bitcoin-poker-7793.onmodulus.net/bitcoin_deposit/' + username
+      '&callback=https://' + db_config.DB_HOST + '/bitcoin_deposit/' + username
       , error = null;
     request({
       url: url
@@ -59,25 +59,55 @@ module.exports = (function () {
     });
   };
 
-  var checkAmountReceived = function(address, cb) {
-    console.log('checkAmountReceived called with', address, cb);
-    var url = 'https://blockchain.info/q/getreceivedbyaddress/' + address;
-    request(url, function(request_err, response, body) {
+  var checkTransaction = function(tx_hash, deposit_address, deposit_amount, cb) {
+    console.log('checkTransaction called with', tx_hash, deposit_address);
+    var url = 'https://blockchain.info/q/txresult/' + tx_hash + '/' + deposit_address;
+    request(url, function(request_err, response) {
       if (! request_err && response &&
           response.statusCode !== 200 &&
           response.statusCode !== 201) {
         request_err = new Error('Unsuccessful response code:' + response.statusCode);
       }
       if (request_err) {
-        console.error('Error while setting checking amount received:', request_err);
+        console.error('Error while checking transaction:', request_err);
         return cb(request_err);
       }
-      var body = JSON.parse(response.body);
-      console.log('Received response from blockchain:', body);
-      cb(null, body);
+      var amount = JSON.parse(response.body);
+      if (amount !== deposit_amount) {
+        return cb('BlockChain reported ' + amount + ' instead of ' + deposit_amount);
+      }
+      cb();
     });
   };
 
+  var sendTransaction = function(withdraw_address, withdraw_amount, withdraw_fee, cb) {
+    var url = 'https://blockchain.info/merchant/' + db_config.WALLET_ID + '/payment' +
+              '?password=' + db_config.WALLET_PASSWORD +
+              '&to=' + withdraw_address +
+              '&amount=' + (withdraw_amount - withdraw_fee) +
+              '&fee=' + withdraw_fee;
+    request({
+      url: url
+    }, function(request_err, response) {
+      if (request_err) {
+        cb('Error while withdrawing: ' + request_err);
+      }
+      else if (response.statusCode !== 200 && response.statusCode !== 201) {
+        cb('Unsuccessful response code while withdrawing: ' + response.statusCode);
+      }
+      else {
+        var body = JSON.parse(response.body);
+        if (! _.isUndefined(body.error)) {
+          cb('Error while withdrawing: ' + body.error);
+        }
+        else {
+          cb(null, body.tx_hash);
+        }
+      }
+    });
+  };
+
+  /* Currently-unnecessary attempt at sending raw transactions
   var sendTransaction = function(raw_tx, cb) {
     console.log('sendTransaction called with', raw_tx);
     // submit the transaction to blockchain.info's /pushtx route
@@ -103,16 +133,12 @@ module.exports = (function () {
       }
       if (_.isFunction(cb)) { cb(request_err); }
     });
-  };
-
-  var verifyTransaction = function() {
-
-  };
+  };*/
 
   return {
     createDepositAddress: createDepositAddress,
     setupDepositNotificationsForAddress: setupDepositNotificationsForAddress,
-    checkAmountReceived: checkAmountReceived,
+    checkTransaction: checkTransaction,
     sendTransaction: sendTransaction
   };
 })();
