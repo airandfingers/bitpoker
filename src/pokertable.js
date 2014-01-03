@@ -22,7 +22,7 @@ else{var page = window}
   return page
 }
 
-
+self.getIframeLib = function(){return playZoneLandingPage.iframes}
 
 self.getTableName = function(){return $('#server_values').data('table_name')}
 
@@ -75,7 +75,7 @@ self.permanentPreferences.sourceObjects.value.cardObjectParent = self.permanentP
        
 this.value  = newValue
 
-if(self.gameState.itemsCreated === true){self.changeUserSeatView(this.value)}
+if(self.gameState.itemsCreated === true){return self.changeUserSeatView(this.value)}
 
         } 
       },
@@ -86,7 +86,7 @@ this.value = newValue
 if(self.gameState.itemsCreated === true){
 var movementObject = {}
 movementObject.magnitude = newValue
-self.moveTableChatFullMessageText(movementObject)
+return self.moveTableChatFullMessageText(movementObject)
 }
 }//updateValue function
 },//tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels
@@ -96,8 +96,7 @@ self.moveTableChatFullMessageText(movementObject)
                       var update = options.update
       if((newValue === false || this.value === false) && newValue !== this.value){    options.update = true}
 this.value = newValue
-if(self.gameState.itemsCreated === true){
-self.updateTableChatFullDisplay(null, options)}
+if(self.gameState.itemsCreated === true){return self.updateTableChatFullDisplay(null, options)}
                   }//hideDealerMessages.updateValue function
                 },//hideDealerMessages
                   hideDealerMessagesOn: {value:false, updateValue: function(newValue, options){
@@ -106,8 +105,7 @@ self.updateTableChatFullDisplay(null, options)}
       if((newValue === false || this.value === false) && newValue !== this.value){    options.update = true}
 this.value = newValue
 
-if(self.gameState.itemsCreated === true){
-self.updateTableChatFullDisplay(options)}
+if(self.gameState.itemsCreated === true){return self.updateTableChatFullDisplay(options)}
                   }//hideDealerMessagesOn.updateValue function
                 },//hideDealerMessagesOn
                   hidePlayerMessages:{value:true, updateValue: function(newValue, options){
@@ -116,8 +114,7 @@ self.updateTableChatFullDisplay(options)}
       if((newValue === false || this.value === false) && newValue !== this.value){    options.update = true}
 
 this.value = newValue
-if(self.gameState.itemsCreated === true){
-self.updateTableChatFullDisplay(options)}
+if(self.gameState.itemsCreated === true){return self.updateTableChatFullDisplay(options)}
                   }//hidePlayerMessages.updateValue function
                 },//hidePlayerMessages
                   hidePlayerMessagesOn: {value:false, updateValue: function(newValue, options){
@@ -125,8 +122,7 @@ self.updateTableChatFullDisplay(options)}
                       var update = options.update
       if((newValue === false || this.value === false) && newValue !== this.value){    options.update = true}
 this.value = newValue
-if(self.gameState.itemsCreated === true){
-self.updateTableChatFullDisplay(options)}
+if(self.gameState.itemsCreated === true){return self.updateTableChatFullDisplay(options)}
                   }//hidePlayerMessagesOn.updateValue function
                 },//hidePlayerMessagesOn
                   hideObserverMessages:{value:true, updateValue: function(newValue, options){
@@ -134,8 +130,7 @@ self.updateTableChatFullDisplay(options)}
                       var update = options.update
       if((newValue === false || this.value === false) && newValue !== this.value){    options.update = true}
 this.value = newValue
-if(self.gameState.itemsCreated === true){
-self.updateTableChatFullDisplay(options)}
+if(self.gameState.itemsCreated === true){return self.updateTableChatFullDisplay(options)}
                   }//hideObserverMessages.updateValue function
                 },//hideObserverMessages
                   hideObserverMessagesOn: {value:false, updateValue: function(newValue, options){
@@ -143,8 +138,7 @@ self.updateTableChatFullDisplay(options)}
                       var update = options.update
       if((newValue === false || this.value === false) && newValue !== this.value){    options.update = true}
 this.value = newValue
-if(self.gameState.itemsCreated === true){
-self.updateTableChatFullDisplay(options)}
+if(self.gameState.itemsCreated === true){return self.updateTableChatFullDisplay(options)}
                   }//hideObserverMessagesOn.updateValue function
                 },//hideObserverMessagesOn
                   popOut:{value:true, updateValue: function(newValue, options){
@@ -152,8 +146,7 @@ self.updateTableChatFullDisplay(options)}
                       var update = options.update
       if((newValue === false || this.value === false) && newValue !== this.value){    options.update = true}
 this.value = newValue
-if(self.gameState.itemsCreated === true){
-self.updateTableChatFullDisplay(options)}
+if(self.gameState.itemsCreated === true){return self.updateTableChatFullDisplay(options)}
                   }//popOut.updateValue function
                 },//popOut
                   popOutOn:{value:false, updateValue: function(newValue, options){
@@ -161,8 +154,7 @@ self.updateTableChatFullDisplay(options)}
                       var update = options.update
       if((newValue === false || this.value === false) && newValue !== this.value){    options.update = true}
 this.value = newValue
-if(self.gameState.itemsCreated === true){
-self.updateTableChatFullDisplay(options)}
+if(self.gameState.itemsCreated === true){return self.updateTableChatFullDisplay(options)}
                   }//popOutOn.updateValue function
                 }//popOutOn
 
@@ -1273,7 +1265,7 @@ if(!_.isString(childType)){console.log(e);throw''}
 //perform left click
 if(e.nativeEvent.button != 2){
 
-console.log(item.getOrSetCreateJSEvents('get', childType, 'click'))
+//console.log(item.getOrSetCreateJSEvents('get', childType, 'click'))
 var asdf = item.getOrSetCreateJSEvents('function', childType, 'click')
 //console.log(asdf)
 asdf(e)
@@ -1284,7 +1276,7 @@ else{
   console.log(item.getOrSetCreateJSEvents('get', childType, 'contextmenu'))
 
   var asdf = item.getOrSetCreateJSEvents('function', childType, 'contextmenu')
-console.log(asdf)
+//console.log(asdf)
 asdf(e)
 }//right click
 
@@ -4687,7 +4679,7 @@ this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
 
 self.images.messageBox = []
 
-//setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(this.messageBox[0].window.position.z.stage, false)
+//setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(this.messageBox[0].window.position.z.stage, false)
 
 
 //table image
@@ -4840,7 +4832,7 @@ this.cashier.window.addBitmap( self.permanentPreferences.sourceObjects.value.cas
         var rowsUsed = 7        
 //hide cashierCanvas
 //$(self.arrayOfParentsOfStageAndOfContainerArray[ self.images.cashier.window.position.z.stage].stage.canvas).css('display','none')
-setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(self.images.cashier.window, false)
+setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(self.images.cashier.window, false)
 
 
            //customize radio buttons
@@ -5439,7 +5431,7 @@ this.tableChatFull.popOut.addBitmap( self.permanentPreferences.sourceObjects.val
 self.images.addCheckBoxButtonText(this.tableChatFull.popOut, 'Pop-Out')
 this.tableChatFull.popOut.on('click', self.events.popOutClicked)
 
-this.tableChatFull.popOutOn = new this.Item(this.tableChatFull.popOut.position.x, this.tableChatFull.popOut.position.y, this.tableChatFull.popOut.size.x, checkBoxButtonHeight,getZ('text','tableChatFull'))
+this.tableChatFull.popOutOn = new this.Item(this.tableChatFull.popOut.position.x, this.tableChatFull.popOut.position.y, this.tableChatFull.popOut.size.x, checkBoxButtonHeight,getZ('buttons','tableChatFull'))
 this.tableChatFull.popOutOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
 self.images.addCheckBoxButtonText(this.tableChatFull.popOutOn, 'Pop-Out')
 this.tableChatFull.popOutOn.on('click', self.events.popOutOnClicked)
@@ -5769,19 +5761,19 @@ $(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.canvas).on('c
 
 if(_.isObject(options.canvasOptions.css) ){
 $(self.getParentOfStageObject(stageNumber).canvas).css(stageOptions.canvasOptions.css)
-  //setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(stageNumber, false)
+  //setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(stageNumber, false)
 //$(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.canvas).css('display','none')
 }
 
 if(options.divOptions.hidden === true) {
-setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(stageNumber, false)
-  //setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(stageNumber, false)
+setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(stageNumber, false)
+  //setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(stageNumber, false)
 //$(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.canvas).css('display','none')
 }
 
 if(options.divOptions.mouseDisabled === true) {
 $(self.getParentOfStageObject(stageNumber).div).css('pointer-events', 'none')
-  //setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(stageNumber, false)
+  //setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(stageNumber, false)
 //$(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.canvas).css('display','none')
 }
 //create containers and add them to stage
@@ -7147,12 +7139,21 @@ this.imageData.numberOfPlayersSet = true
 
     }
 
-var setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault = function(stageNumberOrItem, status){
+var setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets = function(stageNumberOrItem, status){
 
-if(status === true){var display = 'inline'}
-  else{var display = 'none'}
     var stageParent = self.getParentOfStageObject(stageNumberOrItem)
 var div = stageParent.div
+
+if(status === true){var display = 'inline'}
+  else if (status === false){var display = 'none'}
+    else{
+
+var status = $(div).css('display')
+if(status === 'none' || status === 'hidden'){return false}
+else{return true}
+
+    }//if we are getting
+
 if(!_.isObject(div)){console.log(stageNumberOrItem);throw'display status error'}
 $(div).css('display', display)
 
@@ -8112,7 +8113,7 @@ options.maxDepth = options.maxDepth+1
 options.movementType  = movementType
 }//if array or collection of items
 
-else {moveItem(item, newX, newY)}
+else {return moveItem(item, newX, newY)}
 
 function moveItem (item, newX, newY){
 
@@ -8178,7 +8179,7 @@ if(hasImage ){
 var newImageX = previousImageLocation.x + deltaX
 var newImageY = previousImageLocation.y + deltaY
 
-  setDisplayObjectPositionData(item.image, {x:newImageX, y:newImageY})
+  stagesToUpdate.push (setDisplayObjectPositionData(item.image, {x:newImageX, y:newImageY}))
 
 if(options.updateStageStatus !== false){stagesToUpdate.push(self.easelJSDisplayObjectChanged(item))}
 
@@ -10489,15 +10490,16 @@ return changedWithoutUpdate
 
 
 this.images.Item.prototype.hide = function(updateOptions){
-if(!options){var options = {}}
+if(!updateOptions){var options = {}}
   else{var options = _.clone(updateOptions)}
+    var update = options.update
     options.update = false
 var stagesToUpdate = []
 
 if(options.text !== false){stagesToUpdate.push  (self.hideText(this, options))    }
 if(options.image !== false){stagesToUpdate.push  ( self.hideImage(this, options) )}
 
-if(updateOptions.update !== false){self.updateStages(stagesToUpdate)}
+if(update !== false){self.updateStages(stagesToUpdate)}
   else{return stagesToUpdate}
 
 
@@ -12083,9 +12085,10 @@ var countDownText = 'Time: '+ Math.ceil(remainingTimeToAct/1000)
     }
 
 this.updateTableChatFullDisplay = function(displayOrHideChildrenOptions){
-if(!displayOrHideChildrenOptions){var displayOrHideChildrenOptions = {}}
-  var update = displayOrHideChildrenOptions.update
-displayOrHideChildrenOptions.update = false
+if(!_.isObject(displayOrHideChildrenOptions)){var options = {}}
+  else{var options = _.clone(displayOrHideChildrenOptions)}
+  var update = options.update
+options.update = false
 
 var stagesToUpdate = []
 console.log('update tablechatfull display called')
@@ -12096,10 +12099,10 @@ _.each(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem,fu
 //console.log(index)
 //console.log(value)
 if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem[index].value === false){
-stagesToUpdate.push(  self.hideChildren(self.images.tableChatFull[index], displayOrHideChildrenOptions) )
+stagesToUpdate.push(  self.hideChildren(self.images.tableChatFull[index], options) )
  // console.log('hiding' + index)
 }
-else{stagesToUpdate.push(  self.displayChildren(self.images.tableChatFull[index], displayOrHideChildrenOptions) )}
+else{stagesToUpdate.push(  self.displayChildren(self.images.tableChatFull[index], options) )}
 
 })//end loop through self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem
 
@@ -12108,12 +12111,32 @@ this.updateTableChatFullMessageTextFromCurrentOrAdditionalData()
 //console.log('finished adding to stages for tableChatFull display, now showing which stages should be updated')
 //console.log(stagesToUpdate)
 
+
+
+
+//check whether we are going to display
+if(options.display !== true){
+
+if(setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(self.images.tableChatFull.window) === true){options.display = true}
+
+}
+
 //CHECK IF WE SHOULD POP OUT OR IN
 var tableChatFullStageParent = self.getParentOfStageObject (self.images.tableChatFull.window)
 
 //variables for popping out
-if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOut.value === false 
-  && $(tableChatFullStageParent.div).parent().is(self.jQueryObjects.canvasDiv) == true 
+if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOut.value === false){
+//  displayOrHideChildrenOptions.resize = true
+
+if(options.display === true){
+//we are goign to keep the same left distance to edge. right will = left to edge. bottom will = top distance to text
+var prependChatBoxTo = tableChatFullStageParent.div
+var chatBoxWidth = self.images.tableChatFull.htmlDivElement.size.x - self.images.htmlTableChatBox.position.x*2
+var chatBoxTopOffset = newHeight - self.images.htmlTableChatBox.position.y - self.images.htmlTableChatBox.size.y
+}//only move the chatbox outside the table if we are displaying the full chat display
+
+//dont move the div if we dont need to
+  if($(tableChatFullStageParent.div).parent().is(self.jQueryObjects.canvasDiv) == true 
   ){
 
 var newHeight = self.jQueryObjects.canvasDiv.outerHeight(true) 
@@ -12127,26 +12150,26 @@ if(self.images.background.image instanceof createjs.DisplayObject){
 else{var bgURL = self.images.background.image.src}
 */
 
-var bgColor = 'rgba(0,0,0,0.5)'
+var bgColor = 'rgba(0,0,0,0.78)'
 
 var prependTo = self.jQueryObjects.pokerTableDiv
 var position = 'relative'
-
-
-//we are goign to keep the same left distance to edge. right will = left to edge. bottom will = top distance to text
-var prependChatBoxTo = tableChatFullStageParent.div
-var chatBoxWidth = self.images.tableChatFull.htmlDivElement.size.x - self.images.htmlTableChatBox.position.x*2
-var chatBoxTopOffset = newHeight - self.images.htmlTableChatBox.position.y - self.images.htmlTableChatBox.size.y
 
 var newTextHeight = self.images.htmlTableChatBox.position.y - chatBoxTopOffset - self.images.tableChatFull.chatTextDiv.position.y
 
 console.log('moving chat outside of the table height = ' + newHeight + ' textheight =  ' + newTextHeight)
 
 var scrollDownAtEnd = self.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText()
-}//popout tablechatfull
+
+
+
+
+}//we are moving out tablechatfull
+}//table chat full will be moved outside (not sure if it needs to be moved though)
 
 else if (self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOut.value !== false
-&& $(tableChatFullStageParent.div).parent().is(self.jQueryObjects.canvasDiv) != true){//variables for popping in
+&& $(tableChatFullStageParent.div).parent().is(self.jQueryObjects.canvasDiv) != true
+){//variables for popping in
 
 console.log('moving chat inside the table')
 
@@ -12161,7 +12184,7 @@ var position = 'absolute'
 //restore normal chatboxbehavior
 var prependChatBoxTo = self.getParentOfStageObject(self.images.htmlTableChatBox).div
 
-var chatBoxWidth = self.images.tableChatFull.htmlDivElement.size.x
+var chatBoxWidth = self.images.htmlTableChatBox.size.x
 var chatBoxTopOffset = 0//normal for chattext
 
 var newTextHeight = self.images.tableChatFull.chatTextDiv.size.y
@@ -12169,8 +12192,8 @@ var scrollDownAtEnd = self.checkIfTableChatFullMessageTextShouldBeScrolledAfterC
 }
 else{console.log('keeping chat same place as last time ')}
 
-//popin or out tablechatfull if needed
-if(prependTo){
+//popin or out html chat box if needed
+if(prependChatBoxTo){
 
 setDisplayObjectPositionData(self.images.tableChatFull.chatTextDiv.image,{height:newTextHeight}, {update:false})
 
@@ -12178,6 +12201,13 @@ setDisplayObjectPositionData(self.images.htmlTableChatBox.image,{width:chatBoxWi
 //$(self.images.htmlTableChatBox.image).css('width',chatBoxWidth)
 $(self.images.htmlTableChatBox.image).prependTo(prependChatBoxTo)
 
+
+}//if we are NOT displaying this, then we do not want to move the chatBox
+else{stagesToUpdate.push(self.images.htmlTableChatBox.restore(options))}
+
+
+//popin or out tablechatfull if needed
+if(prependTo){
 
 
 $(tableChatFullStageParent.div).css({
@@ -12191,26 +12221,115 @@ $(tableChatFullStageParent.div).css({
 $(tableChatFullStageParent.stage.canvas).attr('height', newHeight)
 $(tableChatFullStageParent.div).prependTo(prependTo)
 self.images.tableChatFull.window.drawImage()
+
+self.resizePokerWrapperAndIframe()
+
 }//if we changing our display
+
 
 //scroll if necessary
 if(scrollDownAtEnd){self.moveTableChatFullMessageText()}
 else{self.moveTableChatFullMessageText({magnitude:self.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels})}
 
 
-displayOrHideChildrenOptions.update  = update
-if(update !== false){this.updateStages(stagesToUpdate)}
+options.update = update
+if(update !== false){self.updateStages(stagesToUpdate)}
 else{return stagesToUpdate}
 }
 
+self.images.Item.prototype.restore = function(options){
+
+if(!options){var options = {}}
+ update = options.update
+options.update = false
+var stagesToUpdate = []
+
+if(this.text){this.positionChild('text',{position:true})}
+  if(this.image){this.positionChild('image',{position:true, text:true})}
+
+stagesToUpdate.push (self.setImageItemPositionAndTextBasedOnImageChange(this, null, null, options))
+
+var div = self.getParentOfStageObject(this).div
+var appendChild = function(child, parentElement){
+  if(!_.isElement(child)){return}
+    $(parentElement).append(child)
+}
+
+appendChild(this.text, div);appendChild(this.image, div)
+
+options.update = update
+if(options.update !== false){self.updateStages(stagesToUpdate)}
+else{return stagesToUpdate}
+
+
+}//restore function
+
+self.getPokerWrapperDimensions = function(){
+
+var size = {}
+size.height = self.getParentOfStageObject(0).stage.canvas.height
+
+//iterate through and find total width
+size.width = 0
+ self.jQueryObjects.pokerTableDiv.children().each(function(index, element){
+var display = $(this).css('display')
+if(display === 'none'){return}
+else if(display === 'hidden'){return}
+var widthToAdd = $(this).outerWidth(true)
+console.log('adding '+widthToAdd)
+size.width = size.width + widthToAdd
+
+})
+
+console.log('retreived dimensions of: ' + size.width +', '+size.height)
+return size
+
+}//get dimensions of the poker wrapper
+
+
+
+self.resizePokerWrapperAndIframe = function(originalOptions){
+
+if(!_.isObject(originalOptions)){var options = {}}
+  else{var options = _.clone(originalOptions)}
+
+var resizeInterior = function(width,height){
+setDisplayObjectPositionData(self.jQueryObjects.pokerTableDiv[0], {width:width,height:height})
+}
+
+if(!_.isNumber(options.width)){
+//options.width = $(window).actual( 'outerWidth', { includeMargin : true })
+var sizeData = self.getPokerWrapperDimensions()
+options.width = sizeData.width
+console.log(options)
+
+}//retreive width
+
+if(!_.isNumber(options.height)){
+  if(!sizeData){var sizeData = self.getPokerWrapperDimensions()}
+options.height = sizeData.height
+
+//  options.height = $(window).actual( 'outerHeight', { includeMargin : true })
+}//get height
+
+console.log('resizing to '+options.width + ' '+options.height)
+resizeInterior(options.width,options.height)
+self.getIframeLib().resizeIFrame(self.getTableName(), options.height, options.width)
+
+}
 
 this.displayTableChatFull = function(hideOrDisplayChildrenOptions){
   console.log('display table chat full called')
-    if(!hideOrDisplayChildrenOptions){var hideOrDisplayChildrenOptions = {}}
-        var update = hideOrDisplayChildrenOptions.update
-        hideOrDisplayChildrenOptions.update = false
+    if(!hideOrDisplayChildrenOptions){var options = {}}
+      else{var options = _.clone(hideOrDisplayChildrenOptions)}
+
+        var update = options.update
+        options.update = false
 
         var stagesToUpdate = []
+
+        var initialSize = self.getPokerWrapperDimensions()
+        console.log(initialSize)
 /*
 //update what is showing and what isnt from current preferences
 
@@ -12230,16 +12349,17 @@ else{this.gameState.tableChatFull.currentlyDisplayingPlayerMessages = true}
 else{this.gameState.tableChatFull.currentlyDisplayingObserverMessages = true}
 */
 
-stagesToUpdate.push(this.displayChildren(this.images.hideTableChatFull,hideOrDisplayChildrenOptions))
-stagesToUpdate.push(this.hideChildren(this.images.showTableChatFull,hideOrDisplayChildrenOptions))
-stagesToUpdate.push(this.displayChildren(this.images.tableChatFull, hideOrDisplayChildrenOptions))
+stagesToUpdate.push(this.displayChildren(this.images.hideTableChatFull,options))
+stagesToUpdate.push(this.hideChildren(this.images.showTableChatFull,options))
+stagesToUpdate.push(this.displayChildren(this.images.tableChatFull, options))
 //stagesToUpdate.push(this.displayChildren(this.images.tableChatFull.chatMessageText,hideOrDisplayChildrenOptions))
 
-stagesToUpdate.push( this.updateTableChatFullDisplay(hideOrDisplayChildrenOptions) )
+options.display = true
+stagesToUpdate.push( this.updateTableChatFullDisplay(options) )
 
 var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.images.tableChatFull.htmlCanvasElement.position.z.stage].stage.canvas
 
-setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(this.images.tableChatFull.window, true)
+setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(this.images.tableChatFull.window, true)
 //$(tableChatFullCanvas).css('display','inline')
 //self.jQueryObjects.tableChatFullParagraph.css('display','inline ')
 
@@ -12251,7 +12371,11 @@ self.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBotto
 console.log('tablechatfull object = ')
 console.log(this.images.tableChatFull)
 
-hideOrDisplayChildrenOptions.update = update
+
+ var finalSize = self.getPokerWrapperDimensions()
+if(initialSize.width != finalSize.width || initialSize.height != finalSize.height){self.resizePokerWrapperAndIframe(finalSize)}
+
+options.update = update
 if(update !== false){  this.updateStages(stagesToUpdate)}
   else{return stagesToUpdate}
 
@@ -12269,6 +12393,7 @@ options.update = false
 
 var stagesToUpdate = []
 
+ var initialSize = self.getPokerWrapperDimensions()
 console.log('calling hideTableChatFull')
 //set preference (scroll bar location)
  var positionValue
@@ -12289,9 +12414,21 @@ console.log('calling hideTableChatFull')
 stagesToUpdate.push(this.hideChildren(this.images.hideTableChatFull,options))
 stagesToUpdate.push(this.hideChildren(this.images.tableChatFull, options))
 
+//restore chatbox
+stagesToUpdate.push(self.images.htmlTableChatBox.restore(options))
+
 var tableChatFullCanvas = self.arrayOfParentsOfStageAndOfContainerArray[ this.images.tableChatFull.htmlCanvasElement.position.z.stage].stage.canvas
 
-setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(this.images.tableChatFull.window, false)
+setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(this.images.tableChatFull.window, false)
+
+
+
+
+//change size if needed
+ var finalSize = self.getPokerWrapperDimensions()
+if(initialSize.width != finalSize.width || initialSize.height != finalSize.height){self.resizePokerWrapperAndIframe(finalSize)}
+
+
 
 if(update!== false){this.updateStages(stagesToUpdate)}
   else{stagesToUpdate}
@@ -12595,7 +12732,7 @@ if(options.update !== false){self.updateStages(stagesToUpdate)}
 $(self.arrayOfParentsOfStageAndOfContainerArray[self.images.cashier.window.position.z.stage].stage.canvas).css('display','none')
 */
 
-setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(self.images.cashier.window, false)
+setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(self.images.cashier.window, false)
 
 
         //enable TableChatBox
@@ -12776,7 +12913,7 @@ return
 }
 
 var itemsToHide = this.getItemsObject(current)
-setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(current, false)
+setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(current, false)
 this.decrementCurrent()//reduce current
   return  self.hideChildren(itemsToHide, options)
 
@@ -13277,7 +13414,7 @@ $(onlyButton.image).css('left', innerContentWidth/2 - onlyButton.size.x/2)
 }
 
 console.log('displaying messagebox div')
-setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(newStageNumber, true)
+setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(newStageNumber, true)
 })//delay to adjust x of our bttons
 
 
@@ -13302,7 +13439,7 @@ value(e, api)
 })
 
 //DISPLAY DIV AT LATEST POSSIBLE MOMENT
-setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(newStageNumber, true)
+setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(newStageNumber, true)
 
  }//events.show
             }//events
@@ -13467,11 +13604,11 @@ else{
 stagesToUpdate.push(self.hideChildren(  messageBoxItems.checkBoxChecked, hideOrDisplayChildrenOptions))
 
 //display messageBoxCanvas
-setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(newStageNumber, true )
+setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(newStageNumber, true )
 }//if we are displaying the traditional canvas
 
 //display messageBoxCanvas
-//setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(newStageNumber, true )
+//setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(newStageNumber, true )
 
 messageBoxAPI.setCurrent( newStageNumber)
 
@@ -13572,7 +13709,7 @@ stagesToUpdate.push(self.updateUserOptionsBasedOnFlagsAndPreactions(hideOrDispla
 //display cashierCanvas
 //$(this.arrayOfParentsOfStageAndOfContainerArray[ this.images.cashier.window.position.z.stage].stage.canvas).css('display','inline')
 
-setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(self.images.cashier.window, true)
+setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(self.images.cashier.window, true)
 
 if(update !== false){this.updateStages(stagesToUpdate)}
   else{return stagesToUpdate}
@@ -14586,7 +14723,7 @@ else if(options.background === false){
 options.update = update
 
 if(options.update !== false){self.updateStages(stagesToUpdate)}
-if(options.div !== false){setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(loadingScreen.status,true)}
+if(options.div !== false){setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(loadingScreen.status,true)}
   if(options.update === false) {return stagesToUpdate}
 
 }//display preload screen
@@ -14638,7 +14775,7 @@ else{finish()}//NO ANIMATION
 
 
 function finish(){
-  setDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysHidesByDefault(getZ('loadingScreen').stage, false)
+  setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(getZ('loadingScreen').stage, false)
             
 self.hideChildren(self.images.loadingScreen)
 
@@ -14715,6 +14852,7 @@ self.updateStages(stagesToUpdate)
      //  if(checkSeatsLoaded() ==true){
       if(showTable === true){
 
+self.resizePokerWrapperAndIframe()
         self.updateStages(null, {forceUpdate:true})
         createjs.Ticker.removeEventListener("tick", tick)
         hideLoadingScreen({animate:550})

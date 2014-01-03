@@ -15,8 +15,9 @@ height:0px;
 
 #pokerTableWrapper {
   position:fixed;
-    width: 400%;
-    height:400%;
+    width: 100%;
+    height:100%;
+    
     left:0px;
     top:0px;
     overflow:hidden;
@@ -216,6 +217,8 @@ margin:0 0 0 0;
        position: absolute;
        display:none;
 }
+
+/*
 #betSizeForm input[type = 'text']{
    background: transparent;
     border:0;
@@ -229,6 +232,25 @@ margin:0 0 0 0;
     border: 1px solid #FFFFFF;
     border-radius: 0px;
 }
+*/
+
+#betSize{
+
+   background: transparent;
+    border:0;
+    color : #747862;
+    margin-right:0px;
+    font-family:tahoma, arial, sans-serif;
+    position: absolute;
+    z-index: 1;
+    display: none;
+    color: #FFFFFF;
+    border: 1px solid #FFFFFF;
+    border-radius: 0px;
+
+
+}
+
 
 #maxText{
 
