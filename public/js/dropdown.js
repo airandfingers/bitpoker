@@ -103,7 +103,7 @@ $(function() {
   });
 });
 
-/*Show funbucks/bitcoin balances on Hover */
+/*Show funbucks/bitcoin balances on Hover 
 $(function() {
   $('#account_trigger').hoverIntent(accountHoverOn, accountHoverOff)
 
@@ -115,8 +115,7 @@ function accountHoverOn() {
 
 function accountHoverOff() {
   $('#chip_count').hide();
-}
-
+} */
 
 $(function() {
   var $login_trigger = $('#login_trigger')
