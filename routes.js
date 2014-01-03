@@ -577,11 +577,16 @@ module.exports = (function () {
 
   //Send register the new information
   app.post('/register', function (req, res, next) {
+    console.log(req);
     var username = req.body.username
       , pt_password = req.body.new_password
       , password_confirm = req.body.new_password_confirm
       , email = req.body.email || undefined
-      , target = req.body.next || base_page;
+      , target = req.body.next || base_page
+      , ip = req.headers['x-forwarded-for'] ? _.strLeft(req.headers['x-forwarded-for'], ',') :
+             req.connection.remoteAddress ||
+             req.socket.remoteAddress ||
+             req.connection.socket.remoteAddress;
 
     if (_.isEmpty(username) || _.isEmpty(pt_password)) {
       req.flash('error', 'Cannot register without both username and password!');
@@ -601,7 +606,7 @@ module.exports = (function () {
         console.log('augmenting', req.user.username, 'with spec:',
                     { username: username, pt_password: pt_password });
         req.user.convertFromGuest({
-          username: username, pt_password: pt_password, email: email
+          username: username, pt_password: pt_password, email: email, ip_address: ip
         }, function(convert_err, user) {
           if (convert_err) {
             req.flash('error', convert_err.message || convert_err);
@@ -627,7 +632,9 @@ module.exports = (function () {
     else {
       console.log('creating user with spec:',
                   { username: username, pt_password: pt_password });
-      User.createUser({ username: username, pt_password: pt_password, email: email }, function(create_err, user) {
+      User.createUser({
+        username: username, pt_password: pt_password, email: email, ip_address: ip
+      }, function(create_err, user) {
         console.log('createUser returns', create_err, user);
         if (create_err) {
           req.flash('error', create_err);
