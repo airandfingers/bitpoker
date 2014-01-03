@@ -2314,11 +2314,20 @@ self.sessionPreferences.changeUserSeatViewTo.updateValue(rotatedSeatNumber)
 self.saveSessionPreferences()
 }
 
+var copyUsername = function(text){
+
+ window.alert ("(Control + C to copy)", text);
+
+}
+
 var x = e.stageX+1;var y = e.stageY+1
 
 var contextmenuOptions = {
     delegate: stageParent.div,
-    menu: [  {title: "Show Me Here", action: rotate }]
+    menu: [  
+    {title: "Show Me Here", action: rotate }
+,{title: "Copy Player Name", action: function(e){copyUsername(seatObject.playerName.getText())}}
+    ]
     /*
     ,select: function(event, ui) {
        // alert("select " + ui.cmd + " on " + ui.target.text());

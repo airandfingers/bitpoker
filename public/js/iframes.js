@@ -1,5 +1,8 @@
 (function() {
 
+var pageStyled = false
+
+
   function resizeIFrame(table_name, height, width, options) {
     if(!_.isObject(options)){var options = {}}
       var iframe = $('[src="/'+ table_name + '"]')
@@ -66,6 +69,12 @@
     var $iframe = $(_.template(iframe_template, {
         table_name: table_name
     }));
+
+//DETERMINE WHERE THE IFRAME WILL GO
+assignIFramePosition($iframe)
+
+stylePage()//style page if needed
+
     $iframe_container.append($iframe);
     // make iframe draggable
     $iframe.draggable({
@@ -85,23 +94,61 @@
     //wyv addition: set x to close before poker table loads
     setIframeCloseHandler(table_name, function(){closeIframe(table_name)})
 
-    function newIFramePosition(iframe) {
-    //find number of iframes currently on table.
-    //if 0, place position Top: 0, Left: 0
-    //if 1, place position Top: 0, Right: 0
-    //if 2, place position Bottom: 0, Left: 0
-    //if 3, place position Bottom: 0, Right: 0
-    //if >3, place center.
 
-    return new_position;
-    }
 
-  }
+//CLASSED STORED IN MAIN.CSS
+    function assignIFramePosition(iframe) {
+
+var getPositionClassFromPositionNumber = function(table_position_number){return 'table_'+table_position_number}
+var checkIfTablePositionExists = function(table_position_number){
+  var positionClass = getPositionClassFromPositionNumber(table_position_number)
+  if($iframe_container.find('.'+positionClass).length>0){return true}
+    else{return false}
+}
+
+var classAssigned = false
+var position_number = 0 
+while(classAssigned !== true){
+
+if(!checkIfTablePositionExists(position_number) || position_number > 18){
+  iframe.addClass(getPositionClassFromPositionNumber(position_number))
+  classAssigned = true
+}//if we want to add the class
+
+position_number++//increment
+
+}//loop through
+
+    }//assign iframe position
+
+
+
+  }// function openNewIframe
 
   // open iframes for each table_name in initial_tables
   _.each(initial_tables, function(table_name) {
     openNewIframe(table_name);
   });
+
+
+function stylePage (){
+if(pageStyled === true){return}
+console.log('stylePage called')
+  $('body').css({
+width:'100%'
+,height:'100%'
+  })//boddy css
+
+var headerHeight = $('header').outerHeight(true)
+ $('#container').css({
+
+height:'calc(100% - ' + headerHeight+'px)'
+//,overflow:'hidden'
+ })
+
+
+  pageStyled = true
+}//function stylePage
 
   function setIframeCloseHandler(table_name, close_handler) {
  //   console.log('setIframeCloseHandler called with', table_name, close_handler);
