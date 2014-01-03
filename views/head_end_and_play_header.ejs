@@ -135,9 +135,32 @@
                 <% include bug_report %>
 
                 <% if ( locals.username) { %>
-                <div id="account" class="dropdown_form inverse unselectable">
-                    <% include account_base %>
-                </div>
+                    <div id="account" class="dropdown_form inverse unselectable">
+                        <% include account_base %>
+                    </div>
+                    <% if (locals.username.substring(0, 5) === 'guest') { %>
+                        <div id="register" class="dropdown_form">
+                            <form action="/register" method="post">
+                                <div class="username">
+                                    <label for="register_username">Username:</label>
+                                    <input id="register_username" name="username" type="text" placeholder="username" required remote="/check_username" />
+                                </div>
+                                <div class="password">
+                                    <label for="register_new_password">Password:</label>
+                                    <input id="register_new_password" name="new_password" type="password"  placeholder="password" required />
+                                </div>
+                                <div class="password">
+                                    <label for="register_new_password_confirm">Confirm Password:</label>
+                                    <input id="register_new_password_confirm" name="new_password_confirm" type="password" placeholder="password (again)" required equalTo="#register_new_password" />
+                                </div>
+                                <div class="email">
+                                    <label for="register_email">Email (optional):</label>
+                                    <input id="register_email" name="email" type="email" placeholder="name@domain.com" />
+                                </div>
+                                <input type="submit" value="Sign Up" class="btn btn-default"/>
+                            </form>
+                        </div>
+                    <% } %>
                 <% } else { %>
                     <div id="register" class="dropdown_form">
                         <form action="/register" method="post">
@@ -162,23 +185,23 @@
                     </div>
 
                     <div id="login" class="dropdown_form">
-                      <form action="/login" method="post">
-                        <div class="username">
-                          <label for="login_username">Username:</label>
-                          <input id="login_username" name="username" type="text" placeholder="username" autofocus required />
+                        <form action="/login" method="post">
+                            <div class="username">
+                                <label for="login_username">Username:</label>
+                                <input id="login_username" name="username" type="text" placeholder="username" autofocus required />
+                            </div>
+                            <div class="password">
+                                <label for="login_password">Password:</label>
+                                <input id="login_password" name="password" type="password" placeholder="password" required />
+                            </div>
+                            <input type="submit" value="Login" class="btn btn-default" />
+                        </form>
+                        <div>
+                            Forgetting your password? <a href="/password_recovery">Recover it.</a>
                         </div>
-                        <div class="password">
-                          <label for="login_password">Password:</label>
-                          <input id="login_password" name="password" type="password" placeholder="password" required />
-                        </div>
-                        <input type="submit" value="Login" class="btn btn-default" />
-                      </form>
-                      <div>
-                        Forgetting your password? <a href="/password_recovery">Recover it.</a>
-                      </div>
-                      <form action="/guest_login" method="post">
-                        <button class="btn btn-default">Play as Guest</button>
-                      </form>
+                        <form action="/guest_login" method="post">
+                            <button class="btn btn-default">Play as Guest</button>
+                        </form>
                     </div>
                 <% } %>
           <% } %>

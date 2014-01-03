@@ -9,6 +9,7 @@ module.exports = (function() {
     , _ = require('underscore') // list utility library
 
     , GuestCounter = require('./guest_counter')
+    , UserIp = require('./user_ip')
     
     , db = require('./db') // make sure db is connected
 
@@ -44,6 +45,8 @@ module.exports = (function() {
   , transactions       : { type: [Schema.Types.Mixed], default: function() { return []; } }
   }, { minimize: false }); // set minimize to false to save empty objects
 
+  var FREE_SATOSHI = 200; // how many satoshi to give to new users with new IPs
+
   // static methods - Model.method()
   UserSchema.statics.createUser = function(spec, cb) {
     var username = spec.username
@@ -75,23 +78,30 @@ module.exports = (function() {
         return cb(error);
       }
       user.deposit_address = deposit_address;
-      user.save(function(save_err, result) {
-        if (save_err) {
-          error = 'Error during save: ' + save_err;
+      UserIp.findOrInsert(spec.ip_address, function(ip_err, new_ip) {
+        if (ip_err) {
+          error = 'Error while checking IP: ' + ip_err;
           return cb(error);
         }
-        if (! _.isEmpty(spec.email)) {
-          user.sendConfirmationEmail(spec.email, function(email_err) {
-            if (email_err) {
-              error = 'Error while sending email: ' + email_err;
-              return cb(error);
-            }
+        if (new_ip) { user.satoshi = FREE_SATOSHI; }
+        user.save(function(save_err, result) {
+          if (save_err) {
+            error = 'Error during save: ' + save_err;
+            return cb(error);
+          }
+          if (! _.isEmpty(spec.email)) {
+            user.sendConfirmationEmail(spec.email, function(email_err) {
+              if (email_err) {
+                error = 'Error while sending email: ' + email_err;
+                return cb(error);
+              }
+              cb(null, result);
+            })
+          }
+          else {
             cb(null, result);
-          })
-        }
-        else {
-          cb(null, result);
-        }
+          }
+        });
       });
     });
   };
@@ -106,6 +116,89 @@ module.exports = (function() {
         , user = new User({ username: username });
       console.log('Created guest user:', user);
       cb(user);
+    });
+  };
+
+  UserSchema.methods.convertFromGuest = function(spec, cb) {
+    var self = this
+      , username = spec.username
+      , pt_password = spec.pt_password
+      , keys = _.keys(spec)
+      , error;
+    console.log('convertFromGuest called for', username);
+
+    if (! User.isGuest(self.username)) {
+      error = 'User.convertFromGuest called for non-guest user! ' + username;
+    }
+    else if (! _.isString(username)) {
+      error = 'User.convertFromGuest called without username!';
+    }
+    else if (_.escape(username) !== username) {
+      error = 'The following characters are not allowed in usernames: & < > " \' /';
+    }
+    else if (User.isGuest(username)) {
+      error = 'non-guest usernames may not begin with "guest"!';
+    }
+    else if (! _.isString(pt_password)) {
+      error = 'User.convertFromGuest called without pt_password!';
+    }
+    if (error) {
+      console.error(error);
+      return cb(error);
+    }
+
+    if (! (keys.length === 3 || (keys.length === 4 && _.contains(keys, 'email')))) {
+      error = 'User.convertFromGuest called with invalid spec keys:' + keys;
+      console.error(error);
+      return cb(error);
+    }
+
+    // encrypt pt_password and save it as password
+    spec.password = User.encryptPassword(pt_password);
+    delete spec.pt_password;
+    
+    console.log('updating user with', spec);
+    _.extend(self, spec);
+    self.save(function(update_err, result) {
+      console.log('update callback called with', update_err, result);
+      if (update_err) {
+        error = 'Error in User.convertFromGuest: ' + update_err.message;
+        console.error(error);
+        return cb(error);
+      }
+
+      btc_main.createDepositAddress(self, function(create_err, deposit_address) {
+        if (create_err) {
+          error = 'Error during deposit address setup: ' + create_err;
+          return cb(error);
+        }
+        self.deposit_address = deposit_address;
+        UserIp.findOrInsert(spec.ip_address, function(ip_err, new_ip) {
+          if (ip_err) {
+            error = 'Error while checking IP: ' + ip_err;
+            return cb(error);
+          }
+          if (new_ip) { self.satoshi = FREE_SATOSHI; }
+          self.save(function(save_err, result) {
+            if (save_err) {
+              error = 'Error during save: ' + save_err;
+              return cb(error);
+            }
+            if (_.isString(spec.email)) {
+              self.sendConfirmationEmail(spec.email, function(email_err) {
+                if (email_err) {
+                  error = 'Error while sending email: ' + email_err;
+                  return cb(error);
+                }
+                cb(null, result);
+              });
+            }
+            else {
+              cb(null, result);
+            }
+          });
+        });
+      });
     });
   };
 
@@ -206,81 +299,6 @@ module.exports = (function() {
         }
       });
     }
-  };
-
-  UserSchema.methods.convertFromGuest = function(spec, cb) {
-    var self = this
-      , username = spec.username
-      , pt_password = spec.pt_password
-      , keys = _.keys(spec)
-      , error;
-    console.log('convertFromGuest called for', username);
-
-    if (! User.isGuest(self.username)) {
-      error = 'User.convertFromGuest called for non-guest user! ' + username;
-    }
-    else if (! _.isString(username)) {
-      error = 'User.convertFromGuest called without username!';
-    }
-    else if (_.escape(username) !== username) {
-      error = 'The following characters are not allowed in usernames: & < > " \' /';
-    }
-    else if (User.isGuest(username)) {
-      error = 'non-guest usernames may not begin with "guest"!';
-    }
-    else if (! _.isString(pt_password)) {
-      error = 'User.convertFromGuest called without pt_password!';
-    }
-    if (error) {
-      console.error(error);
-      return cb(error);
-    }
-
-    if (! (keys.length === 2 || (keys.length === 3 && _.contains(keys, 'email')))) {
-      error = 'User.convertFromGuest called with invalid spec keys:' + keys;
-      console.error(error);
-      return cb(error);
-    }
-
-    // encrypt pt_password and save it as password
-    spec.password = User.encryptPassword(pt_password);
-    delete spec.pt_password;
-    
-    console.log('updating user with', spec);
-    _.extend(self, spec);
-    self.save(function(update_err, result) {
-      console.log('update callback called with', update_err, result);
-      if (update_err) {
-        error = 'Error in User.convertFromGuest: ' + update_err.message;
-        console.error(error);
-        return cb(error);
-      }
-
-      self.setupDepositAddress(function(setup_err) {
-        if (setup_err) {
-          error = 'Error during deposit address setup: ' + setup_err;
-          return cb(error);
-        }
-        self.save(function(save_err, result) {
-          if (save_err) {
-            error = 'Error during save: ' + save_err;
-            return cb(error);
-          }
-          if (_.isString(spec.email)) {
-            self.sendConfirmationEmail(spec.email, function(email_err) {
-              if (email_err) {
-                error = 'Error while sending email: ' + email_err;
-                return cb(error);
-              }
-              cb(null, result);
-            });
-          }
-          else {
-            cb(null, result);
-          }
-        });
-      });
-    });
   };
 
   // look up and return current balance of the given currency type
