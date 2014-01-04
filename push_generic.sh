@@ -14,5 +14,6 @@ git push -v
 #line below if u want to include plaintext username/pass
 #git push --repo https://bobbyinfj:darthvader@github.com/bobbyinfj/bitpoker.git
 cp src/pokertable.js public/js/pokertable.min.js -v
-read 'press any key to exit' response
+echo 'press any key then enter to exit: WTB JQUERY'
+read response
 exit
