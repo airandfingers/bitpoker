@@ -17,7 +17,6 @@
 #check number of lines to see if it is minified
 lines=$(wc -l < public/js/pokertable.min.js)
 echo $lines
-read $gorb
 if(($lines > 300))
 	then
 	#we copy it to src, and minify original
