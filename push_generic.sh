@@ -12,7 +12,7 @@ lines=$(wc -l < public/js/pokertable.min.js)
 echo $lines
 if(($lines > 300))
 	then
-	minified=true
+	minified='minified'
 	#we copy it to src, and minify original
 cp public/js/pokertable.min.js src/pokertable.js -v
 echo 'we are uglifying pokertable.min.js'
@@ -29,7 +29,7 @@ git push -v
 #line below if u want to include plaintext username/pass
 #git push --repo https://username:darthvader@github.com/username/bitpoker.git
 
-if [$minified == true]
+if ["$minified" == 'minified']
 	then
 cp src/pokertable.js public/js/pokertable.min.js -v
 fi
