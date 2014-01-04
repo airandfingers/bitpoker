@@ -12,7 +12,7 @@ git commit
 #edit your push command as u like here to include usernames/password
 git push -v
 #line below if u want to include plaintext username/pass
-#sudo git push --repo https://wyvernmonarch7:derkaderka@github.org/bitpoker.git
+#git push --repo https://mohammaud:derkaderka@github.com/bitpoker.git
 cp src/pokertable.js public/js/pokertable.min.js -v
 read 'press any key to exit' response
 exit
