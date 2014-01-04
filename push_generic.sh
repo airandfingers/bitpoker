@@ -29,7 +29,8 @@ git push -v
 #line below if u want to include plaintext username/pass
 #git push --repo https://username:darthvader@github.com/username/bitpoker.git
 
-if $minified ; then
+if [$minified == true]
+	then
 cp src/pokertable.js public/js/pokertable.min.js -v
 fi
 
