@@ -2324,7 +2324,7 @@ var selectPlayerText = function(){
 
 var textDisplayItem = seatObject.playerName
 
-function selectElementText(el, win) {
+var selectElementText = function(el, win) {
     win = win || window;
     var doc = win.document, sel, range;
     if (win.getSelection && doc.createRange) {
@@ -2338,7 +2338,7 @@ function selectElementText(el, win) {
         range.moveToElementText(el);
         range.select();
     }
-}
+}//select element text
 
 //if element make selectable 
 if(_.isElement(textDisplayItem.text)){
