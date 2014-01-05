@@ -10,6 +10,7 @@
     "mongoose": "latest",
     "passport": "latest",
     "passport-local": "latest",
+    "poker-evaluator": "0.0.4",
     "session-mongoose": "latest",
     "socket.io": "latest",
     "underscore": "latest",
@@ -20,8 +21,7 @@
   },
   "domains": [],
   "scripts": {
-    "start": "app.js",
-    "postinstall": "npm install ./custom_modules"
+    "start": "app.js"
   },
   "engines": {
     "node": "0.10.x"

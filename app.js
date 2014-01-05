@@ -1,13 +1,15 @@
-// Require dependencies
-var express = require('express')
-  , http = require('http')
-  , https = require('https')
-  , passport = require('passport')
-  , flash = require('connect-flash')
-  , fs = require('fs')
+// Wrap everything in an immediately-invoked function, to scope variables
+(function() {
+  // Require dependencies
+  var express = require('express')
+    , http = require('http')
+    , https = require('https')
+    , passport = require('passport')
+    , flash = require('connect-flash')
+    , fs = require('fs');
 
-// Define how to format log messages
-  , logger_options = function(tokens, req, res) {
+  // Define how to format log messages
+  var logger_options = function(tokens, req, res) {
     var status = res.statusCode
       , color = 32;
 
@@ -21,29 +23,26 @@ var express = require('express')
       + ' \033[90m'
       + (new Date - req._startTime)
       + 'ms\033[0m';
-
-// Create an Express app and an HTTP server
-  }, http_app = express()
-  , http_server = http.createServer(http_app)
-// Create an Express app and an HTTPS server
-  , app = module.exports = express()
-  , key  = fs.readFileSync('keys/key.pem', 'utf8')
-  , cert = fs.readFileSync('keys/cert.pem', 'utf8')
-  , credentials = { key: key, cert: cert }
-  , server = https.createServer(credentials, app)
-// Declare what port to listen on - set to "process.env.PORT" per modulus getting started.
-  , EXPRESS_PORT = process.env.PORT || 443
-// Define some session-related settings
-  , db = require('./models/db')
-  , session_settings = {
-      store: db.session_store
-    , secret: db.SESSION_SECRET
-    , sid_name: 'express.sid'
-    , cookie: { maxAge: 3600000 } // 1 hour
   };
-console.log('session_settings', session_settings);
 
-function start() {
+  // Create an Express app and an HTTP server
+  var http_app = express()
+    , http_server = http.createServer(http_app);
+  // Create an Express app and an HTTPS server
+  var app = module.exports = express()
+    , key  = fs.readFileSync('keys/key.pem', 'utf8')
+    , cert = fs.readFileSync('keys/cert.pem', 'utf8')
+    , credentials = { key: key, cert: cert }
+    , server = https.createServer(credentials, app)
+  // Define some session-related settings
+    , db = require('./models/db')
+    , session_settings = {
+        store: db.session_store
+      , secret: db.SESSION_SECRET
+      , sid_name: 'express.sid'
+      , cookie: { maxAge: 3600000 } // 1 hour
+    };
+  //console.log('session_settings', session_settings);
   console.log('starting up.. node version is', process.versions.node);
 
   // set up HTTP forwarder
@@ -92,16 +91,12 @@ function start() {
       dumpExceptions: true
     , showStack: true
     })); 
-    // Set base_url value (used in intrasite links)
-    app.set('base_url', 'btcp.dev:' + EXPRESS_PORT);
   });
 
   //Production-mode-specific middleware configuration
   app.configure('production', function() {
     // Display "quiet" errors - no exceptions or stack traces
     app.use(express.errorHandler());
-    // Set base_url value (used in intrasite links)
-    app.set('base_url', 'btcp.com');
   });
 
   // Define routes that the app responds to
@@ -115,22 +110,10 @@ function start() {
   //  [hostname]:X
   //where [hostname] is the IP address of our server, or any domains pointed at our server
   http_server.listen(80);
-  server.listen(EXPRESS_PORT);
+  console.log('http_server listening on port %d in %s mode',
+              http_server.address().port, app.settings.env);
 
-  //this is printed after the server is up
-  console.log('http_server listening on port %d in %s mode', http_server.address().port, app.settings.env);
-  console.log('server listening on port %d in %s mode', server.address().port, app.settings.env);
-}
-
-if(! fs.existsSync('./node_modules/poker-evaluator/HandRanks.dat')) {
-  console.log('HandRanks.dat not found. downloading from https://s3norcalaaf.s3.amazonaws.com/HandRanks.dat');
-  require('child_process').exec('cd ./node_modules/poker-evaluator &&' +
-    'wget https://s3norcalaaf.s3.amazonaws.com/HandRanks.dat',
-    function(err, result) {
-    console.log('child process returns', err, result);
-    start();
-  });
-}
-else {
-  start();
-}
+  server.listen(443);
+  console.log('server listening on port %d in %s mode',
+              server.address().port, app.settings.env);
+})();
