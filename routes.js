@@ -13,7 +13,8 @@ module.exports = (function () {
     , mailer = require('./mailer')
     , request = require('request')
     , btc_main = require('./btc/main')
-    , crypto = require('crypto');
+    , crypto = require('crypto')
+    , address_validator = require('bitcoin-address');
 
   var package_file = require('./package.json');
   console.log('package.json version is ' + package_file.version);
@@ -24,8 +25,7 @@ module.exports = (function () {
   var ensureAuthenticated = function(req, res, next) {
     auth.ensureAuthenticated(req, res, next);
   };
-  
-  //These app.get functions will display their respective ejs page.
+
   app.get('/account', ensureAuthenticated, function(req, res) {
     //console.log('req.user is ' + req.user);
     var table_games = Table.getTableGames()
@@ -39,8 +39,8 @@ module.exports = (function () {
       email: req.user.email,
       funbucks: req.user.funbucks,
       email_confirmed: req.user.email_confirmed,
-      bitcoins: req.user.satoshi / 1E8,
-      satoshi: req.user.satoshi,
+      bitcoin_balance: req.user.satoshi / 1E8,
+      satoshi_balance: req.user.satoshi,
       message: flash && flash[0]
     });
   });
@@ -121,14 +121,16 @@ module.exports = (function () {
     console.log('payment made to', username, req);
   });
 
+  var minimum_withdrawl = .0002;
   app.get('/withdraw_bitcoins', ensureAuthenticated, function(req, res) {
     var table_games = Table.getTableGames()
       , flash = req.flash('error');
     res.render('withdraw_bitcoins', {
       title: 'Withdraw Bitcoins',
       table_games: table_games,
-      bitcoins: req.user.satoshi / 1E8,
-      message: flash && flash[0]
+      bitcoin_balance: req.user.satoshi / 1E8,
+      message: flash && flash[0],
+      minimum_withdrawl: minimum_withdrawl
     });
   });
 
@@ -166,7 +168,7 @@ module.exports = (function () {
       , registration_date: req.user.registration_date
       , room_state: JSON.stringify(room_state)
       , message: flash && flash[0]
-      , satoshi: req.user.satoshi
+      , satoshi_balance: req.user.satoshi
       , user: req.user      
       });
     }
@@ -799,6 +801,17 @@ module.exports = (function () {
       }
       res.json(true);
     });
+  });
+
+  app.get('/check_bitcoin_address', function(req, res) {
+    var address = req.query.address
+      , is_valid = address_validator.validate(address);
+    if (is_valid) {
+      res.json(true);
+    }
+    else {
+      res.json('Invalid address');
+    }
   });
 
   //Handle all other cases with a 404

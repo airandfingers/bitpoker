@@ -3,18 +3,26 @@
         <% if (typeof message === 'string') { %>
           <p class="inverse"><%= message %></p>
         <% } %>
-        <h1> Withdraw Bitcoins </h1>
-        <form action ="/withdraw_bitcoins" method="post" class="form-inline">
-            Account balance (in BTC): <%= bitcoins %>
-            <br />
-            <label for="withdraw_address">Address to transfer to: </label>
-            <input type="text" id="withdraw_address" name="withdraw_address" placeholder="1HmwtpPsAfAj9ynKh6ACaDmeztMLy2cBmT" />
-            <br />
-            <label for="amount">Amount to withdraw: </label>
-            <input type="text" id="amount" name="amount" placeholder="0" />
-            <br />
-            <button class="btn btn-danger">Give me my BTC!</button>
-        </form>
+        <h1>Withdraw Bitcoins</h1>
+        <div>Account balance (in BTC): <%= bitcoin_balance %></div>
+            <% if (bitcoin_balance > minimum_withdrawl) { %>
+              <form action ="/withdraw_bitcoins" method="post" class="form-inline">
+                  <label for="address">Address to transfer to: </label>
+                  <input type="text" id="address" name="address" placeholder="1HmwtpPsAfAj9ynKh6ACaDmeztMLy2cBmT" required remote="/check_bitcoin_address" />
+                  <br />
+                  <label for="amount">Amount to withdraw: </label>
+                  <input type="text" id="amount" name="amount" placeholder="0" required number min="<%= minimum_withdrawl %>" max="<%= bitcoin_balance %>" />
+                  <br />
+                  <button class="btn btn-danger">Give me my BTC!</button>
+                  <div>We pay a .0001 BTC transaction fee for withdrawls, so your address will receive .0001 BTC less than the amount of your withdrawl.</div>
+              </form>
+            <% } else { %>
+              <div>Sorry, you have less than the minimum withdrawl, <%= minimum_withdrawl %> BTC</div>
+            <% } %>
     </div>
     <% include plugins %>
-<% include foot %>
+<% include foot_start %>
+    <script>
+        $('form[action="/withdraw_bitcoins"]').validate();
+    </script>
+<% include foot_end %>
