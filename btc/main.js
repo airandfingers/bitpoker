@@ -63,7 +63,7 @@ module.exports = (function () {
   /* Handle a withdraw request made to /withdraw_bitcoins, with a body that takes the following form:
   {
     amount '100000',
-    withdraw_address: '1P2tbdA6p1J1XboFEc9FtAVXUQz9ysWmqi',
+    address: '1P2tbdA6p1J1XboFEc9FtAVXUQz9ysWmqi',
   },
   */
   var withdraw_fee = 0.0001 * 1E8
@@ -73,7 +73,7 @@ module.exports = (function () {
     , minimum_withdraw_amount = withdraw_fee * 2;
   var handleWithdrawRequest = function(user, body, cb) {
     var withdraw_amount = body.amount * 1E8
-      , withdraw_address = body.withdraw_address
+      , withdraw_address = body.address
       , error;
     // validate amount
     async.waterfall([
