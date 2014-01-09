@@ -19,4 +19,6 @@ results
 npm-debug.log
 
 node_modules
+
 db.config
+keys/key.pem
