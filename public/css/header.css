@@ -13,6 +13,8 @@ header {
     background: rgba(0,0,0,0);
     border: none;
     margin-bottom: 0;
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 .navbar-static-top {
