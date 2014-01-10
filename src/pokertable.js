@@ -2561,9 +2561,12 @@ var x = e.stageX+1;var y = e.stageY+1
 
 
 var menu = []
-var addDarkOption = function(fileName){menu.push({title:menu.length,cmd:'img/background images/dark/'+fileName})}
+var addDarkOption = function(fileName, title){
+  if(_.isUndefined(title)){var title = menu.length}
+  menu.push({title:title,cmd:'img/background images/dark/'+fileName})
+}
 
-addDarkOption('Map1280x800.jpg')
+addDarkOption('Map1280x800.jpg', 'map')
 addDarkOption('abstract_black_gradient_desktop_1920x1200_hd-wallpaper-1012937.jpg')
 addDarkOption('1280x1024_backround-best-black-and-green-wall-papers-go-wallpaper.jpg')
 addDarkOption('51b736384045f25357.jpg')
@@ -2586,7 +2589,7 @@ addGreenOption('green_black_frosted.jpg')
 addGreenOption('green-abstract-background.jpg')
 addGreenOption('Technical-green-and-black-abstract-background-tron tech style1024x640.jpg')
 
-menu.push({title:'random'  
+menu.push({title:'Surprise me!'  
   ,cmd:'random'
 })
 
