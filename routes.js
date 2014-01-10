@@ -379,7 +379,7 @@ module.exports = (function () {
   });
 
   //delete account
-  app.post('/delete_account', function (req, res) {
+  /*app.post('/delete_account', function (req, res) {
     console.log('delete_account route fired.');
     User.remove({ _id: req.user.id }, function(err) {
         if (_.isEmpty(err)) {
@@ -392,7 +392,7 @@ module.exports = (function () {
         }
     });
     res.redirect('back');
-  });
+  });*/
 
   //Guest Login Route
   function createGuestUser(req, res) {
