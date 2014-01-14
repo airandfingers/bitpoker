@@ -1231,6 +1231,58 @@ return addItemText (this, text, sizeAndFont, color, options)
             //for example: (item, fold, "13px " + self.permanentPreferences.defaultFontType.value, "#100D08")
            
 
+self.images.Item.prototype.addNumberText = function(number, sizeAndFont, color, options){
+
+
+
+
+//edit the getText function to get rid of commas
+this.getText = function(){
+
+var baseText = Object.getPrototypeOf(this).getText.call(this)
+
+return accounting.unformat(baseText)
+
+}//this.getText
+
+
+this.updateText = function(number, options){
+  if(!_.isString(number) && !_.isNumber(number)){return}
+    
+
+
+    if(!_.isObject(options)){var options = {}}
+      else{var options = _.clone(options)}
+
+var defaults = {
+
+symbol : self.initial_table_state.currency_symbol,
+  decimal : ".",
+  thousand: ",",
+  precision : 0,
+  format: "%v%s" //%s is currency symbol, %v is value
+
+}//defaults
+
+if(!defaults.symbol){defaults.symbol = ''}
+
+options = _.defaults(options, defaults)
+
+//format the number if necessary
+  if(!_.isNaN(parseInt(number))){var number = accounting.formatMoney(parseInt(number), options)}
+
+return  Object.getPrototypeOf(this).updateText.call(this, number)
+
+}//this.updateText
+
+
+//create the thing
+return Object.getPrototypeOf(this).addText.call (this, number, sizeAndFont, color, options)
+
+
+
+
+}//this.addNumber
 
 
 //------------END CONSTRUCTORS-------------------
@@ -3765,7 +3817,7 @@ if(options.columnDirection !== 'left'){
                    else{
                     self.images.pots[potNumber].potSize = new self.images.Item(firstChipX + chipDiameter - betSizeWidth,firstChipY+chipDiameter, betSizeWidth, potHeight, chipAndPotZ) 
                   }//if we want to go left
-             self.images.pots[potNumber].potSize.addText( '' ,potSizeAndFont, potTextColor, {textAlign:'left'})
+             self.images.pots[potNumber].potSize.addNumberText( '' ,potSizeAndFont, potTextColor, {textAlign:'left'})
 self.images.pots[potNumber].potSize.text.maxWidth = 999999
 //console.log('created pot items for pot number: '+potNumber);console.log(self.images.pots[potNumber])
 }
@@ -3796,7 +3848,8 @@ createPotItems(0, pot0X, pot0Y)
 
                   
            this.totalPotSize  = new this.Item(this.pots[0].firstChip.position.x, this.pots[0].firstChip.position.y+chipDiameter-chipColumnHeight-potHeight - distanceFromTotalPotSizeToPot0,potWidth,potHeight, chipAndPotZ)
-          this.totalPotSize.addText( '',potSizeAndFont, potTextColor)
+          this.totalPotSize.addNumberText( '',potSizeAndFont, potTextColor)
+          this.totalPotSize.text.prefix = 'Total: '
             this.totalPotSize.text.maxWidth = null
 
 var pot1X = pot0X + totalPotWidth + distanceBetweenPots;var pot1Y = pot0Y
@@ -4181,7 +4234,7 @@ this.cardAsBitmap(this.seats[i].hiddenCards[1],  null)
 
                     //player's status
             this.seats[i].status.addText('','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true})
-            this.seats[i].stackSize.addText('','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
+            this.seats[i].stackSize.addNumberText('','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
 
  this.seats[i].gettingChips.addText ('Adding Chips','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
  this.seats[i].sittingOut.addText('Sitting Out','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
@@ -4282,7 +4335,7 @@ var seatLocationMarginOfError = 1.1
     this.seats[i].secondChip = new this.Item(this.seats[i].firstChip.position.x, this.seats[i].firstChip.position.y+distanceBetweenChipsY,chipDiameter,chipDiameter,getZ('chips'))
     
     // bet size text
-     this.seats[i].bet.addText('', "12px " + self.permanentPreferences.defaultFontType.value, "#FFFFFF", {textAlign:'left'})
+     this.seats[i].bet.addNumberText('', "12px " + self.permanentPreferences.defaultFontType.value, "#FFFFFF", {textAlign:'left'})
      this.seats[i].bet.text.maxWidth = null
    
     if(this.seats[i].dealerButton instanceof this.Item){
@@ -7446,7 +7499,7 @@ else {console.log('pot '+i+'not redrawn because same value')}
  */
 
  if(_.isNumber(newTotalPotSize)) {
-  var newTotalPotSizeText = 'Total: '+newTotalPotSize
+  var newTotalPotSizeText = newTotalPotSize
   if(newTotalPotSizeText != this.images.totalPotSize.text.text ){
   this.images.totalPotSize.updateText(newTotalPotSizeText)
   stagesToUpdate.push(this.easelJSDisplayObjectChanged( this.images.totalPotSize))
@@ -7813,7 +7866,27 @@ else if(_.isObject(options.z)){var z = options.z}
     else{var z = getZ('chipAnimation')}
 
        //different chip values have different colors
-        if(chipValue == 1000){
+        if(chipValue == 10000000){
+           chipColor = '#CC6600'
+           chipValue = "10M"
+       }
+               if(chipValue == 5000000){
+           chipColor = '#CC6600'
+           chipValue = "5M"
+       }
+               if(chipValue == 1000000){
+           chipColor = '#CC6600'
+           chipValue = "1M"
+       }
+               if(chipValue == 100000){
+           chipColor = '#CC6600'
+           chipValue = "100k"
+       }
+               if(chipValue == 10000){
+           chipColor = '#CC6600'
+           chipValue = "10k"
+       }
+               if(chipValue == 1000){
            chipColor = '#CC6600'
            chipValue = "1k"
        }
@@ -12692,21 +12765,29 @@ if(!options){var options = {}}
 //console.log('checking updateitem text = '+text)
 if(!_.isString(text+'')){console.log('updateitemtext given non text as parameter = '+text);return }
 
-        if(_.isElement(item.text)){
-         $(item.text).html(text)
-      //    console.log('finished updating html of element updatitemtext')
-      //    console.log(item)
-        }
-  else if(item.text instanceof createjs.Text){//if easel js item
-          if(item.text.text+'' !== text+''){
-            item.text.text = text
-                  stagesToUpdate.push(self.easelJSDisplayObjectChanged(item))
+
+
+var updateText = function(textObject, newText){
+        if(_.isElement(textObject)){  $(textObject).html(newText)}//if html element
+
+           else if(textObject instanceof createjs.Text && textObject.text+'' !== text+''){//if easel js item
+ item.text.text = text
+ stagesToUpdate.push(self.easelJSDisplayObjectChanged(item))
                 }//if two texts are not equal
-        }//if item.text easel js
+}//update text private function
 
+        if(_.isElement(item.text) || item.text instanceof createjs.Text){var textObject = item.text        }
 
-       else  if(_.isElement(item.image)){ $( item.image).html(text)}
+       else  if(_.isElement(item.image)){ var textObject = item.image }
 
+if(textObject){
+//add prefix/suffix
+if(textObject.prefix){var text = textObject.prefix + text}
+  if(textObject.suffix){var text = text + textObject.suffix}
+
+updateText(textObject, text)
+
+}//if there is a text object to update
 
 if(options.update !== false){self.updateStages(stagesToUpdate)}
   else{return stagesToUpdate}
