@@ -16,8 +16,8 @@
       , SMALL_BLIND, BIG_BLIND, MIN_CHIPS, MAX_CHIPS
       , seats_taken, MAX_PLAYERS;
 
-    for (i = 0, len = table_games.length; i < len; i++ ) {
-      table_game = table_games[i];
+    for (i = 0, len = locals.table_games.length; i < len; i++ ) {
+      table_game = locals.table_games[i];
       game = table_game.game;
       table_name = table_game.table_name;
       table_id = table_game.table_id;

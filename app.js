@@ -57,6 +57,9 @@
   , session_settings: session_settings
   };
 
+  // Load Table for use below
+  var Table = require('./models/table');
+
   // Set some Express settings
   app.set('view engine', 'ejs');
   app.set('views', __dirname + '/views');
@@ -70,21 +73,26 @@
   app.use(express.cookieParser()); // Parse cookie into req.session
   app.use(express.session({
     store: session_settings.store, //where to store sessions
-    secret: session_settings.secret, //seed used to randomize some aspect of sessions?
-    key: session_settings.sid_name, //the name under which the session ID will be stored
-    cookie: session_settings.cookie // dictates how long the cookie will last
-  })); //enable session use with these settings
+    secret: session_settings.secret, // Seed used to randomize some aspect of sessions?
+    key: session_settings.sid_name, // The name under which the session ID will be stored
+    cookie: session_settings.cookie // Dictates how long the cookie will last
+  })); // Enable session use with these settings
   app.use(passport.initialize()); // Initialize Passport authentication module
   app.use(passport.session()); // Set up Passport session
   app.use(function(req, res, next) {
-    // Copy username from req.user into res.locals for use in views
-    res.locals.username = req.user && req.user.username;
+    // Set some res.locals values for use in header
+    if (req.method === 'GET') {
+      // Get username from req.user
+      res.locals.username = req.user && req.user.username;
+      // Get current list of tables and their states for use in lobby
+      res.locals.table_games = Table.getTableGames();
+    }
     next();
   });
   app.use(flash()); // Necessary to display Passport "flash" messages
   app.use(app.router); // Match against routes in routes.js
 
-  //Development-mode-specific middleware configuration
+  // Development-mode-specific middleware configuration
   app.configure('development', function() {
     // Display "noisy" errors - show exceptions and stack traces
     app.use(express.errorHandler({
