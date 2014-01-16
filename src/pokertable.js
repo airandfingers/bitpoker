@@ -15018,7 +15018,7 @@ self.resizePokerWrapperAndIframe()
 
 //remove extra S
          this.images.currencyDisplay.updateText('1 chip is equal to ' + table_state.currency_per_chip + ' ' + table_state.currency)
-if(table_state.currency_per_chip == 1 && table_state.currency.charAt(table_state.currency.length-1)=='s'||'S'){
+if(table_state.currency_per_chip == 1 && table_state.currency.charAt(table_state.currency.length-1)=='s'){
   this.images.currencyDisplay.updateText(this.images.currencyDisplay.text.text.substring(0,this.images.currencyDisplay.text.text.length-1) )
 }
 
