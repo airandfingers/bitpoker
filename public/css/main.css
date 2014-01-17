@@ -259,8 +259,10 @@ h2 {
 }
 
 .table_1{
-right:0;
-top:0;
+    left:-webkit-calc(100% - 665px);
+    left:-moz-calc(100% - 665px);
+    left:calc(100% - 665px);
+    top:0;
 }
 
 .table_2{
@@ -269,8 +271,10 @@ bottom:0;
 }
 
 .table_3{
-right:0;
-bottom:0;
+    left:-webkit-calc(100% - 665px);
+    left:-moz-calc(100% - 665px);
+    left:calc(100% - 665px);
+    bottom:0;
 }
 
 .table_4{
