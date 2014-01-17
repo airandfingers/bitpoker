@@ -139,6 +139,10 @@ h2 {
     width: 100%;
 }
 
+.nav li a.active {
+    color: white;
+}
+
 #bug_submit {
     margin: 1em;
 }
@@ -220,7 +224,7 @@ h2 {
     padding-left: 8%;
     padding-right: 8%;
     text-align: left;
-    height:auto;
+    height: auto;
 }
 
 #faq > h1 {
@@ -236,8 +240,8 @@ h2 {
     padding-left:0px;
 }
 
-#faq > h1, #faq > h2, #faq > h3 {
-    color: #111111 !important;
+#faq_dropdown {
+    z-index: 1000;
 }
 
 #funbucks_leaderboard, #satoshi_leaderboard {
@@ -374,6 +378,9 @@ bottom:0;
     opacity: .9;
 }
 
+.main h1, .main h2, .main h3 {
+    color: #111111 !important;
+}
 .iframe {
     width: auto;
     height: 470px; /* MANUALLY HUMAN CALCULATED AUTO GIVES 474 PX.  SHOULD FIX THIS LATER*/

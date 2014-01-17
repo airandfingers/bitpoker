@@ -103,6 +103,18 @@ $(function() {
   });
 });
 
+/*faq trigger */
+$(function() {
+  var $faq_trigger = $('#faq_trigger')
+    , $faq_dropdown = $('#faq_dropdown');
+  $faq_trigger.click(function() {
+    toggleDropdown($faq_trigger, $faq_dropdown,
+                   { top: top
+                   , left: 0 
+                   , toggle_args: ['slide', { direction: 'left' }, 400] });
+  });
+});
+
 /*Show funbucks/bitcoin balances on Hover 
 $(function() {
   $('#account_trigger').hoverIntent(accountHoverOn, accountHoverOff)
