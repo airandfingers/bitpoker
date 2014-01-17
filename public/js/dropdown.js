@@ -103,7 +103,6 @@ $(function() {
   });
 });
 
-/*faq trigger */
 $(function() {
   var $faq_trigger = $('#faq_trigger')
     , $faq_dropdown = $('#faq_dropdown');
