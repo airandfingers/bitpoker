@@ -12399,7 +12399,23 @@ else{return stagesToUpdate}
 
 }//restore function
 
-self.getPokerWrapperDimensions = function(){
+self.getPokerWrapperDimensions = function(options){
+//with flexbox
+
+if(!_.isObject(options)){var options = {}}
+
+  if(options.manual !== true){
+  var size  = {width:self.jQueryObjects.pokerTableDiv.outerWidth(true),height:self.jQueryObjects.pokerTableDiv.outerHeight(true)}
+  
+  console.log(size)
+  
+  return size
+  }
+
+  else{//manually calculated
+
+
+//old style, manually calculated
 
 var size = {}
 size.height = self.getParentOfStageObject(0).stage.canvas.height
@@ -12416,20 +12432,23 @@ size.width = size.width + widthToAdd
 
 })
 
-console.log('retreived dimensions of: ' + size.width +', '+size.height)
+console.log('manually retreived dimensions of: ' + size.width +', '+size.height)
 return size
 
+}
 }//get dimensions of the poker wrapper
 
 
-
+//will default to correct amount
 self.resizePokerWrapperAndIframe = function(originalOptions){
 
 if(!_.isObject(originalOptions)){var options = {}}
   else{var options = _.clone(originalOptions)}
 
-var resizeInterior = function(width,height){
-setDisplayObjectPositionData(self.jQueryObjects.pokerTableDiv[0], {width:width,height:height})
+var interiorSize = {}
+
+var resizeInterior = function(newSize){
+setDisplayObjectPositionData(self.jQueryObjects.pokerTableDiv[0], newSize)
 }
 
 if(!_.isNumber(options.width)){
@@ -12440,6 +12459,8 @@ console.log(options)
 
 }//retreive width
 
+else{interiorSize.width = options.width;self.jQueryObjects.pokerTableDiv.css('width','auto')}
+
 if(!_.isNumber(options.height)){
   if(!sizeData){var sizeData = self.getPokerWrapperDimensions()}
 options.height = sizeData.height
@@ -12447,8 +12468,11 @@ options.height = sizeData.height
 //  options.height = $(window).actual( 'outerHeight', { includeMargin : true })
 }//get height
 
+else{interiorSize.height = options.height;self.jQueryObjects.pokerTableDiv.css('height','auto')}
+
 console.log('resizing to '+options.width + ' '+options.height)
-resizeInterior(options.width,options.height)
+
+resizeInterior(interiorSize)
 self.getIframeLib().resizeIFrame(self.getTableName(), options.height, options.width)
 
 }
