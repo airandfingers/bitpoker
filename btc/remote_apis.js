@@ -5,29 +5,29 @@ module.exports = (function () {
 
   var createDepositAddress = function(username, vault_address, cb) {
     var url = 'https://blockchain.info/api/receive?method=create' +
-      '&address=' + vault_address +
-      '&shared=false' +
-      '&callback=https://' + db_config.DB_HOST + '/bitcoin_deposit/' + username
-      , error = null;
+              '&address=' + vault_address +
+              '&shared=false' +
+              '&callback=https://' + db_config.DB_HOST +
+              '/bitcoin_deposit/' + username
+      , deposit_address;
     request({
       url: url
-    }, function(err, response) {
-      if (err) {
-        error = 'Error while creating deposit address: ' + err.message;
-        console.error(error);
-      }
-      else if (! err && response &&
+    }, function(request_err, response) {
+      if (! request_err && response &&
                response.statusCode !== 200 &&
                response.statusCode !== 201) {
-        error = 'Unsuccessful response code while creating deposit address: ' + response.statusCode
+        console.error(response.statusCode + ' response.body:', response.body);
+        request_err = new Error('Unsuccessful response code while creating deposit address: ' + response.statusCode);
       }
-      if (error) {
-        console.error(error);
-        return cb(error);
+      if (request_err) {
+        console.error('Error while creating deposit address:', request_err);
       }
-      var body = JSON.parse(response.body);
-      deposit_address = body.input_address;
-      cb(null, deposit_address);
+      else {
+        var body = JSON.parse(response.body);
+        deposit_address = body.input_address;
+      }
+      
+      if (_.isFunction(cb)) { cb(request_err, deposit_address); }
     });
   };
 
@@ -49,7 +49,7 @@ module.exports = (function () {
           response.statusCode !== 200 &&
           response.statusCode !== 201) {
         console.error(response.statusCode, 'response.body: ', response.body);
-        request_err = new Error('Unsuccessful response code:' + response.statusCode);
+        request_err = new Error('Unsuccessful response code while setting up deposit notifications:' + response.statusCode);
       }
       if (request_err) {
         console.error('Error while setting deposit callback:', request_err);
