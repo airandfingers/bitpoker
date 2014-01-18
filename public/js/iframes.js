@@ -73,7 +73,7 @@ var pageStyled = false
 //DETERMINE WHERE THE IFRAME WILL GO
 assignIFramePosition($iframe)
 
-stylePage()//style page if needed
+//stylePage()//style page if needed
 
     $iframe_container.append($iframe);
     // make iframe draggable
@@ -130,7 +130,7 @@ position_number++//increment
     openNewIframe(table_name);
   });
 
-
+/*
 function stylePage (){
 if(pageStyled === true){return}
 console.log('stylePage called')
@@ -149,6 +149,7 @@ height:'calc(100% - ' + headerHeight+'px)'
 
   pageStyled = true
 }//function stylePage
+*/
 
   function setIframeCloseHandler(table_name, close_handler) {
  //   console.log('setIframeCloseHandler called with', table_name, close_handler);

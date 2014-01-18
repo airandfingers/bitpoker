@@ -1,5 +1,8 @@
 <% include head_start %>
 <% include head_end_and_play_header %>
+
+
+
     <div id="container">
         <% if (typeof user === 'undefined') { %>
             <h1>Welcome to Bitcoin Poker</h1>
@@ -40,6 +43,8 @@
 
 
     <!-- iframe-related code -->
+
+     <link type="text/css" rel="stylesheet" href="/css/iframes.css" />
     <script src="/js/iframes.js"></script>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -54,3 +59,4 @@
 
     <script src="/js/vendor/imagesloaded.pkgd.min.js"></script> 
     <script src="/js/pokertable.min.js"></script>
+
