@@ -791,6 +791,30 @@ module.exports = (function () {
     }
   });
 
+  function adminOr404(req, res, next) {
+    if ( req.user.admin) {
+      next();
+    }
+    else {
+      next('route');
+    }
+  }
+
+  app.get('/admin', redirectIfUnauthenticated, adminOr404, function(req, res) {
+    var flash = req.flash('error');
+    res.render('admin', {
+      title: 'Admins Only!'
+    , message: flash && flash[0]
+    });
+  });
+
+  app.post('/send_notification', redirectIfUnauthenticated, adminOr404, function(req, res) {
+    var message = req.body.message;
+    Table.sendNotificationToAllPlayers(message);
+    req.flash('error', 'Sent message to all players at all tables: "' + message + '"');
+    res.redirect('/admin');
+  });
+
   //Handle all other cases with a 404
   //Note: ONLY do this if app.use(app.router) comes after
   //      app.use(express.static) in this app's configuration;
@@ -798,8 +822,13 @@ module.exports = (function () {
   //      including requests for static files that exist.
   app.all('*', function(req, res) {
     res.status(404);
-    res.render('404', {
-      title: '404 Not Found'    
-    });
+    if (req.method === 'GET') {
+      res.render('404', {
+        title: '404 Not Found'    
+      });
+    }
+    else {
+      res.end();
+    }
   });
 })();

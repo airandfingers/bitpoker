@@ -43,6 +43,8 @@ module.exports = (function() {
   // persistent preferences shared across sessions/tables
   , preferences        : { type: Schema.Types.Mixed, default: function() { return {}; } }
   , transactions       : { type: [Schema.Types.Mixed], default: function() { return []; } }
+  // whether the user can see the admin page and perform admin-only actions
+  , admin              : Boolean
   }, { minimize: false }); // set minimize to false to save empty objects
 
   var FREE_SATOSHI = 200; // how many satoshi to give to new users with new IPs
@@ -245,7 +247,7 @@ module.exports = (function() {
 
   UserSchema.statics.getLeaders = function(currency, cb) {
     //console.log ('getLeaders called');
-    User.find()
+    User.find({ admin: { $ne: true } })
       .limit(25)
       .sort('-' + currency)
       .select('username ' + currency)
