@@ -6,7 +6,7 @@
         <!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
         <header>
           <% if (! locals.hide_navbar) { %>      
-              <nav class="navbar navbar-default navbar-static-top" role="navigation">
+              <nav id="navbar" class="navbar navbar-default navbar-static-top" role="navigation">
                 <div class="navbar-header">
                   <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
                     <span class="sr-only">Toggle navigation</span>
@@ -17,7 +17,7 @@
                 </div>
             
                 <div class="collapse navbar-collapse" id="navbar-collapse-1">
-                    <ul class="nav navbar-nav">
+                    <ul id="navbar" class="nav navbar-nav">
                         <%
                         var pages = [
                             { name: 'home', href: '/', title: 'Bitcoin Poker' },
@@ -74,7 +74,7 @@
                                 </li>
                     </ul>
 
-                    <ul class="nav navbar-nav navbar-right">
+                    <ul id="navbar" class="nav navbar-nav navbar-right">
                     
                         <!-- Funbucks/Satoshi Chip Count -->
                         <li id="chip_count" class="unselectable">

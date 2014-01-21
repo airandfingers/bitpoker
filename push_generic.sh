@@ -7,19 +7,30 @@
 ##cd Desktop/bitpoker cd to the bitpoker directory if needed
 
 
-#check number of lines to see if it is minified
-lines=$(wc -l < public/js/pokertable.min.js)
+#check game_table to see if it is minified
+lines=$(wc -l < public/js/game_table.min.js)
 echo $lines
-if(($lines > 300))
+if(($lines > $minified_lines))
 	then
-	minified="minified"
 	#we copy it to src, and minify original
-cp public/js/pokertable.min.js src/pokertable.js -v
+cp public/js/game_table.min.js src/game_table.js -v
 echo 'we are uglifying pokertable.min.js'
-uglifyjs src/pokertable.js -o public/js/pokertable.min.js -v
-
+uglifyjs src/game_table.js -o public/js/game_table.min.js -v
 else
 	echo 'pokertable.min.js is already minified'
+fi
+
+#check holdem_table see if it is minified
+lines=$(wc -l < public/js/holdem_table.min.js)
+echo $lines
+if(($lines > $minified_lines))
+	then
+	#we copy it to src, and minify original
+cp public/js/holdem_table.min.js src/holdem_table.js -v
+echo 'we are uglifying holdem_table.min.js'
+uglifyjs src/holdem_table.js -o public/js/holdem_table.min.js -v
+else
+	echo 'holdem_table.min.js is already minified'
 fi
 
 git add -A -v

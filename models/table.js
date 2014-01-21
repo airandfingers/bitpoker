@@ -98,6 +98,14 @@ module.exports = (function () {
     return table_games;
   };
 
+  TableSchema.statics.sendNotificationToAllPlayers = function(message) {
+    _.each(Table.tables, function(table) {
+      _.each(table.players, function(player) {
+        player.sendMessage('notification', message);
+      });
+    });
+  };
+
   // instance methods - document.method()
   TableSchema.methods.initialize = function() {
     var self = this
