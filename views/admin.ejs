@@ -1,0 +1,17 @@
+ <% include head %>
+    <div id="container" class="account">
+        <h1>
+            Hey there, you old so-and-so!
+        </h1>
+        <form action="/send_notification" method="post">
+        	<input id="message" name="message" type="text" placeholder="Hello, World!" autofocus required />
+        	<input value="Send Notification" type="submit" />
+        </form>
+        <br />
+        <% if (typeof message === 'string') { %>
+            <p class="inverse"><%= message %></p>
+        <% } %>
+    </div> <!-- container -->
+    
+    <% include plugins %>
+<% include foot %>

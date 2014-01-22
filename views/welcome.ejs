@@ -1,139 +1,88 @@
 <% include head_start %>
 <% include head_end_and_header %>
     <div id="container">
-        <% if (typeof user === 'undefined') { %>
-
-<div id = 'welcome_page_container'>
+        <div id = 'welcome_page_container'>
 
             <h1 id = 'welcome'>Welcome to Bitcoin Poker</h1>
 
-<link rel="stylesheet" href="/css/vendor/metro-bootstrap.min.css" />
-<link rel="stylesheet" href="/css/vendor/metro-responsive.min.css" />
-
-
-<div id = "welcome_teaser" class = 'metro'>
-
-<div class = 'selling_point_container'>
-
-                 
-
-             <div class="selling_point_tile tile live bg-violet" data-role="live-tile" data-effect="slideUp">
-
-             <div class="tile-content padding20 text-center selling_point">
-             <h2 class="fg-white selling_point_text">instant deposits and cashouts</h2>
-                               </div>
-
-                    <div class="tile-content padding20 text-center ">
-            <div class="selling_point fg-white">
-            <h2 class = 'selling_point_text' >fully automated cashouts for YOUR bitcoins!</h2>
-            </div>
-                    </div>
-
-  </div>
-
-
-              <div class="selling_point_tile tile  live bg-red" data-role="live-tile" data-effect="slideUp">
-
-             <div class="tile-content padding20 text-center ">
-              <div class="fg-white selling_point">
-              <h2 class = 'selling_point_text'>no rake, no fees</h2>
-              </div>
-                               </div>
-
-                   <div class="tile-content padding20 text-center">
-              <div class="fg-white selling_point">
-              <h2 class = "selling_point_text">limited time only</h2>
-              </div>
-                    </div>
-
-                     </div>
-
-
-                       <div class="selling_point_tile tile  live bg-green" data-role="live-tile" data-effect="slideUp">
-
-             <div class="tile-content padding20 text-center ">
-              <div class="fg-white selling_point">
-              <h2 class = 'selling_point_text'>free BTC!</h2>
-              </div>
-                               </div>
-
-                   <div class="tile-content padding20 text-center">
-              <div class="fg-white selling_point">
-              <h2 class = "selling_point_text">1000 satoshi on signup!</h2>
-              </div>
-                    </div>
-
-                     </div>
-
-
-
-           <!--     <div class="tile-status bg-dark opacity">
-                    <span class="label">effect: slideRight</span> -->
-                </div>
-
-            </div><!--a tile-->
-
-
-<div class = 'grid fluid'>
-<div class = 'row'>
-</div> <!--row-->
-</div> <!--fluid grid-->
-
-
-
-</div> <!--.selling_point_container-->
-</div><!--welcome teaser container-->
-
-
-            <div id="button_groups"> 
-                <h1>Choose one:</h1>
-                <form action="/register" method="get">
-                    <button class="btn btn-success btn-lg">Register</button>
-                </form>
-                <form action="/guest_login" method="post">
-                    <button class="btn btn-default btn-lg btn-custom">Play as Guest</button>
-                </form>
-            </div>
-
-
-        <% }
-
-        else { %>
-            <h1></h1>
+            <link rel="stylesheet" href="/css/vendor/metro-bootstrap.min.css" />
+            <link rel="stylesheet" href="/css/vendor/metro-responsive.min.css" />
             
-            <!--
-            <% include users %>
-            <div class="chat_container row">
-                <div id="chat_lobby" class="row">
-                    <% include chat %>
-                </div>
-            </div>
-            -->
-            <!-- include values to expose to scripts 
-            <input type="hidden" id="server_values"
-                data-room_state="<%= room_state %>"
-                data-current_table_names="<%= JSON.stringify(user.current_table_names) %>"
-            />
+            <div id = "welcome_teaser" class = 'metro'>
+
+                <div class = 'selling_point_container'>
+
+                    <div class="selling_point_tile tile live bg-violet" data-role="live-tile" data-effect="slideUp">
+
+                        <div class="tile-content padding20 text-center selling_point">
+                            <h2 class="fg-white selling_point_text">instant deposits and cashouts</h2>
+                        </div>
+
+                        <div class="tile-content padding20 text-center ">
+                        
+                            <div class="selling_point fg-white">
+                                <h2 class = 'selling_point_text' >fully automated cashouts for YOUR bitcoins!</h2>
+                            </div>                    
+                        </div>
+                    </div>
+
+                    <div class="selling_point_tile tile  live bg-red" data-role="live-tile" data-effect="slideUp">
+
+                        <div class="tile-content padding20 text-center ">
+                            <div class="fg-white selling_point">
+                                <h2 class = 'selling_point_text'>no rake, no fees</h2>
+                            </div>
+                        </div>
+
+                        <div class="tile-content padding20 text-center">                    
+                            <div class="fg-white selling_point">
+                                <h2 class = "selling_point_text">limited time only</h2>
+                            </div>
+                        </div>
+                    </div>
 
 
+                    <div class="selling_point_tile tile  live bg-green" data-role="live-tile" data-effect="slideUp">
+                        <div class="tile-content padding20 text-center ">
+                            <div class="fg-white selling_point">
+                                <h2 class = 'selling_point_text'>free BTC!</h2>
+                            </div>
+                        </div>
+                       
+                        <div class="tile-content padding20 text-center">
+                            <div class="fg-white selling_point">
+                                <h2 class = "selling_point_text">1000 satoshi on signup!</h2>
+                            </div>
+                        </div>
+                    </div>
 
+                    <!-- <div class="tile-status bg-dark opacity">
+                            <span class="label">effect: slideRight</span> 
+                         </div>  -->
 
+                    <div class = 'grid fluid'>
+                        <div class = 'row'>
+                            <div id="button_groups"> 
+                                <h1>Choose one:</h1>
+                                <form action="/register" method="get">
+                                    <button class="btn btn-success btn-lg">Register</button>
+                                </form>
+                                <form action="/guest_login" method="post">
+                                    <button class="btn btn-default btn-lg btn-custom">Play as Guest</button>
+                                </form>
+                            </div>
 
-        <% } %>
-        
-   
-
-        <% if (message) { %>
-          <p><%= message %></p>
-        <% } %>
-
-
- </div><!--#welcome_page_container-->
+                            <% if (message) { %>
+                              <p><%= message %></p>
+                            <% } %>
+                        </div> <!--row-->
+                    </div> <!--fluid grid-->
+                </div> <!--.selling_point_container-->
+            </div><!--welcome teaser container-->
+        </div><!--#welcome_page_container-->
     </div> <!-- container -->
 
-
     <% include plugins %>
-
 
     <!-- iframe-related code -->
     <script src="/js/iframes.js"></script>

@@ -152,6 +152,10 @@ h2 {
     width: 100%;
 }
 
+.nav li a.active {
+    color: white;
+}
+
 #bug_submit {
     margin: 1em;
 }
@@ -236,7 +240,7 @@ h2 {
     padding-left: 8%;
     padding-right: 8%;
     text-align: left;
-    height:auto;
+    height: auto;
 }
 
 #faq > h1 {
@@ -252,8 +256,8 @@ h2 {
     padding-left:0px;
 }
 
-#faq > h1, #faq > h2, #faq > h3 {
-    color: #111111 !important;
+#faq_dropdown {
+    z-index: 1000;
 }
 
 #funbucks_leaderboard, #satoshi_leaderboard {
@@ -442,8 +446,10 @@ display:flex;
 }
 
 .table_1{
-right:0;
-top:0;
+    left:-webkit-calc(100% - 665px);
+    left:-moz-calc(100% - 665px);
+    left:calc(100% - 665px);
+    top:0;
 }
 
 .table_2{
@@ -452,8 +458,10 @@ bottom:0;
 }
 
 .table_3{
-right:0;
-bottom:0;
+    left:-webkit-calc(100% - 665px);
+    left:-moz-calc(100% - 665px);
+    left:calc(100% - 665px);
+    bottom:0;
 }
 
 .table_4{
@@ -548,7 +556,29 @@ bottom:0;
     opacity: .9;
 }
 
+.main h1, .main h2, .main h3 {
+    color: #111111 !important;
+}
+.iframe {
+    width: auto;
+    height: 470px; /* MANUALLY HUMAN CALCULATED AUTO GIVES 474 PX.  SHOULD FIX THIS LATER*/
+    width:auto;
+    display: inline;
+    position: absolute;
+    overflow:hidden;
+}
 
+
+.iframe_header {
+    line-height: 15px;
+    font-family: Planer_Reg, 'Helvetica Neue', Helvetica, sans-serif;
+    font-weight: 550;
+    height: 16px;
+    background-color: rgba(250,250,250, .95);
+    cursor: default;
+    padding-top: 1px;
+    text-align: center;
+}
 
 @media (max-width: 767px) {
   body {

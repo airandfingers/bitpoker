@@ -13,7 +13,8 @@ module.exports = (function () {
     , mailer = require('./mailer')
     , request = require('request')
     , btc_main = require('./btc/main')
-    , crypto = require('crypto');
+    , crypto = require('crypto')
+    , address_validator = require('bitcoin-address');
 
   var package_file = require('./package.json');
   console.log('package.json version is ' + package_file.version);
@@ -24,31 +25,26 @@ module.exports = (function () {
   var ensureAuthenticated = function(req, res, next) {
     auth.ensureAuthenticated(req, res, next);
   };
-  
-  //These app.get functions will display their respective ejs page.
+
   app.get('/account', ensureAuthenticated, function(req, res) {
     //console.log('req.user is ' + req.user);
-    var table_games = Table.getTableGames()
-      , flash = req.flash('error');
+    var flash = req.flash('error');
 
     res.render('account', {
-      table_games: table_games,
       title: 'Account',
       username: req.user.username,
       registration_date: req.user.registration_date,
       email: req.user.email,
       funbucks: req.user.funbucks,
       email_confirmed: req.user.email_confirmed,
-      bitcoins: req.user.satoshi / 1E8,
-      satoshi: req.user.satoshi,
+      bitcoin_balance: req.user.satoshi / 1E8,
+      satoshi_balance: req.user.satoshi,
       message: flash && flash[0]
     });
   });
 
   app.get('/faq', function(req, res) {
-    var table_games = Table.getTableGames();
     res.render('faq', {
-      table_games: table_games,
       title: 'Frequently Asked Questions',
     });
   });
@@ -107,10 +103,8 @@ module.exports = (function () {
 
   app.get('/deposit_bitcoins', ensureAuthenticated, function(req, res) {
     console.log(req.user.deposit_address);
-    var table_games = Table.getTableGames();
     res.render('deposit_bitcoins', {
       title: 'Deposit Bitcoins',
-      table_games: table_games,
       deposit_address: req.user.deposit_address,
       username: req.user.username
     });
@@ -121,14 +115,14 @@ module.exports = (function () {
     console.log('payment made to', username, req);
   });
 
+  var minimum_withdrawl = .0002;
   app.get('/withdraw_bitcoins', ensureAuthenticated, function(req, res) {
-    var table_games = Table.getTableGames()
-      , flash = req.flash('error');
+    var flash = req.flash('error');
     res.render('withdraw_bitcoins', {
       title: 'Withdraw Bitcoins',
-      table_games: table_games,
-      bitcoins: req.user.satoshi / 1E8,
-      message: flash && flash[0]
+      bitcoin_balance: req.user.satoshi / 1E8,
+      message: flash && flash[0],
+      minimum_withdrawl: minimum_withdrawl
     });
   });
 
@@ -147,7 +141,6 @@ module.exports = (function () {
   // home, index, lobby, play, and / all show the landing page
   function renderHome(req, res) {
     var users = Room.getRoom('').getUsernames()
-      , table_games = Table.getTableGames()
       , room_state = { users: users }
       , flash = req.flash('error');
     
@@ -162,11 +155,10 @@ module.exports = (function () {
       , email: req.user.email
       , email_confirmed: req.user.email_confirmed
       , funbucks: req.user.funbucks
-      , table_games: table_games
       , registration_date: req.user.registration_date
       , room_state: JSON.stringify(room_state)
       , message: flash && flash[0]
-      , satoshi: req.user.satoshi
+      , satoshi_balance: req.user.satoshi
       , user: req.user      
       });
     }
@@ -174,7 +166,6 @@ module.exports = (function () {
       console.log('user is not logged in. rendering welcome environment');
       res.redirect('/welcome');
     }
-    //console.log('Got table_games:', table_games);
   }
   app.get('/', renderHome);
 
@@ -198,9 +189,7 @@ module.exports = (function () {
         console.error('Error while getting leaders:', err);
         leaders = { funbucks: [], satoshi: [] };
       }
-      var table_games = Table.getTableGames();
       res.render('leaderboard', {
-        table_games: table_games,
         title: 'Leaderboard',
         leaders: leaders
       }); 
@@ -214,17 +203,14 @@ module.exports = (function () {
   });
 
   app.get('/login', function (req, res) {
-    var table_games = Table.getTableGames()
-      , next_page = req.query.next || base_page
+    var next_page = req.query.next || base_page
       , flash = req.flash('error');
     if (! auth.isAuthenticated(req)) {
       //Show the login form.
       res.render('login', {
-        table_games: table_games,
         message: flash && flash[0],
         next: next_page,
         title: 'Login',
-        table_games: table_games
       });
     }
     else {
@@ -236,12 +222,10 @@ module.exports = (function () {
   //this page is where you request the password recovery e-mail
   app.get('/password_recovery', function (req, res) {
     var flash = req.flash('error')
-      , table_games = Table.getTableGames();
     res.render('password_recovery', {
       message: flash && flash[0],
       next: req.query.next,
       title: 'Password Recovery',
-      table_games: table_games
     });
   });
 
@@ -331,19 +315,15 @@ module.exports = (function () {
 
   app.get('/welcome', function (req, res) {
     var users = Room.getRoom('').getUsernames()
-      , table_games = Table.getTableGames()
       , room_state = { users: users }
       , flash = req.flash('error');
 
     if (_.isObject(req.user)) { 
       res.redirect('/');
     }
-      
-    //console.log('Got table_games:', table_games);
 
     res.render('welcome', {
       title: 'Bitcoin Poker'
-    , table_games: table_games
     , room_state: JSON.stringify(room_state)
     , message: flash && flash[0]
     , user: req.user
@@ -377,7 +357,7 @@ module.exports = (function () {
   });
 
   //delete account
-  app.post('/delete_account', function (req, res) {
+  /*app.post('/delete_account', function (req, res) {
     console.log('delete_account route fired.');
     User.remove({ _id: req.user.id }, function(err) {
         if (_.isEmpty(err)) {
@@ -390,7 +370,7 @@ module.exports = (function () {
         }
     });
     res.redirect('back');
-  });
+  });*/
 
   //Guest Login Route
   function createGuestUser(req, res) {
@@ -577,7 +557,6 @@ module.exports = (function () {
 
   //Send register the new information
   app.post('/register', function (req, res, next) {
-    console.log(req);
     var username = req.body.username
       , pt_password = req.body.new_password
       , password_confirm = req.body.new_password_confirm
@@ -801,17 +780,55 @@ module.exports = (function () {
     });
   });
 
+  app.get('/check_bitcoin_address', function(req, res) {
+    var address = req.query.address
+      , is_valid = address_validator.validate(address);
+    if (is_valid) {
+      res.json(true);
+    }
+    else {
+      res.json('Invalid address');
+    }
+  });
+
+  function adminOr404(req, res, next) {
+    if ( req.user.admin) {
+      next();
+    }
+    else {
+      next('route');
+    }
+  }
+
+  app.get('/admin', redirectIfUnauthenticated, adminOr404, function(req, res) {
+    var flash = req.flash('error');
+    res.render('admin', {
+      title: 'Admins Only!'
+    , message: flash && flash[0]
+    });
+  });
+
+  app.post('/send_notification', redirectIfUnauthenticated, adminOr404, function(req, res) {
+    var message = req.body.message;
+    Table.sendNotificationToAllPlayers(message);
+    req.flash('error', 'Sent message to all players at all tables: "' + message + '"');
+    res.redirect('/admin');
+  });
+
   //Handle all other cases with a 404
   //Note: ONLY do this if app.use(app.router) comes after
   //      app.use(express.static) in this app's configuration;
   //      otherwise, this route will catch all incoming requests,
   //      including requests for static files that exist.
   app.all('*', function(req, res) {
-    var table_games = Table.getTableGames();
     res.status(404);
-    res.render('404', {
-      title: '404 Not Found'    
-    , table_games: table_games
-    });
+    if (req.method === 'GET') {
+      res.render('404', {
+        title: '404 Not Found'    
+      });
+    }
+    else {
+      res.end();
+    }
   });
 })();

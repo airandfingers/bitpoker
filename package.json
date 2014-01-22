@@ -3,6 +3,7 @@
   "version": "0.9.1",
   "private": true,
   "dependencies": {
+    "bitcoin-address": "latest",
     "connect-flash": "~0.1.1",
     "ejs": "latest",
     "express": "~3.2.4",
@@ -10,6 +11,7 @@
     "mongoose": "latest",
     "passport": "latest",
     "passport-local": "latest",
+    "poker-evaluator": "0.0.4",
     "session-mongoose": "latest",
     "socket.io": "latest",
     "underscore": "latest",
@@ -20,8 +22,7 @@
   },
   "domains": [],
   "scripts": {
-    "start": "app.js",
-    "postinstall": "npm install ./custom_modules"
+    "start": "app.js"
   },
   "engines": {
     "node": "0.10.x"

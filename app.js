@@ -1,13 +1,15 @@
-// Require dependencies
-var express = require('express')
-  , http = require('http')
-  , https = require('https')
-  , passport = require('passport')
-  , flash = require('connect-flash')
-  , fs = require('fs')
+// Wrap everything in an immediately-invoked function, to scope variables
+(function() {
+  // Require dependencies
+  var express = require('express')
+    , http = require('http')
+    , https = require('https')
+    , passport = require('passport')
+    , flash = require('connect-flash')
+    , fs = require('fs');
 
-// Define how to format log messages
-  , logger_options = function(tokens, req, res) {
+  // Define how to format log messages
+  var logger_options = function(tokens, req, res) {
     var status = res.statusCode
       , color = 32;
 
@@ -21,29 +23,26 @@ var express = require('express')
       + ' \033[90m'
       + (new Date - req._startTime)
       + 'ms\033[0m';
-
-// Create an Express app and an HTTP server
-  }, http_app = express()
-  , http_server = http.createServer(http_app)
-// Create an Express app and an HTTPS server
-  , app = module.exports = express()
-  , key  = fs.readFileSync('keys/key.pem', 'utf8')
-  , cert = fs.readFileSync('keys/cert.pem', 'utf8')
-  , credentials = { key: key, cert: cert }
-  , server = https.createServer(credentials, app)
-// Declare what port to listen on - set to "process.env.PORT" per modulus getting started.
-  , EXPRESS_PORT = process.env.PORT || 443
-// Define some session-related settings
-  , db = require('./models/db')
-  , session_settings = {
-      store: db.session_store
-    , secret: db.SESSION_SECRET
-    , sid_name: 'express.sid'
-    , cookie: { maxAge: 3600000 } // 1 hour
   };
-console.log('session_settings', session_settings);
 
-function start() {
+  // Create an Express app and an HTTP server
+  var http_app = express()
+    , http_server = http.createServer(http_app);
+  // Create an Express app and an HTTPS server
+  var app = module.exports = express()
+    , key  = fs.readFileSync('keys/key.pem', 'utf8')
+    , cert = fs.readFileSync('keys/cert.pem', 'utf8')
+    , credentials = { key: key, cert: cert }
+    , server = https.createServer(credentials, app)
+  // Define some session-related settings
+    , db = require('./models/db')
+    , session_settings = {
+        store: db.session_store
+      , secret: db.SESSION_SECRET
+      , sid_name: 'express.sid'
+      , cookie: { maxAge: 3600000 } // 1 hour
+    };
+  //console.log('session_settings', session_settings);
   console.log('starting up.. node version is', process.versions.node);
 
   // set up HTTP forwarder
@@ -58,6 +57,9 @@ function start() {
   , session_settings: session_settings
   };
 
+  // Load Table for use below
+  var Table = require('./models/table');
+
   // Set some Express settings
   app.set('view engine', 'ejs');
   app.set('views', __dirname + '/views');
@@ -71,37 +73,38 @@ function start() {
   app.use(express.cookieParser()); // Parse cookie into req.session
   app.use(express.session({
     store: session_settings.store, //where to store sessions
-    secret: session_settings.secret, //seed used to randomize some aspect of sessions?
-    key: session_settings.sid_name, //the name under which the session ID will be stored
-    cookie: session_settings.cookie // dictates how long the cookie will last
-  })); //enable session use with these settings
+    secret: session_settings.secret, // Seed used to randomize some aspect of sessions?
+    key: session_settings.sid_name, // The name under which the session ID will be stored
+    cookie: session_settings.cookie // Dictates how long the cookie will last
+  })); // Enable session use with these settings
   app.use(passport.initialize()); // Initialize Passport authentication module
   app.use(passport.session()); // Set up Passport session
   app.use(function(req, res, next) {
-    // Copy username from req.user into res.locals for use in views
-    res.locals.username = req.user && req.user.username;
+    // Set some res.locals values for use in header
+    if (req.method === 'GET') {
+      // Get username from req.user
+      res.locals.username = req.user && req.user.username;
+      // Get current list of tables and their states for use in lobby
+      res.locals.table_games = Table.getTableGames();
+    }
     next();
   });
   app.use(flash()); // Necessary to display Passport "flash" messages
   app.use(app.router); // Match against routes in routes.js
 
-  //Development-mode-specific middleware configuration
+  // Development-mode-specific middleware configuration
   app.configure('development', function() {
     // Display "noisy" errors - show exceptions and stack traces
     app.use(express.errorHandler({
       dumpExceptions: true
     , showStack: true
     })); 
-    // Set base_url value (used in intrasite links)
-    app.set('base_url', 'btcp.dev:' + EXPRESS_PORT);
   });
 
   //Production-mode-specific middleware configuration
   app.configure('production', function() {
     // Display "quiet" errors - no exceptions or stack traces
     app.use(express.errorHandler());
-    // Set base_url value (used in intrasite links)
-    app.set('base_url', 'btcp.com');
   });
 
   // Define routes that the app responds to
@@ -115,22 +118,10 @@ function start() {
   //  [hostname]:X
   //where [hostname] is the IP address of our server, or any domains pointed at our server
   http_server.listen(80);
-  server.listen(EXPRESS_PORT);
+  console.log('http_server listening on port %d in %s mode',
+              http_server.address().port, app.settings.env);
 
-  //this is printed after the server is up
-  console.log('http_server listening on port %d in %s mode', http_server.address().port, app.settings.env);
-  console.log('server listening on port %d in %s mode', server.address().port, app.settings.env);
-}
-
-if(! fs.existsSync('./node_modules/poker-evaluator/HandRanks.dat')) {
-  console.log('HandRanks.dat not found. downloading from https://s3norcalaaf.s3.amazonaws.com/HandRanks.dat');
-  require('child_process').exec('cd ./node_modules/poker-evaluator &&' +
-    'wget https://s3norcalaaf.s3.amazonaws.com/HandRanks.dat',
-    function(err, result) {
-    console.log('child process returns', err, result);
-    start();
-  });
-}
-else {
-  start();
-}
+  server.listen(443);
+  console.log('server listening on port %d in %s mode',
+              server.address().port, app.settings.env);
+})();

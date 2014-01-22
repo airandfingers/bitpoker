@@ -6,7 +6,7 @@
         <!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
         <header>
           <% if (! locals.hide_navbar) { %>      
-            <nav class="navbar navbar-default navbar-static-top" role="navigation">
+            <nav id="navbar" class="navbar navbar-default navbar-static-top" role="navigation">
               <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
                   <span class="sr-only">Toggle navigation</span>
@@ -17,7 +17,7 @@
               </div>
 
             <div class="collapse navbar-collapse" id="navbar-collapse-1">
-                <ul class="nav navbar-nav">
+                <ul id="navbar" class="nav navbar-nav">
                     <%
                     var pages = [
                         { name: 'home', href: '/', title: 'Bitcoin Poker' },
@@ -65,14 +65,16 @@
                             </li>
                     </ul>
 
-                    <ul class="nav navbar-nav navbar-right">
+                    <ul id="navbar" class="nav navbar-nav navbar-right">
 
-                      <!-- SIGN UP dropdown Link -->
+                      <!-- LOGOUT Link -->
                       <li class="unselectable">
                           <% if (locals.username) { %>
                             <a id="logout_trigger"href="/logout">LOGOUT</a>
                           <% } %>
                       </li>
+
+                      <!-- SIGN UP dropdown Link -->
                       <% 
                       if (typeof locals.username !== 'string' ||
                           locals.username.substring(0, 5) === 'guest') {
@@ -82,13 +84,13 @@
                       </li>
                       <% } %>
 
-                      <!--Login or Logout Link-->
+                      <!-- Account or LOGIN Link-->
                       <li class="unselectable">
                           <% if (locals.username) { %>
-                            <a id= "account_trigger" href="#" title="My Account"
+                            <a id= "account_link" href="/account" title="My Account"
                                <%= title === 'Account' ? 'class=current_page' : '' %>
                             >
-                              <i class="icon-cog icon-white"></i>
+                              <span class="glyphicon glyphicon-cog"> </span>
                               <%= locals.username.toUpperCase() %> 
                             </a>
                           <% } else { %>
@@ -133,6 +135,10 @@
                             <div class="email">
                                 <label for="register_email">Email (optional):</label>
                                 <input id="register_email" name="email" type="email" placeholder="name@domain.com" />
+                            </div>
+                            <div class="age_check">
+                                <input id="register_age_check" name="age_check" type="checkbox" required />
+                                <label for="register_age_check">I am 18 or older, and it is legal <br /> for me to gamble in my jurisdiction.</label>
                             </div>
                             <input type="submit" value="Sign Up" class="btn btn-default"/>
                         </form>

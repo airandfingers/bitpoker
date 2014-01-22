@@ -13,16 +13,17 @@ header {
     background: rgba(0,0,0,0);
     border: none;
     margin-bottom: 0;
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
-.navbar-static-top {
-}
-.navbar a:link    { color: white; }
-.navbar a:visited { color: #CCCCCC; }
-.navbar a:hover   { color: red; }
-.navbar a.current_page  { color: chartreuse; }
-.navbar a#lobby_trigger  { color: orange; }
-.navbar a#lobby_trigger:hover  { color: red; }
+#navbar-static-top { }
+#navbar a:link    { color: white; }
+#navbar a:visited { color: #CCCCCC; }
+#navbar a#lobby_trigger  { color: orange; }
+
+#navbar a:hover, #navbar a#lobby_trigger:hover  { color: red; }
+#navbar a.current_page, #navbar a.active  { color: chartreuse; }
 
 #chip_count {
     display: none;

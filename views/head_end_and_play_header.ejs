@@ -6,7 +6,7 @@
         <!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
         <header>
           <% if (! locals.hide_navbar) { %>      
-              <nav class="navbar navbar-default navbar-static-top" role="navigation">
+              <nav id="navbar" class="navbar navbar-default navbar-static-top" role="navigation">
                 <div class="navbar-header">
                   <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
                     <span class="sr-only">Toggle navigation</span>
@@ -17,7 +17,7 @@
                 </div>
             
                 <div class="collapse navbar-collapse" id="navbar-collapse-1">
-                    <ul class="nav navbar-nav">
+                    <ul id="navbar" class="nav navbar-nav">
                         <%
                         var pages = [
                             { name: 'home', href: '/', title: 'Bitcoin Poker' },
@@ -62,19 +62,25 @@
                                 </li>
 
                                 <li class="unselectable">
+                                  <a href = "#" id="faq_trigger">
+                                    FAQ
+                                  </a>
+                                </li>
+
+                                <li class="unselectable">
                                     <a href="#" id="report_bug_trigger" title="Submit bugs or feedback">
                                         <img src="/img/bug.png" />
                                     </a>
                                 </li>
                     </ul>
 
-                    <ul class="nav navbar-nav navbar-right">
+                    <ul id="navbar" class="nav navbar-nav navbar-right">
                     
                         <!-- Funbucks/Satoshi Chip Count -->
                         <li id="chip_count" class="unselectable">
                             <% if(locals.username) { %>
                                 Fb <span id="funbucks_balance"><%= funbucks %></span>
-                                Sat <span id="satoshi_balance"><%= satoshi %></span>
+                                Sat <span id="satoshi_balance"><%= satoshi_balance %></span>
                             <% } %>
                         </li>
                     
@@ -99,7 +105,7 @@
                               <a id= "account_trigger" href="#" title="My Account"
                                  <%= title === 'Account' ? 'class=current_page' : '' %>
                               >
-                                <i class="glyphicon-cog glyphicon-white"></i>
+                                <span class="glyphicon glyphicon-cog"></span>
                                 <%= locals.username.toUpperCase() %> 
                               </a>
                             <% } else { %>
@@ -112,7 +118,13 @@
                 </div><!--navbar collapse-->                
             </nav>
 
-                <!-- dropdowns -->
+
+                <!-- dropdowns -->    
+
+                <div id="faq_dropdown" class="dropdown_form inverse unselectable">
+                    <% include faq_base %>
+                </div>
+
                 <% if (typeof table_games !=='undefined') { %>
                   <div id="lobbyWrapperDiv">
 
@@ -138,6 +150,7 @@
                     <div id="account" class="dropdown_form inverse unselectable">
                         <% include account_base %>
                     </div>
+
                     <% if (locals.username.substring(0, 5) === 'guest') { %>
                         <div id="register" class="dropdown_form">
                             <form action="/register" method="post">
@@ -156,6 +169,10 @@
                                 <div class="email">
                                     <label for="register_email">Email (optional):</label>
                                     <input id="register_email" name="email" type="email" placeholder="name@domain.com" />
+                                </div>
+                                <div class="age_check">
+                                    <input id="register_age_check" name="age_check" type="checkbox" required />
+                                    <label for="register_age_check">I am 18 or older, and it is legal <br /> for me to gamble in my jurisdiction.</label>
                                 </div>
                                 <input type="submit" value="Sign Up" class="btn btn-default"/>
                             </form>
@@ -202,7 +219,7 @@
                         <form action="/guest_login" method="post">
                             <button class="btn btn-default">Play as Guest</button>
                         </form>
-                    </div>
+                    </div>                    
                 <% } %>
           <% } %>
         </header>
