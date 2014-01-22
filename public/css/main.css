@@ -161,8 +161,21 @@ h2 {
 }
 
 #button_groups {
-    margin: 2em;
+
+  font-size:140%;
+    margin-left: 1em;
+    margin-right: 1em;
+    margin-top:0em;
+    margin-bottom:1em;
 }
+
+#button_groups h1{
+padding-top:0;
+    margin-top:0em;
+    margin-bottom:0.5em;
+}
+
+
 
 #button_groups > form {
     display: inline;
