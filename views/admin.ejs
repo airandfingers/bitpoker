@@ -3,9 +3,20 @@
         <h1>
             Hey there, you old so-and-so!
         </h1>
-        <form action="/send_notification" method="post">
-        	<input id="message" name="message" type="text" placeholder="Hello, World!" autofocus required />
-        	<input value="Send Notification" type="submit" />
+        <form class="send_form" action="/send_server_message" method="post">
+            <div>
+                <label for="message" class="inverse">Message: </label>
+                <input id="message" name="message" class="message_input" type="text" placeholder="Hello, World!" autofocus required />
+            </div>
+            <div>
+                <label for="hour_delay" class="inverse">Hours: </label>
+                <input id="hour_delay" name="hour_delay" class="delay_input" type="text" placeholder="0" />
+                <label for="minute_delay" class="inverse">Minutes: </label>
+                <input id="minute_delay" name="minute_delay" class="delay_input" type="text" placeholder="0" />
+                <label for="second_delay" class="inverse">Seconds: </label>
+                <input id="second_delay" name="second_delay" class="delay_input" type="text" placeholder="0" />
+            </div>
+            <input value="Send Server Message To All Players" type="submit" />
         </form>
         <br />
         <% if (typeof message === 'string') { %>

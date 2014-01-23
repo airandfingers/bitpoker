@@ -808,10 +808,18 @@ module.exports = (function () {
     });
   });
 
-  app.post('/send_notification', redirectIfUnauthenticated, adminOr404, function(req, res) {
-    var message = req.body.message;
-    Table.sendNotificationToAllPlayers(message);
-    req.flash('error', 'Sent message to all players at all tables: "' + message + '"');
+  app.post('/send_server_message', redirectIfUnauthenticated, adminOr404, function(req, res) {
+    var message = req.body.message
+      , hour_delay = parseFloat(req.body.hour_delay, 10) || 0
+      , minute_delay = parseFloat(req.body.minute_delay, 10) || 0
+      , second_delay = parseFloat(req.body.second_delay, 10) || 0
+      , total_delay = (hour_delay * 3600 + minute_delay * 60 + second_delay) * 1000;
+    setTimeout(function() {
+      Table.sendServerMessageToAllPlayers(message);
+    }, total_delay);
+    req.flash('error', 'Will send message to all players at all tables in ' +
+              hour_delay + ' hours, ' + minute_delay + ' minutes, and ' +
+              second_delay + ' seconds: "' + message + '"');
     res.redirect('/admin');
   });
 
