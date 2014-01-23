@@ -347,7 +347,7 @@ align-items:stretch;
 
 
 #welcome_teaser .selling_point_tile {
-
+pointer-events:none;
 flex-grow:1;
 min-width:31vw;
 min-height:88px;
