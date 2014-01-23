@@ -14,7 +14,8 @@ module.exports = (function () {
     , request = require('request')
     , btc_main = require('./btc/main')
     , crypto = require('crypto')
-    , address_validator = require('bitcoin-address');
+    , address_validator = require('bitcoin-address')
+    , moment = require('moment');
 
   var package_file = require('./package.json');
   console.log('package.json version is ' + package_file.version);
@@ -808,18 +809,38 @@ module.exports = (function () {
     });
   });
 
+  function setTimer(hours, mins, seconds, handler) {
+    var delay_in_ms = (hours * 3600 + mins * 60 + seconds) * 1000
+      , now = new Date()
+      , from_now = moment(now.getTime() + delay_in_ms).fromNow(); // e.g. "in a minute"
+    console.log('Setting timer for', delay_in_ms / 1000, 'seconds from now, i.e., ' + from_now);
+    setTimeout(handler, delay_in_ms);
+    return from_now;
+  }
+
   app.post('/send_server_message', redirectIfUnauthenticated, adminOr404, function(req, res) {
     var message = req.body.message
       , hour_delay = parseFloat(req.body.hour_delay, 10) || 0
       , minute_delay = parseFloat(req.body.minute_delay, 10) || 0
       , second_delay = parseFloat(req.body.second_delay, 10) || 0
-      , total_delay = (hour_delay * 3600 + minute_delay * 60 + second_delay) * 1000;
-    setTimeout(function() {
-      Table.sendServerMessageToAllPlayers(message);
-    }, total_delay);
-    req.flash('error', 'Will send message to all players at all tables in ' +
-              hour_delay + ' hours, ' + minute_delay + ' minutes, and ' +
-              second_delay + ' seconds: "' + message + '"');
+      , time_from_now = setTimer(hour_delay, minute_delay, second_delay, function() {
+        console.log('Sending message to all players:', message);
+        Table.sendServerMessageToAllPlayers(message);
+      });
+
+    req.flash('error', 'Sending message to all players at all tables ' + time_from_now + '.');
+    res.redirect('/admin');
+  });
+
+  app.post('/set_stop_flag', redirectIfUnauthenticated, adminOr404, function(req, res) {
+    var hour_delay = parseFloat(req.body.hour_delay, 10) || 0
+      , minute_delay = parseFloat(req.body.minute_delay, 10) || 0
+      , second_delay = parseFloat(req.body.second_delay, 10) || 0
+      , time_from_now = setTimer(hour_delay, minute_delay, second_delay, function() {
+        console.log('Setting stop flag! (not really, this is just a stub)');
+      });
+
+    req.flash('error', 'Setting stop flag at all tables ' + time_from_now + '. (not really, this is just a stub)');
     res.redirect('/admin');
   });
 

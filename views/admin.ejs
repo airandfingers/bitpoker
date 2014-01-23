@@ -1,8 +1,7 @@
  <% include head %>
     <div id="container" class="account">
-        <h1>
-            Hey there, you old so-and-so!
-        </h1>
+
+        <h2>Send server_message to all players</h2>
         <form class="send_form" action="/send_server_message" method="post">
             <div>
                 <label for="message" class="inverse">Message: </label>
@@ -10,13 +9,26 @@
             </div>
             <div>
                 <label for="hour_delay" class="inverse">Hours: </label>
-                <input id="hour_delay" name="hour_delay" class="delay_input" type="text" placeholder="0" />
+                <input id="hour_delay" name="hour_delay" class="delay_input" type="text" number placeholder="0" />
                 <label for="minute_delay" class="inverse">Minutes: </label>
-                <input id="minute_delay" name="minute_delay" class="delay_input" type="text" placeholder="0" />
+                <input id="minute_delay" name="minute_delay" class="delay_input" type="text" number placeholder="0" />
                 <label for="second_delay" class="inverse">Seconds: </label>
-                <input id="second_delay" name="second_delay" class="delay_input" type="text" placeholder="0" />
+                <input id="second_delay" name="second_delay" class="delay_input" type="text" number placeholder="0" />
             </div>
             <input value="Send Server Message To All Players" type="submit" />
+        </form>
+
+        <h2>Set stop flag</h2>
+        <form class="send_form" action="/set_stop_flag" method="post">
+            <div>
+                <label for="hour_delay" class="inverse">Hours: </label>
+                <input id="hour_delay" name="hour_delay" class="delay_input" type="text" number placeholder="0" />
+                <label for="minute_delay" class="inverse">Minutes: </label>
+                <input id="minute_delay" name="minute_delay" class="delay_input" type="text" number placeholder="0" />
+                <label for="second_delay" class="inverse">Seconds: </label>
+                <input id="second_delay" name="second_delay" class="delay_input" type="text" number placeholder="0" />
+            </div>
+            <input value="Set Stop Flag" type="submit" />
         </form>
         <br />
         <% if (typeof message === 'string') { %>
