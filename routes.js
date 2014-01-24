@@ -832,15 +832,16 @@ module.exports = (function () {
     res.redirect('/admin');
   });
 
-  app.post('/set_stop_flag', redirectIfUnauthenticated, adminOr404, function(req, res) {
+  app.post('/stop_tables', redirectIfUnauthenticated, adminOr404, function(req, res) {
     var hour_delay = parseFloat(req.body.hour_delay, 10) || 0
       , minute_delay = parseFloat(req.body.minute_delay, 10) || 0
       , second_delay = parseFloat(req.body.second_delay, 10) || 0
       , time_from_now = setTimer(hour_delay, minute_delay, second_delay, function() {
-        console.log('Setting stop flag! (not really, this is just a stub)');
+        console.log('Stopping all tables!');
+        Table.stopAllTables();
       });
 
-    req.flash('error', 'Setting stop flag at all tables ' + time_from_now + '. (not really, this is just a stub)');
+    req.flash('error', 'Stopping all tables ' + time_from_now + '.');
     res.redirect('/admin');
   });
 

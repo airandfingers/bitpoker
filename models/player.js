@@ -435,6 +435,9 @@ module.exports = (function () {
     else if (_.isNumber(this.seat)) {
       error = 'Player is already sitting at the table!';
     }
+    else if (this.table.flags.stop) {
+      error = 'Play at this table has been stopped!';
+    }
     if (error) {
       console.error(error);
       this.sendMessage('error', error);
@@ -453,9 +456,8 @@ module.exports = (function () {
     return self._first_buyin_handler;
   }
   PlayerSchema.methods.takeSeat = function(seat_num) {
-    var self = this;
-    self.seat = seat_num;
-    self.once('chips_added', first_buyin_handler(self));
+    this.seat = seat_num;
+    this.once('chips_added', first_buyin_handler(this));
     // emit the "sit" event
     this.emit('sit', seat_num);
   };

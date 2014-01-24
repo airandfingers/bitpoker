@@ -18,8 +18,8 @@
             <input value="Send Server Message To All Players" type="submit" />
         </form>
 
-        <h2>Set stop flag</h2>
-        <form class="send_form" action="/set_stop_flag" method="post">
+        <h2>Stop all tables</h2>
+        <form class="send_form" action="/stop_tables" method="post">
             <div>
                 <label for="hour_delay" class="inverse">Hours: </label>
                 <input id="hour_delay" name="hour_delay" class="delay_input" type="text" number placeholder="0" />
@@ -28,7 +28,7 @@
                 <label for="second_delay" class="inverse">Seconds: </label>
                 <input id="second_delay" name="second_delay" class="delay_input" type="text" number placeholder="0" />
             </div>
-            <input value="Set Stop Flag" type="submit" />
+            <input value="Stop All Tables" type="submit" />
         </form>
         <br />
         <% if (typeof message === 'string') { %>

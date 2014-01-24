@@ -44,13 +44,18 @@ module.exports = (function () {
     // the corresponding room
   , room     : { type: Schema.Types.Mixed }
     // the hands this table has gone through (oldest to newest)
-  , hands   : { type: [Schema.Types.Mixed], default: function() { return []; } }
+  , hands    : { type: [Schema.Types.Mixed], default: function() { return []; } }
     // the players that are currently at this table (seated or not)
   , players  : { type: Schema.Types.Mixed, default: function() { return {}; } }
     // {seat_num: Player}
   , seats    : { type: Schema.Types.Mixed, default: function() { return {}; } }
     // current dealer seat
   , dealer   : { type: Number, default: 0 }
+    // flags that define this table's state
+  , flags    : {
+      // whether this table has been stopped - allowing no new hands to begin
+      stop     : { type: Boolean, default: false }
+    }
   });
 
   // static methods - Model.method()
@@ -103,6 +108,12 @@ module.exports = (function () {
       _.each(table.players, function(player) {
         player.sendMessage('server_message', message);
       });
+    });
+  };
+
+  TableSchema.statics.stopAllTables = function() {
+    _.each(Table.tables, function(table) {
+      table.stop();
     });
   };
 
@@ -159,7 +170,12 @@ module.exports = (function () {
       self.initial_pot = hand.pot_remainder;
       setTimeout(function() {
         self.room.broadcast('reset_table');
-        self.newHand();
+        if (! self.flags.stop) {
+          self.newHand();
+        }
+        else {
+          self.room.broadcast('server_message', 'The server is going down, and play at this table has stopped.');
+        }
       }, 1000);
       console.log('hand.hand_num is', hand.hand_num);
       Message.deleteMessagesWithHandNum(hand.hand_num, function (err, messages) {
@@ -249,7 +265,6 @@ module.exports = (function () {
 
   static_properties.player_events.sit = 'playerSits';
   TableSchema.methods.playerSits = function(player, seat_num) {
-    console.log('player sits log message');
     var socket = player.socket;
     this.seats[seat_num] = player;
     socket.emitToOthers('player_sits', player.serialize(), false);
@@ -260,7 +275,6 @@ module.exports = (function () {
 
   static_properties.player_events.stand = 'playerStands';
   TableSchema.methods.playerStands = function(player, seat_num) {
-    console.log('player stands log message');
     var socket = player.socket
       , player_obj = player.serialize();
       delete this.seats[seat_num];
@@ -364,12 +378,25 @@ module.exports = (function () {
   TableSchema.methods.isFull = function() {
     var num_players = this.getNumSeatsTaken();
     return num_players === this.game.MAX_PLAYERS;
-  }
+  };
 
   TableSchema.methods.getPlayer = function(username) {
     var player = this.players[username];
     return player;
-  }
+  };
+
+  TableSchema.methods.stop = function() {
+    this.flags.stop = true;
+    _.each(this.players, function(player) {
+      if (_.isNumber(player.seat)) {
+        player.handleStand(); // stand the player at the end of the hand
+      }
+    });
+    var current_hand = this.getCurrentHand();
+    if (current_hand.isInStage('waiting')) {
+      current_hand.toStage('done');
+    }
+  };
 
   /* the model - a fancy constructor compiled from the schema:
    *   a function that creates a new document
