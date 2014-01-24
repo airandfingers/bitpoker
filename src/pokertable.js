@@ -13030,13 +13030,11 @@ $(parentOfStage.div).children().not(parentOfStage.stage.canvas).remove()
 
 messageBoxAPI.display = function(messageString, messageInfo, hideOrDisplayChildrenOptions){
 
-return self.displayMessageBox(messageString, messageInfo, hideOrDisplayChildrenOptions)
-/*
-if(messageInfo && messageInfo.modal === true){
-return messageBoxAPI.displayModal(messageString, messageInfo, hideOrDisplayChildrenOptions)
-}
-else{return self.displayMessageBox(messageString, messageInfo, hideOrDisplayChildrenOptions)}
-*/
+if(!hideOrDisplayChildrenOptions){var hideOrDisplayChildrenOptions = {}}
+
+ return self.displayMessageBox(messageString, messageInfo, hideOrDisplayChildrenOptions)
+
+
 }
 
 messageBoxAPI.displayModal = function(messageString, messageInfo, hideOrDisplayChildrenOptions){
@@ -13086,6 +13084,81 @@ this.decrementCurrent()//reduce current
 
 }
 
+this.displayNotification = function(messageString, options){
+
+if(!_.isObject(options)){var options = {}}
+  else{var options = _.clone(options)}
+
+var defaults = {
+title:'server message'
+  ,timeout:20000
+  ,growl:true
+}
+
+
+options = _.defaults(options, defaults)
+//*************************DISPLAYING GROWL MESSAGE BOX*****************************************
+
+if(options.growl){
+
+  //display thingy
+// Create a jGrowl
+    var container = self.getParentOfStageObject(self.images.seats[0].bubbleChats[0]).div
+
+    $(container).qtip({
+        content: {
+            text: messageString,
+            title: {
+                text: options.title,
+                button: true
+            }
+        },
+        position: {
+            target: container,
+            container: container,
+            my:'top right',
+            at:'top right'
+        },
+        show: {
+            event: false,
+            ready: true,
+            effect: function() {
+                $(this).stop(0, 1).animate({ height: 'toggle' }, 400, 'swing');
+            },
+            delay: 0,
+            persistent: true
+        },
+        hide: {
+            event: false,
+            effect: function(api) {
+                $(this).stop(0, 1).animate({ height: 'toggle' }, 400, 'swing');
+            }
+        },
+        style: {
+            width: 250,
+            classes: 'jgrowl',
+            tip: false
+        },
+        events: {
+            render: function(event, api) {
+                if(!api.options.show.persistent) {
+                    $(this).bind('mouseover mouseout', function(e) {
+
+                        clearTimeout(api.timer);
+                        if (e.type !== 'mouseover') {
+                            api.timer = setTimeout(function() { api.hide(e) }, options.timeout);
+                        }
+                    })
+                    .triggerHandler('mouseout');
+                }
+            }
+        }
+    });
+
+
+}//displaying growl
+
+}//display notification
 
     this.displayMessageBox = function(messageString, messageInfo, hideOrDisplayChildrenOptions){
       console.log('displaymessagebox called')
@@ -13214,6 +13287,7 @@ defaults.checkBoxText = 'Dont show this message again.'
 defaults.checkBoxFontSize = 10
 defaults.checkboxFontType = self.permanentPreferences.defaultFontType.value
 defaults.modal = false
+defaults.timeout = 20000
 
 //defaults.checkBoxCheckedEvent = function(){}
 //defaults.checkBoxUncheckedEvent = function(){}
@@ -13303,7 +13377,9 @@ createBlankItems()
 
 
 //**************************************************DISPLAY MODAL MESSAGEBOX****************************************
-if(messageInfo.html === true){
+ if(messageInfo.html === true){
+
+
 
 console.log('displaying qtip message box')
 var additionalContent = []
@@ -13618,6 +13694,8 @@ $(div).qtip(messageBoxQtipOptions)
 //self.displayChildren(messageBoxItems)
 
 console.log('modal completed')
+
+
 
 
 }//IF DISPLAY MODAL MESSAGEBOX
@@ -15694,6 +15772,13 @@ chatInfo.message = notificationString
 
   //self.displayBubbleChat(chatInfo)
   self.displayBubbleChatPopover(chatInfo)
+
+})
+
+ //server_message received
+ socket.on('server_message', function(notificationString){
+  
+self.displayNotification(notificationString, {growl:true})
 
 })
 
