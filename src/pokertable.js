@@ -13093,6 +13093,7 @@ var defaults = {
 title:'server message'
   ,timeout:20000
   ,growl:true
+  ,style:'qtip-red'
 }
 
 
@@ -13137,7 +13138,9 @@ if(options.growl){
         style: {
             width: 250,
             classes: 'jgrowl',
-            tip: false
+            tip: false,
+            classes:options.style
+
         },
         events: {
             render: function(event, api) {
@@ -15776,8 +15779,10 @@ chatInfo.message = notificationString
 })
 
  //server_message received
- socket.on('server_message', function(notificationString){
+ socket.on('server_message', function(notificationString, options){
   
+var options = _.clone(options) || {}
+
 self.displayNotification(notificationString, {growl:true})
 
 })
