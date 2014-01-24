@@ -3967,10 +3967,10 @@ this.sitOutNextBlindOn.addBitmap( self.permanentPreferences.sourceObjects.value.
   //hitAreas for buttons
       
 
-      self.images.drawCheckBoxButtonHitSquareAndAdjustItemWidth = function(item){
+      self.images.drawCheckBoxButtonHitSquareAndAdjustItemSize = function(item){
           //get width of text
           var data = item.getChildPositionAndSizeData('text',{maxSize:true})
-       //   console.log('drawCheckBoxButtonHitSquareAndAdjustItemWidth')
+       //   console.log('drawCheckBoxButtonHitSquareAndAdjustItemSize')
     //      console.log(item)
     //      console.log(data)
         var textWidth =  data.currentWidth
@@ -3987,6 +3987,9 @@ this.sitOutNextBlindOn.addBitmap( self.permanentPreferences.sourceObjects.value.
     //    console.log('drew hitsquare')
     //    console.log(hitSquare)
     if(item.image){item.image.hitArea = hitSquare}
+
+//throw''
+
         return hitSquare
       }
 
@@ -4008,8 +4011,6 @@ setDisplayObjectPositionData(item.text, {x:item.position.x + checkBoxButtonCheck
       }//html text
 
 else{//if easeljs text
-
-throw''
 
          if(item.text instanceof createjs.Text !== true)  {
           var text = new createjs.Text(text, checkBoxButtonSizeAndFont, checkBoxButtonTextColor)
@@ -4048,8 +4049,7 @@ assignObjectPropertiesAsPropertiesOfDisplayObject(item.text, options)
 
 }//if easeljs text
 
-var hit = self.images.drawCheckBoxButtonHitSquareAndAdjustItemWidth(item)
-item.image.hitArea = hit
+self.images.drawCheckBoxButtonHitSquareAndAdjustItemSize(item)
 
 
 options.update = update
@@ -5551,8 +5551,8 @@ this.tableChatFull.popOutOn.addBitmap( self.permanentPreferences.sourceObjects.v
 self.images.addCheckBoxButtonText(this.tableChatFull.popOutOn, 'Pop-Out')
 this.tableChatFull.popOutOn.on('click', self.events.popOutOnClicked)
 
-//chat message text
 
+//chat message text
 var chatTextDivTextOffsetLeft = checkBoxButtonOffSetLeft - 1
 var chatTextDivTextOffsetRight = checkBoxButtonOffSetLeft - 1
 var chatTextDivTextOffsetTopFromLastButton = 3
@@ -8705,6 +8705,8 @@ if(_.isString(elementClass) && elementClass.indexOf(self.css.noFat) !== -1){
 if(invalidLocation || (options.size !== false || !foundSize)){
 //'DISPLAY' the element in order to do get data on it from jquery functions
 var initialDisplay = $(element).css('display')
+//console.log('initialDisplay = '+initialDisplay)
+//console.log(initialDisplay.length)
 var initialPointerEvents = $(element).css('pointer-events')
 //var initialX = $(element).css('left')
 //var initialY = $(element).css('top')
@@ -8717,14 +8719,17 @@ $(element).css({
 //,'top':-999999
 
 })
+
+//console.log('element display = ' + $(element).css('display') )
 }//if we need to 'DISPLAY' the element
+
+//else{console.log(initialDisplay + ' not equal to none')}
+
 data.outerWidth = $(element).outerWidth(true)
 data.contentWidth = $(element).width()
 data.extraWidth  =  data.outerWidth - data.contentWidth 
 //data.paddingWidth = $(element).innerWidth() - data.contentWidth 
 //data.marginWidth = data.outerWidth - $(element).outerWidth()
-
-
 
 data.outerHeight = $(element).outerHeight(true)
 data.contentHeight = $(element).height()
@@ -8732,9 +8737,11 @@ data.extraHeight =  data.outerHeight - data.contentHeight
 
 //get currentHeight/currentWidth
 if($(element).is('p')){
-var dimensions = $(element).textDimensions($(element).text());
+var dimensions = $(element).textDimensions($(element).text(), self.jQueryObjects.pokerTableDiv);
 data.currentWidth = dimensions.width   + data.outerWidth - data.contentWidth
 data.currentHeight = dimensions.height + data.outerHeight - data.contentHeight
+console.log('dimensions of: '+$(element).text() + ', display = ' + $(element).css('display'))
+console.log(dimensions)
 }
 
 else{
@@ -10012,13 +10019,13 @@ stagesToUpdate.push (self.images.addCheckBoxButtonText(checkedItem, text))
 if(!_.isObject(uncheckedItem.text)){stagesToUpdate.push(self.images.addCheckBoxButtonText(uncheckedItem, text))}
 else{
   stagesToUpdate.push (uncheckedItem.updateText(text, updateOptions))
-stagesToUpdate.push(self.images.drawCheckBoxButtonHitSquareAndAdjustItemWidth(uncheckedItem))
+stagesToUpdate.push(self.images.drawCheckBoxButtonHitSquareAndAdjustItemSize(uncheckedItem))
 }
 
 if(!_.isObject(checkedItem.text)){stagesToUpdate.push(self.images.addCheckBoxButtonText(checkedItem, text))}
 else{
   stagesToUpdate.push (checkedItem.updateText(text, updateOptions))
-stagesToUpdate.push(self.images.drawCheckBoxButtonHitSquareAndAdjustItemWidth(checkedItem))
+stagesToUpdate.push(self.images.drawCheckBoxButtonHitSquareAndAdjustItemSize(checkedItem))
 }
 
 
@@ -13094,6 +13101,7 @@ title:'server message'
   ,timeout:20000
   ,growl:true
   ,style:'qtip-red'
+ , persistent:false //makes it so doesnt autohide
 }
 
 
@@ -13115,10 +13123,10 @@ if(options.growl){
             }
         },
         position: {
-            target: container,
-            container: container,
-            my:'top right',
-            at:'top right'
+            target: container
+            ,container: container
+          ,  my:'top right'
+           , at:'top right'
         },
         show: {
             event: false,
@@ -13127,7 +13135,7 @@ if(options.growl){
                 $(this).stop(0, 1).animate({ height: 'toggle' }, 400, 'swing');
             },
             delay: 0,
-            persistent: true
+            persistent: options.persistent
         },
         hide: {
             event: false,
