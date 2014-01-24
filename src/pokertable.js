@@ -8740,8 +8740,8 @@ if($(element).is('p')){
 var dimensions = $(element).textDimensions($(element).text(), self.jQueryObjects.pokerTableDiv);
 data.currentWidth = dimensions.width   + data.outerWidth - data.contentWidth
 data.currentHeight = dimensions.height + data.outerHeight - data.contentHeight
-console.log('dimensions of: '+$(element).text() + ', display = ' + $(element).css('display'))
-console.log(dimensions)
+//console.log('dimensions of: '+$(element).text() + ', display = ' + $(element).css('display'))
+//console.log(dimensions)
 }
 
 else{
