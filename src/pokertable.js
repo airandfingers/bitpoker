@@ -12411,8 +12411,14 @@ self.getPokerWrapperDimensions = function(options){
 if(!_.isObject(options)){var options = {}}
 
   if(options.manual !== true){
-  var size  = {width:self.jQueryObjects.pokerTableDiv.outerWidth(true),height:self.jQueryObjects.pokerTableDiv.outerHeight(true)}
-  
+    //THIS SEEMS TO BE BUGGED
+ // var size  = {width:self.jQueryObjects.pokerTableDiv.outerWidth(true),height:self.jQueryObjects.pokerTableDiv.outerHeight(true)}
+  //var size = {width: parseFloat(self.jQueryObjects.pokerTableDiv.css('width')), height:parseFloat(self.jQueryObjects.pokerTableDiv.css('height'))}
+
+  var sizeData = getDisplayObjectPositionAndSizeData(self.jQueryObjects.pokerTableDiv[0], {maxSize:false, size:true, position:false})
+
+var size = {width:sizeData.outerWidth, height:sizeData.outerHeight}
+
   console.log(size)
   
   return size
@@ -12476,7 +12482,10 @@ options.height = sizeData.height
 else{interiorSize.height = options.height;self.jQueryObjects.pokerTableDiv.css('height','auto')}
 
 console.log('resizing to '+options.width + ' '+options.height)
-//debugger;
+var w = self.jQueryObjects.pokerTableDiv.width()
+
+if(options.width != w){debugger;}
+
 
 resizeInterior(interiorSize)
 //debugger;
