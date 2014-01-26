@@ -12409,6 +12409,7 @@ self.getPokerWrapperDimensions = function(options){
 //with flexbox
 
 if(!_.isObject(options)){var options = {}}
+  options.manual = true
 
   if(options.manual !== true){
     //THIS SEEMS TO BE BUGGED
@@ -12442,8 +12443,7 @@ size.height = self.getParentOfStageObject(0).stage.canvas.height
 size.width = 0
  self.jQueryObjects.pokerTableDiv.children().each(function(index, element){
 var display = $(this).css('display')
-if(display === 'none'){return}
-else if(display === 'hidden'){return}
+if(display === 'none' || display === 'hidden'){return}
 var widthToAdd = $(this).outerWidth(true)
 console.log('adding '+widthToAdd)
 size.width = size.width + widthToAdd
