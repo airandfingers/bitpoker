@@ -910,6 +910,7 @@ else{//html version of image
 
 var bitmap = $('<img />')
 bitmap.addClass(self.css.noFat)
+bitmap.addClass(self.css.unselectable)
 if(!_.isObject(options.attr)){options.attr = {}}
   if(!_.isObject(options.css)){options.css = {}}
     if(!_.isString(options.class)){options.class = ''}
@@ -3203,7 +3204,6 @@ introScreen.background.display()
 
       html:true
 ,css:{ 'text-align':'left'}
-
 
     })
      //define statusText
@@ -12304,8 +12304,6 @@ console.log('moving chat outside of the table height = ' + newHeight + ' texthei
 var scrollDownAtEnd = self.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText()
 
 
-
-
 }//we are moving out tablechatfull
 }//table chat full will be moved outside (not sure if it needs to be moved though)
 
@@ -12364,6 +12362,7 @@ $(tableChatFullStageParent.stage.canvas).attr('height', newHeight)
 $(tableChatFullStageParent.div).prependTo(prependTo)
 self.images.tableChatFull.window.drawImage()
 
+//debugger;
 self.resizePokerWrapperAndIframe()
 
 }//if we changing our display
@@ -12454,9 +12453,8 @@ if(!_.isObject(originalOptions)){var options = {}}
 
 var interiorSize = {}
 
-var resizeInterior = function(newSize){
-setDisplayObjectPositionData(self.jQueryObjects.pokerTableDiv[0], newSize)
-}
+//function to resize the wrapper
+var resizeInterior = function(newSize){setDisplayObjectPositionData(self.jQueryObjects.pokerTableDiv[0], newSize)}
 
 if(!_.isNumber(options.width)){
 //options.width = $(window).actual( 'outerWidth', { includeMargin : true })
@@ -12478,10 +12476,12 @@ options.height = sizeData.height
 else{interiorSize.height = options.height;self.jQueryObjects.pokerTableDiv.css('height','auto')}
 
 console.log('resizing to '+options.width + ' '+options.height)
+//debugger;
 
 resizeInterior(interiorSize)
+//debugger;
 self.getIframeLib().resizeIFrame(self.getTableName(), options.height, options.width)
-
+//debugger;
 }
 
 this.displayTableChatFull = function(hideOrDisplayChildrenOptions){
