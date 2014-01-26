@@ -12492,7 +12492,7 @@ var w = self.jQueryObjects.pokerTableDiv.width()
 
 if(options.width != w){debugger;}
 
-debugger;
+//debugger;
 resizeInterior(interiorSize)
 //debugger;
 self.getIframeLib().resizeIFrame(self.getTableName(), options.height, options.width)
