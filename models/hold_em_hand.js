@@ -282,6 +282,17 @@ module.exports = (function () {
         }, game.POST_BLIND_DELAY);
       }, game.POST_BLIND_DELAY);
     }
+    else if (SMALL_BLIND_PAID) {
+      if (self.players.length !== 1) {
+        console.error('Exactly one blind paid, but not exacly 1 player in self.players!');
+      }
+      player = self.players[0];
+      player.getBet(game.SMALL_BLIND);
+      // notify everyone that this player received a refund
+      self.broadcast('player_gets_refund', player.serialize(), game.SMALL_BLIND, self.calculatePotTotal());
+      console.log('Big blind not paid!', self.players);
+      self.toStage('done');
+    }
     else {
       console.log('Blinds not paid!', SMALL_BLIND_PAID, BIG_BLIND_PAID, self.players);
       self.toStage('done');
