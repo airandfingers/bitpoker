@@ -12415,6 +12415,12 @@ if(!_.isObject(options)){var options = {}}
  // var size  = {width:self.jQueryObjects.pokerTableDiv.outerWidth(true),height:self.jQueryObjects.pokerTableDiv.outerHeight(true)}
   //var size = {width: parseFloat(self.jQueryObjects.pokerTableDiv.css('width')), height:parseFloat(self.jQueryObjects.pokerTableDiv.css('height'))}
 
+var cssDisplay = self.jQueryObjects.pokerTableDiv.css('display')
+self.jQueryObjects.pokerTableDiv.css('display','inline')
+self.jQueryObjects.pokerTableDiv.css('display',cssDisplay)
+//self.jQueryObjects.pokerTableDiv.css('width', '100%')
+//self.jQueryObjects.pokerTableDiv.css('width', 'inherit')
+//self.jQueryObjects.pokerTableDiv.css('width', cssWidth)
   var sizeData = getDisplayObjectPositionAndSizeData(self.jQueryObjects.pokerTableDiv[0], {maxSize:false, size:true, position:false})
 
 var size = {width:sizeData.outerWidth, height:sizeData.outerHeight}
@@ -12486,7 +12492,7 @@ var w = self.jQueryObjects.pokerTableDiv.width()
 
 if(options.width != w){debugger;}
 
-
+debugger;
 resizeInterior(interiorSize)
 //debugger;
 self.getIframeLib().resizeIFrame(self.getTableName(), options.height, options.width)
@@ -12548,7 +12554,8 @@ console.log(this.images.tableChatFull)
 
 
  var finalSize = self.getPokerWrapperDimensions()
-if(initialSize.width != finalSize.width || initialSize.height != finalSize.height){self.resizePokerWrapperAndIframe(finalSize)}
+if(initialSize.width != finalSize.width || initialSize.height != finalSize.height){self.resizePokerWrapperAndIframe()}
+
 
 options.update = update
 if(update !== false){  this.updateStages(stagesToUpdate)}
@@ -12598,11 +12605,13 @@ setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGe
 
 
 
-
+/*
 //change size if needed
  var finalSize = self.getPokerWrapperDimensions()
 if(initialSize.width != finalSize.width || initialSize.height != finalSize.height){self.resizePokerWrapperAndIframe(finalSize)}
+*/
 
+self.resizePokerWrapperAndIframe()
 
 
 if(update!== false){this.updateStages(stagesToUpdate)}
