@@ -12490,7 +12490,7 @@ else{interiorSize.height = options.height;self.jQueryObjects.pokerTableDiv.css('
 console.log('resizing to '+options.width + ' '+options.height)
 var w = self.jQueryObjects.pokerTableDiv.width()
 
-if(options.width != w){debugger;}
+//if(options.width != w){debugger;}
 
 //debugger;
 resizeInterior(interiorSize)
