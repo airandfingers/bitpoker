@@ -1,0 +1,17 @@
+ <% include head %>
+    <div id="container" class="account">
+        <h2>¡Entra la lotería!</h2>
+
+        <form class="lottery_form" action="/enter_lottery" method="post">
+            <input value="Entrame" type="submit" />
+        </form>
+
+        <br />
+        <% if (typeof message === 'string') { %>
+            <p class="inverse"><%= message %></p>
+        <% } %>
+        
+    </div> <!-- container -->
+    
+    <% include plugins %>
+<% include foot %>
