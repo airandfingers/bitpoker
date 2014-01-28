@@ -12409,10 +12409,23 @@ self.getPokerWrapperDimensions = function(options){
 //with flexbox
 
 if(!_.isObject(options)){var options = {}}
+  options.manual = true
 
   if(options.manual !== true){
-  var size  = {width:self.jQueryObjects.pokerTableDiv.outerWidth(true),height:self.jQueryObjects.pokerTableDiv.outerHeight(true)}
-  
+    //THIS SEEMS TO BE BUGGED
+ // var size  = {width:self.jQueryObjects.pokerTableDiv.outerWidth(true),height:self.jQueryObjects.pokerTableDiv.outerHeight(true)}
+  //var size = {width: parseFloat(self.jQueryObjects.pokerTableDiv.css('width')), height:parseFloat(self.jQueryObjects.pokerTableDiv.css('height'))}
+
+var cssDisplay = self.jQueryObjects.pokerTableDiv.css('display')
+self.jQueryObjects.pokerTableDiv.css('display','inline')
+self.jQueryObjects.pokerTableDiv.css('display',cssDisplay)
+//self.jQueryObjects.pokerTableDiv.css('width', '100%')
+//self.jQueryObjects.pokerTableDiv.css('width', 'inherit')
+//self.jQueryObjects.pokerTableDiv.css('width', cssWidth)
+  var sizeData = getDisplayObjectPositionAndSizeData(self.jQueryObjects.pokerTableDiv[0], {maxSize:false, size:true, position:false})
+
+var size = {width:sizeData.outerWidth, height:sizeData.outerHeight}
+
   console.log(size)
   
   return size
@@ -12430,8 +12443,7 @@ size.height = self.getParentOfStageObject(0).stage.canvas.height
 size.width = 0
  self.jQueryObjects.pokerTableDiv.children().each(function(index, element){
 var display = $(this).css('display')
-if(display === 'none'){return}
-else if(display === 'hidden'){return}
+if(display === 'none' || display === 'hidden'){return}
 var widthToAdd = $(this).outerWidth(true)
 console.log('adding '+widthToAdd)
 size.width = size.width + widthToAdd
@@ -12476,8 +12488,11 @@ options.height = sizeData.height
 else{interiorSize.height = options.height;self.jQueryObjects.pokerTableDiv.css('height','auto')}
 
 console.log('resizing to '+options.width + ' '+options.height)
-//debugger;
+var w = self.jQueryObjects.pokerTableDiv.width()
 
+//if(options.width != w){debugger;}
+
+//debugger;
 resizeInterior(interiorSize)
 //debugger;
 self.getIframeLib().resizeIFrame(self.getTableName(), options.height, options.width)
@@ -12539,7 +12554,8 @@ console.log(this.images.tableChatFull)
 
 
  var finalSize = self.getPokerWrapperDimensions()
-if(initialSize.width != finalSize.width || initialSize.height != finalSize.height){self.resizePokerWrapperAndIframe(finalSize)}
+if(initialSize.width != finalSize.width || initialSize.height != finalSize.height){self.resizePokerWrapperAndIframe()}
+
 
 options.update = update
 if(update !== false){  this.updateStages(stagesToUpdate)}
@@ -12589,11 +12605,13 @@ setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGe
 
 
 
-
+/*
 //change size if needed
  var finalSize = self.getPokerWrapperDimensions()
 if(initialSize.width != finalSize.width || initialSize.height != finalSize.height){self.resizePokerWrapperAndIframe(finalSize)}
+*/
 
+self.resizePokerWrapperAndIframe()
 
 
 if(update!== false){this.updateStages(stagesToUpdate)}
