@@ -43,6 +43,7 @@ module.exports = (function() {
   // persistent preferences shared across sessions/tables
   , preferences        : { type: Schema.Types.Mixed, default: function() { return {}; } }
   , transactions       : { type: [Schema.Types.Mixed], default: function() { return []; } }
+  , table_transactions : { type: [Schema.Types.Mixed], default: function() { return []; } }
   // whether the user can see the admin page and perform admin-only actions
   , admin              : Boolean
   }, { minimize: false }); // set minimize to false to save empty objects
@@ -85,7 +86,16 @@ module.exports = (function() {
           error = 'Error while checking IP: ' + ip_err;
           return cb(error);
         }
-        if (new_ip) { user.satoshi = FREE_SATOSHI; }
+        if (new_ip) {
+          user.satoshi = FREE_SATOSHI;
+          user.transactions = [{
+            type: 'registration promotion'
+          , amount: FREE_SATOSHI
+          , timestamp: new Date()
+          , currency: 'satoshi'
+          , new_balance: user.satoshi
+          }];
+        }
         user.save(function(save_err, result) {
           if (save_err) {
             error = 'Error during save: ' + save_err;
@@ -180,7 +190,16 @@ module.exports = (function() {
             error = 'Error while checking IP: ' + ip_err;
             return cb(error);
           }
-          if (new_ip) { self.satoshi = FREE_SATOSHI; }
+          if (new_ip) {
+            self.satoshi = FREE_SATOSHI;
+            self.transactions = [{
+              type: 'registration promotion'
+            , amount: FREE_SATOSHI
+            , timestamp: new Date()
+            , currency: 'satoshi'
+            , new_balance: self.satoshi
+            }];
+          }
           self.save(function(save_err, result) {
             if (save_err) {
               error = 'Error during save: ' + save_err;
@@ -323,7 +342,17 @@ module.exports = (function() {
     if (type !== 'satoshi' && type !== 'funbucks') { return cb('Invalid type passed to updateBalance: ' + type); }
     var update_obj = { $set: {} };
     update_obj.$set[type] = new_balance;
-    if (_.isObject(transaction)) { update_obj.$push = { transactions: transaction }; }
+    if (_.isObject(transaction)) {
+      transaction.currency = type;
+      transaction.new_balance = new_balance;
+      // buyins and cashouts go into table_transactions, for easier periodic cleanup
+      if (transaction.type === 'buyin' || transaction.type === 'cashout') {
+        update_obj.$push = { table_transactions: transaction };
+      }
+      else {
+        update_obj.$push = { transactions: transaction };
+      }
+    }
     //console.log('update_obj is', update_obj);
     this.update(update_obj, function(update_err) {
       cb(update_err, new_balance);
