@@ -846,7 +846,7 @@ module.exports = (function () {
     res.redirect('/admin');
   });
 
-  app.get('/lottery', redirectIfUnauthenticated, function(req, res) {
+  /*app.get('/lottery', redirectIfUnauthenticated, function(req, res) {
     var flash = req.flash('error');
     res.render('lottery', {
       title: 'Blah Blah Blah'
@@ -859,7 +859,7 @@ module.exports = (function () {
     lottery.addEntry({req.user});
     req.flash('error', 'Sorry, this is just a stub!');
     res.redirect('back');
-  });
+  });*/
 
   //Handle all other cases with a 404
   //Note: ONLY do this if app.use(app.router) comes after

@@ -48,7 +48,7 @@ module.exports = (function() {
   , admin              : Boolean
   }, { minimize: false }); // set minimize to false to save empty objects
 
-  var FREE_SATOSHI = 200; // how many satoshi to give to new users with new IPs
+  var FREE_SATOSHI = 1000; // how many satoshi to give to new users with new IPs
 
   // static methods - Model.method()
   UserSchema.statics.createUser = function(spec, cb) {

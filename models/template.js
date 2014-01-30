@@ -78,20 +78,5 @@ module.exports = (function () {
 
   Class.setup();
 
-  //listen for incoming socket connections
-  io.sockets.on('connection', function(socket) {
-    //console.log('A socket with sessionID ' + socket.handshake.sessionID + ' connected!');
-    socket.user_id = socket.handshake.session.passport.user;
-
-    var room_id = socket.handshake.room_id //socket.handshake = data object from authorization handler
-      , room = Class.getClass(room_id);
-    if (room !== undefined) {
-      room.join(socket);
-    }
-    else {
-      console.error('no room with room_id', room_id);
-    }
-  });
-
   return Class;
 })();
