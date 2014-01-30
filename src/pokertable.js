@@ -2619,10 +2619,11 @@ var addDarkOption = function(fileName, title){
   menu.push({title:title,cmd:'img/background images/dark/'+fileName})
 }
 
-addDarkOption('Map1280x800.jpg', 'map')
+addDarkOption('Map1280x800.jpg', 'default')
 addDarkOption('abstract_black_gradient_desktop_1920x1200_hd-wallpaper-1012937.jpg')
 addDarkOption('1280x1024_backround-best-black-and-green-wall-papers-go-wallpaper.jpg')
 addDarkOption('51b736384045f25357.jpg')
+addDarkOption('abstract-awesome-map-wallpaper-hd.jpg')
 
 addDarkOption('Beautiful-Black-Background.jpg')
 addDarkOption('black_background_fabric-wallpaper-1440x960.jpg')
@@ -2641,6 +2642,9 @@ addGreenOption('digital_abstract_background-wide.jpg')
 addGreenOption('green_black_frosted.jpg')
 addGreenOption('green-abstract-background.jpg')
 addGreenOption('Technical-green-and-black-abstract-background-tron tech style1024x640.jpg')
+addGreenOption('background-color-bright-wallpaper-computer-abstract-210463.jpg')
+
+
 
 menu.push({title:'Surprise me!'  
   ,cmd:'random'
