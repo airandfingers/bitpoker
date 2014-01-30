@@ -16,7 +16,7 @@ module.exports = (function () {
     , crypto = require('crypto')
     , address_validator = require('bitcoin-address')
     , moment = require('moment')
-    , lottery = require('./lottery');
+    , lottery = require('./models/lottery');
 
   var package_file = require('./package.json');
   console.log('package.json version is ' + package_file.version);
@@ -856,7 +856,7 @@ module.exports = (function () {
 
   app.post('/enter_lottery', redirectIfUnauthenticated, function(req, res) {
     console.log('/enter_lottery called for', req.user.username);
-    lottery.enterLottery(req.user);
+    lottery.addEntry({req.user});
     req.flash('error', 'Sorry, this is just a stub!');
     res.redirect('back');
   });
