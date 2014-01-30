@@ -1,7 +1,6 @@
  //  $("#chat_table").css('display','none')
 //   $("#chat_table").css('top','1000px')
 
-
     //default canvas size is 690x480
     //all numbers are in base 0, including variable names and documentation
     //seat position 0 is top middle and proceeds clockwise
@@ -2619,10 +2618,11 @@ var addDarkOption = function(fileName, title){
   menu.push({title:title,cmd:'img/background images/dark/'+fileName})
 }
 
-addDarkOption('Map1280x800.jpg', 'map')
+addDarkOption('Map1280x800.jpg', 'default')
 addDarkOption('abstract_black_gradient_desktop_1920x1200_hd-wallpaper-1012937.jpg')
 addDarkOption('1280x1024_backround-best-black-and-green-wall-papers-go-wallpaper.jpg')
 addDarkOption('51b736384045f25357.jpg')
+addDarkOption('abstract-awesome-map-wallpaper-hd.jpg')
 
 addDarkOption('Beautiful-Black-Background.jpg')
 addDarkOption('black_background_fabric-wallpaper-1440x960.jpg')
@@ -2641,6 +2641,9 @@ addGreenOption('digital_abstract_background-wide.jpg')
 addGreenOption('green_black_frosted.jpg')
 addGreenOption('green-abstract-background.jpg')
 addGreenOption('Technical-green-and-black-abstract-background-tron tech style1024x640.jpg')
+addGreenOption('background-color-bright-wallpaper-computer-abstract-210463.jpg')
+
+
 
 menu.push({title:'Surprise me!'  
   ,cmd:'random'
@@ -6078,25 +6081,6 @@ return background.display(options)
 
 
 
-/*
- var matrix = new createjs.ColorMatrix().adjustHue(-100)
- this.images.background.image.filters = [
-  
- new createjs.ColorFilter(0,0,0,1, -50,50,0,0)
-  // new createjs.ColorMatrixFilter(matrix)
- ]
-
- //this.images.background.image.updateCache()
-
- this.images.background.image.cache(0, 0,canvasWidth-1, canvasHeight-1)
-
-
-// this.images.background.image.cache(0, 0,canvasWidth, canvasHeight)
-this.images.background.image.updateCache()
-console.log(this.images.background.image)
-console.log(this.images.background.image.isVisible())
-*/
-
     }
 
     this.images.setDefaultEvents = function(){
@@ -6147,7 +6131,9 @@ var setIFrameToTopHandler = function(){
 $(self.getIframe()).off('mousedown.setToTop')
 $(self.getIframe()).on('mousedown.setToTop', setIFrameToTopHandler)
 */
-  $("body").on("mousedown.triggerIframeSetToTop",setIFrameToTopHandler)
+$("body").off("mousedown.triggerIframeSetToTop touchstart.triggerIframeSetToTop")
+
+  $("body").on("mousedown.triggerIframeSetToTop touchstart.triggerIframeSetToTop",setIFrameToTopHandler)
   /* function(e){
 //console.log('body mousedown triggered')
 console.log(holdemCanvas.getIframe())
