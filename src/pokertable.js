@@ -1,7 +1,6 @@
  //  $("#chat_table").css('display','none')
 //   $("#chat_table").css('top','1000px')
 
-
     //default canvas size is 690x480
     //all numbers are in base 0, including variable names and documentation
     //seat position 0 is top middle and proceeds clockwise
@@ -6082,25 +6081,6 @@ return background.display(options)
 
 
 
-/*
- var matrix = new createjs.ColorMatrix().adjustHue(-100)
- this.images.background.image.filters = [
-  
- new createjs.ColorFilter(0,0,0,1, -50,50,0,0)
-  // new createjs.ColorMatrixFilter(matrix)
- ]
-
- //this.images.background.image.updateCache()
-
- this.images.background.image.cache(0, 0,canvasWidth-1, canvasHeight-1)
-
-
-// this.images.background.image.cache(0, 0,canvasWidth, canvasHeight)
-this.images.background.image.updateCache()
-console.log(this.images.background.image)
-console.log(this.images.background.image.isVisible())
-*/
-
     }
 
     this.images.setDefaultEvents = function(){
@@ -6151,7 +6131,9 @@ var setIFrameToTopHandler = function(){
 $(self.getIframe()).off('mousedown.setToTop')
 $(self.getIframe()).on('mousedown.setToTop', setIFrameToTopHandler)
 */
-  $("body").on("mousedown.triggerIframeSetToTop",setIFrameToTopHandler)
+$("body").off("mousedown.triggerIframeSetToTop touchstart.triggerIframeSetToTop")
+
+  $("body").on("mousedown.triggerIframeSetToTop touchstart.triggerIframeSetToTop",setIFrameToTopHandler)
   /* function(e){
 //console.log('body mousedown triggered')
 console.log(holdemCanvas.getIframe())
