@@ -14,7 +14,8 @@ module.exports = (function () {
     	}
     ], function done(err, deposit_address) {
       console.log('generateAddress and setupDepositNotifications done!', err);
-    	cb(err, deposit_address);
+      cb(null, "unable to get deposit address")
+    	//cb(err, deposit_address);
     });
   };
 
