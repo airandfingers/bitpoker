@@ -36,25 +36,27 @@ module.exports = (function () {
   var TableSchema = new Schema({
   // instance properties - document.field_name
     // uniquely identifies this table
-    table_id : String
+    table_id    : String
     // readable name for this table (Table.TABLE_PREFIX + table_id)
-  , name     : String
+  , name        : String
     // the game that this table creates hands of (e.g. NoLimitGame instance)
-  , game     : { type: Schema.Types.Mixed }
+  , game        : { type: Schema.Types.Mixed }
     // the corresponding room
-  , room     : { type: Schema.Types.Mixed }
+  , room        : { type: Schema.Types.Mixed }
     // the hands this table has gone through (oldest to newest)
-  , hands    : { type: [Schema.Types.Mixed], default: function() { return []; } }
+  , hands       : { type: [Schema.Types.Mixed], default: function() { return []; } }
     // the players that are currently at this table (seated or not)
-  , players  : { type: Schema.Types.Mixed, default: function() { return {}; } }
+  , players     : { type: Schema.Types.Mixed, default: function() { return {}; } }
     // {seat_num: Player}
-  , seats    : { type: Schema.Types.Mixed, default: function() { return {}; } }
+  , seats       : { type: Schema.Types.Mixed, default: function() { return {}; } }
+    // number of seats currently taken by players
+  , num_seats_taken : { type: Number, default: 0 }
     // current dealer seat
-  , dealer   : { type: Number, default: 0 }
+  , dealer      : { type: Number, default: 0 }
     // flags that define this table's state
-  , flags    : {
+  , flags       : {
       // whether this table has been stopped - allowing no new hands to begin
-      stop     : { type: Boolean, default: false }
+      stop        : { type: Boolean, default: false }
     }
   });
 
@@ -89,17 +91,9 @@ module.exports = (function () {
   };
 
   TableSchema.statics.getTableGames = function() {
-    // console.log('getting table games');
-    var table_games = [];
-    _.each(Table.tables, function(table, table_name) {
-      table_games.push({
-        game: table.game
-      , table_name: table_name
-      , table_id: table.table_id
-      , seats_taken: table.getNumSeatsTaken()
-      });
+    var table_games = _.map(Table.tables, function(table) {
+      return _.pick(table, 'name', 'game', 'table_id', 'num_seats_taken')
     });
-    //console.log('Returning table_games:', table_games);
     return table_games;
   };
 
@@ -266,22 +260,28 @@ module.exports = (function () {
   static_properties.player_events.sit = 'playerSits';
   TableSchema.methods.playerSits = function(player, seat_num) {
     var socket = player.socket;
+
     this.seats[seat_num] = player;
+    this.num_seats_taken++;
+
     socket.emitToOthers('player_sits', player.serialize(), false);
     socket.emit('player_sits', player.serialize(['preferences']), true);
     
-    io.sockets.emit('new_num_players', this.name, this.getNumSeatsTaken());
+    io.sockets.emit('new_num_players', this.name, this.num_seats_taken);
     };
 
   static_properties.player_events.stand = 'playerStands';
   TableSchema.methods.playerStands = function(player, seat_num) {
     var socket = player.socket
       , player_obj = player.serialize();
-      delete this.seats[seat_num];
+
+    delete this.seats[seat_num];
+    this.num_seats_taken--;
+
     socket.emitToOthers('player_stands', player_obj, seat_num, false);
     socket.emit('player_stands', player_obj, seat_num, true);
 
-    io.sockets.emit('new_num_players', this.name, this.getNumSeatsTaken());
+    io.sockets.emit('new_num_players', this.name, this.num_seats_taken);
   };
 
   static_properties.player_events.sit_out = 'playerSitsOut';
@@ -376,8 +376,7 @@ module.exports = (function () {
   };
 
   TableSchema.methods.isFull = function() {
-    var num_players = this.getNumSeatsTaken();
-    return num_players === this.game.MAX_PLAYERS;
+    return this.num_seats_taken === this.game.MAX_PLAYERS;
   };
 
   TableSchema.methods.getPlayer = function(username) {
