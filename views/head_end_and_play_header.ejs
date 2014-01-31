@@ -125,24 +125,18 @@
                     <% include faq_base %>
                 </div>
 
-                <% if (typeof table_games !=='undefined') { %>
-                  <div id="lobbyWrapperDiv">
-
-
-                    <!-- lobby dropdown -->
-                    <% if (locals.username) { %>
-
-                    <!-- include values to expose to scripts -->
-                    <input type="hidden" id="user_server_values"
-                        data-username="<%= locals.username %>"
-                    />
-                    <% } %>
-
-                    <div id="lobby" class="unselectable">
-                      <% include table_list %>
-                    </div>
-                  </div> <!-- wrapperDiv: This is to help with hoverIntent -->
-                <%  } %>
+                <div id="lobbyWrapperDiv">
+                  <!-- lobby dropdown -->
+                  <% if (locals.username) { %>
+                  <!-- include values to expose to scripts -->
+                  <input type="hidden" id="user_server_values"
+                      data-username="<%= locals.username %>"
+                  />
+                  <% } %>
+                  <div id="lobby" class="unselectable">
+                    <% include table_list %>
+                  </div>
+                </div> <!-- wrapperDiv: This is to help with hoverIntent -->
 
                 <% include bug_report %>
 
