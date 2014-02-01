@@ -52,8 +52,8 @@ else if(lottery){
   }//add entry
 
     LotterySchema.virtual('decided').get(function(){
-      console.log('getting virtual property decided')
-      console.log(this)
+     // console.log('getting virtual property decided')
+     // console.log(this)
       var now = moment()
 if(_.isString(this.winning_username ) && this.winning_username != ''){
 console.log('lottery decided by virtue of winning_username: ' + this.winning_username)
@@ -61,8 +61,8 @@ console.log('lottery decided by virtue of winning_username: ' + this.winning_use
 }
   //if over and no entries
   else if(_.isEmpty(this.entries) && (moment(this.end).isBefore(now) || moment(this.end).isSame(now))){
-console.log('lottery decided by virtue of is empty:' + _.isEmpty(this.entries))
-console.log(this.entries)
+//console.log('lottery decided by virtue of is empty:' + _.isEmpty(this.entries))
+//console.log(this.entries)
     return true}
   else{return false}
 
@@ -90,13 +90,13 @@ return remaining
   LotterySchema.methods.pickWinner = function(cb) {
     var lottery = this
 
-console.log('pickwinner called on ' + this['_id'] + ', running = '  +lottery.running)
+//console.log('pickwinner called on ' + this['_id'] + ', running = '  +lottery.running)
 console.log(this)
 
     if(lottery.running){return cb(null, null)} 
     else if(lottery.decided){
-console.log('lottery already decided')
-console.log(lottery.entries)
+//console.log('lottery already decided')
+//console.log(lottery.entries)
       return cb(null, null)}
 
 console.log('determing winner ...')
@@ -137,13 +137,13 @@ if(err){return console.error('error')}
 
 var id = this['_id']
 
-console.log('setting 1 timeout')
+//console.log('setting 1 timeout')
 var timer = setTimeout(function(){
   //first get current lottery
 Lottery.findById(id, function (err, lottery) {
   if(err){return console.error(err)}
 else if(!lottery){return console.error('no lottery found with id = ' +id)}
-  console.log('findById successfull')
+  console.log('findById successfully')
   lottery.pickWinner(cb)
 });
 
@@ -172,12 +172,12 @@ lottery.setTimeout()
  }//activates timeouts on all uncompleted lotteries
 
   LotterySchema.statics.current = function(cb) {
-console.log('lottery.current called')
+//console.log('lottery.current called')
 this.findOne({end: { $gt : new Date() }}, function(err, lottery){
-console.log(lottery)
+//console.log(lottery)
 if(err){return console.error(error)}
   else{
-    console.log('lottery.current returning a', lottery)
+   // console.log('lottery.current returning a', lottery)
     return cb(err, lottery)
   }
 
@@ -198,7 +198,7 @@ currentLottery.save(function(err, lottery){
 
 if(err){return console.error(err)}
 else{
-  console.log('lottery successfully created')
+ // console.log('lottery successfully created')
   lottery.setTimeout()
 if(cb){cb(err, lottery)}
 }

@@ -30,21 +30,37 @@ module.exports = (function () {
     auth.ensureAuthenticated(req, res, next);
   };
 
+  var getUserAccountInfo = function(user){
+
+if(!user.emergency_BTC_address) user.emergency_BTC_address = '';
+  return{
+
+  username: user.username,
+      registration_date: user.registration_date,
+      email: user.email,
+      funbucks: user.funbucks,
+      email_confirmed: user.email_confirmed,
+      bitcoin_balance: user.satoshi / 1E8,
+      satoshi_balance: user.satoshi,
+      emergency_BTC_address:user.emergency_BTC_address
+
+        }
+
+  }//getUserAccountInfo
+
   app.get('/account', ensureAuthenticated, function(req, res) {
     //console.log('req.user is ' + req.user);
     var flash = req.flash('error');
+var emergency_BTC_address = req.user.emergency_BTC_address || ''
+console.log('emergency_BTC_address = ')
 
-    res.render('account', {
-      title: 'Account',
-      username: req.user.username,
-      registration_date: req.user.registration_date,
-      email: req.user.email,
-      funbucks: req.user.funbucks,
-      email_confirmed: req.user.email_confirmed,
-      bitcoin_balance: req.user.satoshi / 1E8,
-      satoshi_balance: req.user.satoshi,
-      message: flash && flash[0]
-    });
+console.log(emergency_BTC_address)
+    res.render('account', _.extend(getUserAccountInfo(req.user), {
+        title: 'Account'
+        ,message: flash && flash[0]
+       })
+
+      );
   });
 
   app.get('/faq', function(req, res) {
@@ -154,17 +170,17 @@ module.exports = (function () {
       if ( _.isString(req.query.joined_table_name) ) {
         req.user.current_table_names.push(req.query.joined_table_name);
       }
-      res.render('index', {
+      res.render('index', _.extend(getUserAccountInfo(req.user), {
         title: 'Bitcoin Poker'
-      , email: req.user.email
-      , email_confirmed: req.user.email_confirmed
-      , funbucks: req.user.funbucks
-      , registration_date: req.user.registration_date
-      , room_state: JSON.stringify(room_state)
-      , message: flash && flash[0]
-      , satoshi_balance: req.user.satoshi
-      , user: req.user      
-      });
+        ,message: flash && flash[0]
+        , room_state: JSON.stringify(room_state)
+        , user: req.user
+
+        , message: flash && flash[0]
+       })
+
+            
+      );
     }
     else {
       console.log('user is not logged in. rendering welcome environment');
@@ -375,6 +391,20 @@ module.exports = (function () {
     });
     res.redirect('back');
   });*/
+
+  app.post('/update_emergency_BTC_address', redirectIfUnauthenticated, function (req, res) {
+    console.log('updating users emergency address');
+    console.log(req.body.address)
+
+ User.findOne({ username: req.user.username }, function(err, user) {
+user.emergency_BTC_address = req.body.address
+user.save(function(err, user){
+if(err){return console.error(err)}
+  console.log('new emergency address saved succesfully')
+})//save new address
+})//get database user object
+  });
+
 
   //Guest Login Route
   function createGuestUser(req, res) {
@@ -857,10 +887,10 @@ module.exports = (function () {
   });
 
   app.post('/enter_lottery', redirectIfUnauthenticated, function(req, res) {
-   // console.log('/enter_lottery called for', req.user.username);
+   console.log('/enter_lottery called for', req.user.username);
     lottery.current(function(err, current_lottery){
 if(err){console.warn(err)}
-if(current_lottery) {current_lottery.addEntry({username:'anonymous'+Math.random(100000)+''},
+if(current_lottery) {current_lottery.addEntry({username:req.user.username, email:req.user.email, address:req.user.address},
 function(err, lottery){
   if(err){return console.warn(err)}
 }
