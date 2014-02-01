@@ -37,7 +37,7 @@ if(!user.emergency_BTC_address) user.emergency_BTC_address = '';
 
   username: user.username,
       registration_date: user.registration_date,
-      email: user.email,
+      email: user.email || '',
       funbucks: user.funbucks,
       email_confirmed: user.email_confirmed,
       bitcoin_balance: user.satoshi / 1E8,

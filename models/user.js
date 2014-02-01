@@ -31,10 +31,10 @@ module.exports = (function() {
     //the user's email address
   , email              : { type: String, trim: true }
     //the code used to confirm this user's email
-  , confirmation_code: String
+  , confirmation_code  : String
     //whether the user has confirmed his/r email address
   , email_confirmed    : { type: Boolean, default: false }
-  , funbucks           : { type: Number, default: 100, min: 0 }
+  , funbucks           : { type: Number, default: 1000, min: 0 }
   , satoshi            : { type: Number, default: 0, min: 0 }
   , recovery_code      : { type: String }
   , registration_date  : { type: Date, default: Date.now }
