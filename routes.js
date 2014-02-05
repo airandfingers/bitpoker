@@ -557,7 +557,16 @@ if(err){return console.error(err)}
   app.post('/increase_funbucks_by_100', function (req, res) {
     var funbucks_to_add = 100;
     console.log('calling funbucks update route');
-    User.update({_id: req.user._id}, { $inc: { funbucks: funbucks_to_add } }, function(err) {
+    User.update({_id: req.user._id}, 
+                { $inc: { funbucks: funbucks_to_add }, 
+                  $push:{transactions: transaction = {
+                                                  type: 'funbucks_faucet'
+                                                , amount: 100
+                                                , timestamp: new Date()
+                                                }
+                         }
+                }, 
+                function(err) {
       if (err) {
         console.error('Error when changing user\'s funbucks balance:', err); 
         res.json({error: err});
