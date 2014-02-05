@@ -15,7 +15,8 @@ module.exports = (function () {
     , btc_main = require('./btc/main')
     , crypto = require('crypto')
     , address_validator = require('bitcoin-address')
-    , moment = require('moment');
+    , moment = require('moment')
+    , lottery = require('./lottery');
 
   var package_file = require('./package.json');
   console.log('package.json version is ' + package_file.version);
@@ -844,6 +845,21 @@ module.exports = (function () {
     req.flash('error', 'Stopping all tables ' + time_from_now + '.');
     res.redirect('/admin');
   });
+
+  /*app.get('/lottery', redirectIfUnauthenticated, function(req, res) {
+    var flash = req.flash('error');
+    res.render('lottery', {
+      title: 'Blah Blah Blah'
+    , message: flash && flash[0]
+    });
+  });
+
+  app.post('/enter_lottery', redirectIfUnauthenticated, function(req, res) {
+    console.log('/enter_lottery called for', req.user.username);
+    lottery.enterLottery(req.user);
+    req.flash('error', 'Sorry, this is just a stub!');
+    res.redirect('back');
+  });*/
 
   //Handle all other cases with a 404
   //Note: ONLY do this if app.use(app.router) comes after

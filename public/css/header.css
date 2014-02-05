@@ -39,7 +39,7 @@ header {
 
 #lobby {
     background-color: rgba(0,0,0,0);
-    min-width: 650px;
+    min-width: 250px;
     position: absolute;
     display: none;
     font-size: .8em;

@@ -479,8 +479,11 @@ module.exports = (function () {
 
   PlayerSchema.methods.vacateSeat = function() {
     var self = this
+      , seat_num = self.seat
       , game = self.game
-      , seat_num = self.seat;
+      , stack_in_chips = self.chips
+      , stack_in_currency = stack_in_chips * game.CURRENCY_PER_CHIP
+      , user = self.socket.user;
     if (self.in_hand) {
       console.error('Cannot stand while currently in a hand!');
       return;
@@ -491,34 +494,38 @@ module.exports = (function () {
     // clear the sit-in-on-first-buyin timer, if any
     self.removeListener('chips_added', first_buyin_handler(self));
     
-    if (self.chips < 0) {
-      console.error('player attempted to cash out with ' + self.chips + ' chips! resetting to 0..');
-      self.chips = 0;
+    if (stack_in_chips < 0) {
+      console.error('player attempted to cash out with ' + stack_in_chips + ' chips! resetting to 0..');
+      stack_in_chips = 0;
       // emit the "stand" event
       self.emit('stand', seat_num);
     }
-    else if (self.chips === 0) {
+    else if (stack_in_chips === 0) {
       // emit the "stand" event
       self.emit('stand', seat_num);
     }
-    else if (self.chips > 0) {
-      // credit this player's account with the appropriate number of funbucks
-      self.socket.user.fetch(function(fetch_err, user) {
-        if (fetch_err) {
-          self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);
+    else if (stack_in_chips > 0) {
+      // credit this player's account with the appropriate number of game.CURRENCY
+      user.checkBalance(game.CURRENCY, function(check_err, balance) {
+        if (check_err) {
+          self.sendMessage('error', 'error while checking balance: ' + check_err.message || check_err);
           return;
         }
-        var stack_in_currency = self.chips * game.CURRENCY_PER_CHIP
-          , new_balance = user[game.CURRENCY] + stack_in_currency;
-        user[game.CURRENCY] = new_balance;
-        user.save(function(save_err) {
-          if (save_err) {
-            self.sendMessage('error', 'error while saving user: ' + save_err.message || save_err);
+        var new_balance = balance + stack_in_currency
+          , transaction = {
+              type: 'cashout'
+            , amount: stack_in_currency
+            , table_name: self.table.name
+            , timestamp: new Date()
+        };
+        user.updateBalance(game.CURRENCY, new_balance, transaction, function(update_err) {
+          if (update_err) {
+            self.sendMessage('error', 'error while updating balance: ' + update_err.message || update_err);
             return;
           }
           else {
-            if (self.chips > game.MIN_CHIPS) {
-              self.min_buyin = self.chips;
+            if (stack_in_chips > game.MIN_CHIPS) {
+              self.min_buyin = stack_in_chips;
               self.min_buyin_timeout = setTimeout(function() {
                 delete self.min_buyin;
               }, game.MIN_BUYIN_TIME_ENFORCED);
@@ -596,44 +603,42 @@ module.exports = (function () {
   PlayerSchema.methods.calculateAddChipsInfo = function(cb) {
     var self = this
       , game = self.game;
-    self.socket.user.checkBalance(game.CURRENCY, function(err, balance) {
-      if (err) {
-        cb(err);
+    self.socket.user.checkBalance(game.CURRENCY, function(check_err, balance) {
+      if (check_err) {
+        return cb(check_err);
       }
-      else {
-        var currency_per_chip = game.CURRENCY_PER_CHIP
-          , balance_in_chips = game.roundNumChips(balance / currency_per_chip, 'floor')
-          , stack = self.chips
-          , num_to_min = game.MIN_CHIPS - stack
-          , num_to_max = game.MAX_CHIPS - stack
-          , add_chips_info = {
-              balance_in_currency: balance
-            , balance_in_chips: balance_in_chips
-            , stack: stack
-            , currency_per_chip: currency_per_chip
-          }
-          , min_buyin = self.min_buyin
-          , min
-          , max;
-        // set min and max
-        if (! _.isNumber(min_buyin)) {
-          min_buyin = 0;
+      var currency_per_chip = game.CURRENCY_PER_CHIP
+        , balance_in_chips = game.roundNumChips(balance / currency_per_chip, 'floor')
+        , stack = self.chips
+        , num_to_min = game.MIN_CHIPS - stack
+        , num_to_max = game.MAX_CHIPS - stack
+        , add_chips_info = {
+            balance_in_currency: balance
+          , balance_in_chips: balance_in_chips
+          , stack: stack
+          , currency_per_chip: currency_per_chip
         }
-        min = _.max([min_buyin, num_to_min]);
-        max = _.max([min_buyin, num_to_max]);
-        /*if (balance_in_chips < min) {
-          min = max = -1;
-        }
-        else if (balance_in_chips < max) {
-          max = balance_in_chips;
-        }*/
-        _.extend(add_chips_info, {
-          min: min
-        , max: max
-        });
-        self.add_chips_info = add_chips_info;
-        cb(null, add_chips_info);
+        , min_buyin = self.min_buyin
+        , min
+        , max;
+      // set min and max
+      if (! _.isNumber(min_buyin)) {
+        min_buyin = 0;
       }
+      min = _.max([min_buyin, num_to_min]);
+      max = _.max([min_buyin, num_to_max]);
+      /*if (balance_in_chips < min) {
+        min = max = -1;
+      }
+      else if (balance_in_chips < max) {
+        max = balance_in_chips;
+      }*/
+      _.extend(add_chips_info, {
+        min: min
+      , max: max
+      });
+      self.add_chips_info = add_chips_info;
+      cb(null, add_chips_info);
     });
   };
 
@@ -686,7 +691,8 @@ module.exports = (function () {
       , num_to_max = game.MAX_CHIPS - stack // current max buyin
       , sent_min = self.add_chips_info.min // min sent in last add_chips_info message
       , sent_balance_in_chips = self.add_chips_info.balance_in_chips // balance sent in last add_chips_info message
-      , error;
+      , error
+      , user = self.socket.user;
     if (num_chips > sent_balance_in_chips) {
       error = 'add_chips request exceeds player\'s chip balance: ' + sent_balance_in_chips;
     }
@@ -708,32 +714,33 @@ module.exports = (function () {
       self.sendMessage('error', error);
       return;
     }
-    self.socket.user.fetch(function(fetch_err, user) {
-      if (fetch_err) {
-        self.sendMessage('error', 'error while looking up user: ' + fetch_err.message || fetch_err);
+
+    user.checkBalance(game.CURRENCY, function(check_err, balance) {
+      if (check_err) {
+        self.sendMessage('error', 'error while checking balance: ' + check_err.message || check_err);
         return;
       }
       var num_currency = num_chips * game.CURRENCY_PER_CHIP
-        , new_balance = user[game.CURRENCY] - num_currency;
+        , new_balance = balance - num_currency
+        , transaction = {
+            type: 'buyin'
+          , amount: num_currency
+          , table_name: self.table.name
+          , timestamp: new Date()
+      };
       if (new_balance < 0) {
         self.sendMessage('error', 'player no longer has enough currency to add ' + num_chips + ' chips!');
         return;
       }
-      else {
-        user[game.CURRENCY] = new_balance;
-        user.save(function(save_err) {
-          if (save_err) {
-            self.sendMessage('error', 'error while saving user: ' + save_err.message || save_err);
-            return;
-          }
-          else {
-            self.chips += num_chips;
-            self.emit('chips_added', num_chips);
-            console.log('Going to call add chips broadcastBalanceUpdate', game.CURRENCY, new_balance);
-            user.broadcastBalanceUpdate(game.CURRENCY, new_balance);
-          }
-        });
-      }
+      user.updateBalance(game.CURRENCY, new_balance, transaction, function(update_err) {
+        if (update_err) {
+          self.sendMessage('error', 'error while updating balance: ' + update_err.message || update_err);
+          return;
+        }
+        self.chips += num_chips;
+        self.emit('chips_added', num_chips);
+        user.broadcastBalanceUpdate(game.CURRENCY, new_balance);
+      });
     });
   };
 

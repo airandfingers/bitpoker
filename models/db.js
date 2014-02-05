@@ -11,7 +11,7 @@
     { user: db_config.DB_USER, pass: db_config.DB_PASSWORD }
   );
   mongoose.connection.on('error', function(err) { console.error(err); });
-
+  
   exports.session_store = new MongooseStore({
     connection: mongoose.connection
   }, function onConnect() {
