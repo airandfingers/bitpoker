@@ -43,6 +43,12 @@
             <br />
             <a href="/deposit_bitcoins"> <button class="btn btn-default">Deposit Bitcoins</button></a>
             <a href="/withdraw_bitcoins"><button class="btn btn-default">Withdraw Bitcoins</button></a>
+            <br>
+            Emergency Withdrawal Address:
+            <form action="/update_emergency_BTC_address" method="post">
+            <input name = 'address' type ='text'  placeholder = '<%= emergency_BTC_address %>'> </input>
+            <button class="btn btn-default" value="submit">Save</button>
+            </form>
         </div>
 
         <!--delete account
