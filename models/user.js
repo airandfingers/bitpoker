@@ -44,10 +44,10 @@ module.exports = (function() {
   , preferences        : { type: Schema.Types.Mixed, default: function() { return {}; } }
   , transactions       : { type: [Schema.Types.Mixed], default: function() { return [{
             type: 'initial funbucks'
-          , amount: 1000
+          , amount: 100000000
           , timestamp: Date.now
           , currency: 'funbucks'
-          , new_balance: 1000
+          , new_balance: 100000000
           }]; } }
   , table_transactions : { type: [Schema.Types.Mixed], default: function() { return []; } }
   // whether the user can see the admin page and perform admin-only actions
