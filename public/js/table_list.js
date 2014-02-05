@@ -67,14 +67,13 @@
         , small_blind = blinds[0]
         , big_blind = blinds[1]
         , currency = row_data[2];
-      if (currency !== 'satoshi' && small_blind >= 1000000) {
+      if (currency === 'satoshi' && small_blind >= 1000000) {
         small_blind /= 1e8;
         big_blind /= 1e8;
         return small_blind + ' / ' + big_blind + ' BTC';
       }
       else {
-        // funbucks
-        return addCommasToNumber(small_blind) + ' / ' + addCommasToNumber(big_blind);
+        return addCommasToNumber(small_blind) + ' / ' + addCommasToNumber(big_blind) + ' ' + currency;
       }
     }
     else {
