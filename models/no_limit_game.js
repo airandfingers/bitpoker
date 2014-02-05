@@ -82,8 +82,9 @@
     if (_.isNumber(spec.SMALL_BLIND) && _.isUndefined(spec.BIG_BLIND)) {
       spec.BIG_BLIND = spec.SMALL_BLIND * 2;
     }
-      if (_.isNumber(spec.SMALL_BLIND) && (spec.SMALL_BLIND >= 1000 || spec.SMALL_BLIND < 1) && _.isUndefined(spec.MIN_INCREMENT)) {
-      spec.MIN_INCREMENT = spec.SMALL_BLIND / 1000;
+      if (_.isNumber(spec.SMALL_BLIND) && _.isUndefined(spec.MIN_INCREMENT)) {
+     if(spec.SMALL_BLIND>=1000) spec.MIN_INCREMENT = spec.SMALL_BLIND / 1000;
+     else if(spec.SMALL_BLIND<1) spec.MIN_INCREMENT = spec.SMALL_BLIND
     }
     
     //console.log('creating NoLimitGame:', spec);
