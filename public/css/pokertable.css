@@ -29,6 +29,7 @@ right:0px;
 }
 
 #pokerTableWrapper {
+  background-color:black;
   clear:both;
   position:absolute;
     width: auto;
