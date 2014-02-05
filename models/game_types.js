@@ -53,7 +53,7 @@ var make_game_type = function(sb, min, max, seats){
 }
 var game_types = [] 
 //we are going to max out at about 2,000,000 satoshi buyin because the numbers will be too big to handle
-var sb_max = 100000
+var sb_max = 10000000
 var min_buyin_in_sb = 40
 var max_buyin_in_sb = 200
 var limits_created = 0
