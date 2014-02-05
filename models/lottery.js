@@ -91,7 +91,7 @@ return remaining
     var lottery = this
 
 //console.log('pickwinner called on ' + this['_id'] + ', running = '  +lottery.running)
-console.log(this)
+//console.log(this)
 
     if(lottery.running){return cb(null, null)} 
     else if(lottery.decided){
@@ -99,15 +99,15 @@ console.log(this)
 //console.log(lottery.entries)
       return cb(null, null)}
 
-console.log('determing winner ...')
+//console.log('determing winner ...')
 
-var numEntries = _.size(lottery.entries)
-var entryArray = _.toArray(lottery.entries)
-var winningIndex = Math.random(numEntries)
+var entryArray = Object.keys(lottery.entries)
+var numEntries = entryArray.length
+var winningIndex = Math.floor(Math.random(numEntries))
 
-var winnerInfo = entryArray[winningIndex]
-
-var winning_username = winnerInfo.username
+//console.log(entryArray)
+//console.log(winningIndex)
+var winning_username = entryArray[winningIndex]
 
 lottery.winning_username = winning_username
 
@@ -115,8 +115,8 @@ lottery.save(function(err, lottery){
 if(err){return console.error(err)}
 else{
 
-console.log('winner is: '   + winning_username)
-cb(null, winnerInfo)
+console.log(winning_username + 'has won the lottery!')
+cb(null, winning_username)
 
 }
 })
@@ -131,7 +131,11 @@ cb(null, winnerInfo)
 if(!cb){var cb = function(err, winnerInfo){
 
 if(err){return console.error('error')}
-  else {Lottery.create()}
+  else {
+    Lottery.create(function(err, res){
+if(err){return console.warn(err)}
+  })
+}
 
 }}
 
@@ -142,8 +146,8 @@ var timer = setTimeout(function(){
   //first get current lottery
 Lottery.findById(id, function (err, lottery) {
   if(err){return console.error(err)}
-else if(!lottery){return console.error('no lottery found with id = ' +id)}
-  console.log('findById successfully')
+else if(!lottery){return console.warn('no lottery found with id = ' +id)}
+  //console.log('findById successfully')
   lottery.pickWinner(cb)
 });
 
@@ -189,6 +193,7 @@ if(err){return console.error(error)}
 
   LotterySchema.statics.create = function(cb) {
 
+if(!_.isFunction(cb)){var cb = function(){}}
 
 this.current(function(err, currentLottery){
 
