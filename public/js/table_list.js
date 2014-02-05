@@ -2,7 +2,7 @@
   // Define new sorting type - fake-fraction (for # Players column)
   function getNumBeforeSlash(str) {
       var slash_index = str.indexOf('/')
-        , before_slash = str.substring(0, slash_index);
+        , before_slash = str.substring(0, slash_index).replace(/,/g, '');
       before_slash = parseInt(before_slash);
       return before_slash;
   }

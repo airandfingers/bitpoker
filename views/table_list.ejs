@@ -21,6 +21,20 @@
       , SMALL_BLIND, BIG_BLIND, MIN_CHIPS, MAX_CHIPS
       , num_seats_taken, MAX_PLAYERS;
 
+    function addCommasToNumber(num) {
+      var thousands = Math.floor(num / 1000)
+        , ones = (num % 1000).toString();
+      if (thousands === 0) {
+        return ones;
+      }
+      else {
+        while (ones.length < 3) {
+          ones = '0' + ones;
+        }
+        return addCommasToNumber(thousands) + ',' + ones;
+      }
+    }
+
     for (i = 0, len = locals.table_games.length; i < len; i++ ) {
       table_game = locals.table_games[i];
       game = table_game.game;
@@ -29,8 +43,8 @@
       constants = game.constants();
       CURRENCY_ABBREV = game.CURRENCY_ABBREV;
       CURRENCY_PER_CHIP = game.CURRENCY_PER_CHIP;
-      SMALL_BLIND = game.roundNumCurrency(game.SMALL_BLIND * CURRENCY_PER_CHIP);
-      BIG_BLIND = game.roundNumCurrency(game.BIG_BLIND * CURRENCY_PER_CHIP);
+      SMALL_BLIND = addCommasToNumber(game.roundNumCurrency(game.SMALL_BLIND * CURRENCY_PER_CHIP));
+      BIG_BLIND = addCommasToNumber(game.roundNumCurrency(game.BIG_BLIND * CURRENCY_PER_CHIP));
       MIN_CHIPS = game.roundNumCurrency(game.MIN_CHIPS * CURRENCY_PER_CHIP);
       MAX_CHIPS = game.roundNumCurrency(game.MAX_CHIPS * CURRENCY_PER_CHIP);
 
