@@ -34,7 +34,7 @@ module.exports = (function() {
   , confirmation_code  : String
     //whether the user has confirmed his/r email address
   , email_confirmed    : { type: Boolean, default: false }
-  , funbucks           : { type: Number, default: 1000, min: 0 }
+  , funbucks           : { type: Number, default: 100000000, min: 0 }
   , satoshi            : { type: Number, default: 0, min: 0 }
   , recovery_code      : { type: String }
   , registration_date  : { type: Date, default: Date.now }
