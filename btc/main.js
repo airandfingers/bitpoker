@@ -6,16 +6,15 @@ module.exports = (function () {
   var createDepositAddress = function(user, cb) {
     var vault_address = '1NpMFVFNjutgY2VXGfn97WcBa1JafSVHF';
     async.waterfall([
-    	function generateAddress(acb) {
-    		remote_apis.createDepositAddress(user.username, vault_address, acb);
-    	},
-    	function setupDepositNotifications(deposit_address, acb) {
-    		remote_apis.setupDepositNotificationsForAddress(deposit_address, acb);
-    	}
+        function generateAddress(acb) {
+            remote_apis.createDepositAddress(user.username, vault_address, acb);
+        },
+        function setupDepositNotifications(deposit_address, acb) {
+            remote_apis.setupDepositNotificationsForAddress(deposit_address, acb);
+        }
     ], function done(err, deposit_address) {
       console.log('generateAddress and setupDepositNotifications done!', err);
-      cb(null, "unable to get deposit address")
-    	cb(err, deposit_address);
+      cb(err, deposit_address);
     });
   };
 
