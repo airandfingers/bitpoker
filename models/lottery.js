@@ -6,6 +6,7 @@ var db = require('./db')
 
 var HOURS_PER_LOTTERY = (1/60)/3
 var SATOSHI_PER_ENTRY = 500
+var MAX_SATOSHI_PER_LOTTERY = 50000
 
 
 var LOTTERY_INTERVAL = HOURS_PER_LOTTERY*60*60*100 
@@ -75,11 +76,16 @@ console.log('lottery decided by virtue of winning_username: ' + this.winning_use
 
      LotterySchema.virtual('payout').get(function(){
 
-if(_.isFunction(this.payout_formula)){return this.payout_formula(this)}
+var payout = 0
 
-  else if(_.isNumber(this.payout_formula)){return this.payout_formula}
 
-    else{return 0}
+if(_.isFunction(this.payout_formula)){payout = this.payout_formula(this)}
+
+  else if(_.isNumber(this.payout_formula)){payout = this.payout_formula}
+
+if(payout>MAX_SATOSHI_PER_LOTTERY) payout = MAX_SATOSHI_PER_LOTTERY;
+ 
+ return payout
 
     })
 
