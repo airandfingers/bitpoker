@@ -4,9 +4,13 @@ var _ = require('underscore')
 var mongoose = require('mongoose')
 var db = require('./db')
 
- var hoursPerLottery = (1/60)/5
-var LOTTERY_INTERVAL = hoursPerLottery*60*60*100 
+var HOURS_PER_LOTTERY = (1/60)/3
+var SATOSHI_PER_ENTRY = 500
+
+
+var LOTTERY_INTERVAL = HOURS_PER_LOTTERY*60*60*100 
 var INTERVAL_MARGIN_OF_ERROR = 1000 //implement later
+
 
 console.log(db)
 
@@ -14,8 +18,9 @@ var LotterySchema = new mongoose.Schema({
 
     start              : { type: Date, default: function(){return new Date()} }
     ,end               : { type: Date, default: function(){return moment(new Date()).add('ms', LOTTERY_INTERVAL).toDate()}}
-    ,entries           :  {type:mongoose.Schema.Types.Mixed, default: function(){return{}} }
-    ,winning_username  :  {type: String}
+    ,entries           : {type:mongoose.Schema.Types.Mixed, default: function(){return{}} }
+    ,winning_username  : {type: String}
+    ,payout_formula    : {type:mongoose.Schema.Types.Mixed, default:function(){ return function(thisLottery){return _.size(thisLottery.entries)*SATOSHI_PER_ENTRY} }}
 
 
   }, { minimize: false }); // set minimize to false to save empty objects
@@ -68,6 +73,18 @@ console.log('lottery decided by virtue of winning_username: ' + this.winning_use
 
     })
 
+     LotterySchema.virtual('payout').get(function(){
+
+if(_.isFunction(this.payout_formula)){return this.payout_formula(this)}
+
+  else if(_.isNumber(this.payout_formula)){return this.payout_formula}
+
+    else{return 0}
+
+    })
+
+
+
     LotterySchema.virtual('running').get(function(){
 
 var now = moment()
@@ -90,7 +107,7 @@ return remaining
   LotterySchema.methods.pickWinner = function(cb) {
     var lottery = this
 
-//console.log('pickwinner called on ' + this['_id'] + ', running = '  +lottery.running)
+console.log('pickwinner called on ' + this['_id'] + ', running = '  +lottery.running)
 //console.log(this)
 
     if(lottery.running){return cb(null, null)} 
@@ -115,8 +132,11 @@ lottery.save(function(err, lottery){
 if(err){return console.error(err)}
 else{
 
-console.log(winning_username + 'has won the lottery!')
+try{
+console.log(winning_username + 'has won ' + lottery.payout + ' satoshi in the lottery of '+numEntries +' entries!')
+console.log(lottery.entries)
 cb(null, winning_username)
+}catch(err){console.warn('error determining winning amount in lottery')}
 
 }
 })
