@@ -9,7 +9,7 @@ var SATOSHI_PER_ENTRY = 500
 var MAX_SATOSHI_PER_LOTTERY = 50000
 
 
-var LOTTERY_INTERVAL = HOURS_PER_LOTTERY*60*60*100 
+var LOTTERY_INTERVAL = HOURS_PER_LOTTERY*60*60*1000 
 var INTERVAL_MARGIN_OF_ERROR = 1000 //implement later
 
 
@@ -93,9 +93,7 @@ if(payout>MAX_SATOSHI_PER_LOTTERY) payout = MAX_SATOSHI_PER_LOTTERY;
 
     LotterySchema.virtual('running').get(function(){
 
-var now = moment()
-
-if(moment(this.start).isBefore(now) && now.isBefore(moment(this.end))){return true}
+if(moment(this.start).isBefore() && moment(this.end).isAfter()){return true}
   else{return false}
 
     })
@@ -151,20 +149,6 @@ cb(null, winning_username)
   }//finish the lottery
 
   LotterySchema.methods.setTimeout = function(cb) {
-
-//if(!cb){var cb = function(err, res){}}
-
-if(!cb){var cb = function(err, winnerInfo){
-
-if(err){return console.error('error')}
-  else {
-    Lottery.create(function(err, res){
-if(err){return console.warn(err)}
-  })
-}
-
-}}
-
 var id = this['_id']
 
 //console.log('setting 1 timeout')
@@ -174,7 +158,14 @@ Lottery.findById(id, function (err, lottery) {
   if(err){return console.error(err)}
 else if(!lottery){return console.warn('no lottery found with id = ' +id)}
   //console.log('findById successfully')
-  lottery.pickWinner(cb)
+  lottery.pickWinner(cb || function(err, winnerInfo){
+    if(err){return console.error('error')}
+      else {
+        Lottery.create(function(err, res){
+    if(err){return console.warn(err)}
+      })
+    }
+  });
 });
 
 }, this.remaining + INTERVAL_MARGIN_OF_ERROR)
@@ -186,10 +177,10 @@ return timer
 
  LotterySchema.statics.setTimeouts = function(cb) {
 
-  this.find({end: { $lte : new Date() } })
+  this.find()
+  .where('running').equals(true)
   .where('decided').equals(false)
   .exec (function(err, lotteries){
-
 _.each(lotteries, function(lottery, index, lotteryArray){
 
 lottery.setTimeout()
@@ -227,11 +218,11 @@ if(currentLottery){return cb('tried to create lottery when there is already a lo
 else {var currentLottery = new Lottery()}
 currentLottery.save(function(err, lottery){
 
-if(err){return console.error(err)}
+if(err){return cb(err)}
 else{
- // console.log('lottery successfully created')
+  //console.log('lottery successfully created:', lottery);
   lottery.setTimeout()
-if(cb){cb(err, lottery)}
+cb(err, lottery)
 }
 
 })
@@ -245,6 +236,10 @@ if(cb){cb(err, lottery)}
 
 var Lottery = mongoose.model('Lottery', LotterySchema);
 
+// start up lottery
+Lottery.create();
+Lottery.setTimeouts();
 
-  return Lottery
- })();
+return Lottery;
+
+})();
