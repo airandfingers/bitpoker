@@ -111,6 +111,14 @@ module.exports = (function () {
     });
   };
 
+  TableSchema.statics.refundAllTables = function(cb) {
+    async.each(_.values(Table.tables), function(table, acb) {
+      table.refund(acb);
+    }, function() {
+      cb();
+    });
+  };
+
   // instance methods - document.method()
   TableSchema.methods.initialize = function() {
     var self = this
@@ -159,19 +167,20 @@ module.exports = (function () {
     self.hands.push(hand);
     
     hand.onStage('done', function() {
-      console.log('Hand is over! Creating a new hand in 1 second...');
       self.dealer = hand.dealer + 1;
       self.initial_pot = hand.pot_remainder;
-      setTimeout(function() {
-        self.room.broadcast('reset_table');
-        if (! self.flags.stop) {
+      
+      if (! self.flags.stop) {
+        console.log('Hand is over! Creating a new hand in 1 second...');
+        setTimeout(function() {
+          self.room.broadcast('reset_table');
           self.newHand();
-        }
-        else {
-          self.room.broadcast('server_message', 'The server is going down, and play at this table has stopped.');
-        }
-      }, 1000);
-      console.log('hand.hand_num is', hand.hand_num);
+        }, 1000);
+      }
+      else {
+        self.room.broadcast('reset_table');
+        self.room.broadcast('server_message', 'The server is going down, and play at this table has stopped.');
+      }
       Message.deleteMessagesWithHandNum(hand.hand_num, function (err, messages) {
         if (err) { console.error('error during deleteMessagesWithHandNum:', err); }
         //console.log('running Message.deleteMessagesWithHandNum', hand.hand_num);
@@ -384,6 +393,7 @@ module.exports = (function () {
     return player;
   };
 
+  // stop starting new hands (after this one)
   TableSchema.methods.stop = function() {
     this.flags.stop = true;
     _.each(this.players, function(player) {
@@ -392,9 +402,37 @@ module.exports = (function () {
       }
     });
     var current_hand = this.getCurrentHand();
-    if (current_hand.isInStage('waiting')) {
+    if (! current_hand.isAfterStage('waiting')) {
       current_hand.toStage('done');
     }
+  };
+
+  // refund any existing bets, the server is going down!
+  TableSchema.methods.refund = function(cb) {
+    var self = this;
+    self.flags.stop = true;
+    self.room.broadcast('server_message', 'The server is going down unexpectedly. Bets have been refunded, and pots have been split.');
+    var current_hand = self.getCurrentHand();
+    if (current_hand.isAfterStage('waiting')) {
+      current_hand.refundAndEndHand();
+    }
+    else {
+      current_hand.toStage('done');
+    }
+    async.each(_.values(self.players), function(player, acb) {
+      if (_.isNumber(player.seat)) {
+        player.handleStand();
+        player.on('stand', function() {
+          acb();
+        });
+      }
+      else {
+        acb();
+      }
+    }, function() {
+      console.log('All players have stood for', self.name);
+      cb();
+    });
   };
 
   /* the model - a fancy constructor compiled from the schema:
