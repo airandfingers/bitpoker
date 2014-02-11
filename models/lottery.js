@@ -3,6 +3,7 @@ var moment = require('moment')
 var _ = require('underscore')
 var mongoose = require('mongoose')
 var db = require('./db')
+var User = require ('./user')
 
 var HOURS_PER_LOTTERY = (1/60)/3
 var SATOSHI_PER_ENTRY = 500
@@ -22,8 +23,8 @@ var LotterySchema = new mongoose.Schema({
     ,entries           : {type:mongoose.Schema.Types.Mixed, default: function(){return{}} }
     ,winning_username  : {type: String}
     ,payout_formula    : {type:mongoose.Schema.Types.Mixed, default:function(){ return function(thisLottery){return _.size(thisLottery.entries)*SATOSHI_PER_ENTRY} }}
-
-
+    ,currency          : {type:String, default:'satoshi'}
+    ,paid              : {type:Boolean, default:false}
   }, { minimize: false }); // set minimize to false to save empty objects
 
 
@@ -136,15 +137,25 @@ lottery.winning_username = winning_username
 
 lottery.save(function(err, lottery){
 if(err){return console.error(err)}
-else{
 
 try{
-console.log(winning_username + 'has won ' + lottery.payout + ' satoshi in the lottery of '+numEntries +' entries!')
+console.log(winning_username + 'has won ' + lottery.payout +' ' + lottery.currency+ '  in the lottery of '+numEntries +' entries!')
 console.log(lottery.entries)
-cb(null, winning_username)
+cb(null, winning_username) //this will start the next lottery
 }catch(err){console.warn('error determining winning amount in lottery')}
 
+//pay winner of this lottery
+lottery.payWinner(function(err, new_balance){
+
+if(err){console.warn('failed to payout the player');return console.error(err)}
+else{console.log(winning_username + 'has won ' + lottery.payout +' ' + lottery.currency+ '  in the lottery of '+numEntries +' entries with a new balance of ' + new_balance +'!')
+lottery.paid = true
+lottery.save(function(err, lottery){if(err)return console.error(err);})
 }
+
+})//payout the winner
+
+
 })
 
 
@@ -215,6 +226,44 @@ if(err){return console.error(error)}
 
 
   }//get the currenttly OPEN lottery
+
+
+//runs cb(err, new_balance)
+LotterySchema.methods.payWinner = function(cb){
+
+var lottery = this
+var payout = lottery.payout
+
+User.findOne({username:this.winning_username}, function(err, user){
+if(err){console.log('winner not found');return console.error(err)}
+console.log(user)
+user.checkBalance(lottery.currency, function(err, res){
+
+  if(_.isNumber(res)){var current_balance = res}
+    else if(res instanceof User){var current_balance = res[lottery.currency]}
+console.log('bheck balance completed')
+console.log(user)
+
+var new_balance = payout + current_balance
+var transaction = {
+  type: 'lottery id: ' + lottery['_id']
+  ,amount: payout
+  ,currency: lottery.currency
+  ,timestamp: new Date()
+  , new_balance: new_balance
+}
+
+user.updateBalance(lottery.currency, new_balance , transaction ,cb )
+  
+})//check the user's balance
+
+
+
+
+})//find the user by username
+
+}//pay the winner
+
 
 
   LotterySchema.statics.create = function(cb) {

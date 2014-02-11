@@ -333,7 +333,7 @@ module.exports = (function() {
       }
       else {
         //console.log(user.username + ' has ' + (user && user[type]) + ' in ' + type + ' on ' + Date());
-        cb(null, user && user[type]);
+        cb(null, user && user[type]); //returns that which doesnt exist first
       }
     });
   };
