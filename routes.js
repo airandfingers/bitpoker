@@ -18,8 +18,6 @@ module.exports = (function () {
     , moment = require('moment')
     , lottery = require('./models/lottery');
 
-
-  require('./start_lottery')//just start the lottery up
   var package_file = require('./package.json');
   console.log('package.json version is ' + package_file.version);
 
@@ -557,7 +555,16 @@ if(err){return console.error(err)}
   app.post('/increase_funbucks_by_100', function (req, res) {
     var funbucks_to_add = 100;
     console.log('calling funbucks update route');
-    User.update({_id: req.user._id}, { $inc: { funbucks: funbucks_to_add } }, function(err) {
+    User.update({_id: req.user._id}, 
+                { $inc: { funbucks: funbucks_to_add }, 
+                  $push:{transactions: transaction = {
+                                                  type: 'funbucks_faucet'
+                                                , amount: 100
+                                                , timestamp: new Date()
+                                                }
+                         }
+                }, 
+                function(err) {
       if (err) {
         console.error('Error when changing user\'s funbucks balance:', err); 
         res.json({error: err});
@@ -887,19 +894,20 @@ if(err){return console.error(err)}
   });
 
   app.post('/enter_lottery', redirectIfUnauthenticated, function(req, res) {
-   console.log('/enter_lottery called for', req.user.username);
-    lottery.current(function(err, current_lottery){
-if(err){console.warn(err)}
-if(current_lottery) {current_lottery.addEntry({username:req.user.username, email:req.user.email, address:req.user.address},
-function(err, lottery){
-  if(err){return console.warn(err)}
-}
-  )}
-
-    })
-  //  lottery.addEntry({username:req.user.username, email:req.user.email});
-    req.flash('error', 'Sorry, this is just a stub!');
-    res.redirect('back');
+    console.log('/enter_lottery called for', req.user.username);
+    lottery.current(function(current_err, current_lottery) {
+      if(current_err) { console.warn(current_err); }
+      if(current_lottery) {
+        current_lottery.addEntry({ username: req.user.username, email: req.user.email, address: req.user.address },
+                                 function(add_err, lottery) {
+          if (! _.isString(add_err)) {
+            add_err = 'Successfully entered the lottery!';
+          }
+          req.flash('error', add_err);
+          res.redirect('back');
+        });
+      }
+    });
   });//enter_lottery
 
 

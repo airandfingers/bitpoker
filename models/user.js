@@ -42,7 +42,13 @@ module.exports = (function() {
   , current_table_names: { type: [String], default: function() { return []; } }
   // persistent preferences shared across sessions/tables
   , preferences        : { type: Schema.Types.Mixed, default: function() { return {}; } }
-  , transactions       : { type: [Schema.Types.Mixed], default: function() { return []; } }
+  , transactions       : { type: [Schema.Types.Mixed], default: function() { return [{
+            type: 'initial funbucks'
+          , amount: 100000000
+          , timestamp: Date.now
+          , currency: 'funbucks'
+          , new_balance: 100000000
+          }]; } }
   , table_transactions : { type: [Schema.Types.Mixed], default: function() { return []; } }
   // whether the user can see the admin page and perform admin-only actions
   , admin              : Boolean
@@ -89,13 +95,13 @@ module.exports = (function() {
         }
         if (new_ip) {
           user.satoshi = FREE_SATOSHI;
-          user.transactions = [{
+          user.transactions.push({
             type: 'registration promotion'
           , amount: FREE_SATOSHI
           , timestamp: new Date()
           , currency: 'satoshi'
           , new_balance: user.satoshi
-          }];
+          });
         }
         user.save(function(save_err, result) {
           if (save_err) {
@@ -193,13 +199,13 @@ module.exports = (function() {
           }
           if (new_ip) {
             self.satoshi = FREE_SATOSHI;
-            self.transactions = [{
+            self.transactions.push({
               type: 'registration promotion'
             , amount: FREE_SATOSHI
             , timestamp: new Date()
             , currency: 'satoshi'
             , new_balance: self.satoshi
-            }];
+            });
           }
           self.save(function(save_err, result) {
             if (save_err) {

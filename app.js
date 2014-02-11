@@ -125,6 +125,25 @@
   console.log('server listening on port %d in %s mode',
               server.address().port, app.settings.env);
 
-
+  // Set up error handler for various conditions
+  var timer;
+  function handleError(err) {
+    if (err) {
+      console.error('Error occurred:', err);
+      console.error(err.stack);
+    }
+    if (timer === undefined) {
+      console.error('Shutting down server...');
+      Table.refundAllTables(function() {
+        console.log('exiting!');
+        process.exit(1);
+      });
+    }
+  }
+  process.on('SIGTERM', handleError) // 
+         .on('SIGKILL', handleError) // 
+         .on('SIGINT', handleError) // Ctrl+C
+         .on('SIGHUP', handleError)
+         .on('uncaughtException', handleError);
 
 })();

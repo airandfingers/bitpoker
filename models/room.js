@@ -76,8 +76,9 @@ module.exports = (function () {
   RoomSchema.methods.leave = function(socket) {
     // notify anyone interested (the corresponding table)
     this.emit('socket_leave', socket);
-    socket.emitToOthers('user_leaves', socket.user, false);
-    socket.emit('user_leaves', socket.user, true);
+    var user_only_username = _.pick(socket.user, 'username');
+    socket.emitToOthers('user_leaves', user_only_username, false);
+    socket.emit('user_leaves', user_only_username, true);
   };
 
   RoomSchema.methods.setJoinHandler = function(handler) {
@@ -202,9 +203,10 @@ module.exports = (function () {
 
     function finishSocketSetup() {
       socket.user = user;
+      var user_only_username = _.pick(user, 'username');
       // notify all users, including this one
-      socket.emitToOthers('user_joins', user, false);
-      socket.emit('user_joins', user, true);
+      socket.emitToOthers('user_joins', user_only_username, false);
+      socket.emit('user_joins', user_only_username, true);
       // TODO notify any interested server-side objects (the corresponding table)
 
       room.join(socket);
@@ -236,7 +238,7 @@ module.exports = (function () {
             console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~ ' + username + ' has left the building!!!!!');
           }
           else {
-            console.log('remaining:', remaining_user_sockets);
+            console.log('One of ' + username + '\'s sockets left ' + room.room_id);
           }
         }
       });

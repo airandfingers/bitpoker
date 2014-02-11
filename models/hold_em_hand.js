@@ -787,6 +787,9 @@ module.exports = (function () {
     if (! _.isString(stage_name) || ! _.contains(HoldEmHand.STAGES, stage_name)) {
       console.error('toStage called with', stage, stage_num, stage_name);
     }
+    else if (stage_num < this.stage_num) {
+      console.error('cannot go back to a previous stage!');
+    }
     else {
       this.stage_num = stage_num;
       this.stage_name = stage_name;
@@ -810,6 +813,20 @@ module.exports = (function () {
     else {
       console.error('isInStage called with', stage);
     }
+  };
+
+  HoldEmHandSchema.methods.isAfterStage = function(stage) {
+    var stage_num;
+    if (_.isString(stage)) {
+      stage_num = _.indexOf(HoldEmHand.STAGES, stage);
+    }
+    else if (_.isNumber(stage)) {
+      stage_num = stage;
+    }
+    if (! _.isNumber(stage_num)) {
+      console.error('isAfterStage called with', stage);
+    }
+    return this.stage_num > stage_num;
   };
 
   HoldEmHandSchema.methods.onStage = function(stage, handler) {
@@ -1034,6 +1051,26 @@ module.exports = (function () {
       return player_obj;
     }
     return hand_obj;
+  };
+
+  HoldEmHandSchema.methods.refundAndEndHand = function() {
+    var self = this
+      , refund;
+    _.each(self.players, function(player) {
+      refund = player.current_bet;
+      console.log(player.username, 'gets refund:', refund);
+      if (refund > 0) {
+        player.getBet(refund);
+        self.broadcast('player_gets_refund', player.serialize(), refund, self.calculatePotTotal());
+      }
+    });
+    refund = Math.floor(self.calculatePotTotal() / self.players.length);
+    _.each(self.players, function(player) {
+      console.log(player.username, 'gets refund:', refund);
+      player.chips += refund;
+      self.broadcast('player_gets_refund', player.serialize(), refund, 0);
+    });
+    self.toStage('done');
   };
 
   /* the model - a fancy constructor compiled from the schema:
