@@ -189,6 +189,7 @@ return timer
  LotterySchema.statics.setTimeouts = function(cb) {
 
   this.find()
+  .where('paid').equals(false)
   .where('running').equals(true)
   .where('decided').equals(false)
   .exec (function(err, lotteries){

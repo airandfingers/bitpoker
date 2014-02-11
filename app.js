@@ -141,7 +141,7 @@
     }
   }
   process.on('SIGTERM', handleError) // 
-         .on('SIGKILL', handleError) // 
+    //     .on('SIGKILL', handleError) // 
          .on('SIGINT', handleError) // Ctrl+C
          .on('SIGHUP', handleError)
          .on('uncaughtException', handleError);
