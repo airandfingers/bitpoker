@@ -13114,9 +13114,14 @@ options = _.defaults(options, defaults)
 
 if(options.growl){
 
+if(options.qtip){
+
+console.log('displaying growl')
   //display thingy
 // Create a jGrowl
     var container = self.getParentOfStageObject(self.images.seats[0].bubbleChats[0]).div
+
+//var target = 
 
     $(container).qtip({
         content: {
@@ -13129,8 +13134,8 @@ if(options.growl){
         position: {
             target: container
             ,container: container
-          ,  my:'top right'
-           , at:'top right'
+         ,  my:'top right'
+          , at:'top right'
         },
         show: {
             event: false,
@@ -13169,6 +13174,14 @@ if(options.growl){
             }
         }
     });
+
+}//if qtip
+
+else if(options.metro){
+
+
+
+}
 
 
 }//displaying growl
@@ -15795,7 +15808,7 @@ chatInfo.message = notificationString
   
 var options = _.clone(options) || {}
 
-self.displayNotification(notificationString, {growl:true})
+self.displayNotification(notificationString, {growl:true, qtip:true})
 
 })
 

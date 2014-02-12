@@ -5,7 +5,7 @@ var mongoose = require('mongoose')
 var db = require('./db')
 var User = require ('./user')
 
-var HOURS_PER_LOTTERY = (1/60)/3
+var HOURS_PER_LOTTERY = 12
 var SATOSHI_PER_ENTRY = 500
 var MAX_SATOSHI_PER_LOTTERY = 50000
 
@@ -13,8 +13,6 @@ var MAX_SATOSHI_PER_LOTTERY = 50000
 var LOTTERY_INTERVAL = HOURS_PER_LOTTERY*60*60*1000 
 var INTERVAL_MARGIN_OF_ERROR = 1000 //implement later
 
-
-console.log(db)
 
 var LotterySchema = new mongoose.Schema({
 

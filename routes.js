@@ -888,7 +888,7 @@ if(err){return console.error(err)}
   app.get('/lottery', redirectIfUnauthenticated, function(req, res) {
     var flash = req.flash('error');
     res.render('lottery', {
-      title: 'Blah Blah Blah'
+      title: 'Enter the Lottery'
     , message: flash && flash[0]
     });
   });
