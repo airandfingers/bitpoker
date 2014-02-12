@@ -898,7 +898,7 @@ var restOfFunction = function(source){
 if(options.html != true){
  var bitmap = new createjs.Bitmap(source)
 if(options.sourceRect instanceof createjs.Rectangle){bitmap.sourceRect = options.sourceRect}
-  else if(options.sourceRect){throw 'source rectangle not appropriate Rectangel instance for addBitmap'}
+  else if(options.sourceRect){console.warn('source rectangle not appropriate Rectangel instance for addBitmap')}
 
         //THIS sets the created bitmap as child, and will increase parent size as necessary to match child's
  stagesToUpdate.push( item.adoptChild(bitmap, 'image', options) )
@@ -983,7 +983,7 @@ if(!options){var options = {}}
   var animationData = sourceParent.spriteSheet.getAnimation(card)
   var frame = sourceParent.spriteSheet.getFrame(animationData.frames[0])
    var source = frame.image
-   options.sourceRect = frame.rect
+   options.sourceRect = new createjs.Rectangle(frame.rect.x, frame.rect.y, frame.rect.width, frame.rect.height)
 //var source  = sourceParent[card]
 }
 
@@ -13121,7 +13121,7 @@ console.log('displaying growl')
 // Create a jGrowl
     var container = self.getParentOfStageObject(self.images.seats[0].bubbleChats[0]).div
 
-//var target = 
+var target = $(container).find('.qtip.jgrowl:visible:last')
 
     $(container).qtip({
         content: {
@@ -13132,7 +13132,7 @@ console.log('displaying growl')
             }
         },
         position: {
-            target: container
+            target: target//container
             ,container: container
          ,  my:'top right'
           , at:'top right'
