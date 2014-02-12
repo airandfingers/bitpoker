@@ -93,7 +93,13 @@ right:0px;
           word-break: normal;
 }
 
-
+#pokerTableWrapper #growl-container .qtip{
+        position: static;
+        min-height: 0;
+        overflow: hidden;
+        margin: 0 0 5px 0;
+        pointer-events:auto;
+}
 
 
 .unselectable{

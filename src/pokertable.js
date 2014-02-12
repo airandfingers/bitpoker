@@ -5,6 +5,7 @@
     //all numbers are in base 0, including variable names and documentation
     //seat position 0 is top middle and proceeds clockwise
 function Table () {
+
 var self = this
 
 self.isIframe = function(){
@@ -16,7 +17,7 @@ self.isIframe = function(){
 
 self.getPlayZoneLandingPage = function(){
 
- if (self.isIframe()){var page = parent}
+ if (self.isIframe()){var page = window.parent}
 else{var page = window}
   return page
 }
@@ -464,7 +465,7 @@ stageContainers.staticItems[startingContainerIndex] = 'background'
 
 stageOptionData.animatedAndMiddleTableItems = _.clone(disabledOptions)
 stageOptionData.animatedAndMiddleTableItems.newCanvas = true
-stageContainers.animatedAndMiddleTableItems = ['cardAnimation']
+stageContainers.animatedAndMiddleTableItems = ['cardAnimation', 'growl-container']
 divOptionData.animatedAndMiddleTableItems = {mouseDisabled:true}
 
 stageOptionData.tableChatFull = _.clone(stageOptionData.staticItems)
@@ -1968,7 +1969,7 @@ else{//make sure we cut off the card so it doesnt go below the seat image
 
 function cropCardImages (){
   //console.log('cropping seat images')
-  self.adjustHoleCardImageSourceRectangle(getHoleCardAnimationArray(), {seatNumber:seatNum})
+  self.cropHoleCards(getHoleCardAnimationArray(), {seatNumber:seatNum})
 }
 
 }
@@ -5789,6 +5790,22 @@ popup('mailto:CryptoPoker@gmail.com')
 
 }
 */
+
+//create growl container
+
+var growlContainerWidth = self.images.standUp.size.x*1.6
+var growlContainerY = self.images.standUp.size.y
+
+self.images['growl-container'] = new self.images.Item(canvasWidth - growlContainerWidth, growlContainerY, growlContainerWidth, 0, getZ('growl-container'))
+self.images['growl-container'].addElement($("<div id = 'growl-container'>")[0], 'image', {
+
+css:{
+  'pointer-events':'none'
+}
+
+})
+
+self.images['growl-container'].display()
 
 //create faux chip array
 for (var i = 0 ; i <  this.seats.length; i++) {
@@ -10266,7 +10283,8 @@ callback(null, callBackNumber)
     }
 
 //this function prevents card imagefrom protruding past the bottom of the seat
-this.adjustHoleCardImageSourceRectangle = function(holeCards, options){
+this.cropHoleCards = function(holeCards, options){
+
   if(!options){var options = {}}
     var stagesToUpdate  = []
   var cardArray
@@ -10275,13 +10293,17 @@ this.adjustHoleCardImageSourceRectangle = function(holeCards, options){
 if(_.isArray(holeCards)){cardArray = holeCards}
 else if(_.isNumber(holeCards)){cardArray = _.flatten(this.images.seats[holeCards].hiddenCards, this.images.seats[holeCards].shownCards)}
 else if(holeCards instanceof this.images.Item){cardArray = [holeCards]}
-  else{throw 'adjusthole cards source rectangle (mask) given insufficient parameter'}
+  else{console.warn('adjusthole cards source rectangle (mask) given insufficient parameter')}
 
+
+if( _.isNumber(options.seatNumber)){var seatNum = options.seatNumber}
+ else {var seatNum = this.images.seats[cardArray[i].seatObjectAncestor.nonRotatedSeatNumber]}
+
+console.log('crop hole cards called for player ' + seatNum)
 
 //check if it is protruding
 for(var i = 0;i<cardArray.length;i++){
-if( _.isNumber(options.seatNumber)){var seatNum = options.seatNumber}
- else {var seatNum = this.images.seats[cardArray[i].seatObjectAncestor.nonRotatedSeatNumber]}
+
   var distanceFromCardTopToSeatBottom =  this.images.seats[seatNum].seat.position.y + this.images.seats[seatNum].seat.size.y  -   cardArray[i].image.y
 if(cardArray[i].size.y > distanceFromCardTopToSeatBottom){
   //check if last iteration
@@ -10289,14 +10311,18 @@ if(cardArray[i].size.y > distanceFromCardTopToSeatBottom){
  stagesToUpdate.push(this.easelJSDisplayObjectChanged(cardArray[i]))
 }
 
-if(options.update !== false){this.updateStages(stagesToUpdate)}
+}//loop through cards
+
+
+if(options.update !== false){self.updateStages(stagesToUpdate)}
   else{return stagesToUpdate}
-}
 
 function createRectangle(currentCard, height){
-  var rectangle = new createjs.Rectangle(0, 0, currentCard.size.x, height)
-  return rectangle
+  return new createjs.Rectangle(0, 0, currentCard.size.x, height)
 }
+
+
+
 
 }
 
@@ -13100,9 +13126,11 @@ this.displayNotification = function(messageString, options){
 if(!_.isObject(options)){var options = {}}
   else{var options = _.clone(options)}
 
+var stagesToUpdate = []
+
 var defaults = {
 title:'server message'
-  ,timeout:20000
+  ,timeout:15000
   ,growl:true
   ,style:'qtip-red'
  , persistent:false //makes it so doesnt autohide
@@ -13119,11 +13147,38 @@ if(options.qtip){
 console.log('displaying growl')
   //display thingy
 // Create a jGrowl
-    var container = self.getParentOfStageObject(self.images.seats[0].bubbleChats[0]).div
+  //  var container = self.getParentOfStageObject(self.images.seats[0].seat).div
+var container = self.images['growl-container'].image
 
-var target = $(container).find('.qtip.jgrowl:visible:last')
+var position = {
+  container:$(container)
+ ,target:$(container)
+ ,my:'top right'
+ ,at: 'top right'
+,viewport:$(self.getParentOfStageObject(self.images.seats[0].seat).div)
+,adjust:{
+method:'shift none'
+}
+}
 
-    $(container).qtip({
+/*
+var target = $(container).find('.qtip:visible:last')
+
+
+if(target.length < 1){
+  position.target = //$(container)
+position.my = 'top right'
+position.at = 'top right'
+}
+  else{
+    position.target = //$(target)
+position.my = 'top right'
+position.at = 'bottom right'
+  }
+  
+*/
+
+    $('<div>').qtip({
         content: {
             text: messageString,
             title: {
@@ -13131,12 +13186,7 @@ var target = $(container).find('.qtip.jgrowl:visible:last')
                 button: true
             }
         },
-        position: {
-            target: target//container
-            ,container: container
-         ,  my:'top right'
-          , at:'top right'
-        },
+        position: position,
         show: {
             event: false,
             ready: true,
@@ -13144,7 +13194,8 @@ var target = $(container).find('.qtip.jgrowl:visible:last')
                 $(this).stop(0, 1).animate({ height: 'toggle' }, 400, 'swing');
             },
             delay: 0,
-            persistent: options.persistent
+            persistent: options.persistent,
+            solo:false
         },
         hide: {
             event: false,
@@ -13154,7 +13205,6 @@ var target = $(container).find('.qtip.jgrowl:visible:last')
         },
         style: {
             width: 250,
-            classes: 'jgrowl',
             tip: false,
             classes:options.style
 
@@ -13166,13 +13216,24 @@ var target = $(container).find('.qtip.jgrowl:visible:last')
 
                         clearTimeout(api.timer);
                         if (e.type !== 'mouseover') {
-                            api.timer = setTimeout(function() { api.hide(e) }, options.timeout);
+                            api.timer = setTimeout(function() { api.destroy(true) }, options.timeout);
                         }
                     })
                     .triggerHandler('mouseout');
                 }
-            }
-        }
+            }//events.render
+  ,show: function(event, api){
+console.log($(container).find('.qtip').length)
+console.log($('.qtip'))
+self.updateStages(stagesToUpdate)
+        }//events.show
+        /*
+ ,hide: function(event, api){
+api.destroy(true)
+        }//events.show
+        */
+        }//events
+      
     });
 
 }//if qtip
@@ -14806,9 +14867,15 @@ var logString = 'canvases cleared: '+canvasesCleared.toString()+', total cleared
 
 }//updateStagesFromArray function
 
+var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame
+
+
+
 //=============================START ACTION PART OF: updateStages FUNCTION==============================
 
 if(!options){var options  = {}}
+
+requestAnimationFrame(function(){})//update DOM
 
   if(_.isNumber(stageNumberLeaveBlankForAll)){ //if given number as parameter
 
@@ -14823,6 +14890,7 @@ if(!options){var options  = {}}
 else if(_.isArray(stageNumberLeaveBlankForAll)){ // if passed parameter as ARRAY
 if(stageNumberLeaveBlankForAll.length === 0){return 'updatestages passed 0 length array as parameter'}
 
+else{
 var wantToUpdate = []
 
 //flatten array
@@ -14841,6 +14909,7 @@ if(_.isObject(self.arrayOfParentsOfStageAndOfContainerArray[stageNumberLeaveBlan
   //check if update == true
   if(self.arrayOfParentsOfStageAndOfContainerArray[stageNumberLeaveBlankForAll[i]].upToDate !== true || options.forceUpdate === true ){
 wantToUpdate.push (getStageFamilyArray(stageNumberLeaveBlankForAll[i]))
+
 }
 }//check stage is object
 
@@ -14854,6 +14923,8 @@ wantToUpdate = _.uniq(wantToUpdate)
 
 updateStagesFromArray(wantToUpdate)
 
+}//if we want to update
+
 }//if parameter is array
 
   else{//if we want to update All stages
@@ -14863,7 +14934,9 @@ for(var i = 0;i<this.arrayOfParentsOfStageAndOfContainerArray.length;i++){allSta
  this.updateStages( allStages, options)
 }//if no stage number specified
 
-}
+requestAnimationFrame(function(){})
+
+}//self.updateStages
 
 this.animateDealerButton = function(seatNumber, time, options){
   if(!options){var options = {}}
@@ -15313,7 +15386,7 @@ for(var i = 0;i<self.gameState.numSeats;i++){
  //self.updatePotSize([1,10000,20000,30000,40000,50000, 60000, 70000, 80000])
 // console.log('dealer button item = ')
  //console.log(self.images.dealerButton)
- //self.adjustHoleCardImageSourceRectangle(self.images.background, {seatNumber:4})
+ //self.cropHoleCards(self.images.background, {seatNumber:4})
  
  //self.images.showTableChatFull.image.mask = new createjs.Rectangle(0,0,30,30)
  //self.updateStages(0, {forceUpdate:true})
@@ -15806,7 +15879,7 @@ chatInfo.message = notificationString
  //server_message received
  socket.on('server_message', function(notificationString, options){
   
-var options = _.clone(options) || {}
+//var options = _.clone(options) || {}
 
 self.displayNotification(notificationString, {growl:true, qtip:true})
 
