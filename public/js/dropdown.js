@@ -114,6 +114,17 @@ $(function() {
   });
 });
 
+$(function() {
+  var $lottery_trigger = $('#lottery_trigger')
+    , $lottery_dropdown = $('#lottery_dropdown');
+  $lottery_trigger.click(function() {
+    toggleDropdown($lottery_trigger, $lottery_dropdown,
+                   { top: top 
+                   , toggle_args: ['slide', { direction: 'up' }, 400] });
+  });
+});
+
+
 /*Show funbucks/bitcoin balances on Hover 
 $(function() {
   $('#account_trigger').hoverIntent(accountHoverOn, accountHoverOff)

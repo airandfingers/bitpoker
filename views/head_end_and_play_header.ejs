@@ -69,7 +69,7 @@
                                 </li>
 
                                  <li class="unselectable">
-                                  <a href = "/lottery" id="lottery_link">
+                                  <a href = "#" id="lottery_trigger">
                                     LOTTERY
                                   </a>
                                 </li>
@@ -145,6 +145,10 @@
                   </div>
                 </div> <!-- wrapperDiv: This is to help with hoverIntent -->
 
+                <div id="lottery_dropdown" class="dropdown_form inverse unselectable">
+                    <% include lottery_base %>
+                </div>
+                
                 <% include bug_report %>
 
                 <% if ( locals.username) { %>
