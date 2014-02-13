@@ -1,0 +1,30 @@
+<div class = 'row'>
+<div class = 'col-xs-12' div class = 'col-md-8'>
+<h1 id = 'welcome'>¡Entra la lotería!  <br> </h1>
+</div>
+</div>
+       <div class = 'row'>
+       <div class = 'col-xs-offset-1 col-xs-10 col-sm-offset-2 col-sm-8 col-md-offset-4 col-md-4'>
+       <div class = 'metro'>
+        <h4>
+<ul class = 'fg-white' style = 'text-align:left'>
+<li>The lottery is currently free to enter! </li> 
+<li>The lottery pays 500 satoshi per entrant to the winner, every 12 hours!</li>
+        </ul>
+        </h4>
+</div><!-- .metro-->
+</div>
+</div>
+        <form class="lottery_form" action="/enter_lottery" method="post">
+            <button class="btn btn-default btn-blue6" type="submit" />
+            Entrame!
+            </button>
+        </form>
+
+        <br />
+        <% if (typeof message === 'string') { %>
+            <p class="inverse"><%= message %></p>
+        <% } %>
+
+
+        </div><!-- .container-fluid -->
