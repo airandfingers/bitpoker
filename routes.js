@@ -161,8 +161,7 @@ console.log(emergency_BTC_address)
     var users = Room.getRoom('').getUsernames()
       , room_state = { users: users }
       , flash = req.flash('error');
-    
-    console.log('rendering home; user is', req.user);
+    //console.log('rendering home; user is', req.user);
 
     if (_.isObject(req.user)) { 
       if ( _.isString(req.query.joined_table_name) ) {
@@ -420,7 +419,7 @@ if(err){return console.error(err)}
           console.log('Guest registration successful!');
           //req.flash('error', 'Welcome ' + username);
           req.login(user, function(login_err) {
-            console.log('login_err is', login_err, ', req.user is', req.user);
+            //console.log('login_err is', login_err, ', req.user is', req.user);
             if (login_err) {
               req.flash('error', login_err.message);
               return res.redirect('/login?next=' + target);
