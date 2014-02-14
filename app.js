@@ -17,12 +17,10 @@
     else if (status >= 400) color = 33
     else if (status >= 300) color = 36;
 
-    return '\033[90m' + req.method
-      + ' ' + req.headers.host+ req.originalUrl + ' '
-      + '\033[' + color + 'm' + res.statusCode
-      + ' \033[90m'
-      + (new Date - req._startTime)
-      + 'ms\033[0m';
+    return '\033[90m' + req.method +
+      ' ' + req.headers.host+ req.originalUrl + ' ' +
+      '\033[' + color + 'm' + res.statusCode + ' ' +
+      '\033[90m' + (new Date - req._startTime) + 'ms\033[0m';
   };
 
   // Create an Express app and an HTTP server
@@ -140,9 +138,8 @@
       });
     }
   }
-  process.on('SIGTERM', handleError) // 
-    //     .on('SIGKILL', handleError) // 
-         .on('SIGINT', handleError) // Ctrl+C
+  process.on('SIGTERM', handleError)
+         .on('SIGINT', handleError)
          .on('SIGHUP', handleError)
          .on('uncaughtException', handleError);
 
