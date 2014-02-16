@@ -284,48 +284,49 @@ padding-top:0;
     margin-right: auto;
 }
 
-#welcome{
-
-margin-top:2vh;
-margin-left:0%;
-margin-right:0%;
-padding:0;
-font-size:calc(15px + 1.75em);
-
+#lottery_dropdown {
+  width: 66%;
+  text-align: center;
 }
 
-#welcome_page_container{
-
-display:flex;
-justify-content:flex-start;
-flex-wrap:nowrap;
-flex-direction:column;
-align-items:stretch;
-width:100%;
-height:auto;
-/*height:100%; I DO NOT UNDERSTAND WHY HEIGHT 100% IS A PROBLEM AS IT IS ALWAYS BIGGER THAN PARENT*/
-margin:0;
-border:0;
-padding:0;
+#welcome {
+  margin-top:2vh;
+  margin-left:0%;
+  margin-right:0%;
+  padding:0;
+  font-size:calc(15px + 1.75em);
 }
 
-#welcome_teaser{
+#welcome_page_container {
+  display:flex;
+  justify-content:flex-start;
+  flex-wrap:nowrap;
+  flex-direction:column;
+  align-items:stretch;
+  width:100%;
+  height:auto;
+  /*height:100%; I DO NOT UNDERSTAND WHY HEIGHT 100% IS A PROBLEM AS IT IS ALWAYS BIGGER THAN PARENT*/
+  margin:0;
+  border:0;
+  padding:0;
+}
+
+#welcome_teaser {
     justify-content:flex-start;
     flex-direction:column;
-display:flex;
-flex-wrap:wrap;
-flex-grow:0;
-align-items:stretch;
-/*
-margin-left:6%;
-margin-right:6%;
-*/
+    display:flex;
+    flex-wrap:wrap;
+    flex-grow:0;
+    align-items:stretch;
+    /*
+    margin-left:6%;
+    margin-right:6%;
+    */
 }
 
-#welcome_teaser > div{
-
-margin-left:auto;
-margin-right:auto;
+#welcome_teaser > div {
+  margin-left:auto;
+  margin-right:auto;
 }
 
 #welcome_teaser .selling_point_container{
