@@ -1,5 +1,3 @@
- //  $("#chat_table").css('display','none')
-//   $("#chat_table").css('top','1000px')
 
     //default canvas size is 690x480
     //all numbers are in base 0, including variable names and documentation
