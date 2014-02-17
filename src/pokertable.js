@@ -51,20 +51,20 @@ noFat: 'noFat'
   }
 
   //============PREFERENCES================
-this.sessionPreferences = {
+var sessionPreferences = {
 
 displaySize:{value:'desktop', updateValue:function(newValue){
- // console.log(self.permanentPreferences.sourceObjects.value)
+ // console.log(permanentPreferences.sourceObjects.value)
 this.value = newValue
-            if(self.sessionPreferences.displaySize == 'mobile'){
-              if(!_.isObject(self.permanentPreferences.sourceObjects.value.mobileCards)){self.permanentPreferences.sourceObjects.value.mobileCards = {}}
+            if(sessionPreferences.displaySize == 'mobile'){
+              if(!_.isObject(permanentPreferences.sourceObjects.value.mobileCards)){permanentPreferences.sourceObjects.value.mobileCards = {}}
               self.images.sources.cardImageFolder = self.images.sources.mobileCardFolder
-self.permanentPreferences.sourceObjects.value.cardObjectParent = self.permanentPreferences.sourceObjects.value.mobileCards
+permanentPreferences.sourceObjects.value.cardObjectParent = permanentPreferences.sourceObjects.value.mobileCards
             }
             else {
-              if(!_.isObject(self.permanentPreferences.sourceObjects.value.desktopCards)){self.permanentPreferences.sourceObjects.value.desktopCards = {}}
+              if(!_.isObject(permanentPreferences.sourceObjects.value.desktopCards)){permanentPreferences.sourceObjects.value.desktopCards = {}}
               self.images.sources.cardImageFolder = self.images.sources.desktopCardFolder
-self.permanentPreferences.sourceObjects.value.cardObjectParent = self.permanentPreferences.sourceObjects.value.desktopCards
+permanentPreferences.sourceObjects.value.cardObjectParent = permanentPreferences.sourceObjects.value.desktopCards
             }
 //redraw table//update card sizes here
 }//change value function
@@ -163,7 +163,7 @@ if(self.gameState.itemsCreated === true){return self.updateTableChatFullDisplay(
   }//session preferences declaration
 
 
-  this.permanentPreferences = {
+  var permanentPreferences = {
 
       confirmSeatRotation:{value:true}
 
@@ -972,8 +972,8 @@ return stagesToUpdate
 if(!options){var options = {}}
   var stagesToUpdate = []
 
- if(self.sessionPreferences.displaySize.value !== 'mobile'){var sourceParent = self.permanentPreferences.sourceObjects.value.cardObjectParent   }
-      else{var sourceParent = self.permanentPreferences.sourceObjects.value.cardObjectParent }
+ if(sessionPreferences.displaySize.value !== 'mobile'){var sourceParent = permanentPreferences.sourceObjects.value.cardObjectParent   }
+      else{var sourceParent = permanentPreferences.sourceObjects.value.cardObjectParent }
 
         if(_.isObject(card)){var source = card}
           else if(!_.isString(card) || card === ''){var card = 'back'}
@@ -1227,7 +1227,7 @@ return addItemText (this, text, sizeAndFont, color, options)
 
 }
 
-            //for example: (item, fold, "13px " + self.permanentPreferences.defaultFontType.value, "#100D08")
+            //for example: (item, fold, "13px " + permanentPreferences.defaultFontType.value, "#100D08")
            
 
 self.images.Item.prototype.addNumberText = function(number, sizeAndFont, color, options){
@@ -2007,7 +2007,7 @@ defaults.relativity = 'top'
 
 //$("#tableChatFullTextDiv").scrollTop(scroll[0].getScrollTop()*2)
 
-if(self.permanentPreferences.tableChatFull.scrollBarType && self.permanentPreferences.tableChatFull.scrollBarType.value == 'mCustomScrollbar'){
+if(permanentPreferences.tableChatFull.scrollBarType && permanentPreferences.tableChatFull.scrollBarType.value == 'mCustomScrollbar'){
 console.log('using mcustomsrollbar function to scroll to bottom, then update')
 //show so that scroll bar can be initialized
  //$("#tableChatFullTextDiv").css('display','inline')
@@ -2046,14 +2046,14 @@ self.jQueryObjects.tableChatFullDiv.trigger("DOMMouseScroll", [0])
 
 if(movementObject.positionUnit == 'pixels'){}
 if(_.isNumber(movementObject.magnitude)){
-if(self.permanentPreferences.tableChatFull.scrollBarType && self.permanentPreferences.tableChatFull.scrollBarType.value == 'mCustomScrollbar'){
+if(permanentPreferences.tableChatFull.scrollBarType && permanentPreferences.tableChatFull.scrollBarType.value == 'mCustomScrollbar'){
 
 }//if mcustomscrollbar
 
 else{//if nicescroll
 var scroll = self.jQueryObjects.tableChatFullDiv.getNiceScroll()
  scroll[0].scrollTop(movementObject.magnitude)
- // scroll[0].scrollTop(self.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value)
+ // scroll[0].scrollTop(sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value)
   movementObject.resize = true
 }//if not mcustomscrollbar
 
@@ -2064,7 +2064,7 @@ var scroll = self.jQueryObjects.tableChatFullDiv.getNiceScroll()
 
 //resize if necessary
 if (movementObject.resize === true){
-  if(self.permanentPreferences.tableChatFull.scrollBarType && self.permanentPreferences.tableChatFull.scrollBarType.value == 'mCustomScrollbar'){
+  if(permanentPreferences.tableChatFull.scrollBarType && permanentPreferences.tableChatFull.scrollBarType.value == 'mCustomScrollbar'){
 console.log('calling update function of mcustomscrollbar')
 self.jQueryObjects.tableChatFullDiv.mCustomScrollbar('update')
 
@@ -2127,8 +2127,8 @@ self.images.tableChatFull.chatMessageText.parentOfStage.stage.update()
 this.events.popOutClicked = function(){
 console.log('popOutClicked')
 //change user preferences
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOut.value = false
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOutOn.value = true
+sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOut.value = false
+sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOutOn.value = true
 
 /*
 console.log(self.jQueryObjects.tableChatFullDiv.getNiceScroll())
@@ -2143,8 +2143,8 @@ self.updateTableChatFullDisplay()
 this.events.popOutOnClicked = function(){
 console.log('popOutClicked')
 //change user preferences
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOut.value = true
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOutOn.value = false
+sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOut.value = true
+sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOutOn.value = false
 /*
 console.log(self.jQueryObjects.tableChatFullDiv.getNiceScroll())
 self.jQueryObjects.tableChatFullDiv.getNiceScroll()[0].istouchcapable = true
@@ -2158,8 +2158,8 @@ this.events.hideDealerMessagesClicked = function(){
   self.getPermanentPreferences()
 console.log('hideDealerMessagesClicked')
 //change user preferences
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages.value = false
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn.value = true
+sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages.value = false
+sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn.value = true
 //save preference on server
 self.saveSessionPreferences()
 
@@ -2170,8 +2170,8 @@ self.updateTableChatFullDisplay()
 this.events.hideDealerMessagesOnClicked = function(){
 console.log('hideDealerMessagesOnClicked')
 //change user preferences
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages.value = true
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn.value = false
+sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages.value = true
+sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn.value = false
 
 //save preference on server
 self.saveSessionPreferences()
@@ -2181,8 +2181,8 @@ self.updateTableChatFullDisplay()
 
 this.events.hidePlayerMessagesClicked = function(){
   console.log('hidePlayerMessagesClicked')
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages.value = false
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn.value = true
+sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages.value = false
+sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn.value = true
 
 
 //save preference on server
@@ -2193,8 +2193,8 @@ self.updateTableChatFullDisplay()
 }
 this.events.hidePlayerMessagesOnClicked = function(){
    console.log('hidePlayerMessagesOnClicked')
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages.value = true
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn.value = false
+sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages.value = true
+sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn.value = false
 
 //save preference on server
 self.saveSessionPreferences()
@@ -2203,16 +2203,16 @@ self.updateTableChatFullDisplay()
 }
 this.events.hideObserverMessagesClicked = function(){
    console.log('hideObserverMessagesClicked')
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages.value = false
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn.value = true
+sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages.value = false
+sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn.value = true
 //save preference on server
 self.saveSessionPreferences()
 self.updateTableChatFullDisplay()
 }
 this.events.hideObserverMessagesOnClicked = function(){
 
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages.value = true
-self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn.value = false
+sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages.value = true
+sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn.value = false
 //save preference on server
 self.saveSessionPreferences()
 self.updateTableChatFullDisplay()
@@ -2223,14 +2223,14 @@ this.events.rotateSeatsIfNeededAndConfirm = function(){
 
 if(!_.isNumber(self.gameState.userSeatNumber)){console.error('rotateSeatsIfNeededAndConfirm called without valid userseatnumber' + self.gameState.userSeatNumber)}
 
-if(self.permanentPreferences.alwaysRotate === true){}
-//  console.log(self.sessionPreferences)
+if(permanentPreferences.alwaysRotate === true){}
+//  console.log(sessionPreferences)
 //console.log(self.images.seats[self.gameState.userSeatNumber])
 
 //check if preference is to sit at "absolute steat" or 0
-var preferenceSeat = self.sessionPreferences.changeUserSeatViewTo.value
+var preferenceSeat = sessionPreferences.changeUserSeatViewTo.value
 if( _.isNumber(preferenceSeat) && ( preferenceSeat === 0 || preferenceSeat === self.gameState.userSeatNumber)){
-  console.log('rotating without confirming due to current preference:');console.log(self.sessionPreferences.changeUserSeatViewTo)
+  console.log('rotating without confirming due to current preference:');console.log(sessionPreferences.changeUserSeatViewTo)
   self.changeUserSeatView(preferenceSeat)
 }//if user has a specific seat we rotate to
   else if( self.gameState.userSeatNumber !== 0){  //rotate to seat 0
@@ -2239,7 +2239,7 @@ if( _.isNumber(preferenceSeat) && ( preferenceSeat === 0 || preferenceSeat === s
       self.changeUserSeatView() //rotate seats first
 
 //confirm the choice if the preference requires it
-        if(self.permanentPreferences.confirmSeatRotation.value === true) {   
+        if(permanentPreferences.confirmSeatRotation.value === true) {   
           var messageInfo = {}    
           messageInfo.style = 'qtip-youtube'
           messageInfo.html = true
@@ -2254,16 +2254,16 @@ if( _.isNumber(preferenceSeat) && ( preferenceSeat === 0 || preferenceSeat === s
      console.log('ok event called of confirmseatrotation')
      var checked = messageBoxAPI.getStatus(e.target.parentItem.position.z.stage).checkBox
 
-           if(checked === 'checked'){            self.permanentPreferences.confirmSeatRotation.value = false}
-            else if(checked === 'unchecked'){            self.permanentPreferences.confirmSeatRotation.value = true}
+           if(checked === 'checked'){            permanentPreferences.confirmSeatRotation.value = false}
+            else if(checked === 'unchecked'){            permanentPreferences.confirmSeatRotation.value = true}
 
 console.log(checked)
 
                
-           self.sessionPreferences.changeUserSeatViewTo.value = self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber
-         console.log('setting seat view preference to '+ self.sessionPreferences.changeUserSeatViewTo.value)
+           sessionPreferences.changeUserSeatViewTo.value = self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber
+         console.log('setting seat view preference to '+ sessionPreferences.changeUserSeatViewTo.value)
 
-     //    self.savePermanentPreferences()
+         self.savePermanentPreferences()
          self.saveSessionPreferences()
 
          messageBoxAPI.hide()//hide message box
@@ -2272,7 +2272,7 @@ console.log(checked)
            if(self.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber !== self.gameState.userSeatNumber ){
              self.changeUserSeatView(self.gameState.userSeatNumber )}
              else{self.changeUserSeatView()}
-            // else{self.changeUserSeatView(self.sessionPreferences.changeUserSeatViewTo.value)}
+            // else{self.changeUserSeatView(sessionPreferences.changeUserSeatViewTo.value)}
          
          //messageBoxAPI.hide()
          }
@@ -2361,7 +2361,7 @@ var stageParent = self.getParentOfStageObject(item)
 //------------------------CREATE SHOW ME HERE WITH JQUERY-UI-CONTEXTMENU HERE--------------------------
 //   https://github.com/mar10/jquery-ui-contextmenu
 var rotate = function(){
-self.sessionPreferences.changeUserSeatViewTo.updateValue(rotatedSeatNumber)
+sessionPreferences.changeUserSeatViewTo.updateValue(rotatedSeatNumber)
 self.saveSessionPreferences()
 }
 
@@ -2453,7 +2453,7 @@ menu:menu
       var css = {
 'z-index':getZ('contextMenu','staticItems').container
 ,'font-size':'11px'
-,'font-family':self.permanentPreferences.defaultFontType.value
+,'font-family':permanentPreferences.defaultFontType.value
 ,'padding':'0 0 0 0'
       }
       ui.menu.css(css)
@@ -2499,7 +2499,7 @@ console.log($(document).contextmenu('getMenu'))
 /*
 //------------------------CREATE SHOW ME HERE WITH JQUERY-MENU (original) HERE--------------------------
 var rotate = function(){
-self.sessionPreferences.changeUserSeatViewTo.updateValue(rotatedSeatNumber)
+sessionPreferences.changeUserSeatViewTo.updateValue(rotatedSeatNumber)
 self.saveSessionPreferences()
 }
 
@@ -2536,7 +2536,7 @@ var buttonContainer = buttonContainer
 var buttonWidth = self.images.seats[0].seat.size.x*0.85
 var buttonHeight = 16
 var buttonFontSize = 10
-var buttonFont = self.permanentPreferences.defaultFontType.value
+var buttonFont = permanentPreferences.defaultFontType.value
 */
 
 
@@ -2681,7 +2681,7 @@ if(ui.cmd === 'random'){ui.cmd = getRandomSrc()}
       var css = {
 'z-index':getZ('contextMenu','staticItems').container
 ,'font-size':'11px'
-,'font-family':self.permanentPreferences.defaultFontType.value
+,'font-family':permanentPreferences.defaultFontType.value
 ,'padding':'0 0 0 0'
       }
       ui.menu.css(css)
@@ -2733,7 +2733,7 @@ console.log($(document).contextmenu('getMenu'))
     this.events.wheelScroll = function(numScrolls){
       if(!_.isNumber(numScrolls)){return 'scroll failed'}
 
-      var change = numScrolls*self.permanentPreferences.bigBlindsPerMouseScroll.value*self.initial_table_state.big_blind
+      var change = numScrolls*permanentPreferences.bigBlindsPerMouseScroll.value*self.initial_table_state.big_blind
           var betValue  = parseFloat($('#betSize').val())
     var isBetValueValid = !_.isNaN(betValue) && _.isNumber(betValue) 
      if(isBetValueValid == true){ var newBet = change + betValue} //use current value
@@ -2969,7 +2969,7 @@ if(!options){var options = {}}
 
     var defaults = {
 
-parent : self.permanentPreferences.sourceObjects.value
+parent : permanentPreferences.sourceObjects.value
 
     }
 
@@ -3068,7 +3068,7 @@ var createPreloadArray = function(){
   
           if(isImageSource(self.images.sources[i])){
   
-             imageSourceArray.push({src: self.images.sources[i], id:resourceID, name: i, sourceObjectParent: self.permanentPreferences.sourceObjects.value})
+             imageSourceArray.push({src: self.images.sources[i], id:resourceID, name: i, sourceObjectParent: permanentPreferences.sourceObjects.value})
              resourceID++
       }//end check if this.images.sources[i] = image
   
@@ -3085,10 +3085,10 @@ var createPreloadArray = function(){
     }//end check if this.images.sources[i] = string
       else if (_.isObject(self.images.sources[i])){
 
-        self.permanentPreferences.sourceObjects.value[i] = {}
+        permanentPreferences.sourceObjects.value[i] = {}
           for(var n in self.images.sources[i]){
               if(_.isString(self.images.sources[i][n])){
-                  imageSourceArray.push({src: self.images.sources[i][n], id:resourceID, name: n, sourceObjectParent: self.permanentPreferences.sourceObjects.value[i]})
+                  imageSourceArray.push({src: self.images.sources[i][n], id:resourceID, name: n, sourceObjectParent: permanentPreferences.sourceObjects.value[i]})
                   resourceID++
               }
           }//end iteration through this.images.sources[i]
@@ -3097,10 +3097,10 @@ var createPreloadArray = function(){
       }//end iteration through this.images.sources
   
   //define object for card image to stay
-  self.permanentPreferences.sourceObjects.value.desktopCards = {}
-  self.permanentPreferences.sourceObjects.value.mobileCards = {}
-  var desktopCards = self.permanentPreferences.sourceObjects.value.desktopCards
-  var mobileCards = self.permanentPreferences.sourceObjects.value.mobileCards
+  permanentPreferences.sourceObjects.value.desktopCards = {}
+  permanentPreferences.sourceObjects.value.mobileCards = {}
+  var desktopCards = permanentPreferences.sourceObjects.value.desktopCards
+  var mobileCards = permanentPreferences.sourceObjects.value.mobileCards
   
    //push card back mobile and desktop
  // imageSourceArray.push({src:self.images.sources.desktopCardFolder+self.images.sources.cardBackFileNameWithoutExtension+'.png', id: resourceID, name: 'cardBack', sourceObjectParent: desktopCards})
@@ -3152,12 +3152,12 @@ if(backgroundLoad !== true){
    // console.log(this.arrayOfParentsOfStageAndOfContainerArray)
     var canvasWidth = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.width
     var canvasHeight = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.height
-    var titleSizeAndFont = '20px ' + self.permanentPreferences.defaultFontType.value
+    var titleSizeAndFont = '20px ' + permanentPreferences.defaultFontType.value
      var titleHeight = 24
      var titleAndpreloadFillDistanceY = 50
      var titleText = 'Loading...'
      var titleColor = '#000000'
-     var statusSizeAndFont = '15px ' + self.permanentPreferences.defaultFontType.value
+     var statusSizeAndFont = '15px ' + permanentPreferences.defaultFontType.value
      var statusHeight = 17
      var statusColor = '#000000'
      var preloadFillX = 0
@@ -3410,7 +3410,7 @@ console.log('loaded '+ loadedImages+' images out of a total of '+imageArray.leng
     //iterate through imageArray to preload images
     _.each(imageArray, function(elementValue, i, list){
   //    console.log(imageArray[i])
-    //  if(!_.isObject(imageArray[i].sourceObjectParent)){imageArray[i].sourceObjectParent = self.permanentPreferences.sourceObjects.value}
+    //  if(!_.isObject(imageArray[i].sourceObjectParent)){imageArray[i].sourceObjectParent = permanentPreferences.sourceObjects.value}
 
     var src = imageArray[i].src
 
@@ -3432,17 +3432,17 @@ var fullSizeCardSpriteData = {
 "images": ["sprite.png"], "frames": [[2080, 0, 40, 64], [2040, 0, 40, 64], [2000, 0, 40, 64], [1960, 0, 40, 64], [1920, 0, 40, 64], [1880, 0, 40, 64], [1840, 0, 40, 64], [1800, 0, 40, 64], [1760, 0, 40, 64], [1720, 0, 40, 64], [1680, 0, 40, 64], [1640, 0, 40, 64], [1600, 0, 40, 64], [1560, 0, 40, 64], [1520, 0, 40, 64], [1480, 0, 40, 64], [1440, 0, 40, 64], [1400, 0, 40, 64], [1360, 0, 40, 64], [1320, 0, 40, 64], [1280, 0, 40, 64], [1240, 0, 40, 64], [1200, 0, 40, 64], [1160, 0, 40, 64], [1120, 0, 40, 64], [1080, 0, 40, 64], [1040, 0, 40, 64], [1000, 0, 40, 64], [960, 0, 40, 64], [920, 0, 40, 64], [880, 0, 40, 64], [840, 0, 40, 64], [800, 0, 40, 64], [760, 0, 40, 64], [720, 0, 40, 64], [680, 0, 40, 64], [640, 0, 40, 64], [600, 0, 40, 64], [560, 0, 40, 64], [520, 0, 40, 64], [480, 0, 40, 64], [440, 0, 40, 64], [400, 0, 40, 64], [360, 0, 40, 64], [320, 0, 40, 64], [280, 0, 40, 64], [240, 0, 40, 64], [200, 0, 40, 64], [160, 0, 40, 64], [120, 0, 40, 64], [80, 0, 40, 64], [40, 0, 40, 64], [0, 0, 40, 64] ], "animations": {"2c":[0], "2d":[1], "2h":[2], "2s":[3], "3c":[4], "3d":[5], "3h":[6], "3s":[7], "4c":[8], "4d":[9], "4h":[10], "4s":[11], "5c":[12], "5d":[13], "5h":[14], "5s":[15], "6c":[16], "6d":[17], "6h":[18], "6s":[19], "7c":[20], "7d":[21], "7h":[22], "7s":[23], "8c":[24], "8d":[25], "8h":[26], "8s":[27], "9c":[28], "9d":[29], "9h":[30], "9s":[31], "ac":[32], "ad":[33], "ah":[34], "as":[35], "back":[36], "jc":[37], "jd":[38], "jh":[39], "js":[40], "kc":[41], "kd":[42], "kh":[43], "ks":[44], "qc":[45], "qd":[46], "qh":[47], "qs":[48], "tc":[49], "td":[50], "th":[51], "ts":[52] }
 }
 
-fullSizeCardSpriteData.images = [self.permanentPreferences.sourceObjects.value.desktopCards[self.images.sources.cardSpriteFileNameWithoutExtension]]
-self.permanentPreferences.sourceObjects.value.desktopCards.spriteSheet = new createjs.SpriteSheet(fullSizeCardSpriteData)
+fullSizeCardSpriteData.images = [permanentPreferences.sourceObjects.value.desktopCards[self.images.sources.cardSpriteFileNameWithoutExtension]]
+permanentPreferences.sourceObjects.value.desktopCards.spriteSheet = new createjs.SpriteSheet(fullSizeCardSpriteData)
 
 
 /*
 var mobileSizeCardSpriteData = {
 "images": ["sprite.png"], "frames": [[1872, 0, 36, 45], [1836, 0, 36, 45], [1800, 0, 36, 45], [1764, 0, 36, 45], [1728, 0, 36, 45], [1692, 0, 36, 45], [1656, 0, 36, 45], [1620, 0, 36, 45], [1584, 0, 36, 45], [1548, 0, 36, 45], [1512, 0, 36, 45], [1476, 0, 36, 45], [1440, 0, 36, 45], [1404, 0, 36, 45], [1368, 0, 36, 45], [1332, 0, 36, 45], [1296, 0, 36, 45], [1260, 0, 36, 45], [1224, 0, 36, 45], [1188, 0, 36, 45], [1152, 0, 36, 45], [1116, 0, 36, 45], [1080, 0, 36, 45], [1044, 0, 36, 45], [1008, 0, 36, 45], [972, 0, 36, 45], [936, 0, 36, 45], [900, 0, 36, 45], [864, 0, 36, 45], [828, 0, 36, 45], [792, 0, 36, 45], [756, 0, 36, 45], [720, 0, 36, 45], [684, 0, 36, 45], [648, 0, 36, 45], [612, 0, 36, 45], [576, 0, 36, 45], [540, 0, 36, 45], [504, 0, 36, 45], [468, 0, 36, 45], [432, 0, 36, 45], [396, 0, 36, 45], [360, 0, 36, 45], [324, 0, 36, 45], [288, 0, 36, 45], [252, 0, 36, 45], [216, 0, 36, 45], [180, 0, 36, 45], [144, 0, 36, 45], [108, 0, 36, 45], [72, 0, 36, 45], [36, 0, 36, 45], [0, 0, 36, 45] ], "animations": {"2c":[0], "2d":[1], "2h":[2], "2s":[3], "3c":[4], "3d":[5], "3h":[6], "3s":[7], "4c":[8], "4d":[9], "4h":[10], "4s":[11], "5c":[12], "5d":[13], "5h":[14], "5s":[15], "6c":[16], "6d":[17], "6h":[18], "6s":[19], "7c":[20], "7d":[21], "7h":[22], "7s":[23], "8c":[24], "8d":[25], "8h":[26], "8s":[27], "9c":[28], "9d":[29], "9h":[30], "9s":[31], "ac":[32], "ad":[33], "ah":[34], "as":[35], "back":[36], "jc":[37], "jd":[38], "jh":[39], "js":[40], "kc":[41], "kd":[42], "kh":[43], "ks":[44], "qc":[45], "qd":[46], "qh":[47], "qs":[48], "tc":[49], "td":[50], "th":[51], "ts":[52] }
 }
-mobileSizeCardSpriteData.images = [self.permanentPreferences.sourceObjects.value.mobileCards[self.images.sources.cardSpriteFileNameWithoutExtension]]
+mobileSizeCardSpriteData.images = [permanentPreferences.sourceObjects.value.mobileCards[self.images.sources.cardSpriteFileNameWithoutExtension]]
 
-self.permanentPreferences.sourceObjects.value.mobileCards.spriteSheet = new createjs.SpriteSheet(mobileSizeCardSpriteData)
+permanentPreferences.sourceObjects.value.mobileCards.spriteSheet = new createjs.SpriteSheet(mobileSizeCardSpriteData)
 */
 
 var stagesToUpdate = []
@@ -3536,7 +3536,7 @@ for(var i =0;i<flashArray.length;i++){
 //console.log(parent)
 
 
-if(playZoneLandingPage.loadingScreen && (playZoneLandingPage.loadingScreen.loaded === true || playZoneLandingPage.loadingScreen.loading === true)){console.log('other frame to load our images');console.log(self.permanentPreferences.sourceObjects.value);console.log(playZoneLandingPage.sourceObjects)}
+if(playZoneLandingPage.loadingScreen && (playZoneLandingPage.loadingScreen.loaded === true || playZoneLandingPage.loadingScreen.loading === true)){console.log('other frame to load our images');console.log(permanentPreferences.sourceObjects.value);console.log(playZoneLandingPage.sourceObjects)}
   else{
     console.log('loading from this page')
   //  playZoneLandingPage.sourceObjects = {}
@@ -3599,8 +3599,8 @@ this.images.setDefaults = function(){
             var shownCardY = 0.92
 
             //-----------------checkbox buttons---------------
-      var checkBoxButtonSource = self.permanentPreferences.sourceObjects.value.checkBox
-    var checkBoxButtonCheckedSource = self.permanentPreferences.sourceObjects.value.checkBoxChecked
+      var checkBoxButtonSource = permanentPreferences.sourceObjects.value.checkBox
+    var checkBoxButtonCheckedSource = permanentPreferences.sourceObjects.value.checkBoxChecked
        var checkBoxButtonWidth = 100
      var checkBoxButtonHeight = checkBoxButtonSource.height    //  var checkBoxButtonHeight = 13
             var checkBoxButtonDistanceFromChat = 8
@@ -3609,7 +3609,7 @@ this.images.setDefaults = function(){
            var checkBoxButtonCheckBoxWidth = checkBoxButtonHeight
            var checkBoxButtonDistanceFromBoxToText = 5
            var checkBoxButtonDistanceFromEdgeToInteriorHitAreaY = 1
-           var checkBoxButtonSizeAndFont = '10px ' + self.permanentPreferences.defaultFontType.value
+           var checkBoxButtonSizeAndFont = '10px ' + permanentPreferences.defaultFontType.value
            var checkBoxButtonTextColor = '#FFFFFF'
 
             var actionButtonWidth = 80
@@ -3637,13 +3637,13 @@ this.images.setDefaults = function(){
 var currencyDisplayWidth = canvasWidth
 var currencyDisplayHeight = 15
 var currencyDisplayTopOffset = 0
-var currencyDisplaySizeAndFont = '12px ' + self.permanentPreferences.defaultFontType.value
+var currencyDisplaySizeAndFont = '12px ' + permanentPreferences.defaultFontType.value
 var currencyDisplayColor = 'white'
 
             var communityY = 220
             var distanceBetweenCommunityCards = 2
 
-var dealerButtonSource = self.permanentPreferences.sourceObjects.value.dealerButton
+var dealerButtonSource = permanentPreferences.sourceObjects.value.dealerButton
             var dealerButtonWidth = dealerButtonSource.width
             var dealerButtonHeight = dealerButtonSource.height
 
@@ -3662,12 +3662,12 @@ var dealerButtonSource = self.permanentPreferences.sourceObjects.value.dealerBut
             var potHeight = 14
             var potWidth = 85
             var distanceFromTotalPotSizeToPot0 = 1
-            var potSizeAndFont = '14px ' + self.permanentPreferences.defaultFontType.value
+            var potSizeAndFont = '14px ' + permanentPreferences.defaultFontType.value
             var potTextColor = '#FFFFFF'
 
             var potDistanceToCommunity = -25
 
-           var chipSource = self.permanentPreferences.sourceObjects.value.chips['10']
+           var chipSource = permanentPreferences.sourceObjects.value.chips['10']
          var chipDiameter = chipSource.width  // var chipDiameter = 20
        // var chipDiameter = 20
             var distanceBetweenChipsY = 3
@@ -3718,7 +3718,7 @@ var dealerButtonSource = self.permanentPreferences.sourceObjects.value.dealerBut
 
             //cashier Button width and height
 
-            var cashierButtonSource =  self.permanentPreferences.sourceObjects.value.cashierButton
+            var cashierButtonSource =  permanentPreferences.sourceObjects.value.cashierButton
            var minCashierButtonTextWidth = 132
 
 
@@ -3728,7 +3728,7 @@ var distanceBetweenUpperButtonHitAreasY = 3
             //define dimensions for upper right and upper left buttons
 
                    //---------------stand up----------
-            var standUpSource = self.permanentPreferences.sourceObjects.value.standUp
+            var standUpSource = permanentPreferences.sourceObjects.value.standUp
           var standUpWidth =   standUpSource.width          //   var standUpWidth = 158
                var standUpHeight = standUpSource.height            //   var standUpHeight = 26
             var standUpHitAreaUpperLeftOffsetX  = 6 //distance from left of standUp image and mouse events
@@ -3738,7 +3738,7 @@ var distanceBetweenUpperButtonHitAreasY = 3
             var standUpHitAreaRightOffset  = 1  // distance from rightside of image and hit area
 
        //---------------exit table----------
-     var exitTableSource = self.permanentPreferences.sourceObjects.value.exitTable 
+     var exitTableSource = permanentPreferences.sourceObjects.value.exitTable 
                 var exitTableWidth =   exitTableSource.width                  //  var exitTableWidth = 135
                var exitTableHeight = exitTableSource.height                     //  var exitTableHeight = 32
 
@@ -3749,7 +3749,7 @@ var distanceBetweenUpperButtonHitAreasY = 3
             var exitTableHitAreaRightOffset  = 1  // distance from ExitTable of image and hit area
             
             //---------------get chips----------
-             var getChipsSource = self.permanentPreferences.sourceObjects.value.getChips 
+             var getChipsSource = permanentPreferences.sourceObjects.value.getChips 
                 var getChipsWidth =   getChipsSource.width                  //   var getChipsWidth = 149
                var getChipsHeight = getChipsSource.height                     //  var getChipsHeight = 41
 
@@ -3760,7 +3760,7 @@ var distanceBetweenUpperButtonHitAreasY = 3
             var getChipsHitAreaLowerRightOffset  = 38
 
 //show/hidde table chat full buttons
-     var showTableChatFullSource = self.permanentPreferences.sourceObjects.value.showTableChatFull 
+     var showTableChatFullSource = permanentPreferences.sourceObjects.value.showTableChatFull 
                 var showTableChatFullWidth =   showTableChatFullSource.width                  //   var showTableChatFullWidth = 112
                var showTableChatFullHeight = showTableChatFullSource.height                     //  var var showTableChatFullHeight =  31
                   
@@ -3793,7 +3793,7 @@ var showTableChatFullHitAreaOffsetBottomRight = 27
 
             //------------------------------------dealerButton------------------------------------
            this.dealerButton = new this.Item(0,0,dealerButtonWidth, dealerButtonHeight,getZ('dealerChip'))
-           this.dealerButton.addBitmap( self.permanentPreferences.sourceObjects.value.dealerButton)
+           this.dealerButton.addBitmap( permanentPreferences.sourceObjects.value.dealerButton)
 
 var chipAndPotZ = getZ( 'chips')
 
@@ -3906,7 +3906,7 @@ self.jQueryObjects.chatBoxInput.css('color', htmlTableChatBoxReminderTextColor)
 self.jQueryObjects.chatBoxInput.focus(function(){
     if(self.jQueryObjects.chatBoxInput.val() == defaultMessage){
     self.jQueryObjects.chatBoxInput.val('')
-self.jQueryObjects.chatBoxInput.css('color', self.permanentPreferences.chatTextColor.value)}
+self.jQueryObjects.chatBoxInput.css('color', permanentPreferences.chatTextColor.value)}
 })
 
 //redisplay reminder text ONLY if text value is only spaces or nothing
@@ -3958,13 +3958,13 @@ self.jQueryObjects.chatBoxInput.css({
           this.sitOutNextHandOn = new  this.Item(this.sitOutNextHand.position.x,this.sitOutNextHand.position.y, this.sitOutNextHand.size.x,this.sitOutNextHand.size.y,getZ('buttons','staticItems'),{messages: ['sit_in']})
         this.sitOutNextBlindOn = new  this.Item(this.sitOutNextBlind.position.x,this.sitOutNextBlind.position.y, this.sitOutNextBlind.size.x,this.sitOutNextBlind.size.y,getZ('buttons','staticItems'), {messages:['set_flag', 'post_blind', true]})
         
-this.foldToAnyBet.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
-this.sitOutNextHand.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
-this.sitOutNextBlind.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
+this.foldToAnyBet.addBitmap( permanentPreferences.sourceObjects.value.checkBox)
+this.sitOutNextHand.addBitmap( permanentPreferences.sourceObjects.value.checkBox)
+this.sitOutNextBlind.addBitmap( permanentPreferences.sourceObjects.value.checkBox)
 
-this.foldToAnyBetOn.addBitmap (self.permanentPreferences.sourceObjects.value.checkBoxChecked)
-this.sitOutNextHandOn.addBitmap(self.permanentPreferences.sourceObjects.value.checkBoxChecked)
-this.sitOutNextBlindOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
+this.foldToAnyBetOn.addBitmap (permanentPreferences.sourceObjects.value.checkBoxChecked)
+this.sitOutNextHandOn.addBitmap(permanentPreferences.sourceObjects.value.checkBoxChecked)
+this.sitOutNextBlindOn.addBitmap( permanentPreferences.sourceObjects.value.checkBoxChecked)
 
   //hitAreas for buttons
       
@@ -4167,7 +4167,7 @@ this.seats[i].sittingOut = new this.Item(seatTextX, seatBottomTextY, seatTextWid
 
 self.images.drawSeat(this.seats[i].openSeat, openSeatBorder, openSeatFill, openSeatMiddle, {outerStrokeWidth: seatOuterStrokeWidth}) 
 
-                this.seats[i].openSeat.addText('Open Seat', '15px ' + self.permanentPreferences.defaultFontType.value, "#FFFFFF",
+                this.seats[i].openSeat.addText('Open Seat', '15px ' + permanentPreferences.defaultFontType.value, "#FFFFFF",
                   {
 html:true,
 css:{
@@ -4206,15 +4206,15 @@ this.seats[i].disabledSeat.image.graphics.setStrokeStyle(1,'square').beginStroke
          this.seats[i].disabledSeat.image.parentItem = this.seats[i].disabledSeat       
          */
 
-//console.log(self.permanentPreferences.sourceObjects.value)
+//console.log(permanentPreferences.sourceObjects.value)
             //hole cards
-            if(self.sessionPreferences.displaySize.value !== 'mobile'){
-     //        this.itemAsBitmap(this.seats[i].hiddenCards[0],  self.permanentPreferences.sourceObjects.value.cardObjectParent.cardBack)
-    //        this.itemAsBitmap(this.seats[i].hiddenCards[1], self.permanentPreferences.sourceObjects.value.cardObjectParent.cardBack)
+            if(sessionPreferences.displaySize.value !== 'mobile'){
+     //        this.itemAsBitmap(this.seats[i].hiddenCards[0],  permanentPreferences.sourceObjects.value.cardObjectParent.cardBack)
+    //        this.itemAsBitmap(this.seats[i].hiddenCards[1], permanentPreferences.sourceObjects.value.cardObjectParent.cardBack)
 }
 else{
- //    this.itemAsBitmap(this.seats[i].hiddenCards[0],  self.permanentPreferences.sourceObjects.value.cardObjectParent.cardBack)
-  //          this.itemAsBitmap(this.seats[i].hiddenCards[1], self.permanentPreferences.sourceObjects.value.cardObjectParent.cardBack)
+ //    this.itemAsBitmap(this.seats[i].hiddenCards[0],  permanentPreferences.sourceObjects.value.cardObjectParent.cardBack)
+  //          this.itemAsBitmap(this.seats[i].hiddenCards[1], permanentPreferences.sourceObjects.value.cardObjectParent.cardBack)
 }
 
 this.cardAsBitmap(this.seats[i].hiddenCards[0],  null)
@@ -4222,24 +4222,24 @@ this.cardAsBitmap(this.seats[i].hiddenCards[1],  null)
 
          //   this.itemAsRectangle(this.seats[i].shownCards[0], "#00FFFF")
           //  this.itemAsRectangle(this.seats[i].shownCards[1], "#00FFFF")
-            this.seats[i].shownCards[0].addText('','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
-            this.seats[i].shownCards[1].addText('','12px ' + self.permanentPreferences.defaultFontType.value,'#000000')
+            this.seats[i].shownCards[0].addText('','12px ' + permanentPreferences.defaultFontType.value,'#000000')
+            this.seats[i].shownCards[1].addText('','12px ' + permanentPreferences.defaultFontType.value,'#000000')
             //player name
-            this.seats[i].playerName.addText('','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF' , {html:true, class:self.css.noTranslate} )
+            this.seats[i].playerName.addText('','11px ' + permanentPreferences.defaultFontType.value,'#FFFFFF' , {html:true, class:self.css.noTranslate} )
             //action
-            this.seats[i].action.addText('','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF')
+            this.seats[i].action.addText('','11px ' + permanentPreferences.defaultFontType.value,'#FFFFFF')
             //countdown
-           this.seats[i].countdown.addText('','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF')
+           this.seats[i].countdown.addText('','11px ' + permanentPreferences.defaultFontType.value,'#FFFFFF')
             //winner
-            this.seats[i].winner.addText('','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF')
+            this.seats[i].winner.addText('','11px ' + permanentPreferences.defaultFontType.value,'#FFFFFF')
         
 
                     //player's status
-            this.seats[i].status.addText('','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true})
-            this.seats[i].stackSize.addNumberText('','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
+            this.seats[i].status.addText('','11px ' + permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true})
+            this.seats[i].stackSize.addNumberText('','11px ' + permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
 
- this.seats[i].gettingChips.addText ('Adding Chips','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
- this.seats[i].sittingOut.addText('Sitting Out','11px ' + self.permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
+ this.seats[i].gettingChips.addText ('Adding Chips','11px ' + permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
+ this.seats[i].sittingOut.addText('Sitting Out','11px ' + permanentPreferences.defaultFontType.value,'#FFFFFF', {html:true} )
 
 
        //----------------------dealer button----Player's bets----------------------------------
@@ -4337,11 +4337,11 @@ var seatLocationMarginOfError = 1.1
     this.seats[i].secondChip = new this.Item(this.seats[i].firstChip.position.x, this.seats[i].firstChip.position.y+distanceBetweenChipsY,chipDiameter,chipDiameter,getZ('chips'))
     
     // bet size text
-     this.seats[i].bet.addNumberText('', "12px " + self.permanentPreferences.defaultFontType.value, "#FFFFFF", {textAlign:'left'})
+     this.seats[i].bet.addNumberText('', "12px " + permanentPreferences.defaultFontType.value, "#FFFFFF", {textAlign:'left'})
      this.seats[i].bet.text.maxWidth = null
    
     if(this.seats[i].dealerButton instanceof this.Item){
-this.seats[i].dealerButton.addBitmap( self.permanentPreferences.sourceObjects.value.dealerButton)
+this.seats[i].dealerButton.addBitmap( permanentPreferences.sourceObjects.value.dealerButton)
      }
      else{console.log(i+' is not a seat')}
       }  
@@ -4383,7 +4383,7 @@ self.images.seats[i].chat.image.alpha = self.imageData.chatBoxAlpha
 }//end drawchat function
 
 //player chat text
- playerSeatObject.chat.text = new createjs.Text('', chatBoxFontSize+ 'px ' + self.permanentPreferences.defaultFontType.value, self.permanentPreferences.chatTextColor.value)
+ playerSeatObject.chat.text = new createjs.Text('', chatBoxFontSize+ 'px ' + permanentPreferences.defaultFontType.value, permanentPreferences.chatTextColor.value)
 playerSeatObject.chat.text.x = playerSeatObject.chat.position.x +  playerSeatObject.chat.size.x/2 
 playerSeatObject.chat.text.y = playerSeatObject.chat.position.y
 playerSeatObject.chat.text.baseline = 'top'
@@ -4498,7 +4498,7 @@ var actionButtonCanvasElement = self.arrayOfParentsOfStageAndOfContainerArray[ac
 var actionButtonClass = 'actionButton'
 var actionButtonCSS = {
       'font-size': '11px ' 
-      ,'font': self.permanentPreferences.defaultFontType.value
+      ,'font': permanentPreferences.defaultFontType.value
       ,'position':'absolute'
       ,'padding-top':'1px'
       ,'padding-bottom': '1px'
@@ -4684,7 +4684,7 @@ var upperButtonFontType = 'Myriad Pro'
 
 
         this.standUp = new this.Item(canvasWidth - standUpWidth,0, standUpWidth, standUpHeight, getZ('buttons','staticItems'))
-this.standUp.addBitmap(self.permanentPreferences.sourceObjects.value.standUp)
+this.standUp.addBitmap(permanentPreferences.sourceObjects.value.standUp)
    //define shape for hit area of  stand
    var standUpHit = new createjs.Shape()
    var topY = standUpHitAreaTopOffset
@@ -4757,7 +4757,7 @@ this.getChipsDisabledShape.image.alpha = disabledButtonOverlayAlpha
 var exitTableOffsetY = distanceBetweenUpperButtonHitAreasY - exitTableHitAreaTopOffset - standUpHitAreaBottomOffset
 
  this.exitTable = new this.Item(canvasWidth - exitTableWidth, standUpHeight, exitTableWidth, exitTableHeight, getZ('buttons','staticItems'))
-this.exitTable.addBitmap( self.permanentPreferences.sourceObjects.value.exitTable)
+this.exitTable.addBitmap( permanentPreferences.sourceObjects.value.exitTable)
    //define shape of hit area
 
    var exitTableHit = new createjs.Shape()
@@ -4783,7 +4783,7 @@ this.currencyDisplay.addText('', currencyDisplaySizeAndFont, currencyDisplayColo
 
 var fourColorDeckData = {
 
-     images: [self.permanentPreferences.sourceObjects.value.fourColorDeck],
+     images: [permanentPreferences.sourceObjects.value.fourColorDeck],
      frames: {width:37, height:45}
 
 }
@@ -4801,7 +4801,7 @@ self.images.messageBox = []
 
 //table image
 this.table = new this.Item(0,tableY, 0,0, getZ('table','staticItems'))
-this.table.addBitmap( self.permanentPreferences.sourceObjects.value.table)
+this.table.addBitmap( permanentPreferences.sourceObjects.value.table)
 //console.log('table item');console.log(this.table)
 var tableX = canvasWidth/2 - this.table.size.x/2
 self.setImageItemPositionAndTextBasedOnImageChange(this.table, tableX, null, {update:false})
@@ -4814,7 +4814,7 @@ var cashierStageNumber = getZ('background','cashier').stage
 var cashierWindowContainer = 0
  //declare size variables
 
-    var cashierWindowSource = self.permanentPreferences.sourceObjects.value.cashierBackground
+    var cashierWindowSource = permanentPreferences.sourceObjects.value.cashierBackground
             var cashierWindowWidth = cashierWindowSource.width //    var cashierWindowWidth = 298
              var cashierWindowHeight = cashierWindowSource.height     //         var cashierWindowHeight = 360
     
@@ -4826,7 +4826,7 @@ var cashierWindowContainer = 0
 
         var textHeight = 13
         var distanceBetweenTextY = 5
-        var sizeAndFont = '12px ' + self.permanentPreferences.defaultFontType.value
+        var sizeAndFont = '12px ' + permanentPreferences.defaultFontType.value
         var textColor = '#000000'
 
          var outerTopHeight = 31
@@ -4839,7 +4839,7 @@ var cashierWindowContainer = 0
         var cashierWindowX = canvasWidth/2 - cashierWindowWidth/2
         var cashierWindowY = canvasHeight/2 - cashierWindowHeight/2
         
-   var closeWindowSource = self.permanentPreferences.sourceObjects.value.cashierCloseX
+   var closeWindowSource = permanentPreferences.sourceObjects.value.cashierCloseX
           var closeWindowWidth = closeWindowSource.width //var closeWindowWidth = 31
         var closeWindowHeight = closeWindowSource.height     //   var closeWindowHeight = 20
 
@@ -4875,11 +4875,11 @@ var cashierWindowContainer = 0
         var grayBoxOffsetBottom = 49 //from inner cashier
 
     this.cashier.closeWindow =  new this.Item (closeWindowX, closeWindowY, closeWindowWidth,closeWindowHeight,{stage:cashierStageNumber, container:cashierImageContainerIndex}) 
-this.cashier.closeWindow.addBitmap( self.permanentPreferences.sourceObjects.value.cashierCloseX)
+this.cashier.closeWindow.addBitmap( permanentPreferences.sourceObjects.value.cashierCloseX)
        this.cashier.closeWindow.on('click', self.hideCashier)
 
         this.cashier.window = new this.Item(cashierWindowX,cashierWindowY,cashierWindowWidth,cashierWindowHeight,{stage:cashierStageNumber,container:cashierWindowContainer})
-this.cashier.window.addBitmap( self.permanentPreferences.sourceObjects.value.cashierBackground)
+this.cashier.window.addBitmap( permanentPreferences.sourceObjects.value.cashierBackground)
         var clickAndDragHitArea = new createjs.Rectangle(this.cashier.window.position.x, this.cashier.window.y, cashierWindowWidth, outerTopHeight)
      //   this.cashier.window.hitArea = clickAndDragHitArea
       this.cashier.window.image.removeAllEventListeners()
@@ -5183,9 +5183,9 @@ var cancelText = 'Cancel'
 var enableAutoRebuyText = 'Auto-Rebuy to:'
 var disableAutoRebuyText = 'Disable<br>Auto-Rebuy'
 var disableAutoRebuyFontSize = 9
-var disableAutoRebuyTextSizeAndFont = disableAutoRebuyFontSize + 'px '+ self.permanentPreferences.defaultFontType.value
+var disableAutoRebuyTextSizeAndFont = disableAutoRebuyFontSize + 'px '+ permanentPreferences.defaultFontType.value
 var cashierButtonFontSize = 11
-var cashierButtonTextSizeAndFont = cashierButtonFontSize +'px ' + self.permanentPreferences.defaultFontType.value
+var cashierButtonTextSizeAndFont = cashierButtonFontSize +'px ' + permanentPreferences.defaultFontType.value
 var cashierButtonHeight = 28
 var cashierButtonTextColor = 'white'
 var cashierButtonColor = 'blue'
@@ -5393,7 +5393,7 @@ setDisplayObjectPositionData(this.showTableChatFull.text, {x:showTableChatFullTe
 
 
 this.hideTableChatFull = new this.Item(this.getChips.position.x, this.getChips.position.y + this.getChips.size.y + showTableChatFullOffsetY, showTableChatFullWidth, showTableChatFullHeight, getZ('buttons','staticItems') )
-this.hideTableChatFull.addBitmap(self.permanentPreferences.sourceObjects.value.hideTableChatFull)
+this.hideTableChatFull.addBitmap(permanentPreferences.sourceObjects.value.hideTableChatFull)
 this.hideTableChatFull.on('click', self.events.hideTableChatFullOnClick)
 
 this.hideTableChatFull.addText('HIDE CHAT', upperButtonFontType, 'white', {html:true, css:upperButtonTextCSS, textAlign:'left'})
@@ -5474,10 +5474,10 @@ var tableChatFullStageParent =  self.getParentOfStageObject(this.tableChatFull.h
 
 
 
-var tableChatFullWindowBackgroundColor = self.permanentPreferences.tableChatFull.windowColor.value
+var tableChatFullWindowBackgroundColor = permanentPreferences.tableChatFull.windowColor.value
 var tableChatFullWindowBorderColor = '#000000'
 var tableChatFullWindowBorderWidth = 1
-var tableChatFullWindowAlpha = self.permanentPreferences.tableChatFull.windowAlpha.value
+var tableChatFullWindowAlpha = permanentPreferences.tableChatFull.windowAlpha.value
 var tableChatFullRoundedRectCornerSizeRatioOfHeight = 0.05
 
   this.tableChatFull.window = new this.Item(0, 0, tableChatFullStageWidth, tableChatFullStageHeight, getZ('background','tableChatFull'))
@@ -5505,32 +5505,32 @@ var hideDealerMessagesOffsetRight =  hideDealerMessagesOffsetLeft//checkBoxButto
 var hideDealerMessagesOffsetTop =  checkBoxButtonDistanceY
 
 this.tableChatFull.hideDealerMessages = new this.Item(hideDealerMessagesOffsetLeft, hideDealerMessagesOffsetTop, this.tableChatFull.window.size.x - checkBoxButtonOffSetLeft*2, checkBoxButtonHeight, getZ('buttons','tableChatFull'))
-this.tableChatFull.hideDealerMessages.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
+this.tableChatFull.hideDealerMessages.addBitmap( permanentPreferences.sourceObjects.value.checkBox)
 self.images.addCheckBoxButtonText(this.tableChatFull.hideDealerMessages, 'Hide dealer messages')
 this.tableChatFull.hideDealerMessages.on('click', self.events.hideDealerMessagesClicked)
 
 this.tableChatFull.hideDealerMessagesOn = new this.Item(hideDealerMessagesOffsetLeft, this.tableChatFull.hideDealerMessages.position.y, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('buttons','tableChatFull'))
-this.tableChatFull.hideDealerMessagesOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
+this.tableChatFull.hideDealerMessagesOn.addBitmap( permanentPreferences.sourceObjects.value.checkBoxChecked)
 self.images.addCheckBoxButtonText(this.tableChatFull.hideDealerMessagesOn, 'Hide dealer messages')
 this.tableChatFull.hideDealerMessagesOn.on('click', self.events.hideDealerMessagesOnClicked)
 
 this.tableChatFull.hidePlayerMessages = new this.Item(hideDealerMessagesOffsetLeft, hideDealerMessagesOffsetTop*2+checkBoxButtonHeight, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('buttons','tableChatFull'))
-this.tableChatFull.hidePlayerMessages.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
+this.tableChatFull.hidePlayerMessages.addBitmap( permanentPreferences.sourceObjects.value.checkBox)
 self.images.addCheckBoxButtonText(this.tableChatFull.hidePlayerMessages, 'Hide player messages')
 this.tableChatFull.hidePlayerMessages.on('click', self.events.hidePlayerMessagesClicked)
 
 this.tableChatFull.hidePlayerMessagesOn = new this.Item(hideDealerMessagesOffsetLeft, this.tableChatFull.hidePlayerMessages.position.y, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('buttons','tableChatFull'))
-this.tableChatFull.hidePlayerMessagesOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
+this.tableChatFull.hidePlayerMessagesOn.addBitmap( permanentPreferences.sourceObjects.value.checkBoxChecked)
 self.images.addCheckBoxButtonText(this.tableChatFull.hidePlayerMessagesOn, 'Hide player messages')
 this.tableChatFull.hidePlayerMessagesOn.on('click', self.events.hidePlayerMessagesOnClicked)
 
 this.tableChatFull.hideObserverMessages = new this.Item(hideDealerMessagesOffsetLeft, checkBoxButtonDistanceY*3+checkBoxButtonHeight*2, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('buttons','tableChatFull'))
-this.tableChatFull.hideObserverMessages.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
+this.tableChatFull.hideObserverMessages.addBitmap( permanentPreferences.sourceObjects.value.checkBox)
 self.images.addCheckBoxButtonText(this.tableChatFull.hideObserverMessages, 'Hide observer messages')
 this.tableChatFull.hideObserverMessages.on('click', self.events.hideObserverMessagesClicked)
 
 this.tableChatFull.hideObserverMessagesOn = new this.Item(hideDealerMessagesOffsetLeft, this.tableChatFull.hideObserverMessages.position.y, this.tableChatFull.hideDealerMessages.size.x, checkBoxButtonHeight,getZ('buttons','tableChatFull'))
-this.tableChatFull.hideObserverMessagesOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
+this.tableChatFull.hideObserverMessagesOn.addBitmap( permanentPreferences.sourceObjects.value.checkBoxChecked)
 self.images.addCheckBoxButtonText(this.tableChatFull.hideObserverMessagesOn, 'Hide observer messages')
 this.tableChatFull.hideObserverMessagesOn.on('click', self.events.hideObserverMessagesOnClicked)
 
@@ -5544,12 +5544,12 @@ var rightSideCheckBoxX = this.tableChatFull.hideDealerMessages.position.x + long
 var rightSideCheckBoxY = this.tableChatFull.hideDealerMessages.position.y
 
 this.tableChatFull.popOut = new this.Item(rightSideCheckBoxX, rightSideCheckBoxY, 0, checkBoxButtonHeight,getZ('buttons','tableChatFull'))
-this.tableChatFull.popOut.addBitmap( self.permanentPreferences.sourceObjects.value.checkBox)
+this.tableChatFull.popOut.addBitmap( permanentPreferences.sourceObjects.value.checkBox)
 self.images.addCheckBoxButtonText(this.tableChatFull.popOut, 'Pop-Out')
 this.tableChatFull.popOut.on('click', self.events.popOutClicked)
 
 this.tableChatFull.popOutOn = new this.Item(this.tableChatFull.popOut.position.x, this.tableChatFull.popOut.position.y, this.tableChatFull.popOut.size.x, checkBoxButtonHeight,getZ('buttons','tableChatFull'))
-this.tableChatFull.popOutOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
+this.tableChatFull.popOutOn.addBitmap( permanentPreferences.sourceObjects.value.checkBoxChecked)
 self.images.addCheckBoxButtonText(this.tableChatFull.popOutOn, 'Pop-Out')
 this.tableChatFull.popOutOn.on('click', self.events.popOutOnClicked)
 
@@ -5619,9 +5619,9 @@ var chatMessageOffsetBottom =  chatMessageOffsetTop
 
 this.tableChatFull.chatMessageText = new this.Item(chatMessageOffsetLeft, chatMessageOffsetTop, chatTextDivWidth -  chatMessageOffsetLeft - chatMessageOffsetRight,chatTextDivHeight  - chatMessageOffsetTop - chatMessageOffsetBottom, getZ('text','tableChatFull'))
 
-var chatMessageFontSize = self.permanentPreferences.tableChatFull.chatMessageFontSize.value
+var chatMessageFontSize = permanentPreferences.tableChatFull.chatMessageFontSize.value
 var chatMessageFont = 'Lucida Sans'
-var chatMessageFontColor = self.permanentPreferences.tableChatFull.chatMessageFontColor.value
+var chatMessageFontColor = permanentPreferences.tableChatFull.chatMessageFontColor.value
 
 //create create js text display object
 //this.tableChatFull.chatMessageText.text = new createjs.DOMElement(document.getElementById('tableChatFullTextDiv'))
@@ -5644,7 +5644,7 @@ horizrailenabled:false,
 //enablemousewheel:false,
 hwacceleration:false,
 bouncescroll:false,
-cursoropacitymax:self.permanentPreferences.tableChatFull.windowAlpha.value, 
+cursoropacitymax:permanentPreferences.tableChatFull.windowAlpha.value, 
 autohidemode:false,
 
 touchbehavior :true,
@@ -5676,7 +5676,7 @@ background:'transparent'
 
  // var mCustomScrollbarOptions = {set_height: this.tableChatFull.chatTextDiv.size.y}
 
-if(self.permanentPreferences.tableChatFull.scrollBarType && self.permanentPreferences.tableChatFull.scrollBarType.value == 'mCustomScrollbar'){
+if(permanentPreferences.tableChatFull.scrollBarType && permanentPreferences.tableChatFull.scrollBarType.value == 'mCustomScrollbar'){
 console.log('creating mCustomScrollbar')
 //show so that scroll bar can be initialized
  //$("#tableChatFullTextDiv").css('display','inline')
@@ -5765,7 +5765,7 @@ this.tableChatFull.chatMessageText.text.hitArea = tableChatFullHitArea
 this.reportBug = new this.Item(0, this.getChips.size.y, 165,30,self.gameState.zPositionData.nonAnimatedThingsOnTable)
 
 
-   this.reportBug.text = new createjs.Text('click to report bugs via email to: CryptoPoker@gmail.com', '13px ' + self.permanentPreferences.defaultFontType.value ,'white')
+   this.reportBug.text = new createjs.Text('click to report bugs via email to: CryptoPoker@gmail.com', '13px ' + permanentPreferences.defaultFontType.value ,'white')
 this.reportBug.text.x=this.reportBug.position.x
 this.reportBug.text.y=this.reportBug.position.y
 this.reportBug.text.baseline = 'top'
@@ -6062,7 +6062,7 @@ background.adoptChild(fullStageShape, 'text', {maxSize:'parent'})
   self.images.background.on('contextmenu', self.events.onBackgroundContextMenu, {image:false, text:true})
 }
 
-if(!src){var src = self.permanentPreferences.sourceObjects.value.background}
+if(!src){var src = permanentPreferences.sourceObjects.value.background}
 
   if(!options){var options = {}}
     else {var options = _.clone(options)}
@@ -6167,13 +6167,13 @@ $(holdemCanvas.getIframe()).trigger('mousedown.setToTop')
     
     this.createAllItems = function(){
 
-//self.sessionPreferences.displaySize.updateValue(self.sessionPreferences.displaySize.value)
+//sessionPreferences.displaySize.updateValue(sessionPreferences.displaySize.value)
 
 self.images.loadingScreen.status.updateText('fetching table state ...')
 console.log('fetching table state')
 this.getTableState()
 
-      this.updatePreference(this.sessionPreferences, this.sessionPreferences,{updateEqualValues:true})
+      this.updatePreference(sessionPreferences, sessionPreferences,{updateEqualValues:true})
        
 self.images.loadingScreen.status.updateText('loading table background ...')
 console.log('loading table background')
@@ -6904,7 +6904,7 @@ this.changeUserSeatView = function(seatNumberToRotateTo){
 if(!options){var options = {}}
 
  //console.log('current displayed as seat # '+ this.images.seats[self.gameState.userSeatNumber].rotatedSeatNumber +'changing userseat view to '+seatNumberToRotateTo)
-/*if(self.permanentPreferences.changeUserSeatViewTo.value == ['bottom','middle']){}
+/*if(permanentPreferences.changeUserSeatViewTo.value == ['bottom','middle']){}
   else{return 'change view when seated setting is off'}*/
 
  if(!_.isNumber(seatNumberToRotateTo)){var seatNumberToRotateTo = 0}
@@ -7915,23 +7915,23 @@ else if(_.isObject(options.z)){var z = options.z}
 
 
 if( chipColor == 'orange'){
-var chipImageSource = self.permanentPreferences.sourceObjects.value.chips['10']
+var chipImageSource = permanentPreferences.sourceObjects.value.chips['10']
 }
   else   if(chipColor == 'red'){
-           var chipImageSource = self.permanentPreferences.sourceObjects.value.chips.red
+           var chipImageSource = permanentPreferences.sourceObjects.value.chips.red
        }
        else if(chipColor == 'black'){
-            var chipImageSource = self.permanentPreferences.sourceObjects.value.chips.black
+            var chipImageSource = permanentPreferences.sourceObjects.value.chips.black
 
        }
-       else{ var chipImageSource = self.permanentPreferences.sourceObjects.value.chips.black}
+       else{ var chipImageSource = permanentPreferences.sourceObjects.value.chips.black}
 
 
 
        chipArray.push(new this.images.Item(x,y,diameter, diameter, z))
         _.last(chipArray).addBitmap(chipImageSource) 
  
-_.last(chipArray).text =  new createjs.Text(chipValue, '7px ' + self.permanentPreferences.defaultFontType.value, 'white')
+_.last(chipArray).text =  new createjs.Text(chipValue, '7px ' + permanentPreferences.defaultFontType.value, 'white')
 _.last(chipArray).text.x = _.last(chipArray).position.x + parentOfChipArray[options.chipArrayName][parentOfChipArray[options.chipArrayName].length-1].size.x/2
 _.last(chipArray).text.y = _.last(chipArray).position.y+4.5
 _.last(chipArray).text.baseline = 'top'
@@ -9017,7 +9017,7 @@ flagOptions = _.defaults(flagOptions, defaults)
 
       if(flag.indexOf('sessionPreferences') !== -1){
  // console.log('session preference flag received')
- self.updatePreference(self.sessionPreferences, value, flagOptions)
+ self.updatePreference(sessionPreferences, value, flagOptions)
 }//if session preference
 
 else{//if flag
@@ -9431,8 +9431,8 @@ return array
 }//get array from string
 
 var getPreferenceAncestorFromType = function(type){
-if(type === 'permanent'){return self.permanentPreferences}
-  else if (type === 'session' || type === 'temporary'){return self.sessionPreferences}
+if(type === 'permanent'){return permanentPreferences}
+  else if (type === 'session' || type === 'temporary'){return sessionPreferences}
 }
 
 var _preferenceUtils = function(action, type, location, parameters){
@@ -9531,8 +9531,8 @@ var height = self.images.foldToAnyBet.size.y
     var preactionItem = new self.images.Item(0, 0, 0, height, getZ('buttons','staticItems'))
     var preactionItemOn = new self.images.Item(0, 0, 0, height,  getZ('buttons','staticItems'))
 
-preactionItem.addBitmap (self.permanentPreferences.sourceObjects.value.checkBox )
-preactionItemOn.addBitmap( self.permanentPreferences.sourceObjects.value.checkBoxChecked)
+preactionItem.addBitmap (permanentPreferences.sourceObjects.value.checkBox )
+preactionItemOn.addBitmap( permanentPreferences.sourceObjects.value.checkBoxChecked)
 
       self.images.addCheckBoxButtonText(preactionItem, text)
       self.images.addCheckBoxButtonText(preactionItemOn, text)
@@ -11135,7 +11135,7 @@ console.log('pixels invisible above paragraph element' +  scroll[0].getScrollTop
 console.log('height of paragraph element ' + self.jQueryObjects.tableChatFullParagraph.height())
 */
 
-if(self.permanentPreferences.tableChatFull.scrollBarType && self.permanentPreferences.tableChatFull.scrollBarType.value == 'mCustomScrollbar'){
+if(permanentPreferences.tableChatFull.scrollBarType && permanentPreferences.tableChatFull.scrollBarType.value == 'mCustomScrollbar'){
 //console.log('creating mCustomScrollbar')
 //show so that scroll bar can be initialized
 
@@ -11152,7 +11152,7 @@ var isAtBottom = ( scroll[0].getContentSize().h - scroll[0].getScrollTop() <=  p
   var scroll = self.jQueryObjects.tableChatFullDiv.getNiceScroll()
 
   //save value
-   self.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value = scroll[0].getScrollTop()
+   sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value = scroll[0].getScrollTop()
 
 }
 //console.log('var isAtBottom = ' + isAtBottom)
@@ -11296,7 +11296,7 @@ content.css({
 'overflow':'hidden'
 //,'overflow-y':'hidden'
 //,'opacity': 0.8
-,'font-family':self.permanentPreferences.defaultFontType.value
+,'font-family':permanentPreferences.defaultFontType.value
 ,'font-size': fontSize
 //,'line-height':1
 ,'font-weight':300
@@ -11459,7 +11459,7 @@ self.images.seats[chatInfo.seat].chat.updateText(self.images.seats[chatInfo.seat
     //increase lines
 if(wasTrimmed == true){
 
-  if(numLines < self.permanentPreferences.playerChatMaxLines.value){
+  if(numLines < permanentPreferences.playerChatMaxLines.value){
 //increase lin counter
    numLines++
   currentLine++
@@ -11585,9 +11585,9 @@ var displayCurrentLog
 
 //skip appending messages if its of a type we dont want to display
 if(messageInArrayForm[1] === '' || !_.isString(messageInArrayForm[1])){console.error('returning due to not a real message');return}
-if(messageInArrayForm[0] === 'dealer'){displayCurrentLog = self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages.value}
-else if(messageInArrayForm[0] === 'observer'){displayCurrentLog = self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages.value}
-  else if(messageInArrayForm[0] === 'player'){displayCurrentLog = self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages.value}
+if(messageInArrayForm[0] === 'dealer'){displayCurrentLog = sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages.value}
+else if(messageInArrayForm[0] === 'observer'){displayCurrentLog = sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages.value}
+  else if(messageInArrayForm[0] === 'player'){displayCurrentLog = sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages.value}
    else{throw 'unknown message type:' + messageInArrayForm}
 
 
@@ -11643,11 +11643,11 @@ var shouldDisplayDealerMessages
  var shouldDisplayPlayerMessages
 var shouldDisplayObserverMessages
 
-if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn.value === false){ shouldDisplayDealerMessages = true}
+if(sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessagesOn.value === false){ shouldDisplayDealerMessages = true}
   else{ shouldDisplayDealerMessages = false}
-    if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn.value === false){ shouldDisplayPlayerMessages = true}
+    if(sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessagesOn.value === false){ shouldDisplayPlayerMessages = true}
   else{ shouldDisplayPlayerMessages = false}
-    if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn.value === false){ shouldDisplayObserverMessages = true}
+    if(sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessagesOn.value === false){ shouldDisplayObserverMessages = true}
   else{ shouldDisplayObserverMessages = false}
 
 //console.log('updateTableChatFullMessageTextFromCurrentOrAdditionalData called')
@@ -11696,7 +11696,7 @@ this.appendTableChatFullMessageText(log.length-1, {moveTable:false})
 }//if we want to append a message at the end
 
 if(scrollDownAtEnd === true){this.moveTableChatFullMessageText({resize:true})}
-  else{    this.moveTableChatFullMessageText({    magnitude:self.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value, resize:true  })
+  else{    this.moveTableChatFullMessageText({    magnitude:sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value, resize:true  })
 }
 
 }
@@ -12244,19 +12244,19 @@ options.update = false
 
 var stagesToUpdate = []
 console.log('update tablechatfull display called')
-console.log(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem)
+console.log(sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem)
 
 //hide items that should be hidden by default
-_.each(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem,function(value, index, list){
+_.each(sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem,function(value, index, list){
 //console.log(index)
 //console.log(value)
-if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem[index].value === false){
+if(sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem[index].value === false){
 stagesToUpdate.push(  self.hideChildren(self.images.tableChatFull[index], options) )
  // console.log('hiding' + index)
 }
 else{stagesToUpdate.push(  self.displayChildren(self.images.tableChatFull[index], options) )}
 
-})//end loop through self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem
+})//end loop through sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem
 
 //update text
 this.updateTableChatFullMessageTextFromCurrentOrAdditionalData()
@@ -12277,7 +12277,7 @@ if(setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOthe
 var tableChatFullStageParent = self.getParentOfStageObject (self.images.tableChatFull.window)
 
 //variables for popping out
-if(self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOut.value === false){
+if(sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOut.value === false){
 //  displayOrHideChildrenOptions.resize = true
 
 if(options.display === true){
@@ -12317,7 +12317,7 @@ var scrollDownAtEnd = self.checkIfTableChatFullMessageTextShouldBeScrolledAfterC
 }//we are moving out tablechatfull
 }//table chat full will be moved outside (not sure if it needs to be moved though)
 
-else if (self.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOut.value !== false
+else if (sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.popOut.value !== false
 && $(tableChatFullStageParent.div).parent().is(self.jQueryObjects.canvasDiv) != true
 ){//variables for popping in
 
@@ -12380,7 +12380,7 @@ self.resizePokerWrapperAndIframe()
 
 //scroll if necessary
 if(scrollDownAtEnd){self.moveTableChatFullMessageText()}
-else{self.moveTableChatFullMessageText({magnitude:self.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels})}
+else{self.moveTableChatFullMessageText({magnitude:sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels})}
 
 
 options.update = update
@@ -12524,17 +12524,17 @@ this.displayTableChatFull = function(hideOrDisplayChildrenOptions){
 /*
 //update what is showing and what isnt from current preferences
 
-if(this.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages.value === false){
+if(sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideDealerMessages.value === false){
   this.gameState.tableChatFull.currentlyDisplayingDealerMessages = false
 }
 else{this.gameState.tableChatFull.currentlyDisplayingDealerMessages = true}
 
-  if(this.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages.value === false){
+  if(sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hidePlayerMessages.value === false){
   this.gameState.tableChatFull.currentlyDisplayingPlayerMessages = false
 }
 else{this.gameState.tableChatFull.currentlyDisplayingPlayerMessages = true}
 
-  if(this.sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages.value === false){
+  if(sessionPreferences.tableChatFull.defaultItemsToHideFalseHidesItem.hideObserverMessages.value === false){
   this.gameState.tableChatFull.currentlyDisplayingObserverMessages = false
 }
 else{this.gameState.tableChatFull.currentlyDisplayingObserverMessages = true}
@@ -12555,9 +12555,9 @@ setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGe
 //self.jQueryObjects.tableChatFullParagraph.css('display','inline ')
 
 //restore scrollbar position
- var scrollInfo ={magnitude: self.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value}
+ var scrollInfo ={magnitude: sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value}
 self.moveTableChatFullMessageText(scrollInfo)
-self.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.updateValue(self.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value)
+sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.updateValue(sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value)
 
 console.log('tablechatfull object = ')
 console.log(this.images.tableChatFull)
@@ -12593,13 +12593,13 @@ console.log('calling hideTableChatFull')
    positionValue = true
  }
  else{
-  if(self.sessionPreferences.tableChatFull.scrollBarType != 'mCustomScrollbar'){
+  if(sessionPreferences.tableChatFull.scrollBarType != 'mCustomScrollbar'){
   var scroll = self.jQueryObjects.tableChatFullDiv.getNiceScroll()
    positionValue  = scroll[0].getScrollTop()
  }
  else{positionValue = 0}
 }
-  this.sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value = positionValue
+  sessionPreferences.tableChatFull.tableChatFullScrollBarPositionTrueForBottomOrUpperInvisiblePixels.value = positionValue
 
 
  stagesToUpdate.push(this.displayChildren(this.images.showTableChatFull,options))
@@ -13265,13 +13265,13 @@ messageBoxAPI.deleteMessageBoxItems()
 var messageBoxItems = messageBoxAPI.getItemsObject(newStageNumber)
 var div = self.getParentOfStageObject(newStageNumber).div
 
-        var messageBoxWindowSource = self.permanentPreferences.sourceObjects.value.messageBoxBackground
+        var messageBoxWindowSource = permanentPreferences.sourceObjects.value.messageBoxBackground
      var messageBoxWindowWidth = messageBoxWindowSource.width  //  var messageBoxWindowWidth = 516
   var messageBoxWindowHeight = messageBoxWindowSource.height   //   var messageBoxWindowHeight = 199
         //declare size variables
   
 
-   var closeXSource = self.permanentPreferences.sourceObjects.value.messageBoxCloseX
+   var closeXSource = permanentPreferences.sourceObjects.value.messageBoxCloseX
  var closeXWidth = closeXSource.width // var closeXWidth = 31
    var closeXHeight = closeXSource.height   //  var closeXHeight = 20
        
@@ -13320,11 +13320,11 @@ var buttonContainer = 2
          if(_.isNull(messageInfo)||_.isUndefined(messageInfo)){messageInfo = {}}
          //set default font sizes and colors
        if(_.isNull(messageInfo.title)||_.isUndefined(messageInfo.title)||!(_.isString(messageInfo.title)||!_.isNumber(messageInfo.title))){messageInfo.title = ''}
-       if(_.isNull(messageInfo.titleSizeAndFont)||_.isUndefined(messageInfo.titleSizeAndFont)){messageInfo.titleSizeAndFont = '18px ' + self.permanentPreferences.defaultFontType.value}
+       if(_.isNull(messageInfo.titleSizeAndFont)||_.isUndefined(messageInfo.titleSizeAndFont)){messageInfo.titleSizeAndFont = '18px ' + permanentPreferences.defaultFontType.value}
        if(_.isNull(messageInfo.titleColor)||_.isUndefined(messageInfo.titleColor)){ messageInfo.titleColor = '#000000'}
-       if(_.isNull(messageInfo.sizeAndFont)||_.isUndefined(messageInfo.sizeAndFont)){messageInfo.messageSizeAndFont = '13px ' + self.permanentPreferences.defaultFontType.value}
+       if(_.isNull(messageInfo.sizeAndFont)||_.isUndefined(messageInfo.sizeAndFont)){messageInfo.messageSizeAndFont = '13px ' + permanentPreferences.defaultFontType.value}
     if(_.isNull(messageInfo.messageColor)||_.isUndefined(messageInfo.messageColor)){ messageInfo.messageColor = '#000000'}
-    if(_.isNull(messageInfo.buttonSizeAndFont)||_.isUndefined(messageInfo.buttonSizeAndFont)){messageInfo.buttonSizeAndFont = '13px ' + self.permanentPreferences.defaultFontType.value}
+    if(_.isNull(messageInfo.buttonSizeAndFont)||_.isUndefined(messageInfo.buttonSizeAndFont)){messageInfo.buttonSizeAndFont = '13px ' + permanentPreferences.defaultFontType.value}
      if(_.isNull(messageInfo.buttonTextColor)||_.isUndefined(messageInfo.buttonTextColor)){ messageInfo.buttonTextColor = '#FFFFFF'}
     if(_.isNull(messageInfo.buttonBackgroundColor)||_.isUndefined(messageInfo.buttonBackgroundColor)){ messageInfo.buttonBackgroundColor = '#0000FF'}
     if(_.isNull(messageInfo.okayText)||_.isUndefined(messageInfo.okayText)){ messageInfo.okayText = 'OK'}
@@ -13372,7 +13372,7 @@ defaults.checkBox = false
 defaults.checkBoxText = 'Dont show this message again.'
  defaults.checkBoxTextColor = messageInfo.messageColor
 defaults.checkBoxFontSize = 10
-defaults.checkboxFontType = self.permanentPreferences.defaultFontType.value
+defaults.checkboxFontType = permanentPreferences.defaultFontType.value
 defaults.modal = false
 defaults.timeout = 20000
 
@@ -13793,7 +13793,7 @@ else{
 
      //background bitmap 
         messageBoxItems.window = new self.images.Item(messageBoxWindowX,messageBoxWindowY,messageBoxWindowWidth,messageBoxWindowHeight, getZ('background',newStageNumber))
-messageBoxItems.window.addBitmap(self.permanentPreferences.sourceObjects.value.messageBoxBackground, hideOrDisplayChildrenOptions)
+messageBoxItems.window.addBitmap(permanentPreferences.sourceObjects.value.messageBoxBackground, hideOrDisplayChildrenOptions)
         
 
    //MAKE WINDOW DRAGGABLE
@@ -13829,7 +13829,7 @@ var messageTextOptions = {
 
             //add closeX Image
          messageBoxItems.closeWindow =  new self.images.Item (closeX,closeY,closeXWidth,closeXHeight, getZ('background',newStageNumber)) 
-messageBoxItems.closeWindow.addBitmap (self.permanentPreferences.sourceObjects.value.messageBoxCloseX, hideOrDisplayChildrenOptions)
+messageBoxItems.closeWindow.addBitmap (permanentPreferences.sourceObjects.value.messageBoxCloseX, hideOrDisplayChildrenOptions)
 
 
 if(messageInfo.closeWindowMessages){ messageBoxItems.closeWindow.messages = messageInfo.closeWindowMessages}
@@ -14627,14 +14627,14 @@ this.getPermanentPreferences = function() {
 
 this.saveSessionPreferences = function(){
 //console.log('user seat preference view is:')
-//console.log(self.sessionPreferences.changeUserSeatViewTo.value)
-    socket.emit('set_flag', 'sessionPreferences', this.sessionPreferences)
-console.log(this.sessionPreferences)
+//console.log(sessionPreferences.changeUserSeatViewTo.value)
+    socket.emit('set_flag', 'sessionPreferences', sessionPreferences)
+console.log(sessionPreferences)
 }
 
 this.savePermanentPreferences = function(){
 
-    socket.emit('set_preference', 'permanentPreferences', self.permanentPreferences)
+    socket.emit('set_preference', 'permanentPreferences', permanentPreferences)
 
 }
 
@@ -15242,7 +15242,7 @@ if(table_state.seats[i].is_you === true){
 }//if is_you === true
 
 //can also grab permanent preferences if theyre availale here: (implement later)
- //   this.initializeServerPreferenceObjects(this.sessionPreferences, function (serverString, options){  self.saveSessionPreferences( serverString, {})    })
+ //   this.initializeServerPreferenceObjects(sessionPreferences, function (serverString, options){  self.saveSessionPreferences( serverString, {})    })
 
  }
 
@@ -15396,11 +15396,10 @@ for(var i = 0;i<self.gameState.numSeats;i++){
 this.getInitialPermanentPreferences = function(callback){
 console.log('getInitialPermanentPreferences')
 
-/*
+
    socket.once('preferences', function(preferences){
              console.log('preferences received')
- self.updatePreference(self.permanentPreferences, preferences, {updateEqualValues:true})  
-
+ self.updatePreference(permanentPreferences, preferences, {updateEqualValues:true})  
 
 
 if(_.isFunction(callback)){callback()}
@@ -15409,9 +15408,9 @@ if(_.isFunction(callback)){callback()}
 
 
     socket.emit('get_preferences')
-*/
+
     $.getJSON('/preferences', function(data) { 
-     self.updatePreference(self.permanentPreferences, data, {updateEqualValues:true}) 
+     self.updatePreference(permanentPreferences, data, {updateEqualValues:true}) 
 if(_.isFunction(callback)){callback()}
     })
  
@@ -15971,7 +15970,7 @@ self.clearExpirationData('permanent', player.seat) //this will clear everything 
         if(is_you == true){
            socket.emit('get_add_chips_info')
             self.gameState.userSeatNumber = player.seat
-          self.changeUserSeatView (self.sessionPreferences.changeUserSeatViewTo.value)
+          self.changeUserSeatView (sessionPreferences.changeUserSeatViewTo.value)
    //  stagesToUpdate.push     (    self.events.rotateSeatsIfNeededAndConfirm({update:false}) )
     stagesToUpdate.push     (   self.updateUserOptionsBasedOnFlagsAndPreactions({update:false}))
 
