@@ -93,9 +93,12 @@ module.exports = (function () {
   };
 
   RoomSchema.methods.broadcast = function(message_name) {
-    console.log(this.room_id, 'broadcasting', arguments);
-    var socket_list = io.sockets.in(this.room_id);
-    socket_list.emit.apply(socket_list, arguments);
+    var socket_list = io.sockets.in(this.room_id)
+      , num_sockets = _.size(socket_list.sockets);
+    if (num_sockets > 0) {
+      console.log(this.room_id, 'broadcasting', arguments, 'to', num_sockets, 'sockets.');
+      socket_list.emit.apply(socket_list, arguments);
+    }
   };
 
   RoomSchema.methods.broadcastChatMessage = function(socket, message) {
@@ -158,7 +161,7 @@ module.exports = (function () {
       var args_array = _.toArray(arguments)
         , user = socket.user || {};
       if (args_array[0] !== 'newListener') {
-        //console.log('Sending to ' + user.username + ':', args_array);
+        console.log('Sending to ' + user.username + ':', args_array);
         emit.apply(socket, arguments);
       }
     };
@@ -169,7 +172,7 @@ module.exports = (function () {
       var args_array = _.toArray(arguments)
         , user = socket.user || {};
       if (args_array[0] !== 'newListener') {
-        //console.log(room.room_id + ': ' + user.username + ' sent:', args_array);
+        console.log(room.room_id + ': ' + user.username + ' sent:', args_array);
         $emit.apply(socket, arguments);
       }
     };

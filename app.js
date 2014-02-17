@@ -123,24 +123,26 @@
   console.log('server listening on port %d in %s mode',
               server.address().port, app.settings.env);
 
-  // Set up error handler for various conditions
-  var timer;
-  function handleError(err) {
+  // Set up handler for error or any kind of "kill" signal
+  var closing = false;
+  function handleErrorOrSignal(err) {
     if (err) {
       console.error('Error occurred:', err);
       console.error(err.stack);
     }
-    if (timer === undefined) {
+    if (! closing) {
       console.error('Shutting down server...');
+      closing = true;
+
       Table.refundAllTables(function() {
         console.log('exiting!');
         process.exit(1);
       });
     }
   }
-  process.on('SIGTERM', handleError)
-         .on('SIGINT', handleError)
-         .on('SIGHUP', handleError)
-         .on('uncaughtException', handleError);
-
+  process.on('SIGTERM', handleErrorOrSignal)
+         .on('SIGINT', handleErrorOrSignal)
+         .on('SIGHUP', handleErrorOrSignal)
+         .on('uncaughtException', handleErrorOrSignal);
+  
 })();

@@ -929,7 +929,7 @@ module.exports = (function () {
         , message_name = args_array[0]
         , event_name = 'message:' + message_name;
       if (args_array[0] !== 'newListener') {
-        console.log('(player) ' + self.username + ' sent:', args_array);
+        //console.log('(player) ' + self.username + ' sent:', args_array);
         // trigger event (prefixed by "message:") on this player object
         args_array[0] = event_name;
         self.emit.apply(self, args_array);
