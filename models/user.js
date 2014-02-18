@@ -344,34 +344,51 @@ module.exports = (function() {
     });
   };
 
+  // Ensure that a user's balance will only be updated by one updateBalance call at a time
+  var locks = {};
   // update balance of the given currency type, and create a transaction to store in the transactions array
-  UserSchema.methods.updateBalance = function(type, new_balance, transaction, cb) {
-    if (type !== 'satoshi' && type !== 'funbucks') { return cb('Invalid type passed to updateBalance: ' + type); }
-    var update_obj = { $set: {} };
-    update_obj.$set[type] = new_balance;
-    if (_.isObject(transaction)) {
-      transaction.currency = type;
-      transaction.new_balance = new_balance;
-      // buyins and cashouts go into table_transactions, for easier periodic cleanup
-      if (transaction.type === 'buyin' || transaction.type === 'cashout') {
-        update_obj.$push = { table_transactions: transaction };
-      }
-      else {
-        update_obj.$push = { transactions: transaction };
-      }
+  UserSchema.methods.updateBalance = function(currency, balance_change, transaction, cb) {
+    if (currency !== 'satoshi' && currency !== 'funbucks') { return cb('Invalid currency passed to updateBalance: ' + currency); }
+    var self = this
+      , username = self.username;
+    function performUpdate() {
+      self.fetch(function(fetch_err, user) {
+        if (fetch_err) { return cb(fetch_err); }
+        var new_balance = user[currency] + balance_change
+          , update_obj = { $set: {} };
+        update_obj.$set[currency] = new_balance;
+        if (_.isObject(transaction)) {
+          transaction.currency = currency;
+          transaction.new_balance = new_balance;
+          // buyins and cashouts go into table_transactions, for easier periodic cleanup
+          if (transaction.type === 'buyin' || transaction.type === 'cashout') {
+            update_obj.$push = { table_transactions: transaction };
+          }
+          else {
+            update_obj.$push = { transactions: transaction };
+          }
+        }
+        //console.log('update_obj is', update_obj);
+        user.update(update_obj, function(update_err) {
+          delete locks[username];
+          cb(update_err, new_balance);
+        });
+      });
     }
-    //console.log('update_obj is', update_obj);
-    this.update(update_obj, function(update_err) {
-      cb(update_err, new_balance);
-    });
+    if (locks[username]) {
+      setTimeout(function() {
+        self.updateBalance(currency, balance_change, transaction, cb);
+      }, 500);
+    }
+    else {
+      locks[username] = true;
+      performUpdate();
+    }
   };
 
   // lookup and return current, complete user document
   UserSchema.methods.fetch = function(cb) {
-    User.findOne({ _id: this._id }, function(err, user) {
-      //console.log('findOne returns', err, user);
-      cb(err, user);
-    });
+    User.findOne({ _id: this._id }, cb);
   };
 
   UserSchema.methods.onJoinTable = function(table_name) {
