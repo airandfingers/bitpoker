@@ -14887,7 +14887,7 @@ var logString = 'canvases cleared: '+canvasesCleared.toString()+', total cleared
 
 //var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame
 
-
+if(!_.isFunction(window.requestAnimationFrame)) window.requestAnimationFrame = function(){};
 
 //=============================START ACTION PART OF: updateStages FUNCTION==============================
 
