@@ -143,7 +143,7 @@ module.exports = (function () {
       , auto_action
       , auto_acted
       , game = self.game
-      , total_timeout = timeout
+      , total_timeout = timeout + self.game.TO_ACT_GRACE_PERIOD
       , act_timeout
       , update_interval;
 
