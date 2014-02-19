@@ -2,19 +2,41 @@
     //default canvas size is 690x480
     //all numbers are in base 0, including variable names and documentation
     //seat position 0 is top middle and proceeds clockwise
-function Table () {
-
+function Table () { 
 var self = this
 
-self.isIframe = function(){
 
+self.jQueryObjects = {}
+self.jQueryObjects.pokerTableDiv = $('#pokerTableWrapper')
+self.jQueryObjects.canvasDiv = $('#pokerCanvasDiv')
+self.jQueryObjects.tableChatFullDiv = $('#tableChatFullTextDiv')
+self.jQueryObjects.tableChatFullParagraph = $('#tableChatFullText')
+//this.jQueryObjects.chatBoxDiv = $('#chatDiv')
+self.jQueryObjects.chatBoxInput = $('#chat')
+self.jQueryObjects.cashierForm = $('#cashier')
+self.jQueryObjects.backingStoreRatioTester = $('#backingStoreRatioTester')
+
+
+var devicePixelRatio = window.devicePixelRatio || 1
+var backingStorePixelRatio = null
+
+
+var viewedCanvasWidth = self.jQueryObjects.canvasDiv.outerWidth(true); var viewedCanvasHeight = self.jQueryObjects.canvasDiv.outerHeight(true)
+var technicalCanvasWidth = null ; var technicalCanvasHeight = null;
+
+
+var expandedviewedCanvasWidth = viewedCanvasWidth*backingStoreRatio/devicePixelRatio
+
+
+
+
+self.isIframe = function(){
   if (_.isArray($('#server_values').data('current_table_names'))){return false}
     else{return true}
 }
 
 
 self.getPlayZoneLandingPage = function(){
-
  if (self.isIframe()){var page = window.parent}
 else{var page = window}
   return page
@@ -237,8 +259,6 @@ self.updateStages  (self.easelJSDisplayObjectChanged (self.images.tableChatFull.
 }//permanent preferences
 
 
- 
-
 this.performance = {}
 this.performance.numCanvasClears = 0
 
@@ -249,9 +269,6 @@ var zPositionData = {
   ,containers:{}
 }
 zPositionData.stageArray = ['staticItems', 'animatedAndMiddleTableItems', 'tableChatFull', 'cashier', 'initialMessageBox', 'secondMessageBox', 'finalMessageBox', 'loadingScreen']   
-
-
-
 
         this.gameState = {}
 
@@ -514,14 +531,7 @@ var initializeStage = new StageInitializationInfo(stageName, stageNumber, stageC
 
 }//create zpositiondata
 
-        this.jQueryObjects = {}
-        this.jQueryObjects.pokerTableDiv = $('#pokerTableWrapper')
-this.jQueryObjects.canvasDiv = $('#pokerCanvasDiv')
-this.jQueryObjects.tableChatFullDiv = $('#tableChatFullTextDiv')
-this.jQueryObjects.tableChatFullParagraph = $('#tableChatFullText')
-//this.jQueryObjects.chatBoxDiv = $('#chatDiv')
-this.jQueryObjects.chatBoxInput = $('#chat')
-this.jQueryObjects.cashierForm = $('#cashier')
+
 
 
 
@@ -3150,8 +3160,6 @@ if(backgroundLoad !== true){
     //define dimensions of preloading screen
     var introScreen = {}
    // console.log(this.arrayOfParentsOfStageAndOfContainerArray)
-    var canvasWidth = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.width
-    var canvasHeight = this.arrayOfParentsOfStageAndOfContainerArray[0].stage.canvas.height
     var titleSizeAndFont = '20px ' + permanentPreferences.defaultFontType.value
      var titleHeight = 24
      var titleAndpreloadFillDistanceY = 50
@@ -3161,10 +3169,10 @@ if(backgroundLoad !== true){
      var statusHeight = 17
      var statusColor = '#000000'
      var preloadFillX = 0
-    var preloadFillY  = canvasHeight
-    var preloadEndX = canvasWidth
-    var preloadEndY = canvasHeight
-    var preloadFillWidth = canvasWidth*.65
+    var preloadFillY  = viewedCanvasHeight
+    var preloadEndX = viewedCanvasWidth
+    var preloadEndY = viewedCanvasHeight
+    var preloadFillWidth = viewedCanvasWidth*.65
     var preloadFillHeight = 30
     var preloadFillBorderColor = '#009933'
     var preloadFillProgressColor = '#009933'
@@ -3180,7 +3188,7 @@ var preloadBarUnfinishedColor = '#00FFFF'
 var animationZ = getZ('animation','loadingScreen')
 var backgroundZ = getZ('background','loadingScreen')
 
-    introScreen.background = new this.images.Item(0, 0, canvasWidth, canvasHeight, backgroundZ)
+    introScreen.background = new this.images.Item(0, 0, viewedCanvasWidth, viewedCanvasHeight, backgroundZ)
  introScreen.background.addBitmap(self.images.sources.loadingBackgroundDefault, {
   //make image fit our stage
 onload:function(image){
@@ -3194,10 +3202,10 @@ introScreen.background.display()
 
 //new style, diagonal from bottom left
 
-    introScreen.preloadFill = new this.images.Item(preloadFillX, preloadFillY, canvasWidth, canvasHeight, getZ('fill','loadingScreen'))
-      introScreen.title = new this.images.Item(textOffsetX, textOffsetY, canvasWidth, titleHeight, animationZ)
-     introScreen.preloadBar = new this.images.Item(0, canvasHeight - preloadBarHeight, canvasWidth, preloadBarHeight, animationZ)
- introScreen.status = new this.images.Item(textOffsetX, introScreen.preloadBar.position.y - statusHeight - textOffsetY, canvasWidth, statusHeight, animationZ)
+    introScreen.preloadFill = new this.images.Item(preloadFillX, preloadFillY, viewedCanvasWidth, viewedCanvasHeight, getZ('fill','loadingScreen'))
+      introScreen.title = new this.images.Item(textOffsetX, textOffsetY, viewedCanvasWidth, titleHeight, animationZ)
+     introScreen.preloadBar = new this.images.Item(0, viewedCanvasHeight - preloadBarHeight, viewedCanvasWidth, preloadBarHeight, animationZ)
+ introScreen.status = new this.images.Item(textOffsetX, introScreen.preloadBar.position.y - statusHeight - textOffsetY, viewedCanvasWidth, statusHeight, animationZ)
     
  
 
@@ -3576,8 +3584,6 @@ createjs.Ticker.setInterval(30)
 this.images.setDefaults = function(){
 
 //========================IMAGE STATIC VARIABLES ==============================
- var canvasWidth = self.getParentOfStageObject(0).stage.canvas.width  
-     var canvasHeight = self.getParentOfStageObject(0).stage.canvas.height
      //small cards are 37 x 45
      //big cards are 48 x 76
      var cardWidth
@@ -3602,7 +3608,7 @@ this.images.setDefaults = function(){
       var checkBoxButtonSource = permanentPreferences.sourceObjects.value.checkBox
     var checkBoxButtonCheckedSource = permanentPreferences.sourceObjects.value.checkBoxChecked
        var checkBoxButtonWidth = 100
-     var checkBoxButtonHeight = checkBoxButtonSource.height    //  var checkBoxButtonHeight = 13
+     var checkBoxButtonHeight = 13
             var checkBoxButtonDistanceFromChat = 8
             var checkBoxButtonOffSetLeft = 2
            var  checkBoxButtonDistanceY = 3
@@ -3628,13 +3634,13 @@ this.images.setDefaults = function(){
             var fourthRowY = 371
 
             var firstColumnX = 10
-            var fifthColumnX = canvasWidth - firstColumnX - seatWidth
+            var fifthColumnX = viewedCanvasWidth - firstColumnX - seatWidth
 
-            var secondColumnX = canvasWidth/2 - seatWidth/2 - seatWidth - distanceBetweenSeatsX
-            var thirdColumnX = canvasWidth/2 - seatWidth/2 
+            var secondColumnX = viewedCanvasWidth/2 - seatWidth/2 - seatWidth - distanceBetweenSeatsX
+            var thirdColumnX = viewedCanvasWidth/2 - seatWidth/2 
             var fourthColumnX = thirdColumnX + seatWidth + distanceBetweenSeatsX
 
-var currencyDisplayWidth = canvasWidth
+var currencyDisplayWidth = viewedCanvasWidth
 var currencyDisplayHeight = 15
 var currencyDisplayTopOffset = 0
 var currencyDisplaySizeAndFont = '12px ' + permanentPreferences.defaultFontType.value
@@ -3644,8 +3650,8 @@ var currencyDisplayColor = 'white'
             var distanceBetweenCommunityCards = 2
 
 var dealerButtonSource = permanentPreferences.sourceObjects.value.dealerButton
-            var dealerButtonWidth = dealerButtonSource.width
-            var dealerButtonHeight = dealerButtonSource.height
+            var dealerButtonWidth = 32
+            var dealerButtonHeight = 24
 
             var topRowSeatDealerButtonX = -dealerButtonWidth/3
             var topRowSeatDealerButtonY = seatHeight+dealerButtonHeight*.1
@@ -3668,7 +3674,7 @@ var dealerButtonSource = permanentPreferences.sourceObjects.value.dealerButton
             var potDistanceToCommunity = -25
 
            var chipSource = permanentPreferences.sourceObjects.value.chips['10']
-         var chipDiameter = chipSource.width  // var chipDiameter = 20
+         var chipDiameter = 20 //chipSource.width  // var chipDiameter = 20
        // var chipDiameter = 20
             var distanceBetweenChipsY = 3
 
@@ -3686,7 +3692,7 @@ var dealerButtonSource = permanentPreferences.sourceObjects.value.dealerButton
           
             var distanceBetweenBetSizeAndHorizontalSlider = 15
             var distanceBetweenBetSizeAndCanvasX = firstColumnX
-            var betSizeWidth = canvasWidth/9.5
+            var betSizeWidth = viewedCanvasWidth/9.5
             var betSizeHeight = 25
 
             var verticalBetSliderWidth = 6
@@ -3729,8 +3735,8 @@ var distanceBetweenUpperButtonHitAreasY = 3
 
                    //---------------stand up----------
             var standUpSource = permanentPreferences.sourceObjects.value.standUp
-          var standUpWidth =   standUpSource.width          //   var standUpWidth = 158
-               var standUpHeight = standUpSource.height            //   var standUpHeight = 26
+          var standUpWidth =  158
+               var standUpHeight = 26
             var standUpHitAreaUpperLeftOffsetX  = 6 //distance from left of standUp image and mouse events
             var standUpHitAreaLowerLeftOffsetX = 37
             var standUpHitAreaTopOffset  = 1 // distance from top of standUp image and mouse event clicks
@@ -3739,8 +3745,8 @@ var distanceBetweenUpperButtonHitAreasY = 3
 
        //---------------exit table----------
      var exitTableSource = permanentPreferences.sourceObjects.value.exitTable 
-                var exitTableWidth =   exitTableSource.width                  //  var exitTableWidth = 135
-               var exitTableHeight = exitTableSource.height                     //  var exitTableHeight = 32
+                var exitTableWidth =  135
+               var exitTableHeight = 32
 
              var exitTableHitAreaUpperLeftOffsetX  = 18 //distance from left of ExitTable image and mouse events
             var exitTableHitAreaLowerLeftOffsetX = 49
@@ -3750,8 +3756,8 @@ var distanceBetweenUpperButtonHitAreasY = 3
             
             //---------------get chips----------
              var getChipsSource = permanentPreferences.sourceObjects.value.getChips 
-                var getChipsWidth =   getChipsSource.width                  //   var getChipsWidth = 149
-               var getChipsHeight = getChipsSource.height                     //  var getChipsHeight = 41
+                var getChipsWidth = 149
+               var getChipsHeight = 41
 
              var getChipsHitAreaLeftOffset  = 1 //distance from left of getChips image and mouse events
             var getChipsHitAreaTopOffset  = 1 // distance from top of getChips image and mouse event clicks
@@ -3761,8 +3767,8 @@ var distanceBetweenUpperButtonHitAreasY = 3
 
 //show/hidde table chat full buttons
      var showTableChatFullSource = permanentPreferences.sourceObjects.value.showTableChatFull 
-                var showTableChatFullWidth =   showTableChatFullSource.width                  //   var showTableChatFullWidth = 112
-               var showTableChatFullHeight = showTableChatFullSource.height                     //  var var showTableChatFullHeight =  31
+                var showTableChatFullWidth =   112
+               var showTableChatFullHeight =   31
                   
 var showTableChatFullHitAreaOffsetLeft= 1
 var showTableChatFullHitAreaOffsetTop = 1
@@ -3780,15 +3786,15 @@ var showTableChatFullHitAreaOffsetBottomRight = 27
 
 
   //------------------------------community cards---------------------------
-        this.community[0] = new this.Item(canvasWidth/2-cardWidth/2-cardWidth*2-distanceBetweenCommunityCards*2,communityY,cardWidth, cardHeight,getZ('community'))
-        this.community[1] = new this.Item(canvasWidth/2-cardWidth/2-cardWidth-distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,getZ('community'))
-        this.community[2] = new this.Item(canvasWidth/2-cardWidth/2,communityY,cardWidth, cardHeight, getZ('community'))
-        this.community[3] = new this.Item(canvasWidth/2+cardWidth/2+distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,getZ('community'))
-        this.community[4] = new this.Item(canvasWidth/2+cardWidth/2+cardWidth+2*distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,getZ('community'))
+        this.community[0] = new this.Item(viewedCanvasWidth/2-cardWidth/2-cardWidth*2-distanceBetweenCommunityCards*2,communityY,cardWidth, cardHeight,getZ('community'))
+        this.community[1] = new this.Item(viewedCanvasWidth/2-cardWidth/2-cardWidth-distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,getZ('community'))
+        this.community[2] = new this.Item(viewedCanvasWidth/2-cardWidth/2,communityY,cardWidth, cardHeight, getZ('community'))
+        this.community[3] = new this.Item(viewedCanvasWidth/2+cardWidth/2+distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,getZ('community'))
+        this.community[4] = new this.Item(viewedCanvasWidth/2+cardWidth/2+cardWidth+2*distanceBetweenCommunityCards,communityY,cardWidth, cardHeight,getZ('community'))
 
   //------------------card spawn location---------------------------------
 
-           this.startingCard = new this.Item(canvasWidth, canvasHeight, cardWidth, cardHeight, getZ('cardAnimation'))
+           this.startingCard = new this.Item(viewedCanvasWidth, viewedCanvasHeight, cardWidth, cardHeight, getZ('cardAnimation'))
 
 
             //------------------------------------dealerButton------------------------------------
@@ -3826,11 +3832,11 @@ self.images.pots[potNumber].potSize.text.maxWidth = 999999
 
 
             //---------pots-------------------
-    var pot0X = canvasWidth/2-cardWidth/2-cardWidth; var pot0Y = communityY - potHeight - chipDiameter
+    var pot0X = viewedCanvasWidth/2-cardWidth/2-cardWidth; var pot0Y = communityY - potHeight - chipDiameter
 
 createPotItems(0, pot0X, pot0Y)
 
-   /*         this.pots[0].firstChip = new this.Item(canvasWidth/2-cardWidth/2-cardWidth,communityY+potDistanceToCommunity,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems'))
+   /*         this.pots[0].firstChip = new this.Item(viewedCanvasWidth/2-cardWidth/2-cardWidth,communityY+potDistanceToCommunity,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems'))
               this.pots[0].secondChip = new this.Item(this.pots[0].firstChip.position.x,this.pots[0].firstChip.position.y-distanceBetweenChipsY,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems'))
               this.pots[0].secondColumnChip = new this.Item(this.pots[0].firstChip.position.x+chipDiameter+self.imageData.distanceBetweenChipColumns,this.pots[0].firstChip.position.y,chipDiameter,chipDiameter,getZ('animatedAndMiddleTableItems'))
            
@@ -3875,7 +3881,7 @@ createPotItems(6, pot6X, pot6Y, {columnDirection:'left'})
 var pot7X = pot6X; var pot7Y = pot2Y
 createPotItems(7, pot7X, pot7Y, {columnDirection:'left'})
 
-var pot8X = canvasWidth/2 - totalPotWidth/2; var pot8Y =  this.totalPotSize.position.y - maxTotalPotHeight
+var pot8X = viewedCanvasWidth/2 - totalPotWidth/2; var pot8Y =  this.totalPotSize.position.y - maxTotalPotHeight
 createPotItems(8, pot8X, pot8Y)
 
 
@@ -3893,7 +3899,7 @@ createPotItems(8, pot8X, pot8Y)
 */
 
               //---------------------player chat input---------------
-              this.htmlTableChatBox = new this.Item(htmlTableChatBoxLeftOffset,canvasHeight - htmlTableChatBoxBottomOffset-htmlTableChatBoxHeight-htmlTableChatBorderSize*2,htmlTableChatBoxWidth,htmlTableChatBoxHeight, getZ('chat','staticItems'))
+              this.htmlTableChatBox = new this.Item(htmlTableChatBoxLeftOffset,viewedCanvasHeight - htmlTableChatBoxBottomOffset-htmlTableChatBoxHeight-htmlTableChatBorderSize*2,htmlTableChatBoxWidth,htmlTableChatBoxHeight, getZ('chat','staticItems'))
 
 //this.htmlTableChatBox.addElement(self.jQueryObjects.chatBoxInput[0], 'image')
  this.htmlTableChatBox.addElement(self.jQueryObjects.chatBoxInput[0], 'image')
@@ -4467,12 +4473,12 @@ self.images.seats[seatNumber][index].seatObjectAncestor = self.images.seats[seat
 
 var maxActionButtonOffsetBottom = 6 
 //we are going to position action button between bottom seat and bottom of canvas
-var distanceFromBottomOfSeat0ToBottomOfCanvas = canvasHeight - self.images.seats[0].seat.position.y - self.images.seats[0].seat.size.y
+var distanceFromBottomOfSeat0ToBottomOfCanvas = viewedCanvasHeight - self.images.seats[0].seat.position.y - self.images.seats[0].seat.size.y
 console.log('distance fromseat to bottom = '+distanceFromBottomOfSeat0ToBottomOfCanvas)
 var freeSpace = distanceFromBottomOfSeat0ToBottomOfCanvas - actionButtonHeight
 console.log(freeSpace)
-if(freeSpace < 0){var actionButtonY = canvasHeight - actionButtonHeight}
-else{var actionButtonY = canvasHeight - distanceFromBottomOfSeat0ToBottomOfCanvas + freeSpace/2}
+if(freeSpace < 0){var actionButtonY = viewedCanvasHeight - actionButtonHeight}
+else{var actionButtonY = viewedCanvasHeight - distanceFromBottomOfSeat0ToBottomOfCanvas + freeSpace/2}
 
 
    this.fold = new this.Item(actionButtonLeftX,actionButtonY,actionButtonWidth,actionButtonHeight,getZ('buttons','staticItems'), {messages:['act','fold']})
@@ -4537,7 +4543,7 @@ $(this.call.image).add(this.raise.image).add(this.bet.image).css('line-height', 
 
         //-----------------bet slider-----------------------------
         /*
-              this.betSlider.horizontal = new this.Item (this.fold.position.x,canvasHeight-horizontalBetSliderOffsetBottom-horizontalBetSliderHeight,horizontalBetSliderWidth,horizontalBetSliderHeight,getZ('staticItems','buttons'))
+              this.betSlider.horizontal = new this.Item (this.fold.position.x,viewedCanvasHeight-horizontalBetSliderOffsetBottom-horizontalBetSliderHeight,horizontalBetSliderWidth,horizontalBetSliderHeight,getZ('staticItems','buttons'))
               var verticalY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.size.y/2-verticalBetSliderHeight/2
       this.betSlider.vertical = new this.Item(this.betSlider.horizontal.position.x,verticalY,verticalBetSliderWidth,verticalBetSliderHeight,getZ('staticItems','buttons'))
 var betSizeX = this.betSlider.horizontal.position.x+this.betSlider.horizontal.size.x + distanceBetweenBetSizeAndHorizontalSlider
@@ -4546,7 +4552,7 @@ var betSizeY = this.betSlider.horizontal.position.y+this.betSlider.horizontal.si
 */
 
 
-var betSizeX = canvasWidth - betSizeWidth - distanceBetweenBetSizeAndCanvasX
+var betSizeX = viewedCanvasWidth - betSizeWidth - distanceBetweenBetSizeAndCanvasX
 var betSizeY = self.images.raise.position.y + self.images.raise.size.y/2 - betSizeHeight/2 
 
 //betSIZE
@@ -4683,7 +4689,7 @@ var upperButtonTextCSS = {
 var upperButtonFontType = 'Myriad Pro'
 
 
-        this.standUp = new this.Item(canvasWidth - standUpWidth,0, standUpWidth, standUpHeight, getZ('buttons','staticItems'))
+        this.standUp = new this.Item(viewedCanvasWidth - standUpWidth,0, standUpWidth, standUpHeight, getZ('buttons','staticItems'))
 this.standUp.addBitmap(permanentPreferences.sourceObjects.value.standUp)
    //define shape for hit area of  stand
    var standUpHit = new createjs.Shape()
@@ -4756,7 +4762,7 @@ this.getChipsDisabledShape.image.alpha = disabledButtonOverlayAlpha
    //--------------upper right exit Table--------------
 var exitTableOffsetY = distanceBetweenUpperButtonHitAreasY - exitTableHitAreaTopOffset - standUpHitAreaBottomOffset
 
- this.exitTable = new this.Item(canvasWidth - exitTableWidth, standUpHeight, exitTableWidth, exitTableHeight, getZ('buttons','staticItems'))
+ this.exitTable = new this.Item(viewedCanvasWidth - exitTableWidth, standUpHeight, exitTableWidth, exitTableHeight, getZ('buttons','staticItems'))
 this.exitTable.addBitmap( permanentPreferences.sourceObjects.value.exitTable)
    //define shape of hit area
 
@@ -4775,7 +4781,7 @@ this.exitTable.on('click', self.events.exitTableClick)
         
 
 //-------------------------currency display--------------------------
-var currencyDisplayX = canvasWidth/2 - currencyDisplayWidth/2
+var currencyDisplayX = viewedCanvasWidth/2 - currencyDisplayWidth/2
 
 this.currencyDisplay = new this.Item(currencyDisplayX, currencyDisplayTopOffset, currencyDisplayWidth, currencyDisplayHeight, getZ('buttons','staticItems'))
 this.currencyDisplay.addText('', currencyDisplaySizeAndFont, currencyDisplayColor)
@@ -4803,7 +4809,7 @@ self.images.messageBox = []
 this.table = new this.Item(0,tableY, 0,0, getZ('table','staticItems'))
 this.table.addBitmap( permanentPreferences.sourceObjects.value.table)
 //console.log('table item');console.log(this.table)
-var tableX = canvasWidth/2 - this.table.size.x/2
+var tableX = viewedCanvasWidth/2 - this.table.size.x/2
 self.setImageItemPositionAndTextBasedOnImageChange(this.table, tableX, null, {update:false})
 
 
@@ -4815,8 +4821,8 @@ var cashierWindowContainer = 0
  //declare size variables
 
     var cashierWindowSource = permanentPreferences.sourceObjects.value.cashierBackground
-            var cashierWindowWidth = cashierWindowSource.width //    var cashierWindowWidth = 298
-             var cashierWindowHeight = cashierWindowSource.height     //         var cashierWindowHeight = 360
+            var cashierWindowWidth =  298
+             var cashierWindowHeight =  360
     
   
         
@@ -4836,12 +4842,12 @@ var cashierWindowContainer = 0
         var columns = 2
         var rows = 10
 
-        var cashierWindowX = canvasWidth/2 - cashierWindowWidth/2
-        var cashierWindowY = canvasHeight/2 - cashierWindowHeight/2
+        var cashierWindowX = viewedCanvasWidth/2 - cashierWindowWidth/2
+        var cashierWindowY = viewedCanvasHeight/2 - cashierWindowHeight/2
         
    var closeWindowSource = permanentPreferences.sourceObjects.value.cashierCloseX
-          var closeWindowWidth = closeWindowSource.width //var closeWindowWidth = 31
-        var closeWindowHeight = closeWindowSource.height     //   var closeWindowHeight = 20
+          var closeWindowWidth = 31
+        var closeWindowHeight = 20
 
         var closeWindowY = cashierWindowY +1 
         var closeWindowX = cashierWindowX + cashierWindowWidth - closeWindowWidth- 7
@@ -5794,7 +5800,7 @@ popup('mailto:CryptoPoker@gmail.com')
 var growlContainerWidth = self.images.standUp.size.x*1.6
 var growlContainerY = self.images.standUp.size.y
 
-self.images['growl-container'] = new self.images.Item(canvasWidth - growlContainerWidth, growlContainerY, growlContainerWidth, 0, getZ('growl-container'))
+self.images['growl-container'] = new self.images.Item(viewedCanvasWidth - growlContainerWidth, growlContainerY, growlContainerWidth, 0, getZ('growl-container'))
 self.images['growl-container'].addElement($("<div id = 'growl-container'>")[0], 'image', {
 
 css:{
@@ -5966,17 +5972,14 @@ var newCanvasIDNumber = (previousCanvasIDNumber + nextCanvasIDNumber )/2//increm
 if(options.stageOptions.newCanvas === true || options.stageNumber === 0){
   var newDivID = 'canvas'+newCanvasIDNumber+'Div'
 var newCanvasID = 'canvas'+newCanvasIDNumber
-//defaults
-var canvasWidth = self.jQueryObjects.canvasDiv.outerWidth(true)
-var canvasHeight  = self.jQueryObjects.canvasDiv.outerHeight(true)
-//var canvasWidth = self.jQueryObjects.canvasDiv[0].width
-//var canvasHeight = self.jQueryObjects.canvasDiv[0].height
+
+//defaults which were assigned at top
 var canvasClass = self.css.canvas
 var zIndexesPerDiv = 10
 
-self.jQueryObjects.canvasDiv.append('<div id = '+'\''+newDivID+'\'' + ' width = '+'\''+canvasWidth+'\''+' height=' +'\''+canvasHeight+'\''+'></canvas>')
+self.jQueryObjects.canvasDiv.append('<div id = '+'\''+newDivID+'\'' + ' width = '+'\''+viewedCanvasWidth+'\''+' height=' +'\''+viewedCanvasHeight+'\''+'></canvas>')
 
-$('#'+newDivID).append('<canvas id = '+'\''+newCanvasID+'\'' + ' width = '+'\''+canvasWidth+'\''+' height=' +'\''+canvasHeight+'\''+'></canvas>')
+$('#'+newDivID).append('<canvas id = '+'\''+newCanvasID+'\'' + ' width = '+'\''+viewedCanvasWidth+'\''+' height=' +'\''+viewedCanvasHeight+'\''+'></canvas>')
 
 //console.log('created canvas with canvas id of: '+newCanvasID)
 //set proper z-index
@@ -5986,8 +5989,8 @@ $('#'+newCanvasID).addClass(canvasClass + ' ' + self.css.unselectable + ' ' + se
 //$('#'+newCanvasID).css('z-index',0)
 $('#'+newDivID).css({
   'z-index': newCanvasIDNumber*zIndexesPerDiv
-,'width':canvasWidth
-,'height':canvasHeight
+,'width':viewedCanvasWidth
+,'height':viewedCanvasHeight
   }).addClass(self.css.noFat)
 
 }//if we want to create a new canvas
@@ -6018,6 +6021,28 @@ initializeStageSettings(options)
 
 this.initializeStagesAndCanvasCallThisFirst = function(){
 
+//assign the backingStoreRatio
+backingStorePixelRatio = function(){
+
+var context = self.jQueryObjects.backingStoreRatioTester[0].getContext('2d')
+
+return context.webkitBackingStorePixelRatio ||
+context.mozBackingStorePixelRatio ||
+context.msBackingStorePixelRatio ||
+context.oBackingStorePixelRatio ||
+context.backingStorePixelRatio || 1
+
+}()//get the ratio that the canvas is styled down to
+
+
+technicalCanvasWidth = viewedCanvasWidth*backingStorePixelRatio
+
+
+
+
+
+
+
   createZPositionData()
 
 //console.log('initializeStagesAndCanvasCallThisFirst called')
@@ -6037,11 +6062,9 @@ this.initializeStagesAndCanvasCallThisFirst = function(){
 
 
         this.setBackground = function(src, options){    
-           var canvasHeight =  this.getParentOfStageObject(0).stage.canvas.height
-           var canvasWidth = this.getParentOfStageObject(0).stage.canvas.width
 
   if(self.images.background instanceof self.images.Item != true){
-        self.images.background = new this.images.Item(0, 0, canvasWidth, canvasHeight, getZ('background','staticItems'))
+        self.images.background = new this.images.Item(0, 0, viewedCanvasWidth, viewedCanvasHeight, getZ('background','staticItems'))
       }
 
 var background = self.images.background
@@ -9846,7 +9869,7 @@ if(!options){var options = {}}
 options.update = false
 var stagesToUpdate = []
 
-seat =  this.gameState.userSeatNumber
+seat =  self.gameState.userSeatNumber
 var currentStackSizes = this.getCurrentStackSizes()
 var currentBetSizes = this.getCurrentBetSizes()
 
@@ -9867,7 +9890,7 @@ if(!_.isNumber(seat) ||   self.getPreactionData('toAct', {seat:'table'}) === sea
 || currentStackSizes[seat] <= 0 || canPlayerActDefaultsToUser() === false
  /*||  _.without(currentStackSizes, 0).length <=1 */){
  // console.log('hiding options')
-stagesToUpdate.push(this.hideChildren (this.images.preactions), options)
+stagesToUpdate.push(self.hideChildren (self.images.preactions), options)
 }
 
 else{
@@ -14461,7 +14484,7 @@ this.updateUserOptionsBasedOnFlagsAndPreactions = function(options){
 if(!options){var options = {}}
   var update = options.update
 options.update = false
-var stagesToUpdate = [] 
+var stagesToUpdate = []
 
 var currentStackSizes = self.getCurrentStackSizes()
   stagesToUpdate.push(   self.updatePreactionOptionDisplayBasedOnLocalData(options) )
@@ -15669,7 +15692,7 @@ self.clearExpirationData('act', seatNum)
             foldSound.play()
         self.hideHoleCards(seatNum)
       //  self.hideBet(seatNum)
-        self.setPreactionData('hand', 'inHand', false)
+        self.setPreactionData('hand', 'inHand', false, {seat:seatNum})
         if(player.seat == self.gameState.userSeatNumber){
             self.hideChildren(self.images.foldToAnyBet)
             self.hideChildren(self.images.foldToAnyBetOn)
