@@ -25,7 +25,7 @@ var viewedCanvasWidth = self.jQueryObjects.canvasDiv.outerWidth(true); var viewe
 var technicalCanvasWidth = null ; var technicalCanvasHeight = null;
 
 
-var expandedviewedCanvasWidth = viewedCanvasWidth*backingStoreRatio/devicePixelRatio
+var expandedviewedCanvasWidth = viewedCanvasWidth*backingStorePixelRatio/devicePixelRatio
 
 
 
@@ -6021,7 +6021,7 @@ initializeStageSettings(options)
 
 this.initializeStagesAndCanvasCallThisFirst = function(){
 
-//assign the backingStoreRatio
+//assign the backingStorePixelRatio
 backingStorePixelRatio = function(){
 
 var context = self.jQueryObjects.backingStoreRatioTester[0].getContext('2d')
