@@ -10138,17 +10138,21 @@ this.clearExpirationData('hand', seat, options)}//if not hand
 //clear table data
 var tableExpirationObject = self.gameState
 
-if(!_.isEmpty(tableExpirationObject)){clearExpirationObject(tableExpirationObject)}
 
-  if(!_.isNumber(seat)){
-    if( _.isNumber(this.gameState.userSeatNumber)){var seat = this.gameState.userSeatNumber}
-      else{throw 'no player number'}
-    }//if seat not given
+
+
 
 if(_.isNumber(seat)){
 var playerSeatObject = self.gameState.seats[seat]
 if(!_.isEmpty(tableExpirationObject)){clearExpirationObject(playerSeatObject)}
 }
+
+  else if(!_.isNumber(seat)){
+      if( _.isNumber(this.gameState.userSeatNumber) && seat != 'table'){var seat = this.gameState.userSeatNumber}
+    else{if(!_.isEmpty(tableExpirationObject)){clearExpirationObject(tableExpirationObject)}
+    }//if seat not given
+
+
 
 
 
@@ -15542,7 +15546,7 @@ break;
 */
  self.clearExpirationData('street', i)
         }
-
+ self.clearExpirationData('street', 'table')
  self.streetEnds(potSizes)
 
     })
@@ -15675,6 +15679,7 @@ var action = action.toUpperCase()
 
 //clear on act data
 self.clearExpirationData('act', seatNum)
+self.clearExpirationData('act', 'table')
      if(action != 'SKIP') {self.playerActs(seatNum, action, 1000)}
      //   else{ throw ''}
 
@@ -15720,11 +15725,15 @@ self.clearExpirationData('act', seatNum)
              //clear once for user
              if(seatNum === self.gameState.userSeatNumber){
               self.clearExpirationData('once', player.seat)
+              self.clearExpirationData('once', 'table')
         //unbind scroll wheel events
 $(self.getParentOfStageObject(self.images.betSlider.slider).div).off('mousewheel.adjustBetSize')
 
             }
-            else{ self.clearExpirationData('act', seatNum) }
+            else{ 
+              self.clearExpirationData('act', seatNum) 
+self.clearExpirationData('act', 'table')
+            }
 
 
 stagesToUpdate.push(self.displayCorrectSeatItems(player.seat, {update:false}) )
@@ -16070,6 +16079,7 @@ stagesToUpdate.push(self.displayCorrectSeatItems(player.seat, {update:false}))
 for(var i = 0;i<self.gameState.seats.length;i++){
   self.clearExpirationData('hand', i)
 }
+self.clearExpirationData('hand', 'table')
 self.updateUserOptionsBasedOnFlagsAndPreactions()
          self.winners(players)
    
