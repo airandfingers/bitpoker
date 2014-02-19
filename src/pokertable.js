@@ -10150,8 +10150,8 @@ if(!_.isEmpty(tableExpirationObject)){clearExpirationObject(playerSeatObject)}
   else if(!_.isNumber(seat)){
       if( _.isNumber(this.gameState.userSeatNumber) && seat != 'table'){var seat = this.gameState.userSeatNumber}
     else{if(!_.isEmpty(tableExpirationObject)){clearExpirationObject(tableExpirationObject)}
-    }//if seat not given
-
+    }
+}//if seat not a number
 
 
 
