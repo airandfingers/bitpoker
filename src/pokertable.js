@@ -11967,13 +11967,10 @@ if(update === false){return stagesToUpdate}
 
     }
 
-
     this.playerActs = function(seatNumber, actionText, displayTime){
          //if player is current user, hide action buttons
         if(seatNumber === self.gameState.userSeatNumber){this.hideAllActionButtons(this.gameState.userSeatNumber)}
 self.setPreactionData('permanent', 'displayMessageType', 'action', {server:false, seat:seatNumber})
-
-    
       
         var interval = 25
         
@@ -12012,7 +12009,7 @@ var displayMessageType = self.getPreactionData('displayMessageType' , {seat:seat
     }
 
 
-    this.playerWins =function(seatNumber, chipsWon, displayTime){
+    this.playerWins = function(seatNumber, chipsWon, displayTime){
 
         self.images.seats[seatNumber].winner.updateText('')
 self.setPreactionData('permanent', 'displayMessageType', 'winner', {seat:seatNumber, server:false})
@@ -14888,7 +14885,7 @@ var logString = 'canvases cleared: '+canvasesCleared.toString()+', total cleared
 
 }//updateStagesFromArray function
 
-var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame
+//var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame
 
 
 
@@ -14896,7 +14893,7 @@ var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAni
 
 if(!options){var options  = {}}
 
-requestAnimationFrame(function(){})//update DOM
+window.requestAnimationFrame(function(){})//update DOM
 
   if(_.isNumber(stageNumberLeaveBlankForAll)){ //if given number as parameter
 
@@ -14955,7 +14952,7 @@ for(var i = 0;i<this.arrayOfParentsOfStageAndOfContainerArray.length;i++){allSta
  this.updateStages( allStages, options)
 }//if no stage number specified
 
-requestAnimationFrame(function(){})
+window.requestAnimationFrame(function(){})
 
 }//self.updateStages
 

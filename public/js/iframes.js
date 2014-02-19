@@ -154,10 +154,10 @@ height:'calc(100% - ' + headerHeight+'px)'
   function setIframeCloseHandler(table_name, close_handler) {
  //   console.log('setIframeCloseHandler called with', table_name, close_handler);
     var $iframe = findIframe(table_name);
-    $iframe.find('.iframe_close').click(function(e){
-      console.log('iframe_close trigger');
+    $iframe.find('.iframe_close').off('click.IframeCloseHandler').on('click.IframeCloseHandler', function(e){
+      //console.log('iframe_close trigger');
       close_handler();
-    });
+    })
   }
 
   function setIframeTitle(table_name, title) {
