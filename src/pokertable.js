@@ -14885,7 +14885,7 @@ var logString = 'canvases cleared: '+canvasesCleared.toString()+', total cleared
 
 }//updateStagesFromArray function
 
-var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame
+//var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame
 
 
 
@@ -14893,7 +14893,7 @@ var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAni
 
 if(!options){var options  = {}}
 
-requestAnimationFrame(function(){})//update DOM
+window.requestAnimationFrame(function(){})//update DOM
 
   if(_.isNumber(stageNumberLeaveBlankForAll)){ //if given number as parameter
 
@@ -14952,7 +14952,7 @@ for(var i = 0;i<this.arrayOfParentsOfStageAndOfContainerArray.length;i++){allSta
  this.updateStages( allStages, options)
 }//if no stage number specified
 
-requestAnimationFrame(function(){})
+window.requestAnimationFrame(function(){})
 
 }//self.updateStages
 
