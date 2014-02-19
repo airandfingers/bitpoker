@@ -4793,6 +4793,9 @@ var fourColorDeckData = {
      frames: {width:37, height:45}
 
 }
+
+this.currencyDisplay.disableMouseEvents()
+
 /*
 this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
 
