@@ -38,7 +38,10 @@
         store: db.session_store
       , secret: db.SESSION_SECRET
       , sid_name: 'express.sid'
-      , cookie: { maxAge: 3600000 } // 1 hour
+      , cookie: {
+          maxAge: 3600000 // 1 hour
+        , secure: true // only send via HTTPS
+      }
     };
   //console.log('session_settings', session_settings);
   console.log('starting up.. node version is', process.versions.node);
@@ -102,7 +105,10 @@
   //Production-mode-specific middleware configuration
   app.configure('production', function() {
     // Display "quiet" errors - no exceptions or stack traces
-    app.use(express.errorHandler());
+    app.use(function(req, res) {
+      res.status(500);
+      res.end();
+    });
   });
 
   // Define routes that the app responds to
@@ -131,7 +137,7 @@
       console.error(err.stack);
     }
     if (! closing) {
-      console.error('Shutting down server...');
+      console.log('Shutting down server...');
       closing = true;
 
       Table.refundAllTables(function() {

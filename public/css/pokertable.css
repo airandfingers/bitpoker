@@ -17,17 +17,6 @@ left:0px;
 right:0px;
 }
 
-#iframe_container {
-    text-align: left;
-    margin: 0;
-    position: absolute;
-    z-index:-1;
-
-    height: 100% ;
-    width: 100%;
-    overflow:auto;
-}
-
 #pokerTableWrapper {
   background-color:black;
   clear:both;

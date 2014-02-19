@@ -63,6 +63,8 @@
   , MIN_BUYIN_TIME_ENFORCED: { type: Number, default: defaults.MIN_BUYIN_TIME_ENFORCED }
     // how often (in ms) to update the active player's time_to_act
   , TO_ACT_UPDATE_INTERVAL: { type: Number, default: defaults.TO_ACT_UPDATE_INTERVAL }
+    // how much longer to wait for a player's action than what we tell him/her
+  , TO_ACT_GRACE_PERIOD: { type: Number, default: defaults.TO_ACT_GRACE_PERIOD }
   });
 
   NoLimitGameSchema.statics.setup = function() {
