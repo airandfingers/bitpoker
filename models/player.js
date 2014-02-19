@@ -27,8 +27,10 @@ module.exports = (function () {
     , hand: { type: [String], hand_default: function() { return []; } }
       // the number of chips this player is betting in the current stage
     , current_bet: { type: Number, hand_default: 0 }
-    // whether this player has made a bet in the current hand
+      // whether this player has made a bet in the current hand
     , has_bet: { type: Boolean, hand_default: false }
+      // how much this player has contributed to the current hand's pot
+    , total_bet: { type: Number, hand_default: 0 }
     /*// whether this player has paid a big blind at this table yet
     , blind_paid: { type: Boolean, default: false }*/
       // the flags that describe how this player will act automatically
@@ -107,6 +109,7 @@ module.exports = (function () {
   PlayerSchema.methods.giveBet = function() {
     var amount = this.current_bet;
     this.current_bet = 0;
+    this.total_bet += amount;
     return amount;
   };
 
