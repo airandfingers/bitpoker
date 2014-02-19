@@ -135,6 +135,10 @@ h2 {
     font-size: 1.4em; /* 22px/16 */
 }
 
+h3 {
+  font-size: 1.2em;
+}
+
 #account {
     background-color: rgba(0, 0, 0, .8);
     display: none;
@@ -276,8 +280,6 @@ padding-top:0;
 #funbucks_leaderboard, #satoshi_leaderboard {
     max-width: 600px;
 }
-
-
 
 #lobby {
     margin-left: auto;
@@ -484,12 +486,14 @@ top:0;
 left:50%;
 }
 
-.table_6{
-right:0;
-top:50%;
+.table_6 {
+    left:-webkit-calc(100% - 665px);
+    left:-moz-calc(100% - 665px);
+    left:calc(100% - 665px);
+    top:50%;
 }
 
-.table_7{
+.table_7 {
 left:50%;
 bottom:0;
 }
