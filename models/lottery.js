@@ -227,28 +227,15 @@ var payout = lottery.payout
 User.findOne({username:this.winning_username}, function(err, user){
 if(err){console.log('winner not found');return console.error(err)}
 console.log(user)
-user.checkBalance(lottery.currency, function(err, res){
 
-  if(_.isNumber(res)){var current_balance = res}
-    else if(res instanceof User){var current_balance = res[lottery.currency]}
-console.log('bheck balance completed')
-console.log(user)
-
-var new_balance = payout + current_balance
 var transaction = {
   type: 'lottery id: ' + lottery['_id']
   ,amount: payout
-  ,currency: lottery.currency
   ,timestamp: new Date()
-  , new_balance: new_balance
 }
 
-user.updateBalance(lottery.currency, new_balance , transaction ,cb )
+user.updateBalance(lottery.currency, payout , transaction ,cb )
   
-})//check the user's balance
-
-
-
 
 })//find the user by username
 

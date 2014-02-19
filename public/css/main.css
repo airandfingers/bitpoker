@@ -437,19 +437,16 @@ background:red;
 
 
 
-#iframe_container
-{
-
+#iframe_container{
     text-align: left;
     margin: 0;
     position: absolute;
-left:0;
-top:0;
-display:flex;
+    left:0;
+    top:0;
+    display:flex;
     height: 100% ;
     width: 100%;
     overflow:auto;
-
 }
 
 .table_0{

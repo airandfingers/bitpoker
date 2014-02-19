@@ -17,12 +17,10 @@
     else if (status >= 400) color = 33
     else if (status >= 300) color = 36;
 
-    return '\033[90m' + req.method
-      + ' ' + req.headers.host+ req.originalUrl + ' '
-      + '\033[' + color + 'm' + res.statusCode
-      + ' \033[90m'
-      + (new Date - req._startTime)
-      + 'ms\033[0m';
+    return '\033[90m' + req.method +
+      ' ' + req.headers.host+ req.originalUrl + ' ' +
+      '\033[' + color + 'm' + res.statusCode + ' ' +
+      '\033[90m' + (new Date - req._startTime) + 'ms\033[0m';
   };
 
   // Create an Express app and an HTTP server
@@ -40,7 +38,10 @@
         store: db.session_store
       , secret: db.SESSION_SECRET
       , sid_name: 'express.sid'
-      , cookie: { maxAge: 3600000 } // 1 hour
+      , cookie: {
+          maxAge: 3600000 // 1 hour
+        , secure: true // only send via HTTPS
+      }
     };
   //console.log('session_settings', session_settings);
   console.log('starting up.. node version is', process.versions.node);
@@ -104,7 +105,10 @@
   //Production-mode-specific middleware configuration
   app.configure('production', function() {
     // Display "quiet" errors - no exceptions or stack traces
-    app.use(express.errorHandler());
+    app.use(function(req, res) {
+      res.status(500);
+      res.end();
+    });
   });
 
   // Define routes that the app responds to
@@ -125,25 +129,26 @@
   console.log('server listening on port %d in %s mode',
               server.address().port, app.settings.env);
 
-  // Set up error handler for various conditions
-  var timer;
-  function handleError(err) {
+  // Set up handler for error or any kind of "kill" signal
+  var closing = false;
+  function handleErrorOrSignal(err) {
     if (err) {
       console.error('Error occurred:', err);
       console.error(err.stack);
     }
-    if (timer === undefined) {
-      console.error('Shutting down server...');
+    if (! closing) {
+      console.log('Shutting down server...');
+      closing = true;
+
       Table.refundAllTables(function() {
         console.log('exiting!');
         process.exit(1);
       });
     }
   }
-  process.on('SIGTERM', handleError) // 
-    //     .on('SIGKILL', handleError) // 
-         .on('SIGINT', handleError) // Ctrl+C
-         .on('SIGHUP', handleError)
-         .on('uncaughtException', handleError);
-
+  process.on('SIGTERM', handleErrorOrSignal)
+         .on('SIGINT', handleErrorOrSignal)
+         .on('SIGHUP', handleErrorOrSignal)
+         .on('uncaughtException', handleErrorOrSignal);
+  
 })();

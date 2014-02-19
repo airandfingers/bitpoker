@@ -61,16 +61,18 @@ module.exports = (function () {
   };
 
   // instance methods - document.method()
-  RoomSchema.methods.join = function(socket) {
+  RoomSchema.methods.join = function(socket, is_user_room) {
     var self = this;
 
     self.emit('socket_join', socket);
-    //console.log('Socket joining ' + self.room_id + ':', socket.user_id);
+    //console.log('Socket joining ' + self.room_id + ':', socket.id, socket.user.username);
     socket.join(self.room_id);
     socket.room_id = self.room_id;
 
-    // attach handlers for messages as defined in Room.messages
-    io.bindMessageHandlers.call(self, socket, static_properties.messages);
+    if (is_user_room !== true) {
+      // attach handlers for messages as defined in Room.messages
+      io.bindMessageHandlers.call(self, socket, static_properties.messages);
+    }
   };
 
   RoomSchema.methods.leave = function(socket) {
@@ -91,9 +93,12 @@ module.exports = (function () {
   };
 
   RoomSchema.methods.broadcast = function(message_name) {
-    console.log(this.room_id, 'broadcasting', arguments);
-    var socket_list = io.sockets.in(this.room_id);
-    socket_list.emit.apply(socket_list, arguments);
+    var socket_list = io.sockets.in(this.room_id)
+      , num_sockets = _.size(socket_list.sockets);
+    if (num_sockets > 0) {
+      console.log(this.room_id, 'broadcasting', arguments, 'to', num_sockets, 'sockets.');
+      socket_list.emit.apply(socket_list, arguments);
+    }
   };
 
   RoomSchema.methods.broadcastChatMessage = function(socket, message) {
@@ -167,7 +172,7 @@ module.exports = (function () {
       var args_array = _.toArray(arguments)
         , user = socket.user || {};
       if (args_array[0] !== 'newListener') {
-        console.log('(room) ' + user.username + ' sent:', args_array);
+        console.log(room.room_id + ': ' + user.username + ' sent:', args_array);
         $emit.apply(socket, arguments);
       }
     };
@@ -208,37 +213,34 @@ module.exports = (function () {
       socket.emitToOthers('user_joins', user_only_username, false);
       socket.emit('user_joins', user_only_username, true);
       // TODO notify any interested server-side objects (the corresponding table)
-
       room.join(socket);
+      //var room_id = room.room_id;
+      //console.log(socket.id, 'Joined', room_id, _.keys(io.sockets.in(room_id).sockets));
 
-      var username;
+      var user_room_name = Room.USER_ROOM_PREFIX + user.username
+        , user_room = Room.getRoom(user_room_name);
 
-      console.log('user is', user);
-
-      if (user instanceof User && _.isString(username = user.username)) {
-        var user_room_name = Room.USER_ROOM_PREFIX + username
-          , user_room = Room.getRoom(user_room_name);
-        
-        if (user_room === undefined) {
-          user_room = Room.createRoom({
-            room_id: user_room_name
-          });
-        }
-
-        console.log('user joins', user_room);
-        user_room.join(socket);
+      if (user_room === undefined) {
+        user_room = Room.createRoom({
+          room_id: user_room_name
+        });
       }
 
+      user_room.join(socket, true);
+      //room_id = user_room.room_id;
+      //console.log(socket.id, 'Joined', room_id, _.keys(io.sockets.in(room_id).sockets));
+
       socket.on('disconnect', function() {
+        //console.log('disconnected:', socket.id);
         room.leave(socket);
         if (user_room instanceof Room) {
           user_room.leave(socket);
           var remaining_user_sockets = io.sockets.clients(user_room_name);
           if (_.isEmpty(remaining_user_sockets)) {
-            console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~ ' + username + ' has left the building!!!!!');
+            console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~ ' + user.username + ' has left the building!!!!!');
           }
           else {
-            console.log('One of ' + username + '\'s sockets left ' + room.room_id);
+            console.log('One of ' + user.username + '\'s sockets left ' + room.room_id);
           }
         }
       });

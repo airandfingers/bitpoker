@@ -1055,7 +1055,9 @@ module.exports = (function () {
 
   HoldEmHandSchema.methods.refundAndEndHand = function() {
     var self = this
-      , refund;
+      , refund
+      , pot_total;
+    // refund players' current bets
     _.each(self.players, function(player) {
       refund = player.current_bet;
       console.log(player.username, 'gets refund:', refund);
@@ -1064,11 +1066,20 @@ module.exports = (function () {
         self.broadcast('player_gets_refund', player.serialize(), refund, self.calculatePotTotal());
       }
     });
-    refund = Math.floor(self.calculatePotTotal() / self.players.length);
+    // refund players' pot contributions
+    pot_total = self.calculatePotTotal();
+    _.each(self.players, function(player) {
+      if (player.total_bet > 0) {
+        refund = player.total_bet;
+        player.chips += refund;
+        pot_total -= refund;
+      }
+    });
+    // split up anything remaining in the pot
+    refund = Math.floor(pot_total / self.players.length);
     _.each(self.players, function(player) {
       console.log(player.username, 'gets refund:', refund);
       player.chips += refund;
-      self.broadcast('player_gets_refund', player.serialize(), refund, 0);
     });
     self.toStage('done');
   };

@@ -27,8 +27,10 @@ module.exports = (function () {
     , hand: { type: [String], hand_default: function() { return []; } }
       // the number of chips this player is betting in the current stage
     , current_bet: { type: Number, hand_default: 0 }
-    // whether this player has made a bet in the current hand
+      // whether this player has made a bet in the current hand
     , has_bet: { type: Boolean, hand_default: false }
+      // how much this player has contributed to the current hand's pot
+    , total_bet: { type: Number, hand_default: 0 }
     /*// whether this player has paid a big blind at this table yet
     , blind_paid: { type: Boolean, default: false }*/
       // the flags that describe how this player will act automatically
@@ -107,6 +109,7 @@ module.exports = (function () {
   PlayerSchema.methods.giveBet = function() {
     var amount = this.current_bet;
     this.current_bet = 0;
+    this.total_bet += amount;
     return amount;
   };
 
@@ -140,7 +143,7 @@ module.exports = (function () {
       , auto_action
       , auto_acted
       , game = self.game
-      , total_timeout = timeout
+      , total_timeout = timeout + self.game.TO_ACT_GRACE_PERIOD
       , act_timeout
       , update_interval;
 
@@ -506,36 +509,29 @@ module.exports = (function () {
     }
     else if (stack_in_chips > 0) {
       // credit this player's account with the appropriate number of game.CURRENCY
-      user.checkBalance(game.CURRENCY, function(check_err, balance) {
-        if (check_err) {
-          self.sendMessage('error', 'error while checking balance: ' + check_err.message || check_err);
+      var transaction = {
+            type: 'cashout'
+          , amount: stack_in_currency
+          , table_name: self.table.name
+          , timestamp: new Date()
+      };
+      user.updateBalance(game.CURRENCY, stack_in_currency, transaction, function(update_err, new_balance) {
+        if (update_err) {
+          self.sendMessage('error', 'error while updating balance: ' + update_err.message || update_err);
           return;
         }
-        var new_balance = balance + stack_in_currency
-          , transaction = {
-              type: 'cashout'
-            , amount: stack_in_currency
-            , table_name: self.table.name
-            , timestamp: new Date()
-        };
-        user.updateBalance(game.CURRENCY, new_balance, transaction, function(update_err) {
-          if (update_err) {
-            self.sendMessage('error', 'error while updating balance: ' + update_err.message || update_err);
-            return;
+        else {
+          if (stack_in_chips > game.MIN_CHIPS) {
+            self.min_buyin = stack_in_chips;
+            self.min_buyin_timeout = setTimeout(function() {
+              delete self.min_buyin;
+            }, game.MIN_BUYIN_TIME_ENFORCED);
           }
-          else {
-            if (stack_in_chips > game.MIN_CHIPS) {
-              self.min_buyin = stack_in_chips;
-              self.min_buyin_timeout = setTimeout(function() {
-                delete self.min_buyin;
-              }, game.MIN_BUYIN_TIME_ENFORCED);
-            }
-            self.chips = 0;
-            // emit the "stand" event
-            self.emit('stand', seat_num);
-            user.broadcastBalanceUpdate(game.CURRENCY, new_balance);
-          }
-        });
+          self.chips = 0;
+          // emit the "stand" event
+          self.emit('stand', seat_num);
+          user.broadcastBalanceUpdate(game.CURRENCY, new_balance);
+        }
       });
     }
   };
@@ -721,18 +717,17 @@ module.exports = (function () {
         return;
       }
       var num_currency = num_chips * game.CURRENCY_PER_CHIP
-        , new_balance = balance - num_currency
         , transaction = {
             type: 'buyin'
           , amount: num_currency
           , table_name: self.table.name
           , timestamp: new Date()
       };
-      if (new_balance < 0) {
+      if (num_currency > balance) {
         self.sendMessage('error', 'player no longer has enough currency to add ' + num_chips + ' chips!');
         return;
       }
-      user.updateBalance(game.CURRENCY, new_balance, transaction, function(update_err) {
+      user.updateBalance(game.CURRENCY, -1 * num_currency, transaction, function(update_err, new_balance) {
         if (update_err) {
           self.sendMessage('error', 'error while updating balance: ' + update_err.message || update_err);
           return;
@@ -929,7 +924,7 @@ module.exports = (function () {
         , message_name = args_array[0]
         , event_name = 'message:' + message_name;
       if (args_array[0] !== 'newListener') {
-        console.log('(player) ' + self.username + ' sent:', args_array);
+        //console.log('(player) ' + self.username + ' sent:', args_array);
         // trigger event (prefixed by "message:") on this player object
         args_array[0] = event_name;
         self.emit.apply(self, args_array);

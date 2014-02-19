@@ -247,7 +247,7 @@ module.exports = (function () {
         , okayEvent: 'self.events.exit'
         }
       );
-      player.socket.disconnect();
+      player.socket.disconnect(true);
       delete player.socket;
     }
     // set player.socket to socket
@@ -380,7 +380,7 @@ module.exports = (function () {
   };
 
   TableSchema.methods.getNumSeatsTaken = function() {
-    var num_players = _.keys(this.seats).length;
+    var num_players = _.size(this.seats);
     return num_players;
   };
 
@@ -421,10 +421,10 @@ module.exports = (function () {
     }
     async.each(_.values(self.players), function(player, acb) {
       if (_.isNumber(player.seat)) {
-        player.handleStand();
         player.on('stand', function() {
           acb();
         });
+        player.handleStand();
       }
       else {
         acb();
