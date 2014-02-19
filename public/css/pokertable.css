@@ -174,11 +174,13 @@ float:left;
 position:absolute;
   z-index: 0;
 }
+
 #tableChatFullCanvas{
   position:absolute;
   display:none;
   z-index: 1;
 }
+
 #tableChatFullTextCanvas{
   position:absolute;
   display:none;
