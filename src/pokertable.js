@@ -17,8 +17,8 @@ self.jQueryObjects.cashierForm = $('#cashier')
 self.jQueryObjects.backingStoreRatioTester = $('#backingStoreRatioTester')
 
 
-var devicePixelRatio = window.devicePixelRatio || 1
-var backingStorePixelRatio = null
+var devicePixelRatio = 1 //var devicePixelRatio = window.devicePixelRatio || 1
+var backingStorePixelRatio = 1  //var backingStorePixelRatio = null
 
 
 var viewedCanvasWidth = self.jQueryObjects.canvasDiv.outerWidth(true); var viewedCanvasHeight = self.jQueryObjects.canvasDiv.outerHeight(true)
@@ -6031,6 +6031,8 @@ initializeStageSettings(options)
 this.initializeStagesAndCanvasCallThisFirst = function(){
 
 //assign the backingStorePixelRatio
+
+/*
 backingStorePixelRatio = function(){
 
 var context = self.jQueryObjects.backingStoreRatioTester[0].getContext('2d')
@@ -6043,6 +6045,7 @@ context.backingStorePixelRatio || 1
 
 }()//get the ratio that the canvas is styled down to
 
+*/
 
 technicalCanvasWidth = viewedCanvasWidth*backingStorePixelRatio
 technicalCanvasHeight = viewedCanvasHeight*backingStorePixelRatio
