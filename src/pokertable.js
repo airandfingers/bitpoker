@@ -8257,11 +8257,6 @@ return true
 }
 
 
-
-
-
-
-
 }//animate single item
 
 
@@ -8529,7 +8524,12 @@ if(_.isNumber(maskX)){var x = maskX}
 //if values too high or invalid for both make a null rectangle
 if(restoreWidth === true && restoreHeight === true){imageOrText.mask = null}
 else if(!_.isNumber(newWidth) && !_.isNumber(newHeight)){}
-else if(_.isNumber(newWidth) && _.isNumber(newHeight) && (newWidth != currentWidth || newHeight != currentHeight)){imageOrText.mask = new createjs.Rectangle(x, y, newWidth, newHeight)}
+else if(_.isNumber(newWidth) && _.isNumber(newHeight) && (newWidth != currentWidth || newHeight != currentHeight)){
+
+if(options.scale){imageOrText.scaleX = newWidth/currentWidth;imageOrText.scaleY = newHeight/currentHeight}
+ else {imageOrText.mask = new createjs.Rectangle(x, y, newWidth, newHeight)}
+
+}
 
 //updated CHANGED variable
 if(newWidth != currentWidth || newHeight != currentHeight){changed = true}
@@ -12689,7 +12689,7 @@ options.update = false
 var stagesToUpdate = []
 
  var initialSize = self.getPokerWrapperDimensions()
-console.log('calling hideTableChatFull')
+//console.log('calling hideTableChatFull')
 //set preference (scroll bar location)
  var positionValue
  if(self.checkIfTableChatFullMessageTextShouldBeScrolledAfterChangingText() === true){
