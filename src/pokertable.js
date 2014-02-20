@@ -5508,7 +5508,6 @@ this.image.alpha = tableChatFullWindowAlpha
 
   this.tableChatFull.window.drawImage()
 
-
 var hideDealerMessagesOffsetLeft =  this.tableChatFull.htmlCanvasElement.size.x*.05 //checkBoxButtonOffSetLeft
 var hideDealerMessagesOffsetRight =  hideDealerMessagesOffsetLeft//checkBoxButtonOffSetLeft
 var hideDealerMessagesOffsetTop =  checkBoxButtonDistanceY
@@ -12517,7 +12516,7 @@ self.getPokerWrapperDimensions = function(options){
 //with flexbox
 
 if(!_.isObject(options)){var options = {}}
-//  options.manual = true
+ options.manual = true
 
   if(options.manual !== true){
     //THIS SEEMS TO BE BUGGED
@@ -12545,16 +12544,20 @@ var size = {width:sizeData.outerWidth, height:sizeData.outerHeight}
 //old style, manually calculated
 
 var size = {}
-size.height = self.getParentOfStageObject(0).stage.canvas.height
+//size.height = self.getParentOfStageObject(0).stage.canvas.height
 
 //iterate through and find total width
 size.width = 0
+size.height = 0
  self.jQueryObjects.pokerTableDiv.children().each(function(index, element){
 var display = $(this).css('display')
 if(display === 'none' || display === 'hidden'){return}
 var widthToAdd = $(this).outerWidth(true)
 console.log('adding '+widthToAdd)
 size.width = size.width + widthToAdd
+
+var newHeight = $(this).outerHeight(true)
+if(newHeight > size.height) size.height = newHeight;
 
 })
 
