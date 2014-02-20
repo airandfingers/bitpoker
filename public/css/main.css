@@ -859,7 +859,7 @@ and (max-device-width : 480px) {
 
 /* Smartphones (landscape) ----------- */
 @media only screen 
-and (max-height : 321px) {
+and (min-height : 321px) {
 
   .hidden-landscape-phone{
   display:none;
