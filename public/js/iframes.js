@@ -165,12 +165,8 @@ height:'calc(100% - ' + headerHeight+'px)'
   function setIframeTitle(table_name, title) {
     console.log('setIframeTitle called with', table_name, title)
     var $iframe = findIframe(table_name);
-    if ($iframe.length > 0) {
-      $iframe.find('.iframe_header_title').text(title);
-    }
-    else {
-      console.error('no iframe found for table_name', table_name);
-    }
+    if ($iframe.length > 0) {$iframe.find('.iframe_header_title').text(title);}
+    else {console.error('no iframe found for table_name', table_name); }
   }
 
   function closeIframe(table_name) {

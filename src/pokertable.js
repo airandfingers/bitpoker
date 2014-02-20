@@ -16,8 +16,8 @@ self.jQueryObjects.chatBoxInput = $('#chat')
 self.jQueryObjects.cashierForm = $('#cashier')
 self.jQueryObjects.backingStoreRatioTester = $('#backingStoreRatioTester')
 
-
-var devicePixelRatio = 1 //var devicePixelRatio = window.devicePixelRatio || 1
+var devicePixelRatio = window.devicePixelRatio || 1
+//var devicePixelRatio = 1 
 var backingStorePixelRatio = 1  //var backingStorePixelRatio = null
 
 
@@ -61,6 +61,7 @@ noFat: 'noFat'
 ,inline:'inline'
 ,messageBoxButton: 'messageBoxButton'
 ,bootstrapButton: 'btn'
+,noSpin: 'noSpinNumberInputField'
  }
 
   this.imageData = {
@@ -893,7 +894,7 @@ var addItemBitmap = function (item, source, options){
 if(!options){var options = {}}
   else{var options = _.clone(options)}
 
-if(options.size !== false){options.size = true}
+if(options.size !== false && _.isUndefined(options.maxSize)){options.maxSize = 'child'}
   var update = options.update
 options.update = false
 if(!_.isFunction(options.callback)){options.callback = options.onload }
@@ -907,9 +908,9 @@ var restOfFunction = function(source){
 if(options.html != true){
  var bitmap = new createjs.Bitmap(source)
 if(options.sourceRect instanceof createjs.Rectangle){bitmap.sourceRect = options.sourceRect}
-  else if(options.sourceRect){console.warn('source rectangle not appropriate Rectangel instance for addBitmap')}
+  else if(options.sourceRect){console.warn('source rectangle not appropriate Rectangle instance for addBitmap')}
 
-        //THIS sets the created bitmap as child, and will increase parent size as necessary to match child's
+ //THIS sets the created bitmap as child, and will increase parent size as necessary to match child's
  stagesToUpdate.push( item.adoptChild(bitmap, 'image', options) )
  stagesToUpdate.push( item.positionChild('image', options) )
 }//easeljs type of image
@@ -3951,29 +3952,7 @@ self.jQueryObjects.chatBoxInput.css({
         }
     })
 
-
-
-           //--------standard pre-action buttons---------------------
-          this.foldToAnyBet = new  this.Item(checkBoxButtonOffSetLeft,this.htmlTableChatBox.position.y-  checkBoxButtonDistanceFromChat - 3*checkBoxButtonHeight-2*checkBoxButtonDistanceY,checkBoxButtonWidth,checkBoxButtonHeight, getZ('buttons','staticItems'), {messages:[['set_flag','check',true], ['set_flag','fold',true]]})
-          this.sitOutNextHand = new  this.Item(checkBoxButtonOffSetLeft,this.htmlTableChatBox.position.y -  checkBoxButtonDistanceFromChat- 2*checkBoxButtonHeight - checkBoxButtonDistanceY,checkBoxButtonWidth,checkBoxButtonHeight, getZ('buttons','staticItems'), {messages:['sit_out']})
-        this.sitOutNextBlind =  new this.Item(checkBoxButtonOffSetLeft,this.htmlTableChatBox.position.y-  checkBoxButtonDistanceFromChat- checkBoxButtonHeight,checkBoxButtonWidth,checkBoxButtonHeight, getZ('buttons','staticItems'), {messages:['set_flag', 'post_blind', false]})
-               
-                //define on versions
-                  this.foldToAnyBetOn =  new this.Item(this.foldToAnyBet.position.x,this.foldToAnyBet.position.y, this.foldToAnyBet.size.x,this.foldToAnyBet.size.y,getZ('buttons','staticItems'), {messages:[['set_flag','fold',false], ['set_flag','check',false]]})     
-          this.sitOutNextHandOn = new  this.Item(this.sitOutNextHand.position.x,this.sitOutNextHand.position.y, this.sitOutNextHand.size.x,this.sitOutNextHand.size.y,getZ('buttons','staticItems'),{messages: ['sit_in']})
-        this.sitOutNextBlindOn = new  this.Item(this.sitOutNextBlind.position.x,this.sitOutNextBlind.position.y, this.sitOutNextBlind.size.x,this.sitOutNextBlind.size.y,getZ('buttons','staticItems'), {messages:['set_flag', 'post_blind', true]})
-        
-this.foldToAnyBet.addBitmap( permanentPreferences.sourceObjects.value.checkBox)
-this.sitOutNextHand.addBitmap( permanentPreferences.sourceObjects.value.checkBox)
-this.sitOutNextBlind.addBitmap( permanentPreferences.sourceObjects.value.checkBox)
-
-this.foldToAnyBetOn.addBitmap (permanentPreferences.sourceObjects.value.checkBoxChecked)
-this.sitOutNextHandOn.addBitmap(permanentPreferences.sourceObjects.value.checkBoxChecked)
-this.sitOutNextBlindOn.addBitmap( permanentPreferences.sourceObjects.value.checkBoxChecked)
-
   //hitAreas for buttons
-      
-
       self.images.drawCheckBoxButtonHitSquareAndAdjustItemSize = function(item){
           //get width of text
           var data = item.getChildPositionAndSizeData('text',{maxSize:true})
@@ -4076,15 +4055,35 @@ checkedItem.addBitmap (checkBoxButtonCheckedSource)
 self.images.addCheckBoxButtonText(checkedItem, text, options)
 }
 
-//off state
-      self.images.addCheckBoxButtonText( this.foldToAnyBet, 'Auto check/fold' )
-      self.images.addCheckBoxButtonText(this.sitOutNextHand, 'Sit out next hand')
-      self.images.addCheckBoxButtonText (  this.sitOutNextBlind,'Sit out next blind' )
+           //--------standard pre-action buttons---------------------
+          this.foldToAnyBet = new  this.Item(checkBoxButtonOffSetLeft,this.htmlTableChatBox.position.y-  checkBoxButtonDistanceFromChat - 3*checkBoxButtonHeight-2*checkBoxButtonDistanceY,checkBoxButtonWidth,checkBoxButtonHeight, getZ('buttons','staticItems'), {messages:[['set_flag','check',true], ['set_flag','fold',true]]})
+          this.sitOutNextHand = new  this.Item(checkBoxButtonOffSetLeft,this.htmlTableChatBox.position.y -  checkBoxButtonDistanceFromChat- 2*checkBoxButtonHeight - checkBoxButtonDistanceY,checkBoxButtonWidth,checkBoxButtonHeight, getZ('buttons','staticItems'), {messages:['sit_out']})
+        this.sitOutNextBlind =  new this.Item(checkBoxButtonOffSetLeft,this.htmlTableChatBox.position.y-  checkBoxButtonDistanceFromChat- checkBoxButtonHeight,checkBoxButtonWidth,checkBoxButtonHeight, getZ('buttons','staticItems'), {messages:['set_flag', 'post_blind', false]})
+               
+                //define on versions
+                  this.foldToAnyBetOn =  new this.Item(this.foldToAnyBet.position.x,this.foldToAnyBet.position.y, this.foldToAnyBet.size.x,this.foldToAnyBet.size.y,getZ('buttons','staticItems'), {messages:[['set_flag','fold',false], ['set_flag','check',false]]})     
+          this.sitOutNextHandOn = new  this.Item(this.sitOutNextHand.position.x,this.sitOutNextHand.position.y, this.sitOutNextHand.size.x,this.sitOutNextHand.size.y,getZ('buttons','staticItems'),{messages: ['sit_in']})
+        this.sitOutNextBlindOn = new  this.Item(this.sitOutNextBlind.position.x,this.sitOutNextBlind.position.y, this.sitOutNextBlind.size.x,this.sitOutNextBlind.size.y,getZ('buttons','staticItems'), {messages:['set_flag', 'post_blind', true]})
+        
+this.foldToAnyBet.addBitmap( permanentPreferences.sourceObjects.value.checkBox)
+this.sitOutNextHand.addBitmap( permanentPreferences.sourceObjects.value.checkBox)
+this.sitOutNextBlind.addBitmap( permanentPreferences.sourceObjects.value.checkBox)
+
+this.foldToAnyBetOn.addBitmap (permanentPreferences.sourceObjects.value.checkBoxChecked)
+this.sitOutNextHandOn.addBitmap(permanentPreferences.sourceObjects.value.checkBoxChecked)
+this.sitOutNextBlindOn.addBitmap( permanentPreferences.sourceObjects.value.checkBoxChecked)
+
+
+
+      //off state
+      self.images.addCheckBoxButtonText (this.foldToAnyBet, 'Auto check/fold')
+      self.images.addCheckBoxButtonText (this.sitOutNextHand, 'Sit out next hand')
+      self.images.addCheckBoxButtonText (this.sitOutNextBlind,'Sit out next blind')
       
       //on state
-      self.images.addCheckBoxButtonText( this.foldToAnyBetOn, 'Auto check/fold' )
-      self.images.addCheckBoxButtonText(this.sitOutNextHandOn, 'Sit out next hand')
-      self.images.addCheckBoxButtonText (  this.sitOutNextBlindOn,'Sit out next blind' )
+      self.images.addCheckBoxButtonText (this.foldToAnyBetOn, 'Auto check/fold')
+      self.images.addCheckBoxButtonText (this.sitOutNextHandOn, 'Sit out next hand')
+      self.images.addCheckBoxButtonText (this.sitOutNextBlindOn,'Sit out next blind')
 
   
   var seatZ =  getZ('seats','staticItems')
@@ -5459,19 +5458,18 @@ var tableChatFullStageParent =  self.getParentOfStageObject(this.tableChatFull.h
  $(tableChatFullStageParent.div).css({
                'left':tableChatFullDivX+'px'
     ,'top':tableChatFullDivY +'px'
-    ,'height':'auto'
-    ,'width':'auto'
     ,'float':'left'
-        ,'width': this.tableChatFull.htmlCanvasElement.size.x+'px',
-'height': this.tableChatFull.htmlCanvasElement.size.y+'px'
+     //   ,'width': this.tableChatFull.htmlCanvasElement.size.x+'px',
+//'height': this.tableChatFull.htmlCanvasElement.size.y+'px'
 ,'overflow':'hidden'
 ,'pointer-events':'visible'
            })
 
+tableChatFullStageParent.resize({width:this.tableChatFull.htmlCanvasElement.size.x+'px',height: this.tableChatFull.htmlCanvasElement.size.y+'px'})
 
    $(tableChatFullStageParent.stage.canvas).attr({
-      'width': this.tableChatFull.htmlCanvasElement.size.x+'px',
-'height': this.tableChatFull.htmlCanvasElement.size.y+'px'
+ //     'width': this.tableChatFull.htmlCanvasElement.size.x+'px',
+//'height': this.tableChatFull.htmlCanvasElement.size.y+'px'
 
   })
    /*
@@ -5493,7 +5491,10 @@ var tableChatFullRoundedRectCornerSizeRatioOfHeight = 0.05
   this.tableChatFull.window.drawImage = function(){ //we can use this function to update when we popout the chat box
 
 var canvas = self.getParentOfStageObject(this).stage.canvas
-var width = canvas.width;var height = canvas.height
+
+var canvasSize = getDisplayObjectPositionAndSizeData(canvas, {position:false, size:true, maxSize:false})
+
+var width = canvasSize.outerWidth;var height = canvasSize.outerHeight;
 
 if(this.image instanceof createjs.Shape){this.image.graphics.clear()}
 else{this.image = new createjs.Shape()}
@@ -5851,8 +5852,11 @@ else if(!_.isUndefined(value)){displayObject[index] = value}
 }
 
 //options.stageNumber, if on existing number, will push the existing number up 1
-this.createStage = function (options){
- // console.log('createStage called, checking instanceof StageInitializationInfo ' + options instanceof StageInitializationInfo)
+this.StageParent = function (options){
+
+var stageParent = this
+
+ // console.log('StageParent called, checking instanceof StageInitializationInfo ' + options instanceof StageInitializationInfo)
  // console.log(options)
 //console.log('creating a stage with the following options')
 //console.log(options)
@@ -5868,11 +5872,11 @@ var stageOptions = options.stageOptions
 if(!options.canvasOptions){options.canvasOptions = {}}
   if(!options.divOptions){options.divOptions = {}}
 
- self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.autoClear=false
-  self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.snapToPixel = false
- self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.snapToPixelEnabled = false
- self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.mouseMoveOutside = true
-self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.tickOnUpdate = false
+ stageParent.stage.autoClear=false
+  stageParent.stage.snapToPixel = false
+ stageParent.stage.snapToPixelEnabled = false
+ stageParent.stage.mouseMoveOutside = true
+stageParent.stage.tickOnUpdate = false
 
 //set stage options
 if(stageOptions){
@@ -5895,13 +5899,19 @@ if(stageOptions){
 
 if(stageOptions.disableContextMenu = true){
 
-$(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.canvas).on('contextmenu', function(e){return false})
+$(stageParent.stage.canvas).on('contextmenu', function(e){return false})
 
 }
 }//if stageOptions
 
 if(_.isObject(options.canvasOptions.css) ){
-$(self.getParentOfStageObject(stageNumber).canvas).css(stageOptions.canvasOptions.css)
+$(stageParent.canvas).css(stageOptions.canvasOptions.css)
+  //setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(stageNumber, false)
+//$(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.canvas).css('display','none')
+}
+
+if(_.isObject(options.canvasOptions.attr) ){
+$(stageParent.canvas).attr(stageOptions.canvasOptions.attr)
   //setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(stageNumber, false)
 //$(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.canvas).css('display','none')
 }
@@ -5913,24 +5923,24 @@ setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGe
 }
 
 if(options.divOptions.mouseDisabled === true) {
-$(self.getParentOfStageObject(stageNumber).div).css('pointer-events', 'none')
+$(stageParent.div).css('pointer-events', 'none')
   //setOrGetDisplayStatusOfCanvasDivByStageNumberOrItemTrueDisplaysFalseHidesOtherGets(stageNumber, false)
 //$(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.canvas).css('display','none')
 }
 //create containers and add them to stage
 if(_.isNumber(options.numContainers)){
   var numContainers = options.numContainers
-if(!_.isArray(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers)) {
-  self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers =  []}
+if(!_.isArray(stageParent.containers)) {
+  stageParent.containers =  []}
 
     for(var i = startingContainerIndex;i < numContainers;i++){
- self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[i] = new createjs.Container()
- self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].stage.addChild(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[i])
+ stageParent.containers[i] = new createjs.Container()
+ stageParent.stage.addChild(self.arrayOfParentsOfStageAndOfContainerArray[stageNumber].containers[i])
     }
 
 }//if stageOptions.numContainers is specified create contianers
 
-}//initialize stage settings
+}//function initializeStageSettings
 
 
 
@@ -5939,7 +5949,7 @@ if(!options){var options = {}}
 if(!_.isNumber(options.stageNumber)){options.stageNumber = this.arrayOfParentsOfStageAndOfContainerArray.length}
 
 
-if(options.stageNumber === 0 || this.arrayOfParentsOfStageAndOfContainerArray.length == 0){
+if(options.stageNumber === 0 || self.arrayOfParentsOfStageAndOfContainerArray.length == 0){
   var previousCanvasIDNumber = 0
     var newCanvasIDNumber = 0
 
@@ -5949,20 +5959,20 @@ else{
 
   //find previous canvas
   for(var i = options.stageNumber -1;i>=0;i--){
-if(!_.isEmpty(this.arrayOfParentsOfStageAndOfContainerArray[i])){
+if(!_.isEmpty(self.arrayOfParentsOfStageAndOfContainerArray[i])){
 var previousStageNumber = i;i = -9999}
   }
  // console.log('currently creating stage number '+ options.stageNumber + ', previous stage number is '+ previousStageNumber)
-  var previousCanvasID = this.arrayOfParentsOfStageAndOfContainerArray[previousStageNumber].stage.canvas.id
+  var previousCanvasID = self.arrayOfParentsOfStageAndOfContainerArray[previousStageNumber].stage.canvas.id
 var previousCanvasIDNumber = parseFloat(previousCanvasID.replace('canvas',''))
 
   //check if stage is on top of all other existing stagse
-if(options.stageNumber>this.arrayOfParentsOfStageAndOfContainerArray.length-1){
+if(options.stageNumber>self.arrayOfParentsOfStageAndOfContainerArray.length-1){
 var newCanvasIDNumber = previousCanvasIDNumber + 1//increment from previous canvas
 }//if stage is "toppest" stage
 
 else { //if stage is in the middle
-    var nextCanvasID = this.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].stage.canvas.id
+    var nextCanvasID = self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].stage.canvas.id
   var nextCanvasIDNumber = parseFloat( nextCanvasID.replace('canvas',''))
 var newCanvasIDNumber = (previousCanvasIDNumber + nextCanvasIDNumber )/2//increment from previous canvas
 }//if stage is in the "middle"
@@ -5979,7 +5989,9 @@ var newCanvasID = 'canvas'+newCanvasIDNumber
 var canvasClass = self.css.canvas
 var zIndexesPerDiv = 10
 
-self.jQueryObjects.canvasDiv.append('<div id = '+'\''+newDivID+'\'' + ' width = '+'\''+viewedCanvasWidth+'\''+' height=' +'\''+viewedCanvasHeight+'\''+'></canvas>')
+var newParentOfStageDiv = $('<div>')
+newParentOfStageDiv.attr('id', newDivID)
+self.jQueryObjects.canvasDiv.append(newParentOfStageDiv)
 
 $('#'+newDivID).append('<canvas id = '+'\''+newCanvasID+'\'' + ' width = '+'\''+technicalCanvasWidth+'\''+' height=' +'\''+technicalCanvasHeight+'\''+'></canvas>')
 
@@ -5987,7 +5999,12 @@ $('#'+newDivID).append('<canvas id = '+'\''+newCanvasID+'\'' + ' width = '+'\''+
 //set proper z-index
 //$('#'+newCanvasID).css('z-index',parseInt(newCanvasIDNumber*zIndexesPerCanvas)+initialZIndex)
 //$('#'+newCanvasID).css('z-index',initialZIndex)
-$('#'+newCanvasID).css({
+$('#'+newCanvasID).attr({
+
+width:technicalCanvasWidth
+,height:technicalCanvasHeight
+
+}).css({
 width:viewedCanvasWidth
 ,height:viewedCanvasHeight
 }).addClass(canvasClass + ' ' + self.css.unselectable + ' ' + self.css.noFat)
@@ -5998,6 +6015,7 @@ $('#'+newDivID).css({
 ,'height':viewedCanvasHeight
   }).addClass(self.css.noFat)
 
+
 }//if we want to create a new canvas
 
 else{ //here we want to use previous canvasID number
@@ -6006,33 +6024,77 @@ else{ //here we want to use previous canvasID number
 
 //console.log('creating stage number '+options.stageNumber)
 //creating the new stage
-self.arrayOfParentsOfStageAndOfContainerArray.splice(options.stageNumber, 0, {})
-self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].upToDate = true
+
+self.arrayOfParentsOfStageAndOfContainerArray.splice(options.stageNumber, 0, this)
+this.upToDate = true
 
 
-self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].div = document.getElementById(newDivID)
-        self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].initializationInfo = options
-var canvas = document.getElementById(newCanvasID)
-        self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].stage = new createjs.Stage(canvas)
-        self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].name = options.name
-self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].stage.name = options.name
+this.div = document.getElementById(newDivID)
+this.initializationInfo = options
+
+this.stage = new createjs.Stage(newCanvasID)
+this.name = options.name
+this.stage.name = options.name
 
 //scale the stage
-self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].stage.scaleX = 1/(backingStorePixelRatio/devicePixelRatio)
-self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].stage.scaleY = 1/(backingStorePixelRatio/devicePixelRatio)
+this.stage.scaleX = backingStorePixelRatio/devicePixelRatio
+this.stage.scaleY = backingStorePixelRatio/devicePixelRatio
 //IN THE FUTURE WE WANT TO INCREASE THE FUTURE CANVAS/STAGES DATA TO WE CAN ADD IT HERE
 initializeStageSettings(options)
 
+}//StageParent function
 
-}//createStage function
+this.StageParent.prototype.resize = function(size, options){
+if(!options){var options = {}}
+if(_.isNumber(size.width)) {size.width = size.width+'px'}
+if(_.isNumber(size.height)){size.height = size.height+'px'}
 
+var getRawNumber = function(str){return parseFloat(str.replace( /^\D+/g, ''))}
+
+var currentDivSize = getDisplayObjectPositionAndSizeData(this.div, {position:false, maxSize:false, size:true})
+var currentCanvasSize = getDisplayObjectPositionAndSizeData(this.stage.canvas, {position:false, maxSize:false, size:true})
+var currentCanvasTechnicalSize = {outerWidth:this.stage.canvas.width, outerHeight:this.stage.canvas.height}
+
+try{
+if(size.width.indexOf('px') != -1){var newWidthRatio = getRawNumber(size.width)/currentDivSize.outerWidth}
+  else if(size.width.indexOf('%') != -1){var newWidthRatio = getRawNumber(size.width)/100}
+}catch(err){}
+try{
+if(size.height.indexOf('px') != -1){var newHeightRatio = getRawNumber(size.height)/currentDivSize.outerHeight}
+  else if(size.height.indexOf('%') != -1){var newHeightRatio = getRawNumber(size.height)/100}
+}catch(err){}
+var divCSS = {}
+
+if(_.isNumber(newWidthRatio) && newWidthRatio != 1){divCSS.width = (newWidthRatio*currentDivSize.outerWidth)+ 'px'}
+if(_.isNumber(newHeightRatio) && newHeightRatio != 1){divCSS.height = (newHeightRatio*currentDivSize.outerHeight)+ 'px'}
+
+var canvasCSS = {}
+var canvasAttr = {}
+
+if(_.isNumber(newWidthRatio) && newWidthRatio != 1){
+ canvasCSS.width = (newWidthRatio*currentCanvasSize.outerWidth)+ 'px'
+ canvasAttr.width = newWidthRatio*currentCanvasTechnicalSize.outerWidth
+}
+if(_.isNumber(newHeightRatio) && newHeightRatio != 1){
+ canvasCSS.height = (newHeightRatio*currentCanvasSize.outerHeight)+ 'px'
+ canvasAttr.height = newHeightRatio*currentCanvasTechnicalSize.outerHeight
+}
+
+
+$(this.div).css(divCSS)
+$(this.stage.canvas).css(canvasCSS).attr(canvasAttr)
+
+
+self.updateStages([])
+
+}//function StageParent.resizeCanvas
 
 
 this.initializeStagesAndCanvasCallThisFirst = function(){
 
 //assign the backingStorePixelRatio
 
-/*
+
 backingStorePixelRatio = function(){
 
 var context = self.jQueryObjects.backingStoreRatioTester[0].getContext('2d')
@@ -6045,10 +6107,10 @@ context.backingStorePixelRatio || 1
 
 }()//get the ratio that the canvas is styled down to
 
-*/
 
-technicalCanvasWidth = viewedCanvasWidth*backingStorePixelRatio
-technicalCanvasHeight = viewedCanvasHeight*backingStorePixelRatio
+
+technicalCanvasWidth = viewedCanvasWidth*backingStorePixelRatio/devicePixelRatio
+technicalCanvasHeight = viewedCanvasHeight*backingStorePixelRatio/devicePixelRatio
 
 
   createZPositionData()
@@ -6059,7 +6121,7 @@ technicalCanvasHeight = viewedCanvasHeight*backingStorePixelRatio
  //   console.log('preparing to call create stage with folowing options:')
   //  console.log(value)
 
- self.createStage (value)
+ var newStage = new self.StageParent (value)
 
   }, this)//end iteration through zpositiondata
 
@@ -6622,7 +6684,6 @@ return getDisplayObjectPositionAndSizeData(this[childType], options)
 
 self.images.Item.prototype.positionChild = function(childType, options){
 
-
 if(!options){var options = {}}
   var stagesToUpdate = []
 
@@ -6679,6 +6740,8 @@ console.log($(child).css('top'))
 }
 */
 
+
+if(options.debug){throw''}
 
 if(options.update !== false){self.updateStages(stagesToUpdate)}
   else{return stagesToUpdate}
@@ -12398,11 +12461,12 @@ $(tableChatFullStageParent.div).css({
   'position':position
 ,'left':newDivX
 ,'top':newDivY
-,'height':newHeight
+//,'height':newHeight
 ,'background-color':bgColor
 //,"background-image": "url(" + bgURL + ")"
 })
-$(tableChatFullStageParent.stage.canvas).attr('height', newHeight)
+tableChatFullStageParent.resize({height:newHeight+'px'})
+tableChatFullStageParent.resize({height:newHeight+'px'})
 $(tableChatFullStageParent.div).prependTo(prependTo)
 self.images.tableChatFull.window.drawImage()
 
@@ -12453,7 +12517,7 @@ self.getPokerWrapperDimensions = function(options){
 //with flexbox
 
 if(!_.isObject(options)){var options = {}}
-  options.manual = true
+//  options.manual = true
 
   if(options.manual !== true){
     //THIS SEEMS TO BE BUGGED
@@ -12541,6 +12605,8 @@ resizeInterior(interiorSize)
 //debugger;
 self.getIframeLib().resizeIFrame(self.getTableName(), options.height, options.width)
 //debugger;
+
+self.updateStages()
 }
 
 this.displayTableChatFull = function(hideOrDisplayChildrenOptions){
@@ -12698,15 +12764,15 @@ if(this.messages && type === 'image'){
     this.on('click', self.events.onButtonClick, {image:true, text:false} )
 }
 
-if(options.size === true || options.maxSize === 'child'){
+if(options.maxSize === 'child'){
 
 var data = this.getChildPositionAndSizeData(type, {position:false, size:true, maxSize:false})
 
 if(this.size.x < data.outerWidth){this.size.x = data.outerWidth}
   if(this.size.y < data.outerHeight){this.size.y = data.outerHeight}
 
-
 }
+
 else if(options.maxSize === 'parent'){
 
 var data = this.getChildPositionAndSizeData(type, {position:false, size:true, maxSize:false})
@@ -14920,9 +14986,7 @@ window.requestAnimationFrame(function(){})//update DOM
  
 
 else if(_.isArray(stageNumberLeaveBlankForAll)){ // if passed parameter as ARRAY
-if(stageNumberLeaveBlankForAll.length === 0){return 'updatestages passed 0 length array as parameter'}
 
-else{
 var wantToUpdate = []
 
 //flatten array
@@ -14955,7 +15019,6 @@ wantToUpdate = _.uniq(wantToUpdate)
 
 updateStagesFromArray(wantToUpdate)
 
-}//if we want to update
 
 }//if parameter is array
 
@@ -14963,7 +15026,8 @@ updateStagesFromArray(wantToUpdate)
 //console.log('updating all stages')
 var allStages = []
 for(var i = 0;i<this.arrayOfParentsOfStageAndOfContainerArray.length;i++){allStages.push(i)}
- this.updateStages( allStages, options)
+ self.updateStages( allStages, options)
+return
 }//if no stage number specified
 
 window.requestAnimationFrame(function(){})
