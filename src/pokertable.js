@@ -2473,7 +2473,7 @@ menu:menu
 //replace before options
 $(stageParent.div).off('contextmenubeforeOpen')
 $(stageParent.div).on('contextmenubeforeOpen', function(event,ui){
-  console.log('context menu called from regular right click, hiding and not showing it ...SUCCESS')
+ // console.log('context menu called from regular right click, hiding and not showing it ...SUCCESS')
   $(stageParent.div).contextmenu('destroy')
   return false
 })
