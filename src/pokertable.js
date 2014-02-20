@@ -25,7 +25,7 @@ var viewedCanvasWidth = self.jQueryObjects.canvasDiv.outerWidth(true); var viewe
 var technicalCanvasWidth = null ; var technicalCanvasHeight = null;
 
 
-var expandedviewedCanvasWidth = viewedCanvasWidth*backingStorePixelRatio/devicePixelRatio
+//var expandedviewedCanvasWidth = viewedCanvasWidth*devicePixelRatio/backingStorePixelRatio
 
 
 
@@ -2456,9 +2456,9 @@ menu:menu
      // console.log(ui)
     }
     ,beforeOpen: function(event, ui) { //ui = {menu:menu, target:this.delegate}
-      console.log('original beforeOpen called, repositioning showmehere menu')
-      console.log(event)
-      console.log(ui)
+ //     console.log('original beforeOpen called, repositioning showmehere menu')
+   //   console.log(event)
+   //   console.log(ui)
        ui.menu.appendTo(stageParent.div)
       var css = {
 'z-index':getZ('contextMenu','staticItems').container
@@ -3511,8 +3511,7 @@ var progressRatioIncrease = 1/ticksPerPreloadBarCycle
 
 var preloadSounds = function(flashArray, soundArray){
 
-
-createjs.FlashPlugin.BASE_PATH = "js/vendor/" //tell createjs where to find default flash audio
+createjs.FlashPlugin.swfPath  = "/js/vendor/" //tell createjs where to find default flash audio
 createjs.Sound.registerPlugins([createjs.WebAudioPlugin, createjs.HTMLAudioPlugin, createjs.FlashPlugin]) //enable soundjs to play .swf files
 //createjs.Sound.registerPlugin(createjs.FlashPlugin)
 
@@ -3531,8 +3530,8 @@ for(var i =0;i<flashArray.length;i++){
   console.log(flashArray[i].src)
   var temp = createjs.Sound.createInstance(flashArray[i].src)
   console.log(temp)
-  temp.play()
-  handleLoad(flashArray[i].src, flashArray[i].id )
+ // temp.play()
+  handleLoad(flashArray[i].src, flashArray[i].id)
 }
 
 
@@ -5982,13 +5981,16 @@ var zIndexesPerDiv = 10
 
 self.jQueryObjects.canvasDiv.append('<div id = '+'\''+newDivID+'\'' + ' width = '+'\''+viewedCanvasWidth+'\''+' height=' +'\''+viewedCanvasHeight+'\''+'></canvas>')
 
-$('#'+newDivID).append('<canvas id = '+'\''+newCanvasID+'\'' + ' width = '+'\''+viewedCanvasWidth+'\''+' height=' +'\''+viewedCanvasHeight+'\''+'></canvas>')
+$('#'+newDivID).append('<canvas id = '+'\''+newCanvasID+'\'' + ' width = '+'\''+technicalCanvasWidth+'\''+' height=' +'\''+technicalCanvasHeight+'\''+'></canvas>')
 
 //console.log('created canvas with canvas id of: '+newCanvasID)
 //set proper z-index
 //$('#'+newCanvasID).css('z-index',parseInt(newCanvasIDNumber*zIndexesPerCanvas)+initialZIndex)
 //$('#'+newCanvasID).css('z-index',initialZIndex)
-$('#'+newCanvasID).addClass(canvasClass + ' ' + self.css.unselectable + ' ' + self.css.noFat)
+$('#'+newCanvasID).css({
+width:viewedCanvasWidth
+,height:viewedCanvasHeight
+}).addClass(canvasClass + ' ' + self.css.unselectable + ' ' + self.css.noFat)
 //$('#'+newCanvasID).css('z-index',0)
 $('#'+newDivID).css({
   'z-index': newCanvasIDNumber*zIndexesPerDiv
@@ -6014,6 +6016,10 @@ var canvas = document.getElementById(newCanvasID)
         self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].stage = new createjs.Stage(canvas)
         self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].name = options.name
 self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].stage.name = options.name
+
+//scale the stage
+self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].stage.scaleX = 1/(backingStorePixelRatio/devicePixelRatio)
+self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].stage.scaleY = 1/(backingStorePixelRatio/devicePixelRatio)
 //IN THE FUTURE WE WANT TO INCREASE THE FUTURE CANVAS/STAGES DATA TO WE CAN ADD IT HERE
 initializeStageSettings(options)
 
@@ -6039,11 +6045,7 @@ context.backingStorePixelRatio || 1
 
 
 technicalCanvasWidth = viewedCanvasWidth*backingStorePixelRatio
-
-
-
-
-
+technicalCanvasHeight = viewedCanvasHeight*backingStorePixelRatio
 
 
   createZPositionData()
@@ -6567,6 +6569,8 @@ editEventsOfItemChild(this, 'on', eventType, actionFunction, options)
 }
 
 self.images.Item.prototype.disableMouseEvents = function(options){
+
+if(!options){var options = {}}
 
 var disableChildMouseEvent = function(child){
 if(child instanceof createjs.DisplayObject){child.mouseEnabled = false}
@@ -12706,8 +12710,8 @@ var data = this.getChildPositionAndSizeData(type, {position:false, size:true, ma
 
 var newSize = {}
 
-if(this.size.x > data.outerWidth){newSize.x = this.size.x}
-  if(this.size.y > data.outerHeight){newSize.y = this.size.y}
+if(this.size.x > data.outerWidth){newSize.width = this.size.x}
+  if(this.size.y > data.outerHeight){newSize.height = this.size.y}
 
 setDisplayObjectPositionData(child, newSize)
 
