@@ -844,6 +844,14 @@ fieldset[disabled] .btn-custom-black3.active {
     *zoom: 1;
 }
 
+
+#navbar button.navbar-toggle{
+
+padding-top:6px;
+padding-bottom:6px;
+
+}
+
 /* ==========================================================================
    EXAMPLE Media Queries for Responsive Design.
    Theses examples override the primary ('mobile first') styles.
