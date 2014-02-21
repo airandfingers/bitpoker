@@ -2475,6 +2475,7 @@ menu:menu
 $(stageParent.div).off('contextmenubeforeOpen')
 $(stageParent.div).on('contextmenubeforeOpen', function(event,ui){
  // console.log('context menu called from regular right click, hiding and not showing it ...SUCCESS')
+  $(stageParent.div).contextmenu('close')
   $(stageParent.div).contextmenu('destroy')
   return false
 })
@@ -2486,16 +2487,19 @@ $(stageParent.div).on('contextmenubeforeOpen', function(event,ui){
     }
 
       ,close: function(event, ui) {
+        console.log('contextmenu close event called')
        // alert("select " + ui.cmd + " on " + ui.target.text());
-   $(document).contextmenu('destroy')
+   //$(document).contextmenu('destroy')
     }//event on select
     ,show:false //sets the ANIMATION for showing the menu, does NOT determine whether we will show the menu
 ,hide:false//sets the ANIMATION for hiding the menu, does NOT determine whether we will hide the menu
 }//contextmenuOptions
 
+console.log('removing old contextmenus')
 //remove old contextmenu
 try {$(document).contextmenu('destroy')}catch(err){}
 
+console.log('creating context menu')
 //create new context menu
 $(document).contextmenu(contextmenuOptions)
 
@@ -2714,16 +2718,19 @@ $(stageParent.div).on('contextmenubeforeOpen', function(event,ui){
     }
 
       ,close: function(event, ui) {
+        console.log('bg contextmenu close event triggered')
        // alert("select " + ui.cmd + " on " + ui.target.text());
-   $(document).contextmenu('destroy')
+ //  $(document).contextmenu('destroy')
     }//event on select
     ,show:false //sets the ANIMATION for showing the menu, does NOT determine whether we will show the menu
 ,hide:false//sets the ANIMATION for hiding the menu, does NOT determine whether we will hide the menu
 }//contextmenuOptions
 
+console.log('attempting to remove old context menus')
 //remove old contextmenu
 try {$(document).contextmenu('destroy')}catch(err){}
 
+console.log('attempting to create new contextmenu')
 //create new context menu
 $(document).contextmenu(contextmenuOptions)
 
