@@ -25,34 +25,34 @@ module.exports = (function() {
   var UserSchema = new Schema({
   // instance properties - document.field_name
     //the user's username
-    username           : { type: String, unique: true }
+    username             : { type: String, unique: true }
     //the user's password, hashed with SHA-1
-  , password           : String
+  , password             : String
     //the user's email address
-  , email              : { type: String, trim: true }
+  , email                : { type: String, trim: true, default: '' }
     //the code used to confirm this user's email
   , confirmation_code  : String
     //whether the user has confirmed his/r email address
-  , email_confirmed    : { type: Boolean, default: false }
-  , funbucks           : { type: Number, default: 100000000, min: 0 }
-  , satoshi            : { type: Number, default: 0, min: 0 }
-  , recovery_code      : { type: String }
-  , registration_date  : { type: Date, default: Date.now }
-  , deposit_address    : { type: String }
+  , email_confirmed      : { type: Boolean, default: false }
+  , funbucks             : { type: Number, default: 100000000, min: 0 }
+  , satoshi              : { type: Number, default: 0, min: 0 }
+  , recovery_code        : { type: String }
+  , registration_date    : { type: Date, default: Date.now }
+  , deposit_address      : { type: String }
   , current_table_names: { type: [String], default: function() { return []; } }
   // persistent preferences shared across sessions/tables
-  , preferences        : { type: Schema.Types.Mixed, default: function() { return {}; } }
-  , transactions       : { type: [Schema.Types.Mixed], default: function() { return [{
+  , preferences          : { type: Schema.Types.Mixed, default: function() { return {}; } }
+  , transactions         : { type: [Schema.Types.Mixed], default: function() { return [{
             type: 'initial funbucks'
           , amount: 100000000
           , timestamp: Date.now
           , currency: 'funbucks'
           , new_balance: 100000000
           }]; } }
-  , table_transactions : { type: [Schema.Types.Mixed], default: function() { return []; } }
+  , table_transactions   : { type: [Schema.Types.Mixed], default: function() { return []; } }
   // whether the user can see the admin page and perform admin-only actions
-  , admin              : Boolean
-  , emergency_BTC_address  : {type:String}
+  , admin                : Boolean
+  , emergency_BTC_address: { type: String, default: '' }
   }, { minimize: false }); // set minimize to false to save empty objects
 
   var FREE_SATOSHI = 1000; // how many satoshi to give to new users with new IPs
@@ -212,7 +212,7 @@ module.exports = (function() {
               error = 'Error during save: ' + save_err;
               return cb(error);
             }
-            if (_.isString(spec.email)) {
+            if (! _.isEmpty(spec.email)) {
               self.sendConfirmationEmail(spec.email, function(email_err) {
                 if (email_err) {
                   error = 'Error while sending email: ' + email_err;

@@ -503,10 +503,6 @@ bottom:0;
     margin: .5em;
 }
 
-#set_email_error {
-    color: red;
-}
-
 /*datatables table list */
 #table_list {
     position: relative;    

@@ -47,7 +47,6 @@ module.exports = (function () {
   });
 
   function isAuthenticated(req) {
-    //console.log('isAuthenticated called; passport _userProperty is', req._passport && req._passport.instance._userProperty);
     return req.isAuthenticated();
   }
 
