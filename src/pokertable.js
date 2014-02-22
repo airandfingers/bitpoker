@@ -4789,7 +4789,8 @@ this.exitTable.on('click', self.events.exitTableClick)
 var currencyDisplayX = viewedCanvasWidth/2 - currencyDisplayWidth/2
 
 this.currencyDisplay = new this.Item(currencyDisplayX, currencyDisplayTopOffset, currencyDisplayWidth, currencyDisplayHeight, getZ('buttons','staticItems'))
-this.currencyDisplay.addText('', currencyDisplaySizeAndFont, currencyDisplayColor)
+this.currencyDisplay.addText('', currencyDisplaySizeAndFont, currencyDisplayColor, {html:true})
+this.currencyDisplay.disableMouseEvents({text:true})
 //========================4 color deck sprite sheet=============================
 
 var fourColorDeckData = {
@@ -15328,7 +15329,8 @@ self.resizePokerWrapperAndIframe()
 //remove extra S
          this.images.currencyDisplay.updateText('1 chip is equal to ' + table_state.currency_per_chip + ' ' + table_state.currency)
 if(table_state.currency_per_chip == 1 && table_state.currency.charAt(table_state.currency.length-1)=='s'){
-  this.images.currencyDisplay.updateText(this.images.currencyDisplay.text.text.substring(0,this.images.currencyDisplay.text.text.length-1) )
+  var currentText = self.images.currencyDisplay.getText()
+  self.images.currencyDisplay.updateText(currentText.substring(0,currentText.length-1) )
 }
 
 
