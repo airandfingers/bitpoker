@@ -17,15 +17,15 @@ self.jQueryObjects.cashierForm = $('#cashier')
 self.jQueryObjects.backingStoreRatioTester = $('#backingStoreRatioTester')
 
 
-var devicePixelRatio = window.devicePixelRatio || 1
-var backingStorePixelRatio = null
+var devicePixelRatio = 1 //var devicePixelRatio = window.devicePixelRatio || 1
+var backingStorePixelRatio = 1  //var backingStorePixelRatio = null
 
 
 var viewedCanvasWidth = self.jQueryObjects.canvasDiv.outerWidth(true); var viewedCanvasHeight = self.jQueryObjects.canvasDiv.outerHeight(true)
 var technicalCanvasWidth = null ; var technicalCanvasHeight = null;
 
 
-var expandedviewedCanvasWidth = viewedCanvasWidth*backingStorePixelRatio/devicePixelRatio
+//var expandedviewedCanvasWidth = viewedCanvasWidth*devicePixelRatio/backingStorePixelRatio
 
 
 
@@ -2456,9 +2456,9 @@ menu:menu
      // console.log(ui)
     }
     ,beforeOpen: function(event, ui) { //ui = {menu:menu, target:this.delegate}
-      console.log('original beforeOpen called, repositioning showmehere menu')
-      console.log(event)
-      console.log(ui)
+ //     console.log('original beforeOpen called, repositioning showmehere menu')
+   //   console.log(event)
+   //   console.log(ui)
        ui.menu.appendTo(stageParent.div)
       var css = {
 'z-index':getZ('contextMenu','staticItems').container
@@ -2473,7 +2473,7 @@ menu:menu
 //replace before options
 $(stageParent.div).off('contextmenubeforeOpen')
 $(stageParent.div).on('contextmenubeforeOpen', function(event,ui){
-  console.log('context menu called from regular right click, hiding and not showing it ...SUCCESS')
+ // console.log('context menu called from regular right click, hiding and not showing it ...SUCCESS')
   $(stageParent.div).contextmenu('destroy')
   return false
 })
@@ -3511,8 +3511,7 @@ var progressRatioIncrease = 1/ticksPerPreloadBarCycle
 
 var preloadSounds = function(flashArray, soundArray){
 
-
-createjs.FlashPlugin.BASE_PATH = "js/vendor/" //tell createjs where to find default flash audio
+createjs.FlashPlugin.swfPath  = "/js/vendor/" //tell createjs where to find default flash audio
 createjs.Sound.registerPlugins([createjs.WebAudioPlugin, createjs.HTMLAudioPlugin, createjs.FlashPlugin]) //enable soundjs to play .swf files
 //createjs.Sound.registerPlugin(createjs.FlashPlugin)
 
@@ -3531,8 +3530,8 @@ for(var i =0;i<flashArray.length;i++){
   console.log(flashArray[i].src)
   var temp = createjs.Sound.createInstance(flashArray[i].src)
   console.log(temp)
-  temp.play()
-  handleLoad(flashArray[i].src, flashArray[i].id )
+ // temp.play()
+  handleLoad(flashArray[i].src, flashArray[i].id)
 }
 
 
@@ -4793,6 +4792,9 @@ var fourColorDeckData = {
      frames: {width:37, height:45}
 
 }
+
+this.currencyDisplay.disableMouseEvents()
+
 /*
 this.fourColorSprite = new createjs.SpriteSheet(fourColorDeckData)
 
@@ -5979,13 +5981,16 @@ var zIndexesPerDiv = 10
 
 self.jQueryObjects.canvasDiv.append('<div id = '+'\''+newDivID+'\'' + ' width = '+'\''+viewedCanvasWidth+'\''+' height=' +'\''+viewedCanvasHeight+'\''+'></canvas>')
 
-$('#'+newDivID).append('<canvas id = '+'\''+newCanvasID+'\'' + ' width = '+'\''+viewedCanvasWidth+'\''+' height=' +'\''+viewedCanvasHeight+'\''+'></canvas>')
+$('#'+newDivID).append('<canvas id = '+'\''+newCanvasID+'\'' + ' width = '+'\''+technicalCanvasWidth+'\''+' height=' +'\''+technicalCanvasHeight+'\''+'></canvas>')
 
 //console.log('created canvas with canvas id of: '+newCanvasID)
 //set proper z-index
 //$('#'+newCanvasID).css('z-index',parseInt(newCanvasIDNumber*zIndexesPerCanvas)+initialZIndex)
 //$('#'+newCanvasID).css('z-index',initialZIndex)
-$('#'+newCanvasID).addClass(canvasClass + ' ' + self.css.unselectable + ' ' + self.css.noFat)
+$('#'+newCanvasID).css({
+width:viewedCanvasWidth
+,height:viewedCanvasHeight
+}).addClass(canvasClass + ' ' + self.css.unselectable + ' ' + self.css.noFat)
 //$('#'+newCanvasID).css('z-index',0)
 $('#'+newDivID).css({
   'z-index': newCanvasIDNumber*zIndexesPerDiv
@@ -6011,6 +6016,10 @@ var canvas = document.getElementById(newCanvasID)
         self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].stage = new createjs.Stage(canvas)
         self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].name = options.name
 self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].stage.name = options.name
+
+//scale the stage
+self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].stage.scaleX = 1/(backingStorePixelRatio/devicePixelRatio)
+self.arrayOfParentsOfStageAndOfContainerArray[options.stageNumber].stage.scaleY = 1/(backingStorePixelRatio/devicePixelRatio)
 //IN THE FUTURE WE WANT TO INCREASE THE FUTURE CANVAS/STAGES DATA TO WE CAN ADD IT HERE
 initializeStageSettings(options)
 
@@ -6022,6 +6031,8 @@ initializeStageSettings(options)
 this.initializeStagesAndCanvasCallThisFirst = function(){
 
 //assign the backingStorePixelRatio
+
+/*
 backingStorePixelRatio = function(){
 
 var context = self.jQueryObjects.backingStoreRatioTester[0].getContext('2d')
@@ -6034,13 +6045,10 @@ context.backingStorePixelRatio || 1
 
 }()//get the ratio that the canvas is styled down to
 
+*/
 
 technicalCanvasWidth = viewedCanvasWidth*backingStorePixelRatio
-
-
-
-
-
+technicalCanvasHeight = viewedCanvasHeight*backingStorePixelRatio
 
 
   createZPositionData()
@@ -6564,6 +6572,8 @@ editEventsOfItemChild(this, 'on', eventType, actionFunction, options)
 }
 
 self.images.Item.prototype.disableMouseEvents = function(options){
+
+if(!options){var options = {}}
 
 var disableChildMouseEvent = function(child){
 if(child instanceof createjs.DisplayObject){child.mouseEnabled = false}
@@ -10138,17 +10148,21 @@ this.clearExpirationData('hand', seat, options)}//if not hand
 //clear table data
 var tableExpirationObject = self.gameState
 
-if(!_.isEmpty(tableExpirationObject)){clearExpirationObject(tableExpirationObject)}
 
-  if(!_.isNumber(seat)){
-    if( _.isNumber(this.gameState.userSeatNumber)){var seat = this.gameState.userSeatNumber}
-      else{throw 'no player number'}
-    }//if seat not given
+
+
 
 if(_.isNumber(seat)){
 var playerSeatObject = self.gameState.seats[seat]
 if(!_.isEmpty(tableExpirationObject)){clearExpirationObject(playerSeatObject)}
 }
+
+  else if(!_.isNumber(seat)){
+      if( _.isNumber(this.gameState.userSeatNumber) && seat != 'table'){var seat = this.gameState.userSeatNumber}
+    else{if(!_.isEmpty(tableExpirationObject)){clearExpirationObject(tableExpirationObject)}
+    }
+}//if seat not a number
+
 
 
 
@@ -12699,8 +12713,8 @@ var data = this.getChildPositionAndSizeData(type, {position:false, size:true, ma
 
 var newSize = {}
 
-if(this.size.x > data.outerWidth){newSize.x = this.size.x}
-  if(this.size.y > data.outerHeight){newSize.y = this.size.y}
+if(this.size.x > data.outerWidth){newSize.width = this.size.x}
+  if(this.size.y > data.outerHeight){newSize.height = this.size.y}
 
 setDisplayObjectPositionData(child, newSize)
 
@@ -14887,7 +14901,7 @@ var logString = 'canvases cleared: '+canvasesCleared.toString()+', total cleared
 
 //var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame
 
-
+if(!_.isFunction(window.requestAnimationFrame)) window.requestAnimationFrame = function(){};
 
 //=============================START ACTION PART OF: updateStages FUNCTION==============================
 
@@ -15542,7 +15556,7 @@ break;
 */
  self.clearExpirationData('street', i)
         }
-
+ self.clearExpirationData('street', 'table')
  self.streetEnds(potSizes)
 
     })
@@ -15675,6 +15689,7 @@ var action = action.toUpperCase()
 
 //clear on act data
 self.clearExpirationData('act', seatNum)
+self.clearExpirationData('act', 'table')
      if(action != 'SKIP') {self.playerActs(seatNum, action, 1000)}
      //   else{ throw ''}
 
@@ -15720,11 +15735,15 @@ self.clearExpirationData('act', seatNum)
              //clear once for user
              if(seatNum === self.gameState.userSeatNumber){
               self.clearExpirationData('once', player.seat)
+              self.clearExpirationData('once', 'table')
         //unbind scroll wheel events
 $(self.getParentOfStageObject(self.images.betSlider.slider).div).off('mousewheel.adjustBetSize')
 
             }
-            else{ self.clearExpirationData('act', seatNum) }
+            else{ 
+              self.clearExpirationData('act', seatNum) 
+self.clearExpirationData('act', 'table')
+            }
 
 
 stagesToUpdate.push(self.displayCorrectSeatItems(player.seat, {update:false}) )
@@ -16070,6 +16089,7 @@ stagesToUpdate.push(self.displayCorrectSeatItems(player.seat, {update:false}))
 for(var i = 0;i<self.gameState.seats.length;i++){
   self.clearExpirationData('hand', i)
 }
+self.clearExpirationData('hand', 'table')
 self.updateUserOptionsBasedOnFlagsAndPreactions()
          self.winners(players)
    

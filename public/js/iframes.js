@@ -122,6 +122,8 @@ position_number++//increment
     }//assign iframe position
 
 
+//add autohide class to navbar is landscape phone
+toggleNavbarAutoHideOnLandscapePhone(true)
 
   }// function openNewIframe
 
@@ -185,8 +187,21 @@ height:'calc(100% - ' + headerHeight+'px)'
     $.post('/leave_table', { table_name: table_name }, function(response) {
       console.log('/leave_table returns', response)
     })
+
+//if last iframe we want to show the navbar
+var allIFrames = getAllIFrames()
+if(allIFrames.length < 1){toggleNavbarAutoHideOnLandscapePhone(false)}
+  else if(allIFrames.length >= 1){toggleNavbarAutoHideOnLandscapePhone(true)}
+
   }
   
+function toggleNavbarAutoHideOnLandscapePhone (trueOrFalse){
+
+if(trueOrFalse === true){$('#navbar').addClass('hidden-landscape-phone')}
+  else if(trueOrFalse === false){$('#navbar').removeClass('hidden-landscape-phone')}
+
+}
+
   function findIframe(table_name) {
     var iframe_id = id_prefix + table_name
       , $iframe = $iframe_container.find('#' + iframe_id);
@@ -203,6 +218,9 @@ height:'calc(100% - ' + headerHeight+'px)'
     console.log("setIFrametoTop SAYS: new top is ", Top);
   }
 
+function getAllIFrames (){
+  return $('.iframe')
+}
 
   function setIFrameHeaderToTop() {
     this.style.zIndex= Top + 1;
@@ -221,3 +239,4 @@ height:'calc(100% - ' + headerHeight+'px)'
   , resizeIFrame: resizeIFrame
   };
 })();
+

@@ -1,4 +1,4 @@
-module.exports = (function () {
+module.exports = (function() {
   var app = require('./app').app
     , _ = require('underscore') // list utility library
     , async = require('async') // flow control utility library
@@ -28,37 +28,14 @@ module.exports = (function () {
     auth.ensureAuthenticated(req, res, next);
   };
 
-  var getUserAccountInfo = function(user){
-
-if(!user.emergency_BTC_address) user.emergency_BTC_address = '';
-  return{
-
-  username: user.username,
-      registration_date: user.registration_date,
-      email: user.email || '',
-      funbucks: user.funbucks,
-      email_confirmed: user.email_confirmed,
-      bitcoin_balance: user.satoshi / 1E8,
-      satoshi_balance: user.satoshi,
-      emergency_BTC_address:user.emergency_BTC_address
-
-        }
-
-  }//getUserAccountInfo
-
   app.get('/account', ensureAuthenticated, function(req, res) {
     //console.log('req.user is ' + req.user);
     var flash = req.flash('error');
-var emergency_BTC_address = req.user.emergency_BTC_address || ''
-console.log('emergency_BTC_address = ')
 
-console.log(emergency_BTC_address)
-    res.render('account', _.extend(getUserAccountInfo(req.user), {
-        title: 'Account'
-        ,message: flash && flash[0]
-       })
-
-      );
+    res.render('account', _.extend(req.user, {
+      title: 'Account'
+    , message: flash && flash[0]
+    }));
   });
 
   app.get('/faq', function(req, res) {
@@ -144,7 +121,7 @@ console.log(emergency_BTC_address)
     });
   });
 
-  app.post('/withdraw_bitcoins', function (req, res) {
+  app.post('/withdraw_bitcoins', function(req, res) {
     btc_main.handleWithdrawRequest(req.user, req.body, function(err) {
       if (err) {
         req.flash('error', err);
@@ -167,17 +144,12 @@ console.log(emergency_BTC_address)
       if ( _.isString(req.query.joined_table_name) ) {
         req.user.current_table_names.push(req.query.joined_table_name);
       }
-      res.render('index', _.extend(getUserAccountInfo(req.user), {
+      res.render('index', _.extend(req.user, {
         title: 'Bitcoin Poker'
-        ,message: flash && flash[0]
-        , room_state: JSON.stringify(room_state)
-        , user: req.user
-
-        , message: flash && flash[0]
-       })
-
-            
-      );
+      , room_state: JSON.stringify(room_state)
+      , user: req.user
+      , message: flash && flash[0]
+      }));
     }
     else {
       console.log('user is not logged in. rendering welcome environment');
@@ -194,7 +166,7 @@ console.log(emergency_BTC_address)
   app.get('/lobby', redirectToHome);
   app.get('/play', redirectToHome);
 
-  app.get('/leaderboard', function (req, res) {
+  app.get('/leaderboard', function(req, res) {
     async.parallel({
       funbucks: function(acb) { User.getLeaders('funbucks', acb); }
     , satoshi: function(acb) { User.getLeaders('satoshi', acb); }
@@ -213,13 +185,13 @@ console.log(emergency_BTC_address)
     });
   });
 
-  app.get('/legal_info', function (req, res) {
+  app.get('/legal_info', function(req, res) {
     res.render('legal_info', {
       title: 'Legal Information',
     });
   });
 
-  app.get('/login', function (req, res) {
+  app.get('/login', function(req, res) {
     var next_page = req.query.next || base_page
       , flash = req.flash('error');
     if (! auth.isAuthenticated(req)) {
@@ -237,7 +209,7 @@ console.log(emergency_BTC_address)
   });
   
   //this page is where you request the password recovery e-mail
-  app.get('/password_recovery', function (req, res) {
+  app.get('/password_recovery', function(req, res) {
     var flash = req.flash('error')
     res.render('password_recovery', {
       message: flash && flash[0],
@@ -253,7 +225,7 @@ console.log(emergency_BTC_address)
       , recovery_code = req.query.recovery_code
       , username = req.query.username
       , flash = req.flash('error');
-    console.log(email + recovery_code + username);
+
     res.render('password_reset', {
       message: flash && flash[0],
       title: 'Password Reset',
@@ -264,7 +236,7 @@ console.log(emergency_BTC_address)
     console.log('Password reset page loaded with username ' + username + ', recovery code ' + recovery_code + ', and e-mail ' + email + '.');
   });
 
-  app.get('/promo', function (req, res) {
+  app.get('/promo', function(req, res) {
     res.render('promo', {
       title: 'Promo',
     });
@@ -309,13 +281,13 @@ console.log(emergency_BTC_address)
   });
 
   //this route handles e-mail verification links.
-  app.get('/verify_email', function (req, res) {
+  app.get('/verify_email', function(req, res) {
     var email = req.query.email
       , confirmation_code = req.query.confirmation_code;
 
     //check user database for users with matching email and confirmation code, then update email_confirmed property to true.
-    User.findOneAndUpdate( {email: email, confirmation_code: confirmation_code},
-                           {email_confirmed: true}, function(err, user) {
+    User.findOneAndUpdate({ email: email, confirmation_code: confirmation_code },
+                          { email_confirmed: true }, function(err, user) {
       console.log('findOneAndUpdate returns', err, user);
       if (err) {
         console.error('Error during findOneAndUpdate:', err);
@@ -330,12 +302,12 @@ console.log(emergency_BTC_address)
     });
   });
 
-  app.get('/welcome', function (req, res) {
+  app.get('/welcome', function(req, res) {
     var users = Room.getRoom('').getUsernames()
       , room_state = { users: users }
       , flash = req.flash('error');
 
-    if (_.isObject(req.user)) { 
+    if (_.isObject(req.user)) {
       res.redirect('/');
     }
 
@@ -348,23 +320,23 @@ console.log(emergency_BTC_address)
   });
 
   // validate e-mail address & save to MongoDB & send an e-mail confirmation.
-  app.post('/set_email', function (req, res) {
+  app.post('/set_email', function(req, res) {
     var username = req.user.username
       , email = req.body.email;
 
     // don't let guest users set an email address (they can't log in anyway)
     if (User.isGuest(username)) {
-      var error = 'You cannot register an email address to a guest account';  
-      console.error(error); 
-      res.json({ error: error });       
-      req.flash('error', 'You cannot register an email address to a guest account.');
+      res.json({ error: 'You cannot register an email address to a guest account' });
+    }
+    else if (_.isEmpty(email)) {
+      res.json({ error: 'Invalid email address: ' + email });
     }
     else {
       console.log('POST /set_email called ' + req.body.email +'req.user is ', req.user);
       //if email is valid, save it to MongoDB
       req.user.sendConfirmationEmail(email, function(err) {
         if (err) {
-          res.json({ error : err });
+          res.json({ error: err });
         }
         else {
           res.json({ email: email });
@@ -373,35 +345,59 @@ console.log(emergency_BTC_address)
     }
   });
 
-  //delete account
-  /*app.post('/delete_account', function (req, res) {
-    console.log('delete_account route fired.');
-    User.remove({ _id: req.user.id }, function(err) {
-        if (_.isEmpty(err)) {
-          console.log('Account deleted!');
-          req.flash('error', 'Account deleted. Play again soon!');
-        }
-        else {
-          console.error('Error when attempting to delete account:', err);
-          req.flash('error', 'Error when attempting to delete account:' + err);
-        }
+  //remove email from account
+  app.post('/remove_email', function(req, res) {
+    console.log('calling remove email route');
+    User.update({ _id: req.user._id }, { $set: { email: '', email_confirmed: false } }, function(err) {
+      if (err) {
+        console.error('Error when removing email from database:', err);
+        res.json({ error: err });
+      }
+      else {
+        console.log('Removed email from ' + req.user.username +'\'s account.');
+        res.json({ success: true });
+      }
     });
-    res.redirect('back');
-  });*/
-
-  app.post('/update_emergency_BTC_address', redirectIfUnauthenticated, function (req, res) {
-    console.log('updating users emergency address');
-    console.log(req.body.address)
-
- User.findOne({ username: req.user.username }, function(err, user) {
-user.emergency_BTC_address = req.body.address
-user.save(function(err, user){
-if(err){return console.error(err)}
-  console.log('new emergency address saved succesfully')
-})//save new address
-})//get database user object
   });
 
+  app.post('/set_emergency_BTC_address', redirectIfUnauthenticated, function(req, res) {
+    var username = req.user.username
+      , address = req.body.address
+      , error;
+    // don't let guest users set an emergency BTC address (they can't own satoshi anyway)
+    if (! address_validator.validate(address)) {
+      res.json({ error: 'Invalid bitcoin address: ' + address });
+    }
+    else if (User.isGuest(username)) {
+      res.json({ error: 'You cannot set an emergency BTC address to a guest account' });
+    }
+    else {
+      console.log('setting user\'s emergency address to', address);
+      User.findOneAndUpdate({ username: req.user.username },
+                            { emergency_BTC_address: address }, function(err, user) {
+        console.log('findOneAndUpdate returns', err, user);
+        if (err || _.isEmpty(user)) {
+          console.error('Error during findOneAndUpdate:', err || (user + ' user'));
+          req.flash('error', 'Sorry, something went wrong while setting your emergency BTC address.');
+        }
+        else {
+          res.json({ emergency_BTC_address: address });
+        }
+      });
+    }
+  });
+
+  app.post('/remove_emergency_BTC_address', function(req, res) {
+    User.update({ _id: req.user._id }, { $set: { emergency_BTC_address: '' } }, function(err) {
+      if (err) {
+        res.json({ error: err });
+      }
+      else {
+        console.log('Removed emergency BTC address from ' + req.user.username +'\'s account.');
+        res.json({ success: true });
+      }
+    });
+  });
 
   //Guest Login Route
   function createGuestUser(req, res) {
@@ -434,7 +430,7 @@ if(err){return console.error(err)}
   app.get('/guest_login', createGuestUser);
   
   //submit password recovery to user's e-mail address route.
-  app.post('/password_recovery', function (req, res) {
+  app.post('/password_recovery', function(req, res) {
     var username = req.body.username;
     console.log('/password_recovery route called for username: ' + username);
     User.findOne({ username: username }, function(err, user) {
@@ -452,7 +448,7 @@ if(err){return console.error(err)}
         res.redirect('/password_recovery');
       }
       else {
-        User.generatePasswordRecoveryCode(function (err, recovery_code) {
+        User.generatePasswordRecoveryCode(function(err, recovery_code) {
           if (err) {
             console.error('Error while generating confirmation code:', err);
             res.json({ error: 'Error while generating confirmation code:' + JSON.stringify(err) });
@@ -479,7 +475,7 @@ if(err){return console.error(err)}
   });
 
   //resets password to whatever the user inputs.
-  app.post ('/password_reset', function (req, res) {
+  app.post ('/password_reset', function(req, res) {
     var email = req.body.email
       , recovery_code = req.body.recovery_code
       , username = req.body.username
@@ -522,36 +518,20 @@ if(err){return console.error(err)}
   });
 
   //bug_report/feedback form route
-  app.post('/report_bug', function (req, res) {
+  app.post('/report_bug', function(req, res) {
     var username = req.user && req.user.username || undefined
     , message = req.body.message;
     console.log('report bug route called');
     mailer.sendBugReport(username, message, function(error) {
       if (error) {
-        console.error('Error while trying to send bug reportemail!', error);
+        console.error('Error while trying to send bug report email!', error);
       }
     });
     res.json({ success: true });
   });
 
-
-  //remove email from account association
-  app.post('/remove_email', function (req, res) {
-    console.log('calling remove email route');
-    User.update({_id: req.user._id}, { $unset: { email: undefined }, $set: { email_confirmed: false } }, function(err) {
-      if (err) {
-        console.error('error when removing email from database.'); 
-        res.json({error:err});
-      }
-      else {
-        console.log('Removed email from ' + req.user.username +'\'s account.');
-        res.json({ success: true});
-      }
-    });
-  });
-
   // update funbucks
-  app.post('/increase_funbucks_by_100', function (req, res) {
+  app.post('/increase_funbucks_by_100', function(req, res) {
     var funbucks_to_add = 100;
     console.log('calling funbucks update route');
     User.update({_id: req.user._id}, 
@@ -589,18 +569,18 @@ if(err){return console.error(err)}
            passport.authenticate('local', 
                                  { failureRedirect: '/login', 
                                    failureFlash: true }),
-           function (req, res) {
+           function(req, res) {
     // Authentication successful. Redirect.
     //console.log('POST /login called!');
     res.redirect(req.body.next || base_page);
   });
 
   //Send register the new information
-  app.post('/register', function (req, res, next) {
+  app.post('/register', function(req, res, next) {
     var username = req.body.username
       , pt_password = req.body.new_password
       , password_confirm = req.body.new_password_confirm
-      , email = req.body.email || undefined
+      , email = req.body.email || ''
       , target = req.body.next || base_page
       , ip = req.headers['x-forwarded-for'] ? _.strLeft(req.headers['x-forwarded-for'], ',') :
              req.connection.remoteAddress ||
@@ -674,7 +654,7 @@ if(err){return console.error(err)}
     }
   });
 
-  app.get('/logout', function (req, res) {
+  app.get('/logout', function(req, res) {
     //console.log('GET /logout called!');
     //End this user's session.
     req.logout();
@@ -895,10 +875,10 @@ if(err){return console.error(err)}
   app.post('/enter_lottery', redirectIfUnauthenticated, function(req, res) {
     console.log('/enter_lottery called for', req.user.username);
     lottery.current(function(current_err, current_lottery) {
-      if(current_err) { console.warn(current_err); }
-      if(current_lottery) {
+      if (current_err) { console.warn(current_err); }
+      if (current_lottery) {
         current_lottery.addEntry({ username: req.user.username, email: req.user.email, address: req.user.address },
-                                 function(add_err, lottery) {
+                                   function(add_err, lottery) {
           if (! _.isString(add_err)) {
             add_err = 'Successfully entered the lottery!';
           }
@@ -908,7 +888,6 @@ if(err){return console.error(err)}
       }
     });
   });//enter_lottery
-
 
   //Handle all other cases with a 404
   //Note: ONLY do this if app.use(app.router) comes after

@@ -1,7 +1,7 @@
       <% if (typeof message === 'string') { %>
         <p class="inverse"><%= message %></p>
       <% } %>
-        <h2> Account Information</h2>
+        <h2>Account Information</h2>
 
         <div>
             username: <%= username %>
@@ -10,52 +10,52 @@
             registration date: <%= registration_date %>
         </div>
         <div>
-            <% if (email === undefined) { %>
+            <% if (email === '') { %>
                 <form id="set_email" action="/set_email" method="post">
                     email address:
-                    <input field="text" name="email" placeholder="jklsemicolon@asdf.com" />
-                    <button class="btn btn-default btn-blue6" value="submit"> Submit </button>
+                    <input type="email" name="email" placeholder="jklsemicolon@asdf.com" />
+                    <button class="btn btn-default btn-blue6" value="submit">Submit</button>
                 </form>
+                <div id="set_email_error" class="error"></div>
             <% } else { %>
                 email address: <%= email %>
                 <br />
                 email confirmed: <%= email_confirmed %>
+                <br />
                 <form id="remove_email" action="/remove_email" method="post">
-                    <button class="btn btn-default btn-blue6" value="submit"> Remove E-mail </button>
+                    <button class="btn btn-default btn-blue6" value="submit">Remove E-mail</button>
                 </form>
             <% } %>
-            <div id="set_email_error"></div>
         </div>
         <div id="funbucks">
-            fun bucks: <span id = "funbucks_counter"> <%= funbucks %></span>
+            funbucks: <span id="funbucks_counter"> <%= funbucks %></span>
             <form id="increase_funbucks" action="/increase_funbucks_by_100" method="post">
-                <button class="btn btn-default btn-blue6" value="submit"> Give me 100 funbucks! </button>
+                <button class="btn btn-default btn-blue6" value="submit">Give me 100 funbucks!</button>
             </form>
         </div>
         
         <!--bitcoins-->
         <div>
-            <h2>
-            Bitcoin Management
-            </h2>
+            <h2>Bitcoin Management</h2>
             <p>Satoshi are each .00000001 Bitcoin, often abbreviated "sat".</p>
-            Satoshi: <span id ="satoshi_counter"> <%= satoshi_balance %></span>
+            Satoshi: <span id="satoshi_counter"> <%= satoshi %></span>
             <br />
             <a href="/deposit_bitcoins"> <button class="btn btn-default btn-blue6">Deposit Bitcoins</button></a>
             <a href="/withdraw_bitcoins"><button class="btn btn-default btn-blue6">Withdraw Bitcoins</button></a>
-            <br>
-            Emergency Withdrawal Address:
-            <form action="/update_emergency_BTC_address" method="post">
-            <input name = 'address' type ='text'  placeholder = '<%= emergency_BTC_address %>'> </input>
-            <button class="btn btn-default btn-blue6" value="submit">Save</button>
-            </form>
+            <br />
+            <div>
+                <% if (emergency_BTC_address === '') { %>
+                    <form id="set_emergency_BTC_address" action="/set_emergency_BTC_address" method="post">
+                        Emergency BTC address:
+                        <input type="text" name="address" placeholder="1HmwtpPsAfAj9ynKh6ACaDmeztMLy2cBmT" />
+                        <button class="btn btn-default btn-blue6" value="submit">Save</button>
+                    </form>
+                    <div id="set_emergency_BTC_address_error" class="error"></div>
+                <% } else { %>
+                    Emergency BTC address: <%= emergency_BTC_address %>
+                    <form id="remove_emergency_BTC_address" action="/remove_emergency_BTC_address" method="post">
+                        <button class="btn btn-default btn-blue6" value="submit">Remove Emergency BTC address</button>
+                    </form>
+                <% } %>
+            </div>
         </div>
-
-        <!--delete account
-        <div>
-            <h3>Delete Account</h3>
-            <form id="delete_account" action="/delete_account" method="post">
-            <button class="btn btn-default btn-blue6" value="submit">Delete</button>
-            </form>
-        </div>
-        -->
