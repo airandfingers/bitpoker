@@ -81,7 +81,7 @@ assignIFramePosition($iframe)
       handle: '.iframe_header'
     , snap: true
     , snapMode: 'outer'
-    , containment: '#container'
+    , containment: '#iframe_container'
     , iframeFix: true
     //, stack: '.iframe'
     });
