@@ -531,9 +531,7 @@ display: -webkit-flex;
 
 .table_2 {
   left:0;
-  top:-webkit-calc(100% - 470px);
-  top:-moz-calc(100% - 470px);
-  top:calc(100% - 470px);
+  bottom: 0;
 }
 
 .table_3 {
