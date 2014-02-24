@@ -502,7 +502,7 @@ background:red;
 
 
 
-#iframe_container{
+#iframe_container {
     text-align: left;
     margin: 0;
     position: absolute;
@@ -552,9 +552,9 @@ display: -webkit-flex;
 }
 
 .table_6 {
-    left:-webkit-calc(100% - 332px);
-    left:-moz-calc(100% - 332px);
-    left:calc(100% - 332px);
+    left:-webkit-calc(100% - 700px);
+    left:-moz-calc(100% - 700px);
+    left:calc(100% - 700px);
     top:50%;
 }
 
