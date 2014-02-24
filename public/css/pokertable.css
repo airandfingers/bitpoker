@@ -15,6 +15,7 @@ body{
   position:absolute;
 left:0px;
 right:0px;
+overflow:hidden;
 }
 
 #pokerTableWrapper {
@@ -277,6 +278,15 @@ margin:0 0 0 0;
 
 }
 
+input::-webkit-inner-spin-button {
+
+
+/*input::-webkit-inner-spin-button {*/
+     display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+
+}
 
 #maxText{
 
