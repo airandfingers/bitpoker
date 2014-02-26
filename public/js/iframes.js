@@ -1,19 +1,12 @@
 (function() {
-
-var pageStyled = false
-
-
   function resizeIFrame(table_name, height, width, options) {
-    if(!_.isObject(options)){var options = {}}
-      var iframe = $('[src="/'+ table_name + '"]')
-//iframe.css('float','right')
-   //   if(options.right){var oldWidth = iframe.width()}
-     //   if(options.bottom){var oldHeight = iframe.height()}
+    if(! _.isObject(options)) { var options = {}; }
+    var iframe = $('[src="/'+ table_name + '"]');
+  //iframe.css('float','right')
+  //if(options.right) { var oldWidth = iframe.width(); }
+  //if(options.bottom) { var oldHeight = iframe.height(); }
 
     iframe.height(height).width(width);
-  
-//if(options.right){}
-
   }
 
   function resizeWindowJazz(e) {
@@ -70,10 +63,10 @@ var pageStyled = false
         table_name: table_name
     }));
 
-//DETERMINE WHERE THE IFRAME WILL GO
-assignIFramePosition($iframe)
+    //DETERMINE WHERE THE IFRAME WILL GO
+    assignIFramePosition($iframe)
 
-//stylePage()//style page if needed
+    //stylePage()//style page if needed
 
     $iframe_container.append($iframe);
     // make iframe draggable
@@ -94,64 +87,35 @@ assignIFramePosition($iframe)
     //wyv addition: set x to close before poker table loads
     setIframeCloseHandler(table_name, function(){closeIframe(table_name)})
 
-
-
-//CLASSED STORED IN MAIN.CSS
+    // iframe classes are from main.css
     function assignIFramePosition(iframe) {
+      var getPositionClassFromPositionNumber = function(table_position_number) { return 'table_'+table_position_number; };
+      var checkIfTablePositionExists = function(table_position_number) {
+        var positionClass = getPositionClassFromPositionNumber(table_position_number);
+        if ($iframe_container.find('.'+positionClass).length > 0) { return true; }
+        else { return false; }
+      };
 
-var getPositionClassFromPositionNumber = function(table_position_number){return 'table_'+table_position_number}
-var checkIfTablePositionExists = function(table_position_number){
-  var positionClass = getPositionClassFromPositionNumber(table_position_number)
-  if($iframe_container.find('.'+positionClass).length>0){return true}
-    else{return false}
-}
+      var classAssigned = false;
+      var position_number = 0;
+      while (classAssigned !== true) {
+        if (! checkIfTablePositionExists(position_number) || position_number > 18) {
+          iframe.addClass(getPositionClassFromPositionNumber(position_number));
+          classAssigned = true;
+        }
+        position_number++;
+      } // loop
+    } // assign iframe position
 
-var classAssigned = false
-var position_number = 0 
-while(classAssigned !== true){
+    //add autohide class to navbar is landscape phone
+    toggleNavbarAutoHideOnLandscapePhone(true);
 
-if(!checkIfTablePositionExists(position_number) || position_number > 18){
-  iframe.addClass(getPositionClassFromPositionNumber(position_number))
-  classAssigned = true
-}//if we want to add the class
-
-position_number++//increment
-
-}//loop through
-
-    }//assign iframe position
-
-
-//add autohide class to navbar is landscape phone
-toggleNavbarAutoHideOnLandscapePhone(true)
-
-  }// function openNewIframe
+  } // openNewIframe
 
   // open iframes for each table_name in initial_tables
   _.each(initial_tables, function(table_name) {
     openNewIframe(table_name);
   });
-
-/*
-function stylePage (){
-if(pageStyled === true){return}
-console.log('stylePage called')
-  $('body').css({
-width:'100%'
-,height:'100%'
-  })//boddy css
-
-var headerHeight = $('header').outerHeight(true)
- $('#container').css({
-
-height:'calc(100% - ' + headerHeight+'px)'
-//,overflow:'hidden'
- })
-
-//////
-  pageStyled = true
-}//function stylePage
-*/
 
   function setIframeCloseHandler(table_name, close_handler) {
  //   console.log('setIframeCloseHandler called with', table_name, close_handler);
@@ -163,7 +127,7 @@ height:'calc(100% - ' + headerHeight+'px)'
   }
 
   function setIframeTitle(table_name, title) {
-    console.log('setIframeTitle called with', table_name, title)
+    //console.log('setIframeTitle called with', table_name, title)
     var $iframe = findIframe(table_name);
     if ($iframe.length > 0) {$iframe.find('.iframe_header_title').text(title);}
     else {console.error('no iframe found for table_name', table_name); }
@@ -211,7 +175,7 @@ if(trueOrFalse === true){$('#navbar').addClass('hidden-landscape-phone')}
     var new_top = Top + 1;
     blah.css("z-index", new_top);
     Top++;
-    console.log("setIFrametoTop SAYS: new top is ", Top);
+    //console.log("setIFrametoTop SAYS: new top is ", Top);
   }
 
 function getAllIFrames (){
@@ -221,7 +185,7 @@ function getAllIFrames (){
   function setIFrameHeaderToTop() {
     this.style.zIndex= Top + 1;
     Top++;
-    console.log("setiframeHeaderToTop SAYS: new top is ", Top);
+    //console.log("setiframeHeaderToTop SAYS: new top is ", Top);
    }
  
  $('#iframe_container').on("mousedown", ".iframe", setIFrameHeaderToTop);
