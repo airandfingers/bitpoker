@@ -285,8 +285,9 @@ module.exports = (function() {
   };
 
   UserSchema.statics.encryptPassword = function(pt_password) {
-    var shasum = crypto.createHash('sha1');
+    var shasum;
     if (_.isString(pt_password)) {
+      shasum = crypto.createHash('sha1');
       shasum.update(pt_password);
       shasum = shasum.digest('hex');
     }

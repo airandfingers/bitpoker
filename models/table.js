@@ -5,14 +5,14 @@ module.exports = (function () {
 
     , async = require('async') // flow control utility library
     , _ = require('underscore') // list utility library
-    
+
     , io = require('../sockets') // configured and listening Socket.IO
-    
+
     , db = require('./db') // make sure db is connected
 
     , Room = require('./room')
     , Message = require('./message')
-    
+
     , NoLimitGame = require('./no_limit_game')
     , HoldEmHand = require('./hold_em_hand')
     , Player = require('./player');

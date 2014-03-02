@@ -26,15 +26,28 @@ module.exports = (function() {
   // this shouldn't be necessary - should be able to use auth.ensureAuthenticated directly
   var ensureAuthenticated = function(req, res, next) {
     auth.ensureAuthenticated(req, res, next);
-  };
+  }
+    , getFlashFromReq = function(req) {
+    var flash = req.flash('error');
+    return flash && flash[0];
+  }
+    , getRedirectionTarget = function(target) {
+      target = target || base_page;
+      // Validate target, to prevent redirection attacks.
+      if (target.match(/[\x00-\x1F]/) !== null || // Contains an invalid character
+          target.match(/^\//)       === null || // Doesn't start with /
+          target.match(/^\/\//)     !== null) { // Starts with //
+        console.error('Invalid redirection target.');
+        target = base_page;
+      }
+      return target;
+    }
 
   app.get('/account', ensureAuthenticated, function(req, res) {
     //console.log('req.user is ' + req.user);
-    var flash = req.flash('error');
-
     res.render('account', _.extend(req.user, {
       title: 'Account'
-    , message: flash && flash[0]
+    , message: getFlashFromReq(req)
     }));
   });
 
@@ -112,11 +125,10 @@ module.exports = (function() {
 
   var minimum_withdrawl = .0002;
   app.get('/withdraw_bitcoins', ensureAuthenticated, function(req, res) {
-    var flash = req.flash('error');
     res.render('withdraw_bitcoins', {
       title: 'Withdraw Bitcoins',
       bitcoin_balance: req.user.satoshi / 1E8,
-      message: flash && flash[0],
+      message: getFlashFromReq(req),
       minimum_withdrawl: minimum_withdrawl
     });
   });
@@ -136,8 +148,7 @@ module.exports = (function() {
   // home, index, lobby, play, and / all show the landing page
   function renderHome(req, res) {
     var users = Room.getRoom('').getUsernames()
-      , room_state = { users: users }
-      , flash = req.flash('error');
+      , room_state = { users: users };
     //console.log('rendering home; user is', req.user);
 
     if (_.isObject(req.user)) { 
@@ -148,7 +159,7 @@ module.exports = (function() {
         title: 'Bitcoin Poker'
       , room_state: JSON.stringify(room_state)
       , user: req.user
-      , message: flash && flash[0]
+      , message: getFlashFromReq(req)
       }));
     }
     else {
@@ -192,12 +203,11 @@ module.exports = (function() {
   });
 
   app.get('/login', function(req, res) {
-    var next_page = req.query.next || base_page
-      , flash = req.flash('error');
+    var next_page = req.query.next || base_page;
     if (! auth.isAuthenticated(req)) {
       //Show the login form.
       res.render('login', {
-        message: flash && flash[0],
+        message: getFlashFromReq(req),
         next: next_page,
         title: 'Login',
       });
@@ -210,9 +220,8 @@ module.exports = (function() {
   
   //this page is where you request the password recovery e-mail
   app.get('/password_recovery', function(req, res) {
-    var flash = req.flash('error')
     res.render('password_recovery', {
-      message: flash && flash[0],
+      message: getFlashFromReq(req),
       next: req.query.next,
       title: 'Password Recovery',
     });
@@ -223,11 +232,10 @@ module.exports = (function() {
   app.get('/password_reset', function(req, res) {
     var email = req.query.email
       , recovery_code = req.query.recovery_code
-      , username = req.query.username
-      , flash = req.flash('error');
+      , username = req.query.username;
 
     res.render('password_reset', {
-      message: flash && flash[0],
+      message: getFlashFromReq(req),
       title: 'Password Reset',
       email: email,
       recovery_code: recovery_code,
@@ -244,12 +252,11 @@ module.exports = (function() {
 
   //home, index and '/' link to the same page
   function renderRegister(req, res) {
-    var next_page = req.query.next || base_page
-      , flash = req.flash('error');
+    var next_page = req.query.next || base_page;
     if (! auth.isAuthenticated(req)) {
       //Show the registration form.
       res.render('register', {
-        message: flash && flash[0],
+        message: getFlashFromReq(req),
         next: req.query.next,
         title: 'Ready to play?',
         mode: 'register'
@@ -259,7 +266,7 @@ module.exports = (function() {
       if (User.isGuest(req.user.username)) {
         //Show the 'conversion' form.
         res.render('register', {
-          message: flash && flash[0],
+          message: getFlashFromReq(req),
           next: req.query.next,
           title: 'Ready to play?',
           mode: 'convert'
@@ -304,8 +311,7 @@ module.exports = (function() {
 
   app.get('/welcome', function(req, res) {
     var users = Room.getRoom('').getUsernames()
-      , room_state = { users: users }
-      , flash = req.flash('error');
+      , room_state = { users: users };
 
     if (_.isObject(req.user)) {
       res.redirect('/');
@@ -314,7 +320,7 @@ module.exports = (function() {
     res.render('welcome', {
       title: 'Bitcoin Poker'
     , room_state: JSON.stringify(room_state)
-    , message: flash && flash[0]
+    , message: getFlashFromReq(req)
     , user: req.user
     });
   });
@@ -403,7 +409,7 @@ module.exports = (function() {
   function createGuestUser(req, res) {
     console.log('guest_login route fired!');
 
-    var target = req.body.next || req.query.next || base_page;
+    var target = getRedirectionTarget(req.body.next || req.query.next);
     User.createGuestUser(function(user) {
       user.save(function(save_err, result) {
         if (save_err) {
@@ -571,8 +577,7 @@ module.exports = (function() {
                                    failureFlash: true }),
            function(req, res) {
     // Authentication successful. Redirect.
-    //console.log('POST /login called!');
-    res.redirect(req.body.next || base_page);
+    res.redirect(getRedirectionTarget(req.body.next));
   });
 
   //Send register the new information
@@ -581,7 +586,7 @@ module.exports = (function() {
       , pt_password = req.body.new_password
       , password_confirm = req.body.new_password_confirm
       , email = req.body.email || ''
-      , target = req.body.next || base_page
+      , target = getRedirectionTarget(req.body.next)
       , ip = req.headers['x-forwarded-for'] ? _.strLeft(req.headers['x-forwarded-for'], ',') :
              req.connection.remoteAddress ||
              req.socket.remoteAddress ||
@@ -655,7 +660,6 @@ module.exports = (function() {
   });
 
   app.get('/logout', function(req, res) {
-    //console.log('GET /logout called!');
     //End this user's session.
     req.logout();
     res.redirect(base_page);
@@ -821,10 +825,9 @@ module.exports = (function() {
   }
 
   app.get('/admin', redirectIfUnauthenticated, adminOr404, function(req, res) {
-    var flash = req.flash('error');
     res.render('admin', {
       title: 'Admins Only!'
-    , message: flash && flash[0]
+    , message: getFlashFromReq(req)
     });
   });
 
@@ -865,10 +868,9 @@ module.exports = (function() {
   });
 
   app.get('/lottery', redirectIfUnauthenticated, function(req, res) {
-    var flash = req.flash('error');
     res.render('lottery', {
       title: 'Enter the Lottery'
-    , message: flash && flash[0]
+    , message: getFlashFromReq(req)
     });
   });
 
