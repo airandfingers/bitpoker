@@ -4,19 +4,12 @@ module.exports = (function () {
 
   //create reusable transport method (opens pool of SMTP connections)
   var smtp_transport = nodemailer.createTransport('SMTP', {
-    service: 'Gmail',
-    auth: {
-      user: 'cryptopoker@gmail.com',
-      pass: 'thebigfinish'
+    service: 'Gmail'
+  , auth: {
+      user: db_config.EMAIL_ADDRESS
+    , pass: db_config.EMAIL_PASSWORD
     }
   });
-
-  var mail_options = {
-    from: 'Crypto Poker <cryptopoker@gmail.com>', //sender address
-    to: 'bitcoinpoker@gmail.com', //list of receivers
-    subject: 'E-mail Confirmation', // subject line
-    text: 'This should only be sent when the mail route is called.',
-  };
 
   // send confirmation email with a link to the confirmation route
   var sendConfirmationEmail = function(email_address, confirmation_code, username) {
@@ -24,7 +17,7 @@ module.exports = (function () {
                            '&confirmation_code=' + confirmation_code
       , greeting = 'Hi ' + username + '!'
       , confirmation_email = {
-          from: 'Crypto Poker <cryptopoker@gmail.com>' //sender address
+          from: 'Bitpoker <' + db_config.EMAIL_ADDRESS + '>' //sender address
         , to: email_address //list of receivers
         , subject: 'Bitpoker E-mail Confirmation' // subject line
         , text: greeting + '\nClick here to confirm your email address for bitpoker:\n' + confirmation_url
@@ -50,7 +43,7 @@ module.exports = (function () {
                         '&recovery_code=' + recovery_code + '&username=' + username
         , greeting = 'Hello ' + username + ','
         , password_recovery_email = {
-          from: 'Crypto Poker <cryptopoker@gmail.com>' //sender address
+          from: 'Bitpoker <' + db_config.EMAIL_ADDRESS + '>' //sender address
         , to: email_address //list of receivers
         , subject: 'Bitpoker Password Recovery' // subject line
         , text: greeting + '\nClick here to reset your password:\n' + recovery_url
@@ -70,7 +63,7 @@ module.exports = (function () {
 
   var sendBugReport = function(username, message, cb) {
     var bug_report_email = {
-        from: 'Crypto Poker <cryptopoker@gmail.com>'
+        from: 'Bitpoker <' + db_config.EMAIL_ADDRESS + '>'
       , to: 'x+4986429595084@mail.asana.com'
       , subject: 'Bug/Feedback by ' + username
       , text: message
