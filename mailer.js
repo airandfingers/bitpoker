@@ -23,7 +23,7 @@ module.exports = (function () {
         , text: greeting + '\nClick here to confirm your email address for bitpoker:\n' + confirmation_url
         , html: '<b>' + greeting + '</b><br />' +
                 'Click <a href="' + confirmation_url +
-                '">here</a> to confirm your email address for bitpoker.'
+                '">here</a> to confirm ' + email_address + ' as your bitpoker account\'s email address.'
     };
     smtp_transport.sendMail(confirmation_email, function(error, response){
       if (error) {
@@ -48,7 +48,7 @@ module.exports = (function () {
         , subject: 'Bitpoker Password Recovery' // subject line
         , text: greeting + '\nClick here to reset your password:\n' + recovery_url
         , html: '<b>' + greeting + '</b><br />' +
-                'Click the following link to confirm your email address for bitpoker:<br />' +
+                'Click the following link to reset your bitpoker account\'s password:<br />' +
                 '<a href="' + recovery_url + '">' + recovery_url + '</a>'
     };
     smtp_transport.sendMail(password_recovery_email, function(error, response){
